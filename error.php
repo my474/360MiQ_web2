@@ -1,0 +1,188 @@
+<?php 
+    $err_code = isset($_GET["err"]) ? $_GET["err"] : ''; 
+
+    if ($err_code == "500")
+    {
+        $heading = "Server error";
+        $title = $err_code." ".$heading;
+        $err_msg = "We are resolving the issue. Please come back a bit later.";
+    }
+    else if ($err_code == "403")
+    {
+        $heading = "Access denied";
+        $title = $err_code." ".$heading;
+        $err_msg = "Sorry, but you don't have permission to access this page.";
+    }
+    else
+    {
+        $err_code = 404;
+        $heading = "Page not found";
+        $title = $err_code." ".$heading;
+        $err_msg = "Oops! The page you're looking for doesn't exist.";
+    }
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <?php include "./meta.php" ?>
+    <meta property="og:title" content="<?php echo $title." - 360MiQ.com"; ?>" />
+    <meta property="og:url" content="https://360miq.com/error" />
+    <meta property="og:image" content="assets/img/360Logo_512.png" />
+    <meta name="description" content="360MiQ.com Error page" />
+    <meta property="og:description" content="360MiQ.com Error page" />
+    
+    <title><?php echo $title." - 360MiQ.com"; ?></title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="16x15" href="assets/img/360Logo_16.png">
+    <link rel="icon" type="image/png" sizes="32x31" href="assets/img/360Logo_32.png">
+    <link rel="icon" type="image/png" sizes="179x169" href="assets/img/360Logo_180.png">
+    <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
+    <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
+    <link rel="stylesheet" href="assets/css/card.css">
+    <link rel="stylesheet" href="assets/css/jquery-ui.css">
+    <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
+    <link rel="stylesheet" href="assets/css/signallight.css">
+    <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
+    <script src="assets/js/Utils.js"></script>
+</head>
+
+<body><style>
+.not-selectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<?php include "./header.php" ?>
+
+    <main class="page">
+        <section class="clean-block about-us" style="padding: 0px 0px 80px;">
+<div class="container">
+    <div class="block-heading" style="margin: 0px 0px 0px 0px;">
+<!--<a href="#"><img src = "assets/img/Ad_h.png" widht = "970" height = "90"/></a>-->
+<!--<div id="adblockerMSG" class="container" style="margin: 5px 0px 0px 0px;">
+  Our website is made possible by displaying online advertisements to our visitors.<br>
+  Please consider supporting us by disabling your ad blocker.
+</div>
+<style>
+#adblockerMSG {
+display: none;
+margin-top: 90px;
+
+padding: 20px 10px;
+background: #D30000;
+text-align: center;
+font-weight: bold;
+color: #fff;
+border-radius: 5px;
+}
+</style>
+
+<script type="text/javascript">
+var isIE = detectIE();
+
+document.addEventListener('DOMContentLoaded', init, false);
+
+function init(){
+    if (!isIE)
+    {
+      adsBlocked(function(blocked){
+        if(blocked){
+          document.getElementById('adblockerMSG').style.display='block';
+        } else {
+          document.getElementById('adblockerMSG').innerHTML = 'ads are not blocked';
+        }
+      });
+    }
+    else
+        document.getElementById('adblockerMSG').innerHTML = 'ads are not blocked';
+}
+
+function adsBlocked(callback){
+  var testURL = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+
+  var myInit = {
+    method: 'HEAD',
+    mode: 'no-cors'
+  };
+
+  var myRequest = new Request(testURL, myInit);
+
+  fetch(myRequest).then(function(response) {
+    return response;
+  }).then(function(response) {
+    console.log(response);
+    callback(false)
+  }).catch(function(e){
+    console.log(e)
+    callback(true)
+  });
+}
+</script>-->
+    </div></div>
+
+            <div class="container" style="padding: 0px 15px 0px;">
+                <div class="block-heading" style="padding:0 30px 0 0">
+                    <br><br>
+                    <h1 class="text-info"><?php echo $heading; ?></h1>
+                   <!-- <p>To level the unfair playing field, we believe more free information should be in the hands of individual investors. We strive to provide you just that.</p> -->
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-12 aboutus">
+                        <div class="card clean-card text-center"><!--<img class="card-img-top w-100 d-block" src="assets/img/about-us.jpg">-->
+                            <div class="card-body info" style="margin-bottom: 24px;">
+                                <!--<h4 class="card-title">John Smith</h4>-->
+                                <p class="card-text"><span style="font-size:68px;font-weight:600;color:darkgrey"><?php echo $err_code; ?></span></p>
+                                <p class="card-text"><span style="font-size:20px;"><?php echo $err_msg; ?></span></p>
+                                <!--<div class="icons"><a href="#"><i class="icon-social-facebook"></i></a><a href="#"><i class="icon-social-instagram"></i></a><a href="#"><i class="icon-social-twitter"></i></a></div> -->
+                            </div>
+                        </div>
+                    </div>
+                   <!-- <div class="col-sm-6 col-lg-4">
+                        <div class="card clean-card text-center"><img class="card-img-top w-100 d-block" src="assets/img/avatars/avatar2.jpg">
+                            <div class="card-body info">
+                                <h4 class="card-title">Robert Downturn</h4>
+                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                                <div class="icons"><a href="#"><i class="icon-social-facebook"></i></a><a href="#"><i class="icon-social-instagram"></i></a><a href="#"><i class="icon-social-twitter"></i></a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="card clean-card text-center"><img class="card-img-top w-100 d-block" src="assets/img/avatars/avatar3.jpg">
+                            <div class="card-body info">
+                                <h4 class="card-title">Ally Sanders</h4>
+                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                                <div class="icons"><a href="#"><i class="icon-social-facebook"></i></a><a href="#"><i class="icon-social-instagram"></i></a><a href="#"><i class="icon-social-twitter"></i></a></div>
+                            </div>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        </section>
+    </main>
+
+<?php include "./footer.php" ?>
+
+    <!--<script src="assets/js/jquery.min.js"></script>-->
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <!--<script src="assets/js/smart-forms.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
+    <script src="assets/js/smoothproducts.min.js"></script>
+    <!--<script src="assets/js/theme.js"></script>-->
+    <script src="assets/js/Anystock.js"></script>
+    <script src="assets/js/GaugeChart.js"></script>-->
+    <script src="assets/js/jquery-ui1.12.1.min.js"></script>
+    <!--<script src="assets/js/jquery.ui.treemap.js"></script>-->
+</body>
+
+</html>
