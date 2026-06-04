@@ -387,6 +387,18 @@
 }
 
 /* ============================
+   FEATURED POST TITLE OVERLAYS — dark mode
+   ============================ */
+
+[data-theme="dark"] div[id^="featuredposttitle"] {
+  background: rgba(30, 30, 50, 0.9);
+  color: #e8e8e8;
+}
+[data-theme="dark"] div[id^="featuredposttitle"] p {
+  color: #e8e8e8;
+}
+
+/* ============================
    LOADER DOT — dark mode override
    ============================ */
 
