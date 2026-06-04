@@ -69,7 +69,7 @@
       </li>
       <!-- theme toggle -->
       <li class="nav-item">
-        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode"></a>
+        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode">☀</a>
       </li>
       <!--li class="navbar-toggler collapsed nav-item <?php echo (isset($page) && $page == 'about' ? 'active' : ''); ?>" style="border-width:0;padding-left:0;">
         <a class="nav-link" href="about-us">About us</a>
@@ -211,6 +211,26 @@ $(document).on('click', '.color-item', function(event) {
 }
 .ui-autocomplete .ui-menu-item:nth-child(even){
     background-color: #ecf6fc;  // alternate item bgcolor
+}
+[data-theme="dark"] #autocomplete,
+[data-theme="dark"] #autocomplete2 {
+    background-color: #2a2a3e;
+    color: #e8e8e8;
+}
+[data-theme="dark"] .ui-autocomplete {
+    background: #2a2a3e;
+    color: #e8e8e8;
+}
+[data-theme="dark"] .ui-autocomplete .ui-menu-item-wrapper {
+    color: #e8e8e8;
+}
+[data-theme="dark"] .ui-autocomplete .ui-menu-item:nth-child(even) {
+    background-color: #1e1e32;
+}
+[data-theme="dark"] .ui-autocomplete .ui-state-focus,
+[data-theme="dark"] .ui-autocomplete .ui-state-active {
+    background: #3a3a50;
+    color: #ffffff;
 }
 </style>    
 <script type='text/javascript' >
