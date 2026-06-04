@@ -335,16 +335,31 @@
   background-color: var(--bg-navbar) !important;
 }
 
-[data-theme="dark"] .navbar-light {
-  /* override Bootstrap light navbar colors for dark mode */
-}
-
-[data-theme="dark"] .navbar-nav .nav-link {
+[data-theme="dark"] .navbar .nav-link,
+[data-theme="dark"] .navbar .navbar-brand {
   color: var(--text-secondary);
 }
 
-[data-theme="dark"] .navbar-nav .nav-link:hover {
+[data-theme="dark"] .navbar .nav-link:hover,
+[data-theme="dark"] .navbar .navbar-brand:hover {
   color: var(--text-primary);
+}
+
+[data-theme="dark"] .navbar .navbar-toggler .navtitle {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .navbar .dropdown-menu {
+  background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .navbar .dropdown-item {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .navbar .dropdown-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
 }
 
 /* ============================
