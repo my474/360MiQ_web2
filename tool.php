@@ -1435,26 +1435,27 @@ function raceChart(nameDict)
                     if (this.processedYData === undefined)
                         return;
     
+                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                     var performance = this.processedYData[this.processedYData.length - 1];
                     var sign = '';
-                    
+
                     if(performance > 0)
-                      	sign = "+";
-                  	else if (performance === 0)
-                  	    sign = "\u00B1";
-                  	    
-              	    if (performance < 0)
-              	    {
-                        return '<span style="font-weight:bold;color:' + this.color + '">' + this.name + ': <span style="color:red">' + performance + '%</span>';
-              	    }
-              	    else if (performance === null || isNaN(performance))
-              	    {
-                        return '<span style="font-weight:bold;color:' + this.color + '">' + this.name + ': <span style="color:black">-</span>';
-                    }
-              	    else
-              	    {
-                        return '<span style="font-weight:bold;color:' + this.color + '">' + this.name + ': <span style="color:black">' + sign + performance + '%</span>';
-              	    }
+                          sign = "+";
+                        else if (performance === 0)
+                            sign = "\u00B1";
+
+                        if (performance < 0)
+                        {
+                            return '<span style="font-weight:bold;color:' + this.color + '">' + this.name + ': <span style="color:red">' + performance + '%</span>';
+                        }
+                        else if (performance === null || isNaN(performance))
+                        {
+                            return '<span style="font-weight:bold;color:' + this.color + '">' + this.name + ': <span style="color:' + (isDark ? '#cccccc' : 'black') + '">-</span>';
+                        }
+                        else
+                        {
+                            return '<span style="font-weight:bold;color:' + this.color + '">' + this.name + ': <span style="color:' + (isDark ? '#cccccc' : 'black') + '">' + sign + performance + '%</span>';
+                        }
                 }
             },
             

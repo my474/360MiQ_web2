@@ -399,7 +399,7 @@
 }
 
 /* ============================
-   GREEN / RED TEXT — brighter in dark mode
+   GREEN / RED / BLACK TEXT — brighter in dark mode
    ============================ */
 
 [data-theme="dark"] *[style*="color:green"],
@@ -408,8 +408,12 @@
 [data-theme="dark"] *[style*="color:red"],
 [data-theme="dark"] *[style*="color:'red'"],
 [data-theme="dark"] *[style*='color:"red"'],
+[data-theme="dark"] *[style*="color:black"],
+[data-theme="dark"] *[style*="color:'black'"],
+[data-theme="dark"] *[style*='color:"black"'],
 [data-theme="dark"] font[color="green"],
-[data-theme="dark"] font[color="red"] {
+[data-theme="dark"] font[color="red"],
+[data-theme="dark"] font[color="black"] {
   color: inherit;
 }
 [data-theme="dark"] *[style*="color:green"],
@@ -423,6 +427,12 @@
 [data-theme="dark"] *[style*='color:"red"'],
 [data-theme="dark"] font[color="red"] {
   color: #ff4444 !important;
+}
+[data-theme="dark"] *[style*="color:black"],
+[data-theme="dark"] *[style*="color:'black'"],
+[data-theme="dark"] *[style*='color:"black"'],
+[data-theme="dark"] font[color="black"] {
+  color: #cccccc !important;
 }
 
 /* ============================
