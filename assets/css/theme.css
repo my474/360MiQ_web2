@@ -484,20 +484,38 @@
    NAV TABS — dark mode (mynav-link / nl tabs)
    ============================ */
 
-[data-theme="dark"] .nav-tabs.panel-heading .nav-link.active {
+/* ============================
+   NAV TABS — dark mode (mynav-link / nl tabs)
+   ============================ */
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
   background-color: var(--bg-card);
   color: var(--text-primary);
   border-color: var(--border-color) var(--border-color) transparent;
 }
 
-[data-theme="dark"] .nav-tabs.panel-heading .nav-link:not(.active) {
+[data-theme="dark"] .nav-tabs .nav-link:not(.active) {
   background-color: transparent;
   color: var(--text-muted);
   border-color: transparent transparent var(--border-color);
 }
 
-[data-theme="dark"] .nav-tabs.panel-heading .nav-link:hover:not(.active) {
+[data-theme="dark"] .nav-tabs .nav-link:not(.active):hover {
   background-color: var(--bg-secondary);
   color: var(--text-secondary);
   border-color: var(--border-color) var(--border-color) var(--border-color);
+}
+
+[data-theme="dark"] .nav-pills .nav-link.active {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-pills .nav-link:not(.active) {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .nav-pills .nav-link:not(.active):hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
 }
