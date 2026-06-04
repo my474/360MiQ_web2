@@ -64,7 +64,7 @@
   function updateToggleIcon(dark) {
     var btn = document.getElementById('theme-toggle');
     if (!btn) return;
-    btn.textContent = dark ? '☽' : '☀';  /* ☽ crescent moon  /  ☀ sun */
+    btn.textContent = dark ? '�' : '☀';  /* � moon  /  ☀ sun */
     btn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
   }
 
