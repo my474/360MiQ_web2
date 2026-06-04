@@ -399,6 +399,33 @@
 }
 
 /* ============================
+   GREEN / RED TEXT — brighter in dark mode
+   ============================ */
+
+[data-theme="dark"] *[style*="color:green"],
+[data-theme="dark"] *[style*="color:'green'"],
+[data-theme="dark"] *[style*='color:"green"'],
+[data-theme="dark"] *[style*="color:red"],
+[data-theme="dark"] *[style*="color:'red'"],
+[data-theme="dark"] *[style*='color:"red"'],
+[data-theme="dark"] font[color="green"],
+[data-theme="dark"] font[color="red"] {
+  color: inherit;
+}
+[data-theme="dark"] *[style*="color:green"],
+[data-theme="dark"] *[style*="color:'green'"],
+[data-theme="dark"] *[style*='color:"green"'],
+[data-theme="dark"] font[color="green"] {
+  color: #44ff44 !important;
+}
+[data-theme="dark"] *[style*="color:red"],
+[data-theme="dark"] *[style*="color:'red'"],
+[data-theme="dark"] *[style*='color:"red"'],
+[data-theme="dark"] font[color="red"] {
+  color: #ff4444 !important;
+}
+
+/* ============================
    LOADER DOT — dark mode override
    ============================ */
 
