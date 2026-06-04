@@ -64,7 +64,7 @@
   function updateToggleIcon(dark) {
     var btn = document.getElementById('theme-toggle');
     if (!btn) return;
-    btn.textContent = dark ? '☾' : '☀';  /* � last quarter moon / �0 sun */
+    btn.innerHTML = dark ? '🌙' : '🌞';  /* 🌞 sun emoji / 🌙 crescent moon emoji */
     btn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
   }
 
