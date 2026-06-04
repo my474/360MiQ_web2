@@ -337,12 +337,12 @@
 
 [data-theme="dark"] .navbar .nav-link,
 [data-theme="dark"] .navbar .navbar-brand {
-  color: var(--text-secondary);
+  color: var(--text-secondary) !important;
 }
 
 [data-theme="dark"] .navbar .nav-link:hover,
 [data-theme="dark"] .navbar .navbar-brand:hover {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] .navbar .navbar-toggler .navtitle {
