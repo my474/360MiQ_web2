@@ -1505,9 +1505,24 @@ function adsBlocked(callback){
     <div class="tradingview-widget-container" id="TVWidget">
         <div class="tradingview-widget-container__widget"></div>
         <div class="tradingview-widget-copyright not-selectable"><a href="https://www.tradingview.com" rel="noopener" target="_blank"><span class="blue-text">Market Data</span></a>&nbsp;by TradingView</div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-        {
-            "colorTheme": "light",
+    </div>
+    <script>
+    function initTVWidget() {
+        var container = document.getElementById('TVWidget');
+        if (!container) return;
+
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        /* remove existing widget iframe */
+        var existingIframe = container.querySelector('iframe');
+        if (existingIframe) existingIframe.remove();
+
+        /* remove any previously injected script to avoid duplicate load */
+        var oldScript = container.querySelector('script[data-tv-init]');
+        if (oldScript) oldScript.remove();
+
+        var config = {
+            "colorTheme": isDark ? "dark" : "light",
             "dateRange": "12m",
             "showChart": true,
             "locale": "en",
@@ -1517,8 +1532,8 @@ function adsBlocked(callback){
             "isTransparent": false,
             "plotLineColorGrowing": "rgba(33, 150, 243, 1)",
             "plotLineColorFalling": "rgba(33, 150, 243, 1)",
-            "gridLineColor": "rgba(233, 233, 234, 1)",
-            "scaleFontColor": "rgba(120, 123, 134, 1)",
+            "gridLineColor": isDark ? "rgba(42, 42, 62, 1)" : "rgba(233, 233, 234, 1)",
+            "scaleFontColor": isDark ? "rgba(200, 200, 210, 1)" : "rgba(120, 123, 134, 1)",
             "belowLineFillColorGrowing": "rgba(33, 150, 243, 0.12)",
             "belowLineFillColorFalling": "rgba(33, 150, 243, 0.12)",
             "symbolActiveColor": "rgba(33, 150, 243, 0.12)",
@@ -1526,178 +1541,97 @@ function adsBlocked(callback){
                 {
                     "title": "Index",
                     "symbols": [
-                        {
-                          "s": "OANDA:SPX500USD"
-                        },
-                        {
-                          "s": "OANDA:NAS100USD"
-                        },
-                        {
-                          "s": "FOREXCOM:DJI"
-                        },
-                        {
-                          "s": "OANDA:UK100GBP"
-                        },
-                        {
-                          "s": "ASX:XJO"
-                        },
-                        {
-                          "s": "WHSELFINVEST:JAPAN225CFD"
-                        },
-                        {
-                          "s": "FOREXCOM:HKXHKD"
-                        },
-                        {
-                          "s": "OANDA:CN50USD"
-                        }
+                        { "s": "OANDA:SPX500USD" },
+                        { "s": "OANDA:NAS100USD" },
+                        { "s": "FOREXCOM:DJI" },
+                        { "s": "OANDA:UK100GBP" },
+                        { "s": "ASX:XJO" },
+                        { "s": "WHSELFINVEST:JAPAN225CFD" },
+                        { "s": "FOREXCOM:HKXHKD" },
+                        { "s": "OANDA:CN50USD" }
                     ],
                     "originalTitle": "Index"
                 },
                 {
                     "title": "Commodity",
                     "symbols": [
-                        {
-                          "s": "TVC:GOLD",
-                          "d": "Gold"
-                        },
-                        {
-                          "s": "TVC:SILVER",
-                          "d": "Silver"
-                        },
-                        {
-                          "s": "OANDA:XCUUSD",
-                          "d": "Copper"
-                        },            
-                        {
-                          "s": "TVC:USOIL",
-                          "d": "WTI Crude Oil"
-                        },
-                        {
-                          "s": "OANDA:NATGASUSD",
-                          "d": "Natural Gas"
-                        },
-                        {
-                          "s": "OANDA:CORNUSD",
-                          "d": "Corn"
-                        },
-                        {
-                          "s": "OANDA:SOYBNUSD",
-                          "d": "Soybean"
-                        },
-                        {
-                          "s": "BITSTAMP:BTCUSD",
-                          "d": "Bitcoin"
-                        }
+                        { "s": "TVC:GOLD", "d": "Gold" },
+                        { "s": "TVC:SILVER", "d": "Silver" },
+                        { "s": "OANDA:XCUUSD", "d": "Copper" },
+                        { "s": "TVC:USOIL", "d": "WTI Crude Oil" },
+                        { "s": "OANDA:NATGASUSD", "d": "Natural Gas" },
+                        { "s": "OANDA:CORNUSD", "d": "Corn" },
+                        { "s": "OANDA:SOYBNUSD", "d": "Soybean" },
+                        { "s": "BITSTAMP:BTCUSD", "d": "Bitcoin" }
                     ],
                     "originalTitle": "Commodity"
                 },
                 {
                     "title": "FX",
                     "symbols": [
-                        {
-                          "s": "FX:EURUSD"
-                        },
-                        {
-                          "s": "FX:GBPUSD"
-                        },
-                        {
-                          "s": "FX:EURGBP"
-                        },
-                        {
-                          "s": "FX:USDJPY"
-                        },
-                        {
-                          "s": "FX:USDCHF"
-                        },
-                        {
-                          "s": "FX:AUDUSD"
-                        },
-                        {
-                          "s": "FX:USDCAD"
-                        },
-                        {
-                          "s": "FX:USDCNH"
-                        }
+                        { "s": "FX:EURUSD" },
+                        { "s": "FX:GBPUSD" },
+                        { "s": "FX:EURGBP" },
+                        { "s": "FX:USDJPY" },
+                        { "s": "FX:USDCHF" },
+                        { "s": "FX:AUDUSD" },
+                        { "s": "FX:USDCAD" },
+                        { "s": "FX:USDCNH" }
                     ],
                     "originalTitle": "FX"
                 },
                 {
                     "title": "Bond",
                     "symbols": [
-                        {
-                          "s": "CME:GE1!",
-                          "d": "Eurodollar"
-                        },
-                        {
-                          "s": "CBOT:ZB1!",
-                          "d": "T-Bond"
-                        },
-                        {
-                          "s": "CBOT:UB1!",
-                          "d": "Ultra T-Bond"
-                        },
-                        {
-                          "s": "CBOT:ZT1!",
-                          "d": "2 Year T-Note"
-                        },            
-                        {
-                          "s": "EUREX:FGBL1!",
-                          "d": "Euro Bund"
-                        },
-                        {
-                          "s": "EUREX:FBTP1!",
-                          "d": "Euro BTP"
-                        },
-                        {
-                          "s": "EUREX:FGBM1!",
-                          "d": "Euro BOBL"
-                        },
-                        {
-                          "s": "EUREX:FOAT1!",
-                          "d": "French Govt Bonds"
-                        }
+                        { "s": "CME:GE1!", "d": "Eurodollar" },
+                        { "s": "CBOT:ZB1!", "d": "T-Bond" },
+                        { "s": "CBOT:UB1!", "d": "Ultra T-Bond" },
+                        { "s": "CBOT:ZT1!", "d": "2 Year T-Note" },
+                        { "s": "EUREX:FGBL1!", "d": "Euro Bund" },
+                        { "s": "EUREX:FBTP1!", "d": "Euro BTP" },
+                        { "s": "EUREX:FGBM1!", "d": "Euro BOBL" },
+                        { "s": "EUREX:FOAT1!", "d": "French Govt Bonds" }
                     ],
                     "originalTitle": "Bond"
                 },
                 {
                     "title": "Econ",
                     "symbols": [
-                        {
-                          "s": "FRED:FEDFUNDS",
-                          "d": "Effective Fed Funds Rate"
-                        },
-                        {
-                          "s": "FRED:UNRATE"
-                        },
-                        {
-                          "s": "FRED:PAYEMS",
-                          "d": "Employees: Nonfarm"
-                        },
-                        {
-                          "s": "FRED:HOUST",
-                          "d": "Total Housing Starts"
-                        },
-                        {
-                          "s": "FRED:BASE",
-                          "d": "St Louis Monetary Base"
-                        },
-                        {
-                          "s": "FRED:STLFSI",
-                          "d": "St Louis Financial Stress Index"
-                        },
-                        {
-                          "s": "FRED:CPIAUCSL",
-                          "d": "Consumer Price Index"
-                        },
-                        {
-                          "s": "ISM:MAN_PMI"
-                        }
+                        { "s": "FRED:FEDFUNDS", "d": "Effective Fed Funds Rate" },
+                        { "s": "FRED:UNRATE" },
+                        { "s": "FRED:PAYEMS", "d": "Employees: Nonfarm" },
+                        { "s": "FRED:HOUST", "d": "Total Housing Starts" },
+                        { "s": "FRED:BASE", "d": "St Louis Monetary Base" },
+                        { "s": "FRED:STLFSI", "d": "St Louis Financial Stress Index" },
+                        { "s": "FRED:CPIAUCSL", "d": "Consumer Price Index" },
+                        { "s": "ISM:MAN_PMI" }
                     ]
                 }
             ]
-        }
-        </script>
-    </div>
+        };
+
+        var scriptEl = document.createElement('script');
+        scriptEl.type = 'text/javascript';
+        scriptEl.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js';
+        scriptEl.async = true;
+        scriptEl.setAttribute('data-tv-init', '');
+        scriptEl.text = JSON.stringify(config);
+        container.appendChild(scriptEl);
+    }
+
+    /* initial load */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTVWidget);
+    } else {
+        initTVWidget();
+    }
+
+    /* re-create on theme change */
+    document.documentElement.addEventListener('themechange', function () {
+        /* small delay so the widget script's CDN/iframe cleanup doesn't race */
+        setTimeout(initTVWidget, 100);
+    });
+    </script>
     <!-- TradingView Widget END -->    
 </div>
 <p></p>
