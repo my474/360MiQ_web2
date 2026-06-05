@@ -257,14 +257,17 @@ function themeScrollbar(ch, isDark) {
   if (sb && sb.group) {
     g = sb.group.element || sb.group;
   }
-  if (!g && ch.container) {
+  if (!g) {
     try {
-      var el = typeof ch.container === 'string'
-        ? document.getElementById(ch.container)
-        : ch.container;
-      if (el) {
-        g = el.querySelector('.highcharts-scrollbar-group') ||
-            el.querySelector('[class*="scrollbar"]');
+      var all = document.querySelectorAll('.highcharts-scrollbar-group, [class*="scrollbar"]');
+      var containerId = ch.container || (ch.options && ch.options.chart && ch.options.chart.renderTo);
+      if (containerId) {
+        var el = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
+        if (el) {
+          for (var gi = 0; gi < all.length; gi++) {
+            if (el.contains(all[gi])) { g = all[gi]; break; }
+          }
+        }
       }
     } catch(e) {}
   }
