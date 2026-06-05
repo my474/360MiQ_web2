@@ -231,20 +231,39 @@ function applyHighchartsTheme(isDark) {
 function themeScrollbar(ch, isDark) {
   if (!ch.scrollbar || !ch.scrollbar.group) return;
   var sb = ch.scrollbar;
-  /* Update internal options */
+
+  var bg   = isDark ? '#2a2a3e' : '#f0f0f0';
+  var edge = isDark ? '#444' : '#ccc';
+  var arr  = isDark ? '#aaa' : '#333';
+  var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
+
   sb.update({
-    barBackgroundColor:   isDark ? '#2a2a3e' : '#f0f0f0',
-    barBorderColor:       isDark ? '#444' : '#ccc',
-    buttonArrowColor:     isDark ? '#aaa' : '#333',
-    rifleColor:           isDark ? '#aaa' : '#333',
-    trackBackgroundColor: isDark ? '#1a1a2e' : '#e6e6e6',
-    trackBorderColor:     isDark ? '#444' : '#ccc',
-    buttonBackgroundColor: isDark ? '#2a2a3e' : '#f0f0f0'
+    barBackgroundColor: bg, barBorderColor: edge,
+    buttonBackgroundColor: bg, buttonArrowColor: arr,
+    rifleColor: arr, trackBackgroundColor: trBg, trackBorderColor: edge
   });
-  /* Re-render to apply option changes to SVG */
-  if (sb.render) {
-    sb.render();
-  }
+
+  var walk = function(el) {
+    if (!el || !el.getAttribute) return;
+    var t = (el.tagName || '').toLowerCase();
+    var c = (el.getAttribute('class') || '');
+    var s = function(a, v) { try { el.setAttribute(a, v); } catch(e) {} };
+
+    if (t === 'path') {
+      var d = (el.getAttribute('d') || '');
+      /* Rifle grip (|||) has long path data; arrow buttons have short paths */
+      if (d.length > 0 && d.indexOf('M') !== -1) { s('stroke', arr); }
+      else { s('fill', arr); s('stroke', arr); }
+    }
+    else if (t === 'rect') {
+      if (c.indexOf('track') !== -1) { s('fill', trBg); s('stroke', edge); }
+      else { s('fill', bg); s('stroke', edge); }
+    }
+
+    var kids = el.childNodes || el.children;
+    if (kids) { for (var i = 0; i < kids.length; i++) { walk(kids[i]); } }
+  };
+  walk(sb.group.element);
 }
 
 /* ---- per-instance options helper ---- */
@@ -291,27 +310,6 @@ function getHighchartsThemeOptions() {
       backgroundColor: dark ? '#2a2a2a' : '#FFFFFF',
       style:           { color: dark ? '#e8e8e8' : '#333333' },
       borderColor:     dark ? '#444' : '#ccc'
-    },
-    navigator: {
-      maskFill: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.15)',
-      handles: {
-        backgroundColor: dark ? '#2a2a3e' : '#eee',
-        borderColor: dark ? '#555' : '#777'
-      },
-      outlineColor: dark ? '#555' : '#ccc',
-      xAxis: {
-        gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
-        labels: { style: { color: dark ? '#888' : '#555' } }
-      }
-    },
-    scrollbar: {
-      barBackgroundColor:  dark ? '#2a2a3e' : '#f0f0f0',
-      barBorderColor:      dark ? '#444' : '#ccc',
-      buttonBackgroundColor: dark ? '#2a2a3e' : '#f0f0f0',
-      buttonArrowColor:    dark ? '#aaa' : '#333',
-      rifleColor:          dark ? '#aaa' : '#333',
-      trackBackgroundColor: dark ? '#1a1a2e' : '#e6e6e6',
-      trackBorderColor:    dark ? '#444' : '#ccc'
     },
     rangeSelector: {
       buttonTheme: {
