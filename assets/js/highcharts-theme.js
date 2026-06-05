@@ -251,8 +251,8 @@ function themeScrollbar(ch, isDark) {
 
     if (t === 'path') {
       var d = (el.getAttribute('d') || '');
-      /* Rifle grip (|||) has long path data; arrow buttons have short paths */
-      if (d.length > 0 && d.indexOf('M') !== -1) { s('stroke', arr); }
+      /* Arrow button paths are short (< 60 chars), rifle grip (|||) is longer */
+      if (d.length > 60) { s('stroke', arr); }
       else { s('fill', arr); s('stroke', arr); }
     }
     else if (t === 'rect') {
