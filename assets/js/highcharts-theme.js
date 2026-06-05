@@ -212,40 +212,25 @@ var highchartsDarkTheme = {
 function applyHighchartsTheme(isDark) {
   if (typeof Highcharts === 'undefined') return;
   Highcharts.setOptions(isDark ? highchartsDarkTheme : highchartsLightTheme);
-  /* also update all already-rendered charts */
+  var scrollbarTheme = {
+    barBackgroundColor:  isDark ? '#2a2a3e' : '#f0f0f0',
+    barBorderColor:      isDark ? '#444' : '#ccc',
+    buttonBackgroundColor: isDark ? '#2a2a3e' : '#f0f0f0',
+    buttonArrowColor:    isDark ? '#aaa' : '#333',
+    rifleColor:          isDark ? '#aaa' : '#333',
+    trackBackgroundColor: isDark ? '#1a1a2e' : '#e6e6e6',
+    trackBorderColor:    isDark ? '#444' : '#ccc'
+  };
   if (Highcharts.charts && Highcharts.charts.length) {
     var opts = getHighchartsThemeOptions();
     Highcharts.charts.forEach(function(ch) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
-        /* scrollbar doesn't re-render from chart.update(). Find and
-           update its rendered SVG elements for all charts including
-           off-screen ones by searching the chart's container div */
-        try {
-          var dark = isDark;
-          var cont = ch.container;
-          if (!cont) return;
-          /* walk the full DOM tree inside the container looking for
-             scrollbar groups — use getElementsByTagName which is more
-             reliable for SVG in display:none containers than qSA */
-          var allEls = cont.getElementsByTagName('g');
-          for (var i = 0; i < allEls.length; i++) {
-            var g = allEls[i];
-            var cls = g.getAttribute('class') || '';
-            if (cls.indexOf('scrollbar') === -1) continue;
-            /* patch every rect and path anywhere under this group */
-            var allRect = g.getElementsByTagName('rect');
-            for (var ri = 0; ri < allRect.length; ri++) {
-              allRect[ri].setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
-              allRect[ri].setAttribute('stroke', dark ? '#444' : '#ccc');
-            }
-            var allPath = g.getElementsByTagName('path');
-            for (var pi = 0; pi < allPath.length; pi++) {
-              allPath[pi].setAttribute('stroke', dark ? '#aaa' : '#333');
-              allPath[pi].setAttribute('fill', 'none');
-            }
-          }
-        } catch(e2) {}
+        /* Scrollbar: chart.update() doesn't propagate scrollbar theme options to
+           already-rendered scrollbars on StockChart sub-charts. Update directly. */
+        if (ch.scrollbar && ch.scrollbar.update) {
+          try { ch.scrollbar.update(scrollbarTheme); } catch(e) {}
+        }
       }
     });
   }
