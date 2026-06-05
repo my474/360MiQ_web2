@@ -217,7 +217,7 @@ function applyHighchartsTheme(isDark) {
     var opts = getHighchartsThemeOptions();
     Highcharts.charts.forEach(function(ch) {
       if (ch && ch.update) {
-        try { ch.update(opts, true, true); } catch(e) {}
+        try { ch.update(opts, true, false); } catch(e) {}
       }
     });
   }
