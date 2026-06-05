@@ -226,70 +226,24 @@ function applyHighchartsTheme(isDark) {
   }
 }
 
-/* Directly update scrollbar SVG element colors — chart.update() doesn't
-   propagate scrollbar options to already-rendered scrollbars on StockChart
-   sub-charts. We patch SVG fill/stroke in-place so event handlers survive. */
+/* Scrollbar colors sometimes don't apply to StockChart sub-charts through
+   chart.update() alone. Patch the scrollbar's SVG group in-place. */
 function themeScrollbar(ch, isDark) {
+  if (!ch.scrollbar || !ch.scrollbar.group) return;
   var sb = ch.scrollbar;
-  if (!sb || !sb.group) return;
-
-  /* Update options so the internal state is correct */
+  /* Update internal options */
   sb.update({
     barBackgroundColor:   isDark ? '#2a2a3e' : '#f0f0f0',
     barBorderColor:       isDark ? '#444' : '#ccc',
     buttonArrowColor:     isDark ? '#aaa' : '#333',
     rifleColor:           isDark ? '#aaa' : '#333',
     trackBackgroundColor: isDark ? '#1a1a2e' : '#e6e6e6',
-    trackBorderColor:     isDark ? '#444' : '#ccc'
+    trackBorderColor:     isDark ? '#444' : '#ccc',
+    buttonBackgroundColor: isDark ? '#2a2a3e' : '#f0f0f0'
   });
-
-  /* Patch in-place — don't recreate elements, that kills interactivity.
-     Highcharts Scrollbar SVG structure (children of sb.group):
-       index 0: rifle path (the ||| thumb grip)
-       index 1: track group (contains track rect)
-       index 2: bar rect
-       index 3: button-left group (arrow path inside)
-       index 4: button-right group (arrow path inside) */
-  var g = sb.group.element;
-  if (!g) return;
-  var c = g.childNodes || g.children;
-  if (!c) return;
-
-  var set = function(el, attr, val) {
-    try { if (el && el.setAttribute) el.setAttribute(attr, val); } catch(e) {}
-  };
-
-  for (var i = 0; i < c.length; i++) {
-    var node = c[i];
-    var tag = node.tagName ? node.tagName.toLowerCase() : '';
-
-    if (tag === 'path') {
-      /* Rifle grip (|||) — update stroke, keep fill unchanged */
-      set(node, 'stroke', isDark ? '#aaa' : '#333');
-    }
-    else if (tag === 'rect') {
-      /* Could be bar or track rect — check position in group.
-         The bar rect is usually the top-level rect, track is nested. */
-      set(node, 'fill',   isDark ? '#2a2a3e' : '#f0f0f0');
-      set(node, 'stroke', isDark ? '#444' : '#ccc');
-    }
-    else if (tag === 'g') {
-      /* Track group or button group — find rects and paths inside */
-      var kids = node.childNodes || node.children;
-      if (kids) {
-        for (var k = 0; k < kids.length; k++) {
-          var kid = kids[k];
-          var ktag = kid.tagName ? kid.tagName.toLowerCase() : '';
-          if (ktag === 'rect') {
-            set(kid, 'fill',   isDark ? '#1a1a2e' : '#e6e6e6');
-            set(kid, 'stroke', isDark ? '#444' : '#ccc');
-          } else if (ktag === 'path') {
-            set(kid, 'fill',   isDark ? '#aaa' : '#333');
-            set(kid, 'stroke', isDark ? '#aaa' : '#333');
-          }
-        }
-      }
-    }
+  /* Re-render to apply option changes to SVG */
+  if (sb.render) {
+    sb.render();
   }
 }
 
@@ -350,8 +304,15 @@ function getHighchartsThemeOptions() {
         labels: { style: { color: dark ? '#888' : '#555' } }
       }
     },
-    /* scrollbar NOT included — chart.update() may destroy it on StockChart
-       sub-charts. It is patched in-place by themeScrollbar() instead. */
+    scrollbar: {
+      barBackgroundColor:  dark ? '#2a2a3e' : '#f0f0f0',
+      barBorderColor:      dark ? '#444' : '#ccc',
+      buttonBackgroundColor: dark ? '#2a2a3e' : '#f0f0f0',
+      buttonArrowColor:    dark ? '#aaa' : '#333',
+      rifleColor:          dark ? '#aaa' : '#333',
+      trackBackgroundColor: dark ? '#1a1a2e' : '#e6e6e6',
+      trackBorderColor:    dark ? '#444' : '#ccc'
+    },
     rangeSelector: {
       buttonTheme: {
         fill: dark ? '#2a2a3e' : '#f0f0f0',
