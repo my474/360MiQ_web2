@@ -111,7 +111,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
     var dataTree = anychart.data.tree(data, 'as-table');
     var chart = anychart.treeMap(dataTree);
     chart.credits().enabled(false);
-    chart.headers().fontColor(headerFontColor);
+    chart.headers().fontColor(headerFontColor).background().fill(isDark ? "#2a2a3e" : "#F7F7F7").stroke(isDark ? "#3a3a4e" : "#e0e0e0");
     
     if (isMobile)
         chart.contextMenu(false);
