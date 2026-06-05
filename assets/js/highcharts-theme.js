@@ -218,6 +218,13 @@ function applyHighchartsTheme(isDark) {
     Highcharts.charts.forEach(function(ch) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
+        /* scrollbar doesn't re-render from chart.update(), so force the
+           navigator to redraw — this picks up the new theme colors */
+        try {
+          if (ch.navigator && ch.navigator.render) {
+            ch.navigator.render();
+          }
+        } catch(e2) {}
       }
     });
   }
@@ -250,15 +257,13 @@ function getHighchartsThemeOptions() {
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
-      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
-      plotLines: [{ color: dark ? '#2e2e2e' : '#eaeaea' }]
+      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
     }, {
       labels:  { style: { color: dark ? '#cccccc' : '#555555' } },
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
-      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
-      plotLines: [{ color: dark ? '#2e2e2e' : '#eaeaea' }]
+      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
     }],
     legend: {
       itemStyle:          { color: dark ? '#cccccc' : '#333333' },
