@@ -229,27 +229,46 @@ function applyHighchartsTheme(isDark) {
   }
 }
 
-/* Scrollbar colors sometimes don't apply to StockChart sub-charts through
-   chart.update() alone. Patch the scrollbar's SVG group in-place. */
+/* Patch scrollbar SVG colors in-place. chart.update() can break the
+   ch.scrollbar reference on sub-charts, so we fall back to finding
+   the scrollbar group from the chart's container element by class. */
 function themeScrollbar(ch, isDark) {
-  var sb = ch.scrollbar;
-  /* chart.update() may have removed ch.scrollbar on sub-charts — try the
-     navigator's internal scrollbar reference as fallback */
-  if ((!sb || !sb.group) && ch.navigator && ch.navigator.scrollbar) {
-    sb = ch.navigator.scrollbar;
-  }
-  if (!sb || !sb.group) return;
-
+  if (!ch) return;
   var bg   = isDark ? '#2a2a3e' : '#f0f0f0';
   var edge = isDark ? '#444' : '#ccc';
   var arr  = isDark ? '#aaa' : '#333';
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
 
-  sb.update({
-    barBackgroundColor: bg, barBorderColor: edge,
-    buttonBackgroundColor: bg, buttonArrowColor: arr,
-    rifleColor: arr, trackBackgroundColor: trBg, trackBorderColor: edge
-  });
+  /* Update via Highcharts object API if still alive */
+  var sb = ch.scrollbar;
+  if ((!sb || !sb.group) && ch.navigator && ch.navigator.scrollbar) {
+    sb = ch.navigator.scrollbar;
+  }
+  if (sb && sb.group) {
+    sb.update({
+      barBackgroundColor: bg, barBorderColor: edge,
+      buttonBackgroundColor: bg, buttonArrowColor: arr,
+      rifleColor: arr, trackBackgroundColor: trBg, trackBorderColor: edge
+    });
+  }
+
+  /* Find the scrollbar SVG group from the DOM — survives update() */
+  var g;
+  if (sb && sb.group) {
+    g = sb.group.element || sb.group;
+  }
+  if (!g && ch.container) {
+    try {
+      var el = typeof ch.container === 'string'
+        ? document.getElementById(ch.container)
+        : ch.container;
+      if (el) {
+        g = el.querySelector('.highcharts-scrollbar-group') ||
+            el.querySelector('[class*="scrollbar"]');
+      }
+    } catch(e) {}
+  }
+  if (!g) return;
 
   var walk = function(el) {
     if (!el || !el.getAttribute) return;
@@ -270,7 +289,7 @@ function themeScrollbar(ch, isDark) {
     var kids = el.childNodes || el.children;
     if (kids) { for (var i = 0; i < kids.length; i++) { walk(kids[i]); } }
   };
-  walk(sb.group.element);
+  walk(g);
 }
 
 /* ---- per-instance options helper ---- */
@@ -317,6 +336,18 @@ function getHighchartsThemeOptions() {
       backgroundColor: dark ? '#2a2a2a' : '#FFFFFF',
       style:           { color: dark ? '#e8e8e8' : '#333333' },
       borderColor:     dark ? '#444' : '#ccc'
+    },
+    navigator: {
+      maskFill: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.15)',
+      handles: {
+        backgroundColor: dark ? '#2a2a3e' : '#eee',
+        borderColor: dark ? '#555' : '#777'
+      },
+      outlineColor: dark ? '#555' : '#ccc',
+      xAxis: {
+        gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
+        labels: { style: { color: dark ? '#888' : '#555' } }
+      }
     },
     rangeSelector: {
       buttonTheme: {
