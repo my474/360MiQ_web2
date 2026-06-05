@@ -245,13 +245,19 @@ function getHighchartsThemeOptions() {
       tickColor: dark ? '#444' : '#ccc',
       gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
     },
-    yAxis: {
+    yAxis: [{
       labels:  { style: { color: dark ? '#cccccc' : '#555555' } },
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
       gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
-    },
+    }, {
+      labels:  { style: { color: dark ? '#cccccc' : '#555555' } },
+      title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
+      lineColor: dark ? '#444' : '#ccc',
+      tickColor: dark ? '#444' : '#ccc',
+      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
+    }],
     legend: {
       itemStyle:          { color: dark ? '#cccccc' : '#333333' },
       itemHoverStyle:     { color: dark ? '#ffffff' : '#000000' },
