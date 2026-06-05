@@ -437,6 +437,12 @@ tr td {
   border-bottom: 0;
 }
 
+[data-theme="dark"] .nav-tabs .nav-item.show .nav-link,
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  background-color: #2a2a3e;
+  color: #e8e8e8;
+}
+
 .dropdown-menu {
   border-top: 2px solid #5DADE2;
 }
