@@ -1504,7 +1504,6 @@ function adsBlocked(callback){
     <!-- TradingView Widget BEGIN -->
     <div class="tradingview-widget-container" id="TVWidget">
         <div class="tradingview-widget-container__widget"></div>
-        <div class="tradingview-widget-copyright not-selectable"><a href="https://www.tradingview.com" rel="noopener" target="_blank"><span class="blue-text">Market Data</span></a>&nbsp;by TradingView</div>
     </div>
     <script>
     function initTVWidget() {
@@ -1617,6 +1616,16 @@ function adsBlocked(callback){
         scriptEl.setAttribute('data-tv-init', '');
         scriptEl.text = JSON.stringify(config);
         container.appendChild(scriptEl);
+
+        /* re-add copyright after widget finishes loading */
+        setTimeout(function() {
+            if (!container.querySelector('.tradingview-widget-copyright')) {
+                var copyright = document.createElement('div');
+                copyright.className = 'tradingview-widget-copyright not-selectable';
+                copyright.innerHTML = '<a href="https://www.tradingview.com" rel="noopener" target="_blank"><span class="blue-text">Market Data</span></a>&nbsp;by TradingView';
+                container.appendChild(copyright);
+            }
+        }, 2000);
     }
 
     /* initial load */
@@ -1628,15 +1637,7 @@ function adsBlocked(callback){
 
     /* re-create on theme change */
     document.documentElement.addEventListener('themechange', function () {
-        /* small delay so the widget script's CDN/iframe cleanup doesn't race */
         setTimeout(initTVWidget, 100);
-        /* keep the copyright at the bottom; widget sometimes moves it to top */
-        setTimeout(function() {
-            var container = document.getElementById('TVWidget');
-            if (!container) return;
-            var copyright = container.querySelector('.tradingview-widget-copyright');
-            if (copyright) container.appendChild(copyright);
-        }, 2000);
     });
     </script>
     <!-- TradingView Widget END -->    
