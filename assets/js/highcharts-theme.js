@@ -214,23 +214,31 @@ function applyHighchartsTheme(isDark) {
   Highcharts.setOptions(isDark ? highchartsDarkTheme : highchartsLightTheme);
   if (Highcharts.charts && Highcharts.charts.length) {
     var opts = getHighchartsThemeOptions();
-    Highcharts.charts.forEach(function(ch) {
+    /* Update chart-level options first (colors, axes, etc.) */
+    for (var i = 0; i < Highcharts.charts.length; i++) {
+      var ch = Highcharts.charts[i];
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
-        /* Scrollbar: chart.update() doesn't re-render already-created scrollbar
-           SVG elements on StockChart sub-charts (only the first chart works).
-           Directly update each chart's scrollbar colors via its SVG group. */
-        themeScrollbar(ch, isDark);
       }
-    });
+    }
+    /* Then patch scrollbars — chart.update() can break the scrollbar reference
+       on StockChart sub-charts, so find it via the navigator if needed. */
+    for (var i = 0; i < Highcharts.charts.length; i++) {
+      themeScrollbar(Highcharts.charts[i], isDark);
+    }
   }
 }
 
 /* Scrollbar colors sometimes don't apply to StockChart sub-charts through
    chart.update() alone. Patch the scrollbar's SVG group in-place. */
 function themeScrollbar(ch, isDark) {
-  if (!ch.scrollbar || !ch.scrollbar.group) return;
   var sb = ch.scrollbar;
+  /* chart.update() may have removed ch.scrollbar on sub-charts — try the
+     navigator's internal scrollbar reference as fallback */
+  if ((!sb || !sb.group) && ch.navigator && ch.navigator.scrollbar) {
+    sb = ch.navigator.scrollbar;
+  }
+  if (!sb || !sb.group) return;
 
   var bg   = isDark ? '#2a2a3e' : '#f0f0f0';
   var edge = isDark ? '#444' : '#ccc';
@@ -251,7 +259,6 @@ function themeScrollbar(ch, isDark) {
 
     if (t === 'path') {
       var d = (el.getAttribute('d') || '');
-      /* Arrow button paths are short (< 60 chars), rifle grip (|||) is longer */
       if (d.length > 60) { s('stroke', arr); }
       else { s('fill', arr); s('stroke', arr); }
     }
@@ -310,18 +317,6 @@ function getHighchartsThemeOptions() {
       backgroundColor: dark ? '#2a2a2a' : '#FFFFFF',
       style:           { color: dark ? '#e8e8e8' : '#333333' },
       borderColor:     dark ? '#444' : '#ccc'
-    },
-    navigator: {
-      maskFill: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.15)',
-      handles: {
-        backgroundColor: dark ? '#2a2a3e' : '#eee',
-        borderColor: dark ? '#555' : '#777'
-      },
-      outlineColor: dark ? '#555' : '#ccc',
-      xAxis: {
-        gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
-        labels: { style: { color: dark ? '#888' : '#555' } }
-      }
     },
     rangeSelector: {
       buttonTheme: {
