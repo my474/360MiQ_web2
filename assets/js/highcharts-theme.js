@@ -3,6 +3,42 @@
    Light / Dark theme objects + helpers
    ================================================ */
 
+/* ---- shared export menu style helper ---- */
+
+function exportMenuStyle(dark) {
+  return {
+    menuStyle: {
+      background: dark ? '#2a2a3e' : '#ffffff',
+      border: dark ? '1px solid #3a3a4e' : '1px solid #ccc',
+      color: dark ? '#cccccc' : '#333333'
+    },
+    menuItemStyle: {
+      background: 'transparent',
+      color: dark ? '#cccccc' : '#333333'
+    },
+    buttons: {
+      contextButton: {
+        symbolFill: dark ? '#cccccc' : '#303030',
+        theme: {
+          fill: dark ? '#2a2a3e' : '#ffffff',
+          stroke: dark ? '#3a3a4e' : '#ccc',
+          r: 0,
+          states: {
+            hover: {
+              fill: dark ? '#3a3a4e' : '#e6e6e6',
+              stroke: dark ? '#555' : '#999'
+            },
+            select: {
+              fill: dark ? '#3a3a4e' : '#e6e6e6',
+              stroke: dark ? '#555' : '#999'
+            }
+          }
+        }
+      }
+    }
+  };
+}
+
 /* ---- LIGHT THEME (exact audit values) ---- */
 
 var highchartsLightTheme = {
@@ -81,7 +117,8 @@ var highchartsLightTheme = {
     labelStyle: {
       color: '#555'
     }
-  }
+  },
+  exporting: exportMenuStyle(false)
 };
 
 /* ---- DARK THEME (brighter text) ---- */
@@ -162,7 +199,8 @@ var highchartsDarkTheme = {
     labelStyle: {
       color: '#cccccc'
     }
-  }
+  },
+  exporting: exportMenuStyle(true)
 };
 
 /* ---- apply global baseline ---- */
@@ -254,7 +292,8 @@ function getHighchartsThemeOptions() {
       labelStyle: {
         color: dark ? '#cccccc' : '#555'
       }
-    }
+    },
+    exporting: exportMenuStyle(dark)
   };
 }
 

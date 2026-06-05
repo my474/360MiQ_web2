@@ -482,27 +482,10 @@
 
 /* ============================
    HIGHCHARTS CONTEXT MENU — dark mode
+   (outer container only — menu items use exporting.menuStyle inline styles)
    ============================ */
 
-[data-theme="dark"] .highcharts-context-button {
-  fill: #cccccc;
-}
-[data-theme="dark"] .highcharts-context-button:hover {
-  fill: #ffffff;
-}
-
-[data-theme="dark"] .highcharts-menu {
-  background-color: #2a2a3e;
-  border: 1px solid #3a3a4e;
-}
-[data-theme="dark"] .highcharts-menu-item {
-  color: #cccccc;
+[data-theme="dark"] .highcharts-contextmenu {
   background: transparent;
-}
-[data-theme="dark"] .highcharts-menu-item:hover {
-  background-color: #3a3a4e;
-  color: #ffffff;
-}
-[data-theme="dark"] .highcharts-menu-item-title {
-  color: #cccccc;
+  border: none;
 }
