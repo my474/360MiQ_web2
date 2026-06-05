@@ -214,85 +214,73 @@ function applyHighchartsTheme(isDark) {
   Highcharts.setOptions(isDark ? highchartsDarkTheme : highchartsLightTheme);
   if (Highcharts.charts && Highcharts.charts.length) {
     var opts = getHighchartsThemeOptions();
-    /* Update chart-level options first (colors, axes, etc.) */
+    /* Update chart-level options only (no navigator — it would destroy
+       navigator+scrollbar on StockChart sub-charts) */
     for (var i = 0; i < Highcharts.charts.length; i++) {
       var ch = Highcharts.charts[i];
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
       }
     }
-    /* Then patch scrollbars — chart.update() can break the scrollbar reference
-       on StockChart sub-charts, so find it via the navigator if needed. */
+    /* Patch navigator and scrollbar in-place */
     for (var i = 0; i < Highcharts.charts.length; i++) {
-      themeScrollbar(Highcharts.charts[i], isDark);
+      themeNavScrollbar(Highcharts.charts[i], isDark);
     }
   }
 }
 
-/* Patch scrollbar SVG colors in-place. chart.update() can break the
-   ch.scrollbar reference on sub-charts, so we fall back to finding
-   the scrollbar group from the chart's container element by class. */
-function themeScrollbar(ch, isDark) {
-  if (!ch) return;
+/* Patch navigator & scrollbar SVG in-place. chart.update() with navigator
+   options destroys the navigator (and its scrollbar) on StockChart sub-charts. */
+function themeNavScrollbar(ch, isDark) {
+  if (!ch || !ch.container) return;
   var bg   = isDark ? '#2a2a3e' : '#f0f0f0';
   var edge = isDark ? '#444' : '#ccc';
   var arr  = isDark ? '#aaa' : '#333';
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
+  var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
 
-  /* Update via Highcharts object API if still alive */
-  var sb = ch.scrollbar;
-  if ((!sb || !sb.group) && ch.navigator && ch.navigator.scrollbar) {
-    sb = ch.navigator.scrollbar;
-  }
-  if (sb && sb.group) {
-    sb.update({
-      barBackgroundColor: bg, barBorderColor: edge,
-      buttonBackgroundColor: bg, buttonArrowColor: arr,
-      rifleColor: arr, trackBackgroundColor: trBg, trackBorderColor: edge
-    });
-  }
+  try {
+    var el = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (!el) return;
 
-  /* Find the scrollbar SVG group from the DOM — survives update() */
-  var g;
-  if (sb && sb.group) {
-    g = sb.group.element || sb.group;
-  }
-  if (!g) {
-    try {
-      var all = document.querySelectorAll('.highcharts-scrollbar-group, [class*="scrollbar"]');
-      var containerId = ch.container || (ch.options && ch.options.chart && ch.options.chart.renderTo);
-      if (containerId) {
-        var el = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
-        if (el) {
-          for (var gi = 0; gi < all.length; gi++) {
-            if (el.contains(all[gi])) { g = all[gi]; break; }
+    /* Walk all SVG elements in the chart container, patching by role */
+    var walk = function(el) {
+      if (!el || !el.setAttribute) return;
+      var t = (el.tagName || '').toLowerCase();
+      var c = (el.getAttribute('class') || '');
+      var s = function(a, v) { try { el.setAttribute(a, v); } catch(e) {} };
+
+      if (t === 'rect') {
+        if (c.indexOf('navigator') !== -1 || c.indexOf('mask') !== -1) {
+          if (c.indexOf('handle') !== -1) { s('fill', bg); s('stroke', edge); }
+          else if (c.indexOf('outline') !== -1) { s('stroke', edge); }
+          else { s('fill', mask); }
+        }
+        else if (c.indexOf('scrollbar') !== -1) {
+          if (c.indexOf('track') !== -1) { s('fill', trBg); s('stroke', edge); }
+          else { s('fill', bg); s('stroke', edge); }
+        }
+        else if (c.indexOf('range') !== -1) {
+          var parent = el.parentNode;
+          if (parent) {
+            var pc = (parent.getAttribute && parent.getAttribute('class')) || '';
+            if (pc.indexOf('button') !== -1) { s('fill', bg); s('stroke', edge); }
           }
         }
       }
-    } catch(e) {}
-  }
-  if (!g) return;
+      else if (t === 'path') {
+        if (c.indexOf('scrollbar') !== -1) {
+          var d = (el.getAttribute('d') || '');
+          if (d.length > 60) { s('stroke', arr); }
+          else { s('fill', arr); s('stroke', arr); }
+        }
+      }
 
-  var walk = function(el) {
-    if (!el || !el.getAttribute) return;
-    var t = (el.tagName || '').toLowerCase();
-    var c = (el.getAttribute('class') || '');
-    var s = function(a, v) { try { el.setAttribute(a, v); } catch(e) {} };
-
-    if (t === 'path') {
-      var d = (el.getAttribute('d') || '');
-      if (d.length > 60) { s('stroke', arr); }
-      else { s('fill', arr); s('stroke', arr); }
-    }
-    else if (t === 'rect') {
-      if (c.indexOf('track') !== -1) { s('fill', trBg); s('stroke', edge); }
-      else { s('fill', bg); s('stroke', edge); }
-    }
-
-    var kids = el.childNodes || el.children;
-    if (kids) { for (var i = 0; i < kids.length; i++) { walk(kids[i]); } }
-  };
-  walk(g);
+      var kids = el.childNodes || el.children;
+      if (kids) { for (var i = 0; i < kids.length; i++) { walk(kids[i]); } }
+    };
+    walk(el);
+  } catch(e) {}
 }
 
 /* ---- per-instance options helper ---- */
@@ -339,18 +327,6 @@ function getHighchartsThemeOptions() {
       backgroundColor: dark ? '#2a2a2a' : '#FFFFFF',
       style:           { color: dark ? '#e8e8e8' : '#333333' },
       borderColor:     dark ? '#444' : '#ccc'
-    },
-    navigator: {
-      maskFill: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.15)',
-      handles: {
-        backgroundColor: dark ? '#2a2a3e' : '#eee',
-        borderColor: dark ? '#555' : '#777'
-      },
-      outlineColor: dark ? '#555' : '#ccc',
-      xAxis: {
-        gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
-        labels: { style: { color: dark ? '#888' : '#555' } }
-      }
     },
     rangeSelector: {
       buttonTheme: {
