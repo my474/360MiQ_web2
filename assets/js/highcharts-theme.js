@@ -212,27 +212,47 @@ var highchartsDarkTheme = {
 function applyHighchartsTheme(isDark) {
   if (typeof Highcharts === 'undefined') return;
   Highcharts.setOptions(isDark ? highchartsDarkTheme : highchartsLightTheme);
-  var scrollbarTheme = {
-    barBackgroundColor:  isDark ? '#2a2a3e' : '#f0f0f0',
-    barBorderColor:      isDark ? '#444' : '#ccc',
-    buttonBackgroundColor: isDark ? '#2a2a3e' : '#f0f0f0',
-    buttonArrowColor:    isDark ? '#aaa' : '#333',
-    rifleColor:          isDark ? '#aaa' : '#333',
-    trackBackgroundColor: isDark ? '#1a1a2e' : '#e6e6e6',
-    trackBorderColor:    isDark ? '#444' : '#ccc'
-  };
   if (Highcharts.charts && Highcharts.charts.length) {
     var opts = getHighchartsThemeOptions();
     Highcharts.charts.forEach(function(ch) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
-        /* Scrollbar: chart.update() doesn't propagate scrollbar theme options to
-           already-rendered scrollbars on StockChart sub-charts. Update directly. */
-        if (ch.scrollbar && ch.scrollbar.update) {
-          try { ch.scrollbar.update(scrollbarTheme); } catch(e) {}
-        }
+        /* Scrollbar: chart.update() doesn't re-render already-created scrollbar
+           SVG elements on StockChart sub-charts (only the first chart works).
+           Directly update each chart's scrollbar colors via its SVG group. */
+        themeScrollbar(ch, isDark);
       }
     });
+  }
+}
+
+/* Directly update scrollbar SVG elements — chart.update() doesn't propagate
+   scrollbar options to already-rendered scrollbars on StockChart sub-charts. */
+function themeScrollbar(ch, isDark) {
+  var scrollbar = ch.scrollbar;
+  if (!scrollbar || !scrollbar.group) return;
+
+  var barBg       = isDark ? '#2a2a3e' : '#f0f0f0';
+  var barBorder   = isDark ? '#444' : '#ccc';
+  var btnArrow    = isDark ? '#aaa' : '#333';
+  var rifle       = isDark ? '#aaa' : '#333';
+  var trackBg     = isDark ? '#1a1a2e' : '#e6e6e6';
+  var trackBorder = isDark ? '#444' : '#ccc';
+
+  /* Update the scrollbar's own options */
+  scrollbar.update({
+    barBackgroundColor:   barBg,
+    barBorderColor:       barBorder,
+    buttonArrowColor:     btnArrow,
+    rifleColor:           rifle,
+    trackBackgroundColor: trackBg,
+    trackBorderColor:     trackBorder
+  });
+
+  /* Force re-render of the scrollbar group.
+     scrollbar.render() redraws the SVG elements from the updated options. */
+  if (scrollbar.render) {
+    scrollbar.render();
   }
 }
 
