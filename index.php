@@ -1630,6 +1630,13 @@ function adsBlocked(callback){
     document.documentElement.addEventListener('themechange', function () {
         /* small delay so the widget script's CDN/iframe cleanup doesn't race */
         setTimeout(initTVWidget, 100);
+        /* keep the copyright at the bottom; widget sometimes moves it to top */
+        setTimeout(function() {
+            var container = document.getElementById('TVWidget');
+            if (!container) return;
+            var copyright = container.querySelector('.tradingview-widget-copyright');
+            if (copyright) container.appendChild(copyright);
+        }, 2000);
     });
     </script>
     <!-- TradingView Widget END -->    
