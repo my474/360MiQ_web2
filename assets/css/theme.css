@@ -451,9 +451,13 @@
   color: #cccccc !important;
 }
 
-[data-theme="dark"] *[style*="color:#007bff"],
-[data-theme="dark"] *[style*="color:'#007bff'"],
-[data-theme="dark"] *[style*='color:"#007bff"'] {
+/* ============================
+   #007bff LINK COLOR — brighter in dark mode
+   ============================ */
+
+[data-theme="dark"] .code-link,
+[data-theme="dark"] .code-link2,
+[data-theme="dark"] .showNote {
   color: #6ea8ff !important;
 }
 
