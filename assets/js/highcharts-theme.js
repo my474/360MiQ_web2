@@ -218,11 +218,40 @@ function applyHighchartsTheme(isDark) {
     Highcharts.charts.forEach(function(ch) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
-        /* scrollbar doesn't re-render from chart.update(), so force the
-           navigator to redraw — this picks up the new theme colors */
+        /* update scrollbar colors by patching its rendered SVG elements */
         try {
-          if (ch.navigator && ch.navigator.render) {
-            ch.navigator.render();
+          var dark = isDark;
+          var svg = ch.container && ch.container.querySelector('svg');
+          if (!svg) return;
+          var sbGroups = svg.querySelectorAll('g');
+          for (var si = 0; si < sbGroups.length; si++) {
+            var g = sbGroups[si];
+            if ((g.getAttribute('class') || '').indexOf('highcharts-scrollbar') === -1) continue;
+            g.querySelectorAll('rect').forEach(function(r) {
+              var rc = r.getAttribute('class') || '';
+              if (rc.indexOf('highcharts-scrollbar-background') !== -1) {
+                r.setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
+                r.setAttribute('stroke', dark ? '#444' : '#ccc');
+              } else if (rc.indexOf('highcharts-scrollbar-track') !== -1) {
+                r.setAttribute('fill', dark ? '#1a1a2e' : '#e6e6e6');
+                r.setAttribute('stroke', dark ? '#444' : '#ccc');
+              } else if (rc.indexOf('highcharts-scrollbar-rifle') !== -1) {
+                r.setAttribute('fill', dark ? '#aaa' : '#333');
+              } else if (rc.indexOf('highcharts-scrollbar-button') !== -1) {
+                r.setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
+              } else {
+                r.setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
+              }
+            });
+            g.querySelectorAll('path').forEach(function(p) {
+              var pc = p.getAttribute('class') || '';
+              if (pc.indexOf('highcharts-scrollbar-arrow') !== -1) {
+                p.setAttribute('stroke', dark ? '#aaa' : '#333');
+              } else {
+                p.setAttribute('stroke', dark ? '#aaa' : '#333');
+              }
+              p.setAttribute('fill', 'none');
+            });
           }
         } catch(e2) {}
       }
