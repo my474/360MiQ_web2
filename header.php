@@ -64,9 +64,9 @@
       <!-- li class="nav-item">
         <a class="nav-link" href="/blog/wp-login.php" target="_blank"><i class="fa-solid fa-pen-clip fa-xl" title="Analysis Contributor Login/Register&#10;&#10;Free Sign-up for Everyone!"></i></a>
       </li-->
-      <li class="nav-item">
+      <!--li class="nav-item">
         <a class="nav-link" href="https://play.google.com/store/apps/details?id=com.miq360" target="_blank"><img src="assets/img/googleplay_play_logo_icon.png" alt="Get it on Google Play" title="Get it on Google Play" width="22" height="22"></a>
-      </li>
+      </li-->
       <!-- theme toggle -->
       <li class="nav-item">
         <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode">☀</a>
