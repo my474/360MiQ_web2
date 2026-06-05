@@ -350,15 +350,8 @@ function getHighchartsThemeOptions() {
         labels: { style: { color: dark ? '#888' : '#555' } }
       }
     },
-    scrollbar: {
-      barBackgroundColor:  dark ? '#2a2a3e' : '#f0f0f0',
-      barBorderColor:      dark ? '#444' : '#ccc',
-      buttonBackgroundColor: dark ? '#2a2a3e' : '#f0f0f0',
-      buttonArrowColor:    dark ? '#aaa' : '#333',
-      rifleColor:          dark ? '#aaa' : '#333',
-      trackBackgroundColor: dark ? '#1a1a2e' : '#e6e6e6',
-      trackBorderColor:    dark ? '#444' : '#ccc'
-    },
+    /* scrollbar NOT included — chart.update() may destroy it on StockChart
+       sub-charts. It is patched in-place by themeScrollbar() instead. */
     rangeSelector: {
       buttonTheme: {
         fill: dark ? '#2a2a3e' : '#f0f0f0',
