@@ -7,17 +7,21 @@
 
 function exportMenuStyle(dark) {
   return {
-    menuStyle: {
-      background: dark ? '#2a2a3e' : '#ffffff',
-      border: dark ? '1px solid #3a3a4e' : '1px solid #ccc',
-      color: dark ? '#cccccc' : '#333333'
-    },
-    menuItemStyle: {
-      background: 'transparent',
-      color: dark ? '#cccccc' : '#333333'
-    },
     buttons: {
       contextButton: {
+        menuStyle: {
+          background: dark ? '#2a2a3e' : '#ffffff',
+          border: dark ? '1px solid #3a3a4e' : '1px solid #ccc',
+          color: dark ? '#cccccc' : '#333333'
+        },
+        menuItemStyle: {
+          background: 'transparent',
+          color: dark ? '#cccccc' : '#333333'
+        },
+        menuItemHoverStyle: {
+          background: dark ? '#3a3a4e' : '#e6e6e6',
+          color: dark ? '#ffffff' : '#333333'
+        },
         symbolFill: dark ? '#cccccc' : '#303030',
         theme: {
           fill: dark ? '#2a2a3e' : '#ffffff',
