@@ -421,6 +421,17 @@
 }
 
 /* ============================
+   NOTEWRAPPER — dark mode
+   ============================ */
+
+[data-theme="dark"] .noteWrapper {
+  color: var(--text-secondary) !important;
+}
+[data-theme="dark"] .noteWrapper.collapsed::after {
+  background: linear-gradient(to bottom, rgba(26, 26, 46, 0), rgba(26, 26, 46, 1)) !important;
+}
+
+/* ============================
    GREEN / RED / BLACK TEXT — brighter in dark mode
    ============================ */
 
