@@ -487,13 +487,17 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
 }
 
 /* ---- redraw all treemaps on theme change without page refresh ---- */
-document.addEventListener('themechange', function() {
+document.documentElement.addEventListener('themechange', function() {
     var containers = document.querySelectorAll('[id^="chartcontainer"]');
     for (var i = 0; i < containers.length; i++) {
         var el = containers[i];
         if (el._treemapArgs) {
             el.innerHTML = '';
-            treemap.apply(null, el._treemapArgs);
+            (function(args) {
+                setTimeout(function() {
+                    treemap.apply(null, args);
+                }, 50);
+            })(el._treemapArgs);
         }
     }
 });
