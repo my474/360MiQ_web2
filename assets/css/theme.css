@@ -481,41 +481,28 @@
 }
 
 /* ============================
-   NAV TABS — dark mode (mynav-link / nl tabs)
+   HIGHCHARTS CONTEXT MENU — dark mode
    ============================ */
 
-/* ============================
-   NAV TABS — dark mode (mynav-link / nl tabs)
-   ============================ */
-
-[data-theme="dark"] .nav-tabs .nav-link.active {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  border-color: var(--border-color) var(--border-color) transparent;
+[data-theme="dark"] .highcharts-context-button {
+  fill: #cccccc;
+}
+[data-theme="dark"] .highcharts-context-button:hover {
+  fill: #ffffff;
 }
 
-[data-theme="dark"] .nav-tabs .nav-link:not(.active) {
-  background-color: transparent;
-  color: var(--text-muted);
-  border-color: transparent transparent var(--border-color);
+[data-theme="dark"] .highcharts-menu {
+  background-color: #2a2a3e;
+  border: 1px solid #3a3a4e;
 }
-
-[data-theme="dark"] .nav-tabs .nav-link:not(.active):hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
-  border-color: var(--border-color) var(--border-color) var(--border-color);
+[data-theme="dark"] .highcharts-menu-item {
+  color: #cccccc;
+  background: transparent;
 }
-
-[data-theme="dark"] .nav-pills .nav-link.active {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
+[data-theme="dark"] .highcharts-menu-item:hover {
+  background-color: #3a3a4e;
+  color: #ffffff;
 }
-
-[data-theme="dark"] .nav-pills .nav-link:not(.active) {
-  color: var(--text-muted);
-}
-
-[data-theme="dark"] .nav-pills .nav-link:not(.active):hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
+[data-theme="dark"] .highcharts-menu-item-title {
+  color: #cccccc;
 }
