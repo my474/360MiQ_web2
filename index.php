@@ -1644,7 +1644,7 @@ function adsBlocked(callback){
                 container.appendChild(cr);
                 cr.style.display = '';
             }
-        }, 2000);
+        }, 1000);
     });
     </script>
     <!-- TradingView Widget END -->    
