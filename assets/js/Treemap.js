@@ -420,6 +420,12 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
     // initiate chart drawing
     chart.draw();
 
+    // store render params so treemap can be redrawn on theme change
+    var el = document.getElementById(container);
+    if (el) {
+        el._treemapArgs = [data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMobile, highlight];
+    }
+
     $('#' + container).on('mouseleave', function(){
         for (var i = Highcharts.charts.length - 1; i >= 0; i--) {
             var chart = Highcharts.charts[i];
@@ -475,7 +481,19 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                     break;
                 }
             }
-            
+
         });
     }
 }
+
+/* ---- redraw all treemaps on theme change without page refresh ---- */
+document.addEventListener('themechange', function() {
+    var containers = document.querySelectorAll('[id^="chartcontainer"]');
+    for (var i = 0; i < containers.length; i++) {
+        var el = containers[i];
+        if (el._treemapArgs) {
+            el.innerHTML = '';
+            treemap.apply(null, el._treemapArgs);
+        }
+    }
+});
