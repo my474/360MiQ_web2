@@ -218,40 +218,32 @@ function applyHighchartsTheme(isDark) {
     Highcharts.charts.forEach(function(ch) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
-        /* update scrollbar colors by patching its rendered SVG elements */
+        /* scrollbar doesn't re-render from chart.update(). Find and
+           update its rendered SVG elements for all charts including
+           off-screen ones by searching the chart's container div */
         try {
           var dark = isDark;
-          var svg = ch.container && ch.container.querySelector('svg');
-          if (!svg) return;
-          var sbGroups = svg.querySelectorAll('g');
-          for (var si = 0; si < sbGroups.length; si++) {
-            var g = sbGroups[si];
-            if ((g.getAttribute('class') || '').indexOf('highcharts-scrollbar') === -1) continue;
-            g.querySelectorAll('rect').forEach(function(r) {
-              var rc = r.getAttribute('class') || '';
-              if (rc.indexOf('highcharts-scrollbar-background') !== -1) {
-                r.setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
-                r.setAttribute('stroke', dark ? '#444' : '#ccc');
-              } else if (rc.indexOf('highcharts-scrollbar-track') !== -1) {
-                r.setAttribute('fill', dark ? '#1a1a2e' : '#e6e6e6');
-                r.setAttribute('stroke', dark ? '#444' : '#ccc');
-              } else if (rc.indexOf('highcharts-scrollbar-rifle') !== -1) {
-                r.setAttribute('fill', dark ? '#aaa' : '#333');
-              } else if (rc.indexOf('highcharts-scrollbar-button') !== -1) {
-                r.setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
-              } else {
-                r.setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
-              }
-            });
-            g.querySelectorAll('path').forEach(function(p) {
-              var pc = p.getAttribute('class') || '';
-              if (pc.indexOf('highcharts-scrollbar-arrow') !== -1) {
-                p.setAttribute('stroke', dark ? '#aaa' : '#333');
-              } else {
-                p.setAttribute('stroke', dark ? '#aaa' : '#333');
-              }
-              p.setAttribute('fill', 'none');
-            });
+          var cont = ch.container;
+          if (!cont) return;
+          /* walk the full DOM tree inside the container looking for
+             scrollbar groups — use getElementsByTagName which is more
+             reliable for SVG in display:none containers than qSA */
+          var allEls = cont.getElementsByTagName('g');
+          for (var i = 0; i < allEls.length; i++) {
+            var g = allEls[i];
+            var cls = g.getAttribute('class') || '';
+            if (cls.indexOf('scrollbar') === -1) continue;
+            /* patch every rect and path anywhere under this group */
+            var allRect = g.getElementsByTagName('rect');
+            for (var ri = 0; ri < allRect.length; ri++) {
+              allRect[ri].setAttribute('fill', dark ? '#2a2a3e' : '#f0f0f0');
+              allRect[ri].setAttribute('stroke', dark ? '#444' : '#ccc');
+            }
+            var allPath = g.getElementsByTagName('path');
+            for (var pi = 0; pi < allPath.length; pi++) {
+              allPath[pi].setAttribute('stroke', dark ? '#aaa' : '#333');
+              allPath[pi].setAttribute('fill', 'none');
+            }
           }
         } catch(e2) {}
       }
