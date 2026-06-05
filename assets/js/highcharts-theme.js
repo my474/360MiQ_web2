@@ -311,6 +311,18 @@ function getHighchartsThemeOptions() {
       style:           { color: dark ? '#e8e8e8' : '#333333' },
       borderColor:     dark ? '#444' : '#ccc'
     },
+    navigator: {
+      maskFill: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.15)',
+      handles: {
+        backgroundColor: dark ? '#2a2a3e' : '#eee',
+        borderColor: dark ? '#555' : '#777'
+      },
+      outlineColor: dark ? '#555' : '#ccc',
+      xAxis: {
+        gridLineColor: dark ? '#2e2e2e' : '#e6e6e6',
+        labels: { style: { color: dark ? '#888' : '#555' } }
+      }
+    },
     rangeSelector: {
       buttonTheme: {
         fill: dark ? '#2a2a3e' : '#f0f0f0',
