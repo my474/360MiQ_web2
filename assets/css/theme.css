@@ -415,6 +415,10 @@
 [data-theme="dark"] div[id^="featuredposttitle"] p {
   color: #e8e8e8;
 }
+[data-theme="dark"] div[id^="pinnedposttitle"] {
+  background: rgba(30, 30, 50, 0.9) !important;
+  color: #e8e8e8 !important;
+}
 
 /* ============================
    GREEN / RED / BLACK TEXT — brighter in dark mode
