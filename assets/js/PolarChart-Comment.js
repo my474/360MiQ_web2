@@ -487,12 +487,17 @@ function pchart(stockcode, stockArray, industryArray, isIE)
       document.addEventListener('themechange', function() {
         var args = window._polarArgs;
         if (args) {
+          var old = window._polarChart;
+          if (old && old.destroy) { try { old.destroy(); } catch(e) {} }
           var container = document.getElementById('polarcontainer');
           if (container) { container.innerHTML = ''; }
-          window._polarChart = pchart.apply(null, args);
+          setTimeout(function() {
+            window._polarChart = pchart.apply(null, args);
+          }, 30);
         }
       });
     }
+    window._polarChart = polarchart;
     window._polarArgs = [stockcode, stockArray, industryArray, isIE];
 
     return polarchart;
