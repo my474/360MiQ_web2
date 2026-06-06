@@ -1,4 +1,4 @@
-/* ---- PolarChart colour helpers ---- */
+/* ---- PolarChart colour helper ---- */
 function polarTheme() {
   var dark = document.documentElement.getAttribute('data-theme') === 'dark';
   return {
@@ -7,44 +7,6 @@ function polarTheme() {
     bandEven:      dark ? '#2a2a3e' : '#ffffff',
     bandOdd:       dark ? '#1e1e32' : '#f5f5ff'
   };
-}
-
-function polarUpdate(ch) {
-  if (!ch) return;
-  var t = polarTheme();
-
-  /* Patch SVG background rect directly */
-  try {
-    var el = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
-    if (el) {
-      var rects = el.querySelectorAll('rect.highcharts-background');
-      for (var i = 0; i < rects.length; i++) {
-        rects[i].setAttribute('fill', t.dark ? '#1e1e32' : '#ffffff');
-      }
-    }
-  } catch(e) {}
-
-  /* Update via Highcharts API for gridlines, bands, labels */
-  ch.update({
-    chart: { backgroundColor: t.dark ? '#1e1e32' : '#ffffff' },
-    xAxis: {
-      gridLineColor: t.gridLineColor,
-      labels: { style: { color: t.dark ? '#cccccc' : '#333333' } }
-    },
-    yAxis: {
-      gridLineColor: t.dark ? '#2a2a3e' : '#f0f0ff',
-      plotBands: [
-        { from: 0, to: 1, color: t.bandOdd },
-        { from: 1, to: 2, color: t.bandEven },
-        { from: 2, to: 3, color: t.bandOdd },
-        { from: 3, to: 4, color: t.bandEven },
-        { from: 4, to: 5, color: t.bandOdd }
-      ]
-    }
-  }, true, false);
-
-  /* Re-render plot bands by forcing redraw */
-  try { if (ch.redraw) ch.redraw(); else if (ch.reflow) ch.reflow(); } catch(e) {}
 }
 
 function polarComment(polarArray)
@@ -519,14 +481,19 @@ function pchart(stockcode, stockArray, industryArray, isIE)
         }, true);
     }
 
-    /* ---- live theme toggle ---- */
-    window._polarChart = polarchart;
+    /* ---- live theme toggle: destroy & recreate ---- */
     if (!window._polarBound) {
       window._polarBound = true;
       document.addEventListener('themechange', function() {
-        polarUpdate(window._polarChart);
+        var args = window._polarArgs;
+        if (args) {
+          var container = document.getElementById('polarcontainer');
+          if (container) { container.innerHTML = ''; }
+          window._polarChart = pchart.apply(null, args);
+        }
       });
     }
+    window._polarArgs = [stockcode, stockArray, industryArray, isIE];
 
     return polarchart;
 }

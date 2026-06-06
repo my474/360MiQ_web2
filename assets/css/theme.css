@@ -614,8 +614,3 @@
   color: #cccccc;
 }
 
-/* -- Polar chart SVG background (stockinfo.php) -- */
-[data-theme="dark"] #polarcontainer .highcharts-background {
-  fill: #1e1e32 !important;
-}
-
