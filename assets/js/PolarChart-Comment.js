@@ -12,6 +12,19 @@ function polarTheme() {
 function polarUpdate(ch) {
   if (!ch) return;
   var t = polarTheme();
+
+  /* Patch SVG background rect directly */
+  try {
+    var el = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (el) {
+      var rects = el.querySelectorAll('rect.highcharts-background');
+      for (var i = 0; i < rects.length; i++) {
+        rects[i].setAttribute('fill', t.dark ? '#1e1e32' : '#ffffff');
+      }
+    }
+  } catch(e) {}
+
+  /* Update via Highcharts API for gridlines, bands, labels */
   ch.update({
     chart: { backgroundColor: t.dark ? '#1e1e32' : '#ffffff' },
     xAxis: {
@@ -29,6 +42,9 @@ function polarUpdate(ch) {
       ]
     }
   }, true, false);
+
+  /* Re-render plot bands by forcing redraw */
+  try { if (ch.redraw) ch.redraw(); else if (ch.reflow) ch.reflow(); } catch(e) {}
 }
 
 function polarComment(polarArray)
