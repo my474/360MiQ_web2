@@ -91,6 +91,9 @@
   --chart-anychart-bg: #888;
 }
 
+/* ---- chart legend rows (HK property table) ---- */
+.legend-row { background: #fff; }
+
 [data-theme="dark"] {
   /* ---------- Backgrounds ---------- */
   --bg-primary: #1a1a2e;
@@ -542,3 +545,67 @@
   background: #3a3a4e !important;
   border-top: 1px solid #3a3a4e !important;
 }
+
+/* ---- legend rows in HK property table ---- */
+.legend-row { background: #fff; }
+[data-theme="dark"] .legend-row { background: #1e1e32; }
+
+/* ============================
+   Inline #f9f9f9 backgrounds — dark mode override
+   Used in stockinfo.php for performance table cells,
+   peer table alternating rows, and clean cards.
+   ============================ */
+[data-theme="dark"] *[style*="background-color:#f9f9f9"],
+[data-theme="dark"] *[style*="background-color: #f9f9f9"],
+[data-theme="dark"] *[style*='background-color:#f9f9f9'],
+[data-theme="dark"] *[style*='background-color: #f9f9f9'],
+[data-theme="dark"] *[style*="rgb(249, 249, 249)"] {
+  background-color: #2a2a3e !important;
+}
+
+/* -- stockinfo.php: table cells with #ecf6fc highlighting -- */
+[data-theme="dark"] *[style*="background-color:#ecf6fc"],
+[data-theme="dark"] *[style*="background-color: #ecf6fc"],
+[data-theme="dark"] *[style*='background-color:#ecf6fc'],
+[data-theme="dark"] *[style*='background-color: #ecf6fc'] {
+  background-color: #1e1e32 !important;
+}
+
+/* -- stockinfo.php: inner div background-color:white (not SVG rect fills) -- */
+[data-theme="dark"] div[style*="background-color:white"],
+[data-theme="dark"] div[style*="background-color: white"] {
+  background-color: #2a2a3e !important;
+}
+
+/* -- Price card header gradients (stockinfo.php) --
+     Up:   light green  → dark green
+     Down: light red    → dark red
+     Flat: light beige  → dark neutral
+     Browser serialises hex to rgb(), so match both forms.
+  -- */
+[data-theme="dark"] *[style*="#FFE0E0"],
+[data-theme="dark"] *[style*="rgb(255, 224, 224)"],
+[data-theme="dark"] *[style*="rgb(255,247,246)"] {
+  background-image: linear-gradient(#3e1a1a, #2a1a2e, #3e1a1a) !important;
+}
+[data-theme="dark"] *[style*="rgb(221, 243, 170)"],
+[data-theme="dark"] *[style*="rgb(255, 255, 224)"],
+[data-theme="dark"] *[style*="#ddf3aa"],
+[data-theme="dark"] *[style*="#ffffe0"] {
+  background-image: linear-gradient(#1a3e1a, #1e2a2e, #1a3e1a) !important;
+}
+[data-theme="dark"] *[style*="rgb(233, 233, 233)"],
+[data-theme="dark"] *[style*="rgb(255, 255, 251)"],
+[data-theme="dark"] *[style*="rgb(243, 243, 201)"],
+[data-theme="dark"] *[style*="rgb(255, 255, 233)"],
+[data-theme="dark"] *[style*="#e9e9e9, #Fffffb, #e9e9e9"],
+[data-theme="dark"] *[style*="#F3f3c9"] {
+  background-image: linear-gradient(#2a2a3e, #1a1a2e, #2a2a3e) !important;
+}
+
+/* -- Range chart SVG backgrounds (stockinfo.php card header) -- */
+[data-theme="dark"] #rangecontainer .highcharts-background,
+[data-theme="dark"] #volrangecontainer .highcharts-background {
+  fill: #2a2a3e !important;
+}
+

@@ -2191,6 +2191,8 @@ function maincontent(result)
                         document.getElementById("cardheader-subtext").innerHTML = '<i class="fas fa-dot-circle"  style="color:darkgrey"></i> - (-%)';
                         //document.getElementById("priceinfo").style.backgroundColor = "#F3f3c9";
                         document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#F3f3c9, #Ffffe9, #F3f3c9)";
+                        if (document.documentElement.getAttribute('data-theme') === 'dark')
+                            document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#2a2a3e, #1a1a2e, #2a2a3e)";
                     }
                 }
                 else if (i < 250) // don't use longMAperiod instead of 250
@@ -2211,21 +2213,27 @@ function maincontent(result)
                             document.getElementById("cardheader-subtext").innerHTML = '<i class="fas fa-arrow-alt-circle-up" style="color:green"></i> +' + rounding(change, 10000) + ' (+' + chgpercent + '%)';
                             //document.getElementById("priceinfo").style.backgroundColor = "#ddf388";
                             document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#ddf3aa, #ffffe0, #ddf3aa)";
+                            if (document.documentElement.getAttribute('data-theme') === 'dark')
+                                document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#1a3e1a, #1e2a2e, #1a3e1a)";
                         }
                         else if (change < 0)
                         {
                             document.getElementById("cardheader-subtext").innerHTML = '<i class="fas fa-arrow-alt-circle-down" style="color:red"></i> ' + rounding(change, 10000) + ' ('+ chgpercent +'%)';
                             //document.getElementById("priceinfo").style.backgroundColor = "#FFE7E6";
                             document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#FFE0E0, #FFf7f6, #FFE0E0)";
+                            if (document.documentElement.getAttribute('data-theme') === 'dark')
+                                document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#3e1a1a, #2a1a2e, #3e1a1a)";
                         }
                         else
                         {
                             document.getElementById("cardheader-subtext").innerHTML = '<i class="fas fa-dot-circle"  style="color:darkgrey"></i> \u00B1' + rounding(change, 10000) + ' (\u00B1'+ chgpercent +'%)';
                             //document.getElementById("priceinfo").style.backgroundColor = "#F3f3c9";
                             document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#F3f3c9, #Ffffe9, #F3f3c9)";
+                            if (document.documentElement.getAttribute('data-theme') === 'dark')
+                                document.getElementById("priceinfo").style.backgroundImage = "linear-gradient(#2a2a3e, #1a1a2e, #2a2a3e)";
                         }
                     }
-    
+
                     if (low250 > parseFloat(myList[i][3]))
                         low250 = parseFloat(myList[i][3]);
                     

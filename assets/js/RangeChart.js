@@ -1,4 +1,8 @@
 function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, high50, lastprice, lastyearendprice, ma50, ma250, lastpricetxt, lastyearendpricetxt, ma50txt, ma250txt, range50txt, range250txt, color50a, color50b, color250a, color250b, ma50color, ma250color) {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (dark && (backgroundColor === '#f9f9f9' || backgroundColor === '#ffffff')) {
+      backgroundColor = '#2a2a3e';
+    }
     (function (H) {
 /*        if (low250 >= 10)
             low250 = Math.floor(low250 * 10) / 10;
@@ -217,7 +221,7 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
             itemStyle: {
               //font: '7pt Trebuchet MS, Verdana, sans-serif',
               font: '7.5pt Montserrat',
-              color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#cccccc' : '#606060',
+              color: dark ? '#cccccc' : '#606060',
               cursor: 'default'
             },
             symbolPadding: 0,
@@ -231,10 +235,13 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
                     if (lastpricetxt == "Price")
                     {
                         space = '6.2em';
-                        return '<span style="font-weight:500;color:' + this.color + ';">' + '▼ </span><span style="font-weight:500;color:white;background:' + this.color + ';">' + this.name +': ' + this.yData[0] + '</span><span style="font-weight:500;"><font color="'+ma250color+'" style="padding-left:'+space+'">▼ ' + ma250txt + ': '+ ma250+ '</font><font color="'+color250a+'" style="padding-left:2em">█</font> <font color="#606060">'+range250txt + '</span>';
+                        var mute = dark ? '#cccccc' : '#606060';
+                        return '<span style="font-weight:500;color:' + this.color + ';">' + '▼ </span><span style="font-weight:500;color:white;background:' + this.color + ';">' + this.name +': ' + this.yData[0] + '</span><span style="font-weight:500;"><font color="'+ma250color+'" style="padding-left:'+space+'">▼ ' + ma250txt + ': '+ ma250+ '</font><font color="'+color250a+'" style="padding-left:2em">█</font> <font color="'+mute+'">'+range250txt + '</span>';
                     }
-                    else
-                        return '<span style="font-weight:500;color:' + this.color + ';">' + '▼ </span><span style="font-weight:500;color:white;background:' + this.color + ';">' + this.name +': ' + numberformat(this.yData[0]) + '</span><span style="font-weight:500;"><font color="'+ma250color+'" style="padding-left:'+space+'">▼ ' + ma250txt + ': '+numberformat(ma250)+ '</font><font color="'+color250a+'" style="padding-left:2em">█</font> <font color="#606060">'+range250txt + '</span>';
+                    else {
+                        var mute = dark ? '#cccccc' : '#606060';
+                        return '<span style="font-weight:500;color:' + this.color + ';">' + '▼ </span><span style="font-weight:500;color:white;background:' + this.color + ';">' + this.name +': ' + numberformat(this.yData[0]) + '</span><span style="font-weight:500;"><font color="'+ma250color+'" style="padding-left:'+space+'">▼ ' + ma250txt + ': '+numberformat(ma250)+ '</font><font color="'+color250a+'" style="padding-left:2em">█</font> <font color="'+mute+'">'+range250txt + '</span>';
+                    }
                 }
                 if(this.name==lastyearendpricetxt){
                     var txt = ';">' + '▼ ' + this.name +': ' + lastyearendprice;
@@ -245,10 +252,10 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
                         txt = ';">' + '▼ ' + lastpricetxt +': ' + numberformat(lastprice);
                         color = backgroundColor;
                         space = '2em';
-                        return '<span style="font-weight:500;color:' + color + txt + '<font color="'+ma50color+'" style="padding-left:2em">▼ ' + ma50txt + ': '+numberformat(ma50)+ '</font><font color="'+color50a+'" style="padding-left:'+space+'">█</font> <font color="#606060">'+range50txt+'</font></span>';
+                        return '<span style="font-weight:500;color:' + color + txt + '<font color="'+ma50color+'" style="padding-left:2em">▼ ' + ma50txt + ': '+numberformat(ma50)+ '</font><font color="'+color50a+'" style="padding-left:'+space+'">█</font> <font color="'+(dark?'#cccccc':'#606060')+'">'+range50txt+'</font></span>';
                     }
                     else
-                        return '<span style="font-weight:500;color:' + color + txt + '<font color="'+ma50color+'" style="padding-left:2em">▼ ' + ma50txt + ': '+ ma50 + '</font><font color="'+color50a+'" style="padding-left:'+space+'">█</font> <font color="#606060">'+range50txt+'</font></span>';
+                        return '<span style="font-weight:500;color:' + color + txt + '<font color="'+ma50color+'" style="padding-left:2em">▼ ' + ma50txt + ': '+ ma50 + '</font><font color="'+color50a+'" style="padding-left:'+space+'">█</font> <font color="'+(dark?'#cccccc':'#606060')+'">'+range50txt+'</font></span>';
                 }
 
             }   
@@ -263,7 +270,7 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
                 fontSize: '10px',
             },
             padding: 3,
-            backgroundColor: (document.documentElement.getAttribute('data-theme')==='dark'?'rgba(42,42,62,0.93)':'rgba(255,255,255,.93)'),
+            backgroundColor: (dark?'rgba(42,42,62,0.93)':'rgba(255,255,255,.93)'),
             formatter: function () {
                 return '<font color="'+color50a+'">█ </font>'+range50txt+': ' + numberformat(low50) + ' - ' + numberformat(high50) + '<br><font color="'+color250a+'">█ </font>'+range250txt+': ' + numberformat(low250) + ' - ' + numberformat(high250);
             },
