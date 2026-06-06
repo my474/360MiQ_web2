@@ -238,27 +238,59 @@ function themeNavScrollbar(ch, isDark) {
   var arr  = isDark ? '#aaa' : '#333';
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
+  var grid = isDark ? '#2e2e2e' : '#e6e6e6';
+  var hndl = isDark ? '#555' : '#777';
+  var hndlBg = isDark ? '#2a2a3e' : '#eee';
+  var outl = isDark ? '#555' : '#ccc';
 
   try {
+    var containers = [];
     var el = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
-    if (!el) return;
+    if (el) containers.push(el);
 
-    /* Walk all SVG elements in the chart container, patching by role */
-    var walk = function(el) {
+    /* Also walk navigator sub-chart container if it exists (StockChart) */
+    try {
+      var navChart = ch.navigator && ch.navigator.chart;
+      if (navChart && navChart.container) {
+        var navEl = typeof navChart.container === 'string'
+          ? document.getElementById(navChart.container)
+          : navChart.container;
+        if (navEl && containers.indexOf(navEl) === -1) containers.push(navEl);
+      }
+    } catch(e1) {}
+
+    for (var ci = 0; ci < containers.length; ci++) {
+      patchContainer(containers[ci]);
+    }
+
+    function patchContainer(el) {
+      if (!el) return;
+      walk(el);
+    }
+
+    function walk(el) {
       if (!el || !el.setAttribute) return;
       var t = (el.tagName || '').toLowerCase();
       var c = (el.getAttribute('class') || '');
       var s = function(a, v) { try { el.setAttribute(a, v); } catch(e) {} };
 
       if (t === 'rect') {
-        if (c.indexOf('navigator') !== -1 || c.indexOf('mask') !== -1) {
-          if (c.indexOf('handle') !== -1) { s('fill', bg); s('stroke', edge); }
-          else if (c.indexOf('outline') !== -1) { s('stroke', edge); }
-          else { s('fill', mask); }
+        if (c.indexOf('outline') !== -1) {
+          s('stroke', outl);
+        }
+        else if (c.indexOf('handle') !== -1) {
+          s('fill', hndlBg); s('stroke', hndl);
+        }
+        else if (c.indexOf('navigator') !== -1 && c.indexOf('mask') !== -1) {
+          s('fill', mask);
         }
         else if (c.indexOf('scrollbar') !== -1) {
-          if (c.indexOf('track') !== -1) { s('fill', trBg); s('stroke', edge); }
-          else { s('fill', bg); s('stroke', edge); }
+          if (c.indexOf('track') !== -1) { s('fill', trBg); s('stroke', outl); }
+          else if (c.indexOf('button') !== -1) { s('fill', bg); s('stroke', outl); }
+          else { s('fill', bg); s('stroke', outl); }
+        }
+        else if (c.indexOf('navigator') !== -1 && c.indexOf('button') !== -1) {
+          s('fill', bg); s('stroke', outl);
         }
         else if (c.indexOf('range') !== -1) {
           var parent = el.parentNode;
@@ -269,17 +301,32 @@ function themeNavScrollbar(ch, isDark) {
         }
       }
       else if (t === 'path') {
-        if (c.indexOf('scrollbar') !== -1) {
+        if (c.indexOf('handle') !== -1) {
+          s('fill', hndlBg); s('stroke', hndl);
+        }
+        else if (c.indexOf('grid') !== -1) {
+          s('stroke', grid);
+        }
+        else if (c.indexOf('scrollbar') !== -1) {
           var d = (el.getAttribute('d') || '');
           if (d.length > 60) { s('stroke', arr); }
           else { s('fill', arr); s('stroke', arr); }
         }
       }
+      else if (t === 'circle') {
+        if (c.indexOf('handle') !== -1) {
+          s('fill', hndlBg); s('stroke', hndl);
+        }
+      }
+      else if (t === 'line') {
+        if (c.indexOf('navigator') !== -1 && c.indexOf('outline') !== -1) {
+          s('stroke', outl);
+        }
+      }
 
       var kids = el.childNodes || el.children;
       if (kids) { for (var i = 0; i < kids.length; i++) { walk(kids[i]); } }
-    };
-    walk(el);
+    }
   } catch(e) {}
 }
 

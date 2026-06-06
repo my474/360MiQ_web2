@@ -1217,8 +1217,8 @@ function adsBlocked(callback){
                                     <h3 class="sr-only">Hong Kong Residential Price Indices by Class</h3>
                                     <div id="chartcontainerG1" class="not-selectable" style="height: 525px;"></div>
                                     <table style="margin: 0 auto;">
-                                    <tr style="background:white"><td><span style="color:black;font-weight:bold">A</span> - saleable area less than 40 m<sup>2</sup></td><td><span style="color:#8AEC75;font-weight:bold">B</span> - saleable area of 40 m<sup>2</sup> to 69.9 m<sup>2</sup></td><td><span style="color:#F7A35C;font-weight:bold">C</span> - saleable area of 70 m<sup>2</sup> to 99.9 m<sup>2</sup></td></tr>
-                                    <tr style="background:white"><td><span style="color:#767BE7;font-weight:bold">D</span> - saleable area of 100 m<sup>2</sup> to 159.9 m<sup>2</sup></td><td><span style="color:#F04F76;font-weight:bold">E</span> - saleable area of 160 m<sup>2</sup> or above</td><td><span style="color:#7AB4EC;font-weight:bold">Residential</span> - A & B & C & D & E</td></tr>
+                                    <tr style="background:var(--bg-card,#fff)"><td><span style="color:black;font-weight:bold">A</span> - saleable area less than 40 m<sup>2</sup></td><td><span style="color:#8AEC75;font-weight:bold">B</span> - saleable area of 40 m<sup>2</sup> to 69.9 m<sup>2</sup></td><td><span style="color:#F7A35C;font-weight:bold">C</span> - saleable area of 70 m<sup>2</sup> to 99.9 m<sup>2</sup></td></tr>
+                                    <tr style="background:var(--bg-card,#fff)"><td><span style="color:#767BE7;font-weight:bold">D</span> - saleable area of 100 m<sup>2</sup> to 159.9 m<sup>2</sup></td><td><span style="color:#F04F76;font-weight:bold">E</span> - saleable area of 160 m<sup>2</sup> or above</td><td><span style="color:#7AB4EC;font-weight:bold">Residential</span> - A & B & C & D & E</td></tr>
                                     </table>
                                 </div>
                                 <div class="chartNote">
@@ -1918,7 +1918,7 @@ const minGridNum = 3;
 
 // remove Highcharts chart series data to prevent web scraping. if the charts act weird, remove this to restore to normal
 // this is also in Highstock.js
-Highcharts.addEvent(Highcharts.Chart, 'load', function() {
+/*Highcharts.addEvent(Highcharts.Chart, 'load', function() {
     setTimeout(function() {
         try
         {
@@ -1931,7 +1931,7 @@ Highcharts.addEvent(Highcharts.Chart, 'load', function() {
         }
         catch {}
     }, 0);
-});
+});*/
 
 $.ajax({
     url : "db_featuredblogpost_get.php",

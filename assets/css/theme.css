@@ -609,16 +609,3 @@
   fill: #2a2a3e !important;
 }
 
-/* -- Polar chart comment text (stockinfo.php) -- */
-[data-theme="dark"] #comment {
-  color: #cccccc;
-}
-
-/* -- Polar chart SVG background — override Highcharts inline fill -- */
-[data-theme="dark"] #polarcontainer .highcharts-background {
-  fill: #1e1e32 !important;
-}
-[data-theme="light"] #polarcontainer .highcharts-background {
-  fill: #ffffff !important;
-}
-
