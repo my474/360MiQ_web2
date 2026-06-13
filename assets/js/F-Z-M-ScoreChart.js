@@ -462,9 +462,28 @@ function zscore(stockcode, value, industryValue, mrq) {
     }
 }
 
+function fscoreTheme() {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+        dark: dark,
+        chartBg: dark ? '#1e1e32' : '#ffffff',
+        plotBg: dark ? '#2a2a3e' : '#EbF5Fb',
+        plotBorder: dark ? '#3a3a5e' : '#EbF5Fb',
+        axisLine: dark ? '#3a3a5e' : '#EfF9Ff',
+        axisLabel: dark ? '#cccccc' : 'grey',
+        title: dark ? '#e8e8e8' : '#333333',
+        subtitle: dark ? '#b0b0b0' : '#555555',
+        tooltipBg: dark ? 'rgba(42,42,62,1)' : 'rgba(255,255,255,1)',
+        tooltipText: dark ? '#e8e8e8' : '#333333',
+        tick: dark ? '#666699' : '#9f9f9f',
+        legend: dark ? '#cccccc' : '#606060'
+    };
+}
+
 function fscore(stockcode, value, industryValue, mrq) {
     //var value = valuearray.reduce(function(valuearray, b) { return valuearray + b; }, 0);
     //var oldvalue = oldvaluearray.reduce(function(oldvaluearray, b) { return oldvaluearray + b; }, 0);
+    var t = fscoreTheme();
     var scoreLabel = {
         0: '0 worst',
         9: 'best 9'
@@ -476,8 +495,9 @@ function fscore(stockcode, value, industryValue, mrq) {
                 renderTo: 'fscorecontainer',
                 defaultSeriesType: 'bar',
                 plotBorderWidth: 0,
-                plotBackgroundColor: '#EbF5Fb',
-                plotBorderColor: '#EbF5Fb',
+                backgroundColor: t.chartBg,
+                plotBackgroundColor: t.plotBg,
+                plotBorderColor: t.plotBorder,
                 plotShadow: false,
                 //spacingBottom: 43,
                 height: 162,
@@ -490,18 +510,22 @@ function fscore(stockcode, value, industryValue, mrq) {
                 enabled: false
             },
             xAxis: {
-                lineColor: '#EfF9Ff',
+                lineColor: t.axisLine,
                 labels: {
                     enabled: false
                 },
                 tickLength: 0
             },
             title: {
-                text: 'Piotroski F\u2011Score'
+                text: 'Piotroski F\u2011Score',
+                style: {
+                    color: t.title
+                }
             },
             subtitle: {
                 style: {
-                    fontSize: '12px' 
+                    fontSize: '12px',
+                    color: t.subtitle
                 },
                 text: mrq,
                 verticalAlign: 'bottom',
@@ -514,7 +538,7 @@ function fscore(stockcode, value, industryValue, mrq) {
                 labels: {
                     y: 14,
                   	style: {
-                        color: 'grey',
+                        color: t.axisLabel,
                         fontSize:'12px'
                     },
                     formatter: function() {
@@ -531,8 +555,8 @@ function fscore(stockcode, value, industryValue, mrq) {
                 minorTickLength: 4,
                 minorTickWidth: 1,
                 minorGridLineWidth: 0,
-                tickColor: '#9f9f9f',
-                minorTickColor: '#9f9f9f',
+                tickColor: t.tick,
+                minorTickColor: t.tick,
             },
             
             tooltip: {
@@ -540,9 +564,10 @@ function fscore(stockcode, value, industryValue, mrq) {
                 useHTML: true,
                 style: {
                     fontSize: '8px',
+                    color: t.tooltipText
                 },
                 padding: 3,
-                backgroundColor: "rgba(255,255,255,1)",
+                backgroundColor: t.tooltipBg,
                 formatter: function () {
                     var array;
                     if (this.series.name == stockcode)
@@ -573,7 +598,7 @@ function fscore(stockcode, value, industryValue, mrq) {
                 itemStyle: {
                   font: 'Montserrat',
                   fontWeight: 600,
-                  color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#cccccc' : '#606060',
+                  color: t.legend,
                 },
                 // symbol items below will be overridden by seasonality.js
                 symbolWidth: 7,
@@ -666,6 +691,28 @@ function fscore(stockcode, value, industryValue, mrq) {
                 }*/
             }]
         });
+
+        if (!window._fscoreThemeBound) {
+            window._fscoreThemeBound = true;
+            document.documentElement.addEventListener('themechange', function() {
+                var args = window._fscoreArgs;
+                if (args) {
+                    var old = window._fscoreChart;
+                    if (old && old.destroy) {
+                        try { old.destroy(); } catch(e) {}
+                    }
+                    var container = document.getElementById('fscorecontainer');
+                    if (container) {
+                        container.innerHTML = '';
+                    }
+                    setTimeout(function() {
+                        window._fscoreChart = fscore.apply(null, args);
+                    }, 30);
+                }
+            });
+        }
+        window._fscoreChart = chart;
+        window._fscoreArgs = [stockcode, value, industryValue, mrq];
     
         return chart;
     //});

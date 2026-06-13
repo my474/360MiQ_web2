@@ -367,9 +367,9 @@ function TSFchart(stock, pricedata, container, subtitle)
         ]
     });
     
-    document.addEventListener('themechange', function() {
+    document.documentElement.addEventListener('themechange', function() {
       if (chart && chart.update) {
-        chart.update(getHighchartsThemeOptions(), true, true);
+        chart.update(getHighchartsThemeOptions(), true, false);
       }
     });
 

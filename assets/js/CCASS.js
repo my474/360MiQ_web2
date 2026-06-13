@@ -462,9 +462,9 @@ function CCASS(chartcontainer, data, stockcode, CCASSshare, CCASSpercent, title,
             }
     	}, true);
 
-    document.addEventListener('themechange', function() {
+    document.documentElement.addEventListener('themechange', function() {
       if (chart && chart.update) {
-        chart.update(getHighchartsThemeOptions(), true, true);
+        chart.update(getHighchartsThemeOptions(), true, false);
       }
     });
 

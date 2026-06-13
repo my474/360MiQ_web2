@@ -1206,6 +1206,26 @@ function adsBlocked(callback){
     cursor: pointer;
 }
 
+[data-theme="dark"] #Technical .form-inline,
+[data-theme="dark"] #Technical .form-inline label {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] #Technical .form-control {
+    background-color: #2a2a3e;
+    border-color: #3a3a5e;
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] #Technical .form-control::placeholder {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] #Technical input[type="radio"],
+[data-theme="dark"] #Technical input[type="checkbox"] {
+    accent-color: #6ea8ff;
+}
+
 /*for $('[data-toggle="tooltip"]').tooltip();   tooltips for sector & industry*/
 .ui-tooltip {
   padding: 0px 5px 0px 5px;
@@ -1306,8 +1326,25 @@ function adsBlocked(callback){
         
         <p></p>
         <style>
-        .profit_efficiency tr:nth-child(odd) {
-          background-color: #fafafa;
+        #Fundamental .fscore-table table tr:nth-child(odd) {
+          background-color: white;
+        }
+        #Fundamental .fscore-table table tr:nth-child(even) {
+          background-color: #ecf6fc;
+        }
+        [data-theme="dark"] #Fundamental .fscore-table table tr:nth-child(odd) {
+          background-color: #1e1e32;
+        }
+        [data-theme="dark"] #Fundamental .fscore-table table tr:nth-child(even) {
+          background-color: #2a2a3e;
+        }
+        [data-theme="dark"] #Fundamental .fscore-table,
+        [data-theme="dark"] #Fundamental .fscore-table table,
+        [data-theme="dark"] #Fundamental .fscore-table td {
+          color: var(--text-secondary);
+        }
+        [data-theme="dark"] #fscorecontainer .highcharts-background {
+          fill: #1e1e32 !important;
         }</style>
         <div id="Fundamental" class="card clean-card text-center container" style="padding: 0;">
             <div class="card-header"><h2>Fundamental</h2></div>
@@ -1315,15 +1352,15 @@ function adsBlocked(callback){
                 
                   <h3 class="sr-only"><?php echo "$stockcode"." "; ?>Piotroski F-Score</h3>
                   <div class="not-selectable fscorechart" id="fscorecontainer" style="margin: 0 auto 10px auto;"></div>
-                  <div class="FA profit_efficiency" style="border:0px;border-radius: 5px;background-color:#fafafa;">
+                  <div class="FA fscore-table profit_efficiency" style="border:0px;border-radius: 5px;">
                         <h6 class="card-title">Profitability</h6>
                         <div id="Profitability"></div>
                   </div>
-                  <div class="FA" style="border:0px;border-radius: 5px;">
+                  <div class="FA fscore-table" style="border:0px;border-radius: 5px;">
                         <h6 class="card-title">Liquidity</h6>
                         <div id="Liquidity"></div>
                   </div>
-                  <div class="FA profit_efficiency" style="border:0px;border-radius: 5px;background-color:#fafafa;">
+                  <div class="FA fscore-table profit_efficiency" style="border:0px;border-radius: 5px;">
                         <h6 class="card-title">Efficiency</h6>
                         <div id="Efficiency"></div>
                   </div>

@@ -484,7 +484,7 @@ function pchart(stockcode, stockArray, industryArray, isIE)
     /* ---- live theme toggle: destroy & recreate ---- */
     if (!window._polarBound) {
       window._polarBound = true;
-      document.addEventListener('themechange', function() {
+      document.documentElement.addEventListener('themechange', function() {
         var args = window._polarArgs;
         if (args) {
           var old = window._polarChart;

@@ -646,9 +646,9 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
     chart.series[chart.series.length-2].remove(false); // Remove 2nd last series. It is a tmp series to avoid error. The last series is navigator series.
     chart.legend.render();
 
-    document.addEventListener('themechange', function() {
+    document.documentElement.addEventListener('themechange', function() {
       if (chart && chart.update) {
-        chart.update(getHighchartsThemeOptions(), true, true);
+        chart.update(getHighchartsThemeOptions(), true, false);
       }
     });
 }

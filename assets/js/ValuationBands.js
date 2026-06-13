@@ -1106,9 +1106,9 @@ function valuationBands(stock, valTable, pricedata, type, container, patternup, 
         ]
     });
     
-    document.addEventListener('themechange', function() {
+    document.documentElement.addEventListener('themechange', function() {
       if (chart && chart.update) {
-        chart.update(getHighchartsThemeOptions(), true, true);
+        chart.update(getHighchartsThemeOptions(), true, false);
       }
     });
 
@@ -1272,9 +1272,9 @@ function earningSurpriseChart(stockcode, valuationdata, pricedata, type, chartco
         }]
     });
     
-    document.addEventListener('themechange', function() {
+    document.documentElement.addEventListener('themechange', function() {
       if (chart && chart.update) {
-        chart.update(getHighchartsThemeOptions(), true, true);
+        chart.update(getHighchartsThemeOptions(), true, false);
       }
     });
 
@@ -1937,9 +1937,9 @@ function Pxband(stock, valTable, pricedata, type, container, patternup, patternd
         ]
     });
     
-    document.addEventListener('themechange', function() {
+    document.documentElement.addEventListener('themechange', function() {
       if (chart && chart.update) {
-        chart.update(getHighchartsThemeOptions(), true, true);
+        chart.update(getHighchartsThemeOptions(), true, false);
       }
     });
 

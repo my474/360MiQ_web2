@@ -220,6 +220,7 @@ function applyHighchartsTheme(isDark) {
       var ch = Highcharts.charts[i];
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
+        themeNeutralSeriesColors(ch, isDark);
       }
     }
     /* Patch navigator and scrollbar in-place */
@@ -227,6 +228,157 @@ function applyHighchartsTheme(isDark) {
       themeNavScrollbar(Highcharts.charts[i], isDark);
     }
   }
+}
+
+/* Explicit black/dark-grey series colors are readable in light mode but can
+   disappear on dark backgrounds. Do the inverse when returning to light mode. */
+function themeNeutralSeriesColors(ch, isDark) {
+  if (!ch || !ch.series || !ch.series.length) return;
+  var needsRedraw = false;
+
+  for (var i = 0; i < ch.series.length; i++) {
+    var series = ch.series[i];
+    if (!series || !series.update) continue;
+
+    var update = {};
+    var changed = false;
+    var color = themeNeutralColorValue(series.color || (series.options && series.options.color), isDark);
+
+    if (color !== null) {
+      update.color = color;
+      changed = true;
+    }
+
+    var markerOptions = series.options && series.options.marker;
+    if (markerOptions) {
+      var marker = {};
+      var markerChanged = false;
+      var markerFill = themeNeutralColorValue(markerOptions.fillColor, isDark);
+      var markerLine = themeNeutralColorValue(markerOptions.lineColor, isDark);
+
+      if (markerFill !== null) {
+        marker.fillColor = markerFill;
+        markerChanged = true;
+      }
+      if (markerLine !== null) {
+        marker.lineColor = markerLine;
+        markerChanged = true;
+      }
+      if (markerChanged) {
+        update.marker = marker;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      try {
+        series.update(update, false);
+        needsRedraw = true;
+      } catch(e) {}
+    }
+  }
+
+  if (needsRedraw && ch.redraw) {
+    try { ch.redraw(false); } catch(e) {}
+  }
+}
+
+function themeNeutralColorValue(value, isDark) {
+  if (typeof value === 'string') {
+    return themeNeutralColorString(value, isDark);
+  }
+
+  if (value && typeof value === 'object' && value.stops && value.stops.length) {
+    var copy = {};
+    var changed = false;
+
+    for (var k in value) {
+      if (Object.prototype.hasOwnProperty.call(value, k)) {
+        copy[k] = k === 'stops' ? [] : value[k];
+      }
+    }
+
+    for (var i = 0; i < value.stops.length; i++) {
+      var stop = value.stops[i];
+      var nextColor = themeNeutralColorValue(stop[1], isDark);
+      copy.stops[i] = [stop[0], nextColor === null ? stop[1] : nextColor];
+      changed = changed || nextColor !== null;
+    }
+
+    return changed ? copy : null;
+  }
+
+  return null;
+}
+
+function themeNeutralColorString(value, isDark) {
+  var parsed = parseThemeColor(value);
+  if (!parsed || parsed.a <= 0.2 || !isNeutralThemeColor(parsed)) return null;
+
+  var luminance = themeColorLuminance(parsed);
+  if (isDark && luminance <= 170) {
+    return luminance <= 30 ? '#e8e8e8' : '#d0d0d0';
+  }
+  if (!isDark && luminance >= 170) {
+    return luminance >= 245 ? '#333333' : '#555555';
+  }
+
+  return null;
+}
+
+function parseThemeColor(value) {
+  if (typeof value !== 'string') return null;
+  var color = value.trim().toLowerCase();
+  var named = {
+    black: '#000000',
+    white: '#ffffff',
+    grey: '#808080',
+    gray: '#808080',
+    dimgrey: '#696969',
+    dimgray: '#696969',
+    darkgrey: '#a9a9a9',
+    darkgray: '#a9a9a9',
+    lightgrey: '#d3d3d3',
+    lightgray: '#d3d3d3',
+    darkslategrey: '#2f4f4f',
+    darkslategray: '#2f4f4f'
+  };
+
+  if (named[color]) color = named[color];
+
+  var hex = color.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    var raw = hex[1];
+    if (raw.length === 3) {
+      raw = raw.charAt(0) + raw.charAt(0) + raw.charAt(1) + raw.charAt(1) + raw.charAt(2) + raw.charAt(2);
+    }
+    return {
+      r: parseInt(raw.substr(0, 2), 16),
+      g: parseInt(raw.substr(2, 2), 16),
+      b: parseInt(raw.substr(4, 2), 16),
+      a: 1
+    };
+  }
+
+  var rgb = color.match(/^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)(?:\s*,\s*([0-9.]+))?\s*\)$/);
+  if (rgb) {
+    return {
+      r: Math.max(0, Math.min(255, parseFloat(rgb[1]))),
+      g: Math.max(0, Math.min(255, parseFloat(rgb[2]))),
+      b: Math.max(0, Math.min(255, parseFloat(rgb[3]))),
+      a: rgb[4] === undefined ? 1 : Math.max(0, Math.min(1, parseFloat(rgb[4])))
+    };
+  }
+
+  return null;
+}
+
+function isNeutralThemeColor(color) {
+  return Math.max(color.r, color.g, color.b) - Math.min(color.r, color.g, color.b) <= 48;
+}
+
+function themeColorLuminance(color) {
+  return (0.2126 * color.r) + (0.7152 * color.g) + (0.0722 * color.b);
 }
 
 /* Patch navigator & scrollbar SVG in-place. chart.update() with navigator
