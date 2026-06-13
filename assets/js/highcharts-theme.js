@@ -221,6 +221,7 @@ function applyHighchartsTheme(isDark) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
         themeNeutralSeriesColors(ch, isDark);
+        themeHighchartsChartText(ch, isDark);
         themeHighchartsLegendText(ch, isDark);
       }
     }
@@ -402,6 +403,89 @@ function themeHighchartsLegendText(ch, isDark) {
   } catch(e) {}
 }
 
+function themeHighchartsChartText(ch, isDark) {
+  if (!ch || !ch.container) return;
+  var fallback = isDark ? '#e8e8e8' : '#333333';
+
+  try {
+    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (!container || !container.querySelectorAll) return;
+
+    var selectors = [
+      '.highcharts-title',
+      '.highcharts-subtitle',
+      '.highcharts-axis-title',
+      '.highcharts-axis-labels text',
+      '.highcharts-axis-labels tspan',
+      '.highcharts-data-label text',
+      '.highcharts-data-label tspan',
+      '.highcharts-data-labels text',
+      '.highcharts-data-labels tspan',
+      '.highcharts-no-data text',
+      '.highcharts-no-data tspan',
+      '.highcharts-credits',
+      '.highcharts-range-label text',
+      '.highcharts-range-label tspan'
+    ];
+
+    var labels = container.querySelectorAll(selectors.join(','));
+    for (var i = 0; i < labels.length; i++) {
+      patchChartTextElement(labels[i], fallback, isDark);
+    }
+
+    var htmlLabels = container.querySelectorAll('.highcharts-label span, .highcharts-title span, .highcharts-subtitle span');
+    for (var j = 0; j < htmlLabels.length; j++) {
+      patchChartHTMLElement(htmlLabels[j], fallback, isDark);
+    }
+  } catch(e) {}
+}
+
+function patchChartTextElement(el, fallback, isDark) {
+  if (!el || !el.setAttribute) return;
+  var cls = el.getAttribute('class') || '';
+  if (cls.indexOf('highcharts-text-outline') !== -1) return;
+
+  var raw = el.getAttribute('fill') || (el.style && (el.style.fill || el.style.color)) || '';
+  var wasPatched = el.getAttribute('data-theme-label-patched') === '1';
+  var next = null;
+
+  if (isDark) {
+    next = raw ? themeNeutralColorValue(raw, true) : fallback;
+  } else if (wasPatched) {
+    next = raw ? themeNeutralColorValue(raw, false) : fallback;
+  }
+
+  if (next !== null) {
+    el.setAttribute('fill', next);
+    el.setAttribute('data-theme-label-patched', '1');
+    if (el.style) {
+      el.style.fill = next;
+      el.style.color = next;
+    }
+  }
+}
+
+function patchChartHTMLElement(el, fallback, isDark) {
+  if (!el || !el.style) return;
+  var raw = el.style.color || el.style.fill || '';
+  var wasPatched = el.getAttribute && el.getAttribute('data-theme-label-patched') === '1';
+  var next = null;
+
+  if (isDark) {
+    next = raw ? themeNeutralColorValue(raw, true) : fallback;
+  } else if (wasPatched) {
+    next = raw ? themeNeutralColorValue(raw, false) : fallback;
+  }
+
+  if (next !== null) {
+    if (el.setAttribute) {
+      el.setAttribute('data-theme-label-patched', '1');
+    }
+    el.style.color = next;
+    el.style.fill = next;
+  }
+}
+
 function patchLegendElementTree(el, fallback, isDark) {
   if (!el || !el.setAttribute) return;
   var tag = (el.tagName || '').toLowerCase();
@@ -442,7 +526,9 @@ function bindHighchartsLegendTheme() {
   if (typeof Highcharts === 'undefined' || !Highcharts.addEvent || !Highcharts.Chart || Highcharts._legendThemeBound360) return;
   Highcharts._legendThemeBound360 = true;
   Highcharts.addEvent(Highcharts.Chart, 'render', function() {
-    themeHighchartsLegendText(this, document.documentElement.getAttribute('data-theme') === 'dark');
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeHighchartsChartText(this, isDark);
+    themeHighchartsLegendText(this, isDark);
   });
 }
 

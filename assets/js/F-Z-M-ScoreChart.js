@@ -1,4 +1,5 @@
 function mscore(stockcode, value, industryValue, mrq) {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var radius = '100%';
     if (value === null)
         radius = '0%';
@@ -59,9 +60,10 @@ function mscore(stockcode, value, industryValue, mrq) {
             y: 10
         },
         subtitle: {
+            useHTML: true,
             style: {
                 fontSize: '12px',
-                color: value === null ? '#666666' : 'black',
+                color: value === null ? (isDark ? '#999999' : '#666666') : (isDark ? '#ffffff' : '#333333'),
                 fontWeight: value === null ? 'bold' : 'normal'
             },
             text: value === null ? 'No data to display' : mrq,
@@ -105,6 +107,7 @@ function mscore(stockcode, value, industryValue, mrq) {
                 distance: 48,
                 rotation: 'auto',
                 style: {
+                  color: isDark ? '#e8e8e8' : '#333333',
                   fontSize: '12px'
                 }
             },
@@ -235,6 +238,7 @@ function mscore(stockcode, value, industryValue, mrq) {
 }
 
 function zscore(stockcode, value, industryValue, mrq) {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var radius = '100%';
     if (value === null)
         radius = '0%';
@@ -287,9 +291,10 @@ function zscore(stockcode, value, industryValue, mrq) {
             y: 10
         },
         subtitle: {
+            useHTML: true,
             style: {
                 fontSize: '12px',
-                color: value === null ? '#666666' : 'black',
+                color: value === null ? (isDark ? '#999999' : '#666666') : (isDark ? '#ffffff' : '#333333'),
                 fontWeight: value === null ? 'bold' : 'normal'
             },
             text: value === null ? 'No data to display' : mrq,
@@ -333,6 +338,7 @@ function zscore(stockcode, value, industryValue, mrq) {
                 distance: 48,
                 rotation: 'auto',
                 style: {
+                  color: isDark ? '#e8e8e8' : '#333333',
                   fontSize: '12px'
                 }
             },

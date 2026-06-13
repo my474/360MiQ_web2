@@ -4239,7 +4239,7 @@ function maincontent(result)
                         else
                             fscore(stockcode, fscoreValue, fscoreValue_median, typeof mostrecentquarter === 'undefined'? '': 'Most Recent Quarter: ' + formatDateNoBreak(mostrecentquarter));
                         zscore(stockcode, zscoreValue, 4, typeof mostrecentquarter === 'undefined'? '': 'Most Recent Quarter: ' + formatDateNoBreak(mostrecentquarter));
-                        mscore(stockcode, mscoreValue, 4, mscoreMRQ == ""? '<span style="color:#ffffff">.</span>' : mscoreMRQ);
+                        mscore(stockcode, mscoreValue, 4, mscoreMRQ == ""? '&nbsp;' : mscoreMRQ);
         
                         var resultArrayPB = null;
                         var PBresult = 0;
@@ -5096,7 +5096,7 @@ function mscoreTXT(shareOutstanding, listFA3, listFA4, listFA5)
     document.getElementById("MScoreCommentTable").style.lineHeight = 7.5/3;      
     //document.getElementById("MScoreMRQ").innerHTML = '<table align="center"><tr><td>t: '+ formatDateNoBreak(listFA3[0].date) +"</td><td>t-1: " + formatDateNoBreak(listFA3[1].date) + "</td></tr></table>";   
     if (listFA3.length > 1)
-        mscoreMRQ = 't:<span style="color:#ffffff">.</span>'+ formatDateNoBreak(listFA3[0].date) +'<span style="color:#ffffff">.........</span>t-1:<span style="color:#ffffff">.</span>' + formatDateNoBreak(listFA3[1].date);
+        mscoreMRQ = 't:&nbsp;' + formatDateNoBreak(listFA3[0].date) + '&emsp;&emsp;t-1:&nbsp;' + formatDateNoBreak(listFA3[1].date);
     
     return score;
 }
