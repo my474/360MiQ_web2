@@ -237,6 +237,9 @@ function applyHighchartsTheme(isDark) {
     for (var i = 0; i < Highcharts.charts.length; i++) {
       var ch = Highcharts.charts[i];
       if (ch && ch.update) {
+        if (shouldSkipHighchartsThemeUpdate(ch)) {
+          continue;
+        }
         themeHighchartsAxisAccents(ch);
         try { ch.update(opts, true, false); } catch(e) {}
         themeNeutralSeriesColors(ch, isDark);
@@ -697,6 +700,7 @@ function themeHighchartsGridLines(ch, isDark) {
 
 function shouldSkipHighchartsGridTheme(ch) {
   try {
+    if (isRangeGaugeChart(ch)) return true;
     var renderTo = ch && ch.renderTo;
     if (renderTo && renderTo.id === 'fscorecontainer') return true;
     var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
@@ -729,6 +733,20 @@ function patchAxisGridOptions(axes, color, axisType, ch) {
       axis.userOptions.gridLineWidth = 1;
     }
   }
+}
+
+function shouldSkipHighchartsThemeUpdate(ch) {
+  return isRangeGaugeChart(ch);
+}
+
+function isRangeGaugeChart(ch) {
+  try {
+    var renderTo = ch && ch.renderTo;
+    if (renderTo && (renderTo.id === 'rangecontainer' || renderTo.id === 'volrangecontainer')) return true;
+    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (container && container.closest && container.closest('#rangecontainer, #volrangecontainer')) return true;
+  } catch(e) {}
+  return false;
 }
 
 function shouldHideAxisGrid(axis, axisType, ch) {

@@ -1,4 +1,5 @@
 function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, high50, lastprice, lastyearendprice, ma50, ma250, lastpricetxt, lastyearendpricetxt, ma50txt, ma250txt, range50txt, range250txt, color50a, color50b, color250a, color250b, ma50color, ma250color) {
+    var rangeChartArgs = Array.prototype.slice.call(arguments);
     var dark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (dark && (backgroundColor === '#f9f9f9' || backgroundColor === '#ffffff')) {
       backgroundColor = '#2a2a3e';
@@ -98,7 +99,7 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
         }
     });
     
-    Highcharts.chart(rangecontainer, {
+    var chart = Highcharts.chart(rangecontainer, {
         chart: {
             backgroundColor: backgroundColor,
             type: 'lineargauge',
@@ -158,7 +159,9 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
                 }
             },
 
-            title: null,
+            title: {
+                text: null
+            },
 
             plotBands: [{
                 from: low250,
@@ -353,4 +356,37 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
             }            
         }                 
     ]});
+
+    registerRangeChartThemeRefresh(rangecontainer, rangeChartArgs);
+    return chart;
+}
+
+function registerRangeChartThemeRefresh(rangecontainer, args) {
+    window._rangeChartArgsByContainer = window._rangeChartArgsByContainer || {};
+    window._rangeChartArgsByContainer[rangecontainer] = args;
+
+    if (window._rangeChartThemeBound) return;
+    window._rangeChartThemeBound = true;
+
+    document.documentElement.addEventListener('themechange', function() {
+        if (!window._rangeChartArgsByContainer) return;
+        var containers = Object.keys(window._rangeChartArgsByContainer);
+
+        for (var i = 0; i < containers.length; i++) {
+            var id = containers[i];
+            var savedArgs = window._rangeChartArgsByContainer[id];
+            destroyRangeChartByContainer(id);
+            rangeChart.apply(null, savedArgs);
+        }
+    });
+}
+
+function destroyRangeChartByContainer(containerId) {
+    if (typeof Highcharts === 'undefined' || !Highcharts.charts) return;
+    for (var i = Highcharts.charts.length - 1; i >= 0; i--) {
+        var chart = Highcharts.charts[i];
+        if (chart && chart.renderTo && chart.renderTo.id === containerId) {
+            try { chart.destroy(); } catch(e) {}
+        }
+    }
 }
