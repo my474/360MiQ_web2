@@ -678,7 +678,7 @@ function ensureAxisStyleColor(axis, key, color) {
 }
 
 function themeHighchartsGridLines(ch, isDark) {
-  if (!ch) return;
+  if (!ch || shouldSkipHighchartsGridTheme(ch)) return;
   var color = isDark ? '#45475f' : '#e6e6e6';
 
   patchAxisGridOptions(ch.xAxis, color, 'xAxis', ch);
@@ -693,6 +693,18 @@ function themeHighchartsGridLines(ch, isDark) {
   } catch(e) {}
 
   patchRenderedGridLines(ch, color);
+}
+
+function shouldSkipHighchartsGridTheme(ch) {
+  try {
+    var renderTo = ch && ch.renderTo;
+    if (renderTo && renderTo.id === 'fscorecontainer') return true;
+    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (container && container.closest && container.closest('#fscorecontainer')) return true;
+    var title = ch && ch.title && ch.title.textStr;
+    return title === 'Piotroski F\u2011Score';
+  } catch(e) {}
+  return false;
 }
 
 function patchAxisGridOptions(axes, color, axisType, ch) {

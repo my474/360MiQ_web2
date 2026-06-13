@@ -541,6 +541,7 @@ function fscore(stockcode, value, industryValue, mrq) {
                 title: {
                     text: null
                 },
+                gridLineWidth: 0,
                 labels: {
                     y: 14,
                   	style: {
