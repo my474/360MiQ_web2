@@ -529,6 +529,7 @@ function bindHighchartsLegendTheme() {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     themeHighchartsChartText(this, isDark);
     themeHighchartsLegendText(this, isDark);
+    themeNavScrollbar(this, isDark);
   });
 }
 
@@ -606,6 +607,9 @@ function themeNavScrollbar(ch, isDark) {
       else if (t === 'path') {
         if (c.indexOf('handle') !== -1) {
           s('fill', hndlBg); s('stroke', hndl);
+        }
+        else if (c.indexOf('outline') !== -1) {
+          s('stroke', outl);
         }
         else if (c.indexOf('grid') !== -1) {
           s('stroke', grid);
