@@ -302,7 +302,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                                     }
                                 },
                                 yAxis: {
-                                    gridLineColor: (document.documentElement.getAttribute('data-theme')==='dark'?'#2e2e2e':'#444'),
+                                    gridLineColor: (document.documentElement.getAttribute('data-theme')==='dark'?'#45475f':'#444'),
                                     visible: true,
                                     min: Math.min.apply(this, closeSeries) * 0.98, // : Math.min(...data) * 0.98,
                                     max: Math.max.apply(this, closeSeries) * 1.02, // : Math.max(...data) * 1.02

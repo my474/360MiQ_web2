@@ -61,14 +61,16 @@ var highchartsLightTheme = {
     title:   { style: { color: '#333333' } },
     lineColor: '#ccc',
     tickColor: '#ccc',
-    gridLineColor: '#e6e6e6'
+    gridLineColor: '#e6e6e6',
+    minorGridLineColor: '#e6e6e6'
   },
   yAxis: {
     labels:  { style: { color: '#555555' } },
     title:   { style: { color: '#333333' } },
     lineColor: '#ccc',
     tickColor: '#ccc',
-    gridLineColor: '#e6e6e6'
+    gridLineColor: '#e6e6e6',
+    minorGridLineColor: '#e6e6e6'
   },
   legend: {
     itemStyle:          { color: '#333333' },
@@ -143,14 +145,16 @@ var highchartsDarkTheme = {
     title:   { style: { color: '#e8e8e8' } },
     lineColor: '#444',
     tickColor: '#444',
-    gridLineColor: '#2e2e2e'
+    gridLineColor: '#45475f',
+    minorGridLineColor: '#45475f'
   },
   yAxis: {
     labels:  { style: { color: '#cccccc' } },
     title:   { style: { color: '#e8e8e8' } },
     lineColor: '#444',
     tickColor: '#444',
-    gridLineColor: '#2e2e2e'
+    gridLineColor: '#45475f',
+    minorGridLineColor: '#45475f'
   },
   legend: {
     itemStyle:          { color: '#cccccc' },
@@ -177,7 +181,7 @@ var highchartsDarkTheme = {
     },
     outlineColor: '#555',
     xAxis: {
-      gridLineColor: '#2e2e2e',
+      gridLineColor: '#45475f',
       labels: { style: { color: '#888' } }
     }
   },
@@ -223,6 +227,7 @@ function applyHighchartsTheme(isDark) {
         try { ch.update(opts, true, false); } catch(e) {}
         themeNeutralSeriesColors(ch, isDark);
         themeHighchartsAxisAccents(ch);
+        themeHighchartsGridLines(ch, isDark);
         themeHighchartsChartText(ch, isDark);
         themeHighchartsLegendText(ch, isDark);
       }
@@ -658,12 +663,53 @@ function ensureAxisStyleColor(axis, key, color) {
   axis.userOptions[key].style.color = color;
 }
 
+function themeHighchartsGridLines(ch, isDark) {
+  if (!ch) return;
+  var color = isDark ? '#45475f' : '#e6e6e6';
+
+  patchAxisGridOptions(ch.xAxis, color);
+  patchAxisGridOptions(ch.yAxis, color);
+
+  try {
+    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (container && container.querySelectorAll) {
+      var lines = container.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
+      for (var i = 0; i < lines.length; i++) {
+        patchGridLineElement(lines[i], color);
+      }
+    }
+  } catch(e) {}
+}
+
+function patchAxisGridOptions(axes, color) {
+  if (!axes || !axes.length) return;
+  for (var i = 0; i < axes.length; i++) {
+    var axis = axes[i];
+    if (!axis) continue;
+    axis.options = axis.options || {};
+    axis.userOptions = axis.userOptions || {};
+    axis.options.gridLineColor = color;
+    axis.options.minorGridLineColor = color;
+    axis.userOptions.gridLineColor = color;
+    axis.userOptions.minorGridLineColor = color;
+  }
+}
+
+function patchGridLineElement(el, color) {
+  if (!el || !el.setAttribute) return;
+  el.setAttribute('stroke', color);
+  if (el.style) {
+    el.style.stroke = color;
+  }
+}
+
 function bindHighchartsLegendTheme() {
   if (typeof Highcharts === 'undefined' || !Highcharts.addEvent || !Highcharts.Chart || Highcharts._legendThemeBound360) return;
   Highcharts._legendThemeBound360 = true;
   Highcharts.addEvent(Highcharts.Chart, 'render', function() {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     themeHighchartsAxisAccents(this);
+    themeHighchartsGridLines(this, isDark);
     themeHighchartsChartText(this, isDark);
     themeHighchartsLegendText(this, isDark);
     themeNavScrollbar(this, isDark);
@@ -679,7 +725,7 @@ function themeNavScrollbar(ch, isDark) {
   var arr  = isDark ? '#aaa' : '#333';
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
-  var grid = isDark ? '#2e2e2e' : '#e6e6e6';
+  var grid = isDark ? '#45475f' : '#e6e6e6';
   var hndl = isDark ? '#555' : '#777';
   var hndlBg = isDark ? '#2a2a3e' : '#eee';
   var outl = isDark ? '#555' : '#ccc';
@@ -794,20 +840,23 @@ function getHighchartsThemeOptions() {
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
-      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
+      gridLineColor: dark ? '#45475f' : '#e6e6e6',
+      minorGridLineColor: dark ? '#45475f' : '#e6e6e6'
     },
     yAxis: [{
       labels:  { style: { color: dark ? '#cccccc' : '#555555' } },
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
-      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
+      gridLineColor: dark ? '#45475f' : '#e6e6e6',
+      minorGridLineColor: dark ? '#45475f' : '#e6e6e6'
     }, {
       labels:  { style: { color: dark ? '#cccccc' : '#555555' } },
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
-      gridLineColor: dark ? '#2e2e2e' : '#e6e6e6'
+      gridLineColor: dark ? '#45475f' : '#e6e6e6',
+      minorGridLineColor: dark ? '#45475f' : '#e6e6e6'
     }],
     legend: {
       itemStyle:          { color: dark ? '#cccccc' : '#333333' },
