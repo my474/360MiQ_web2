@@ -546,11 +546,19 @@
   border-top: 1px solid #3a3a4e !important;
 }
 
-[data-theme="dark"] .highcharts-grid-line,
-[data-theme="dark"] .highcharts-minor-grid-line {
+[data-theme="dark"] .highcharts-yaxis-grid:not(.highcharts-navigator-yaxis-grid) .highcharts-grid-line,
+[data-theme="dark"] .highcharts-yaxis-grid:not(.highcharts-navigator-yaxis-grid) .highcharts-minor-grid-line {
   stroke: var(--chart-grid-line) !important;
   stroke-opacity: 1 !important;
   opacity: 1 !important;
+}
+
+[data-theme="dark"] .highcharts-xaxis-grid:not(.highcharts-navigator-xaxis-grid) .highcharts-grid-line,
+[data-theme="dark"] .highcharts-xaxis-grid:not(.highcharts-navigator-xaxis-grid) .highcharts-minor-grid-line,
+[data-theme="dark"] .highcharts-navigator-yaxis-grid .highcharts-grid-line,
+[data-theme="dark"] .highcharts-navigator-yaxis-grid .highcharts-minor-grid-line {
+  stroke-opacity: 0 !important;
+  opacity: 0 !important;
 }
 
 /* ---- legend rows in HK property table ---- */

@@ -61,6 +61,8 @@ var highchartsLightTheme = {
     title:   { style: { color: '#333333' } },
     lineColor: '#ccc',
     tickColor: '#ccc',
+    gridLineWidth: 0,
+    minorGridLineWidth: 0,
     gridLineColor: '#e6e6e6',
     minorGridLineColor: '#e6e6e6'
   },
@@ -97,8 +99,13 @@ var highchartsLightTheme = {
     },
     outlineColor: '#ccc',
     xAxis: {
+      gridLineWidth: 1,
       gridLineColor: '#e6e6e6',
       labels: { style: { color: '#555' } }
+    },
+    yAxis: {
+      gridLineWidth: 0,
+      minorGridLineWidth: 0
     }
   },
   scrollbar: {
@@ -145,6 +152,8 @@ var highchartsDarkTheme = {
     title:   { style: { color: '#e8e8e8' } },
     lineColor: '#444',
     tickColor: '#444',
+    gridLineWidth: 0,
+    minorGridLineWidth: 0,
     gridLineColor: '#45475f',
     minorGridLineColor: '#45475f'
   },
@@ -181,8 +190,13 @@ var highchartsDarkTheme = {
     },
     outlineColor: '#555',
     xAxis: {
+      gridLineWidth: 1,
       gridLineColor: '#45475f',
       labels: { style: { color: '#888' } }
+    },
+    yAxis: {
+      gridLineWidth: 0,
+      minorGridLineWidth: 0
     }
   },
   scrollbar: {
@@ -667,32 +681,73 @@ function themeHighchartsGridLines(ch, isDark) {
   if (!ch) return;
   var color = isDark ? '#45475f' : '#e6e6e6';
 
-  patchAxisGridOptions(ch.xAxis, color);
-  patchAxisGridOptions(ch.yAxis, color);
+  patchAxisGridOptions(ch.xAxis, color, 'xAxis');
+  patchAxisGridOptions(ch.yAxis, color, 'yAxis');
 
   try {
     var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
     if (container && container.querySelectorAll) {
-      var lines = container.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
-      for (var i = 0; i < lines.length; i++) {
-        patchGridLineElement(lines[i], color);
+      var groups = container.querySelectorAll('.highcharts-xaxis-grid, .highcharts-yaxis-grid');
+      for (var i = 0; i < groups.length; i++) {
+        patchGridLineGroup(groups[i], color);
       }
     }
   } catch(e) {}
 }
 
-function patchAxisGridOptions(axes, color) {
+function patchAxisGridOptions(axes, color, axisType) {
   if (!axes || !axes.length) return;
   for (var i = 0; i < axes.length; i++) {
     var axis = axes[i];
     if (!axis) continue;
+    var hidden = shouldHideAxisGrid(axis, axisType);
     axis.options = axis.options || {};
     axis.userOptions = axis.userOptions || {};
     axis.options.gridLineColor = color;
     axis.options.minorGridLineColor = color;
     axis.userOptions.gridLineColor = color;
     axis.userOptions.minorGridLineColor = color;
+    if (hidden) {
+      axis.options.gridLineWidth = 0;
+      axis.options.minorGridLineWidth = 0;
+      axis.userOptions.gridLineWidth = 0;
+      axis.userOptions.minorGridLineWidth = 0;
+    }
   }
+}
+
+function shouldHideAxisGrid(axis, axisType) {
+  var isNavigator = isHighchartsNavigatorAxis(axis);
+  return (axisType === 'xAxis' && !isNavigator) || (axisType === 'yAxis' && isNavigator);
+}
+
+function isHighchartsNavigatorAxis(axis) {
+  if (!axis) return false;
+  var opts = axis.options || {};
+  var user = axis.userOptions || {};
+  var id = String(opts.id || user.id || '').toLowerCase();
+  return id.indexOf('navigator') !== -1 || !!axis.navigatorAxis;
+}
+
+function patchGridLineGroup(group, color) {
+  if (!group || !group.querySelectorAll) return;
+  var hidden = shouldHideGridLineGroup(group);
+  var lines = group.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
+  for (var i = 0; i < lines.length; i++) {
+    if (hidden) {
+      hideGridLineElement(lines[i]);
+    } else {
+      patchGridLineElement(lines[i], color);
+    }
+  }
+}
+
+function shouldHideGridLineGroup(group) {
+  var cls = ((group && group.getAttribute && group.getAttribute('class')) || '').toLowerCase();
+  var isNavigator = cls.indexOf('navigator') !== -1;
+  var isXGrid = cls.indexOf('xaxis') !== -1;
+  var isYGrid = cls.indexOf('yaxis') !== -1;
+  return (isXGrid && !isNavigator) || (isYGrid && isNavigator);
 }
 
 function patchGridLineElement(el, color) {
@@ -704,6 +759,16 @@ function patchGridLineElement(el, color) {
     el.style.stroke = color;
     el.style.strokeOpacity = '1';
     el.style.opacity = '1';
+  }
+}
+
+function hideGridLineElement(el) {
+  if (!el || !el.setAttribute) return;
+  el.setAttribute('stroke-opacity', '0');
+  el.setAttribute('opacity', '0');
+  if (el.style) {
+    el.style.strokeOpacity = '0';
+    el.style.opacity = '0';
   }
 }
 
@@ -799,7 +864,13 @@ function themeNavScrollbar(ch, isDark) {
           s('stroke', outl);
         }
         else if (c.indexOf('grid') !== -1) {
-          s('stroke', grid);
+          if (shouldHideGridLineElement(el)) {
+            hideGridLineElement(el);
+          } else {
+            s('stroke', grid);
+            s('stroke-opacity', '1');
+            s('opacity', '1');
+          }
         }
         else if (c.indexOf('scrollbar') !== -1) {
           var d = (el.getAttribute('d') || '');
@@ -824,6 +895,21 @@ function themeNavScrollbar(ch, isDark) {
   } catch(e) {}
 }
 
+function shouldHideGridLineElement(el) {
+  var node = el;
+  while (node && node.getAttribute) {
+    var cls = (node.getAttribute('class') || '').toLowerCase();
+    if (cls.indexOf('grid') !== -1 && (cls.indexOf('xaxis') !== -1 || cls.indexOf('yaxis') !== -1)) {
+      var isNavigator = cls.indexOf('navigator') !== -1;
+      var isXGrid = cls.indexOf('xaxis') !== -1;
+      var isYGrid = cls.indexOf('yaxis') !== -1;
+      return (isXGrid && !isNavigator) || (isYGrid && isNavigator);
+    }
+    node = node.parentNode;
+  }
+  return false;
+}
+
 /* ---- per-instance options helper ---- */
 
 function getHighchartsThemeOptions() {
@@ -844,6 +930,8 @@ function getHighchartsThemeOptions() {
       title:   { style: { color: dark ? '#e8e8e8' : '#333333' } },
       lineColor: dark ? '#444' : '#ccc',
       tickColor: dark ? '#444' : '#ccc',
+      gridLineWidth: 0,
+      minorGridLineWidth: 0,
       gridLineColor: dark ? '#45475f' : '#e6e6e6',
       minorGridLineColor: dark ? '#45475f' : '#e6e6e6'
     },
