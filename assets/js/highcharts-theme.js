@@ -681,26 +681,24 @@ function themeHighchartsGridLines(ch, isDark) {
   if (!ch) return;
   var color = isDark ? '#45475f' : '#e6e6e6';
 
-  patchAxisGridOptions(ch.xAxis, color, 'xAxis');
-  patchAxisGridOptions(ch.yAxis, color, 'yAxis');
+  patchAxisGridOptions(ch.xAxis, color, 'xAxis', ch);
+  patchAxisGridOptions(ch.yAxis, color, 'yAxis', ch);
 
   try {
-    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
-    if (container && container.querySelectorAll) {
-      var groups = container.querySelectorAll('.highcharts-xaxis-grid, .highcharts-yaxis-grid');
-      for (var i = 0; i < groups.length; i++) {
-        patchGridLineGroup(groups[i], color);
-      }
+    var navChart = ch.navigator && ch.navigator.chart;
+    if (navChart && navChart !== ch) {
+      patchAxisGridOptions(navChart.xAxis, color, 'xAxis', ch);
+      patchAxisGridOptions(navChart.yAxis, color, 'yAxis', ch);
     }
   } catch(e) {}
 }
 
-function patchAxisGridOptions(axes, color, axisType) {
+function patchAxisGridOptions(axes, color, axisType, ch) {
   if (!axes || !axes.length) return;
   for (var i = 0; i < axes.length; i++) {
     var axis = axes[i];
     if (!axis) continue;
-    var hidden = shouldHideAxisGrid(axis, axisType);
+    var hidden = shouldHideAxisGrid(axis, axisType, ch);
     axis.options = axis.options || {};
     axis.userOptions = axis.userOptions || {};
     axis.options.gridLineColor = color;
@@ -712,42 +710,64 @@ function patchAxisGridOptions(axes, color, axisType) {
       axis.options.minorGridLineWidth = 0;
       axis.userOptions.gridLineWidth = 0;
       axis.userOptions.minorGridLineWidth = 0;
+      patchAxisGridGroup(axis, color, true);
+    } else {
+      patchAxisGridGroup(axis, color, false);
     }
   }
 }
 
-function shouldHideAxisGrid(axis, axisType) {
-  var isNavigator = isHighchartsNavigatorAxis(axis);
+function shouldHideAxisGrid(axis, axisType, ch) {
+  var isNavigator = isHighchartsNavigatorAxis(axis, axisType, ch);
   return (axisType === 'xAxis' && !isNavigator) || (axisType === 'yAxis' && isNavigator);
 }
 
-function isHighchartsNavigatorAxis(axis) {
+function isHighchartsNavigatorAxis(axis, axisType, ch) {
   if (!axis) return false;
   var opts = axis.options || {};
   var user = axis.userOptions || {};
   var id = String(opts.id || user.id || '').toLowerCase();
-  return id.indexOf('navigator') !== -1 || !!axis.navigatorAxis;
+  if (id.indexOf('navigator') !== -1 || !!axis.navigatorAxis) return true;
+
+  var nav = (ch && ch.navigator) || (axis.chart && axis.chart.navigator);
+  if (!nav) return false;
+
+  var candidates = [];
+  collectAxisCandidates(candidates, nav[axisType]);
+  if (nav.chart) {
+    collectAxisCandidates(candidates, nav.chart[axisType]);
+  }
+
+  for (var i = 0; i < candidates.length; i++) {
+    if (candidates[i] === axis) return true;
+  }
+  return false;
 }
 
-function patchGridLineGroup(group, color) {
-  if (!group || !group.querySelectorAll) return;
-  var hidden = shouldHideGridLineGroup(group);
-  var lines = group.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
-  for (var i = 0; i < lines.length; i++) {
-    if (hidden) {
-      hideGridLineElement(lines[i]);
-    } else {
-      patchGridLineElement(lines[i], color);
+function collectAxisCandidates(candidates, axisOrAxes) {
+  if (!axisOrAxes) return;
+  if (axisOrAxes.length !== undefined && typeof axisOrAxes !== 'string') {
+    for (var i = 0; i < axisOrAxes.length; i++) {
+      if (axisOrAxes[i]) candidates.push(axisOrAxes[i]);
     }
+  } else {
+    candidates.push(axisOrAxes);
   }
 }
 
-function shouldHideGridLineGroup(group) {
-  var cls = ((group && group.getAttribute && group.getAttribute('class')) || '').toLowerCase();
-  var isNavigator = cls.indexOf('navigator') !== -1;
-  var isXGrid = cls.indexOf('xaxis') !== -1;
-  var isYGrid = cls.indexOf('yaxis') !== -1;
-  return (isXGrid && !isNavigator) || (isYGrid && isNavigator);
+function patchAxisGridGroup(axis, color, hidden) {
+  try {
+    var group = axis && axis.gridGroup && axis.gridGroup.element;
+    if (!group || !group.querySelectorAll) return;
+    var lines = group.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
+    for (var i = 0; i < lines.length; i++) {
+      if (hidden) {
+        hideGridLineElement(lines[i]);
+      } else {
+        patchGridLineElement(lines[i], color);
+      }
+    }
+  } catch(e) {}
 }
 
 function patchGridLineElement(el, color) {
@@ -863,15 +883,6 @@ function themeNavScrollbar(ch, isDark) {
         else if (c.indexOf('outline') !== -1) {
           s('stroke', outl);
         }
-        else if (c.indexOf('grid') !== -1) {
-          if (shouldHideGridLineElement(el)) {
-            hideGridLineElement(el);
-          } else {
-            s('stroke', grid);
-            s('stroke-opacity', '1');
-            s('opacity', '1');
-          }
-        }
         else if (c.indexOf('scrollbar') !== -1) {
           var d = (el.getAttribute('d') || '');
           if (d.length > 60) { s('stroke', arr); }
@@ -893,21 +904,6 @@ function themeNavScrollbar(ch, isDark) {
       if (kids) { for (var i = 0; i < kids.length; i++) { walk(kids[i]); } }
     }
   } catch(e) {}
-}
-
-function shouldHideGridLineElement(el) {
-  var node = el;
-  while (node && node.getAttribute) {
-    var cls = (node.getAttribute('class') || '').toLowerCase();
-    if (cls.indexOf('grid') !== -1 && (cls.indexOf('xaxis') !== -1 || cls.indexOf('yaxis') !== -1)) {
-      var isNavigator = cls.indexOf('navigator') !== -1;
-      var isXGrid = cls.indexOf('xaxis') !== -1;
-      var isYGrid = cls.indexOf('yaxis') !== -1;
-      return (isXGrid && !isNavigator) || (isYGrid && isNavigator);
-    }
-    node = node.parentNode;
-  }
-  return false;
 }
 
 /* ---- per-instance options helper ---- */
