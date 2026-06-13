@@ -691,6 +691,8 @@ function themeHighchartsGridLines(ch, isDark) {
       patchAxisGridOptions(navChart.yAxis, color, 'yAxis', ch);
     }
   } catch(e) {}
+
+  patchRenderedGridLines(ch, color);
 }
 
 function patchAxisGridOptions(axes, color, axisType, ch) {
@@ -710,9 +712,9 @@ function patchAxisGridOptions(axes, color, axisType, ch) {
       axis.options.minorGridLineWidth = 0;
       axis.userOptions.gridLineWidth = 0;
       axis.userOptions.minorGridLineWidth = 0;
-      patchAxisGridGroup(axis, color, true);
     } else {
-      patchAxisGridGroup(axis, color, false);
+      axis.options.gridLineWidth = 1;
+      axis.userOptions.gridLineWidth = 1;
     }
   }
 }
@@ -755,13 +757,20 @@ function collectAxisCandidates(candidates, axisOrAxes) {
   }
 }
 
-function patchAxisGridGroup(axis, color, hidden) {
+function patchRenderedGridLines(ch, color) {
   try {
-    var group = axis && axis.gridGroup && axis.gridGroup.element;
-    if (!group || !group.querySelectorAll) return;
-    var lines = group.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
+    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (!container || !container.querySelectorAll) return;
+
+    var lines = container.querySelectorAll('.highcharts-grid-line, .highcharts-minor-grid-line');
     for (var i = 0; i < lines.length; i++) {
-      if (hidden) {
+      var direction = getGridLineDirection(lines[i]);
+      if (!direction) continue;
+
+      var inNavigator = isRenderedGridLineInNavigator(lines[i], ch, container);
+      var shouldHide = (direction === 'vertical' && !inNavigator) || (direction === 'horizontal' && inNavigator);
+
+      if (shouldHide) {
         hideGridLineElement(lines[i]);
       } else {
         patchGridLineElement(lines[i], color);
@@ -770,11 +779,69 @@ function patchAxisGridGroup(axis, color, hidden) {
   } catch(e) {}
 }
 
+function getGridLineDirection(el) {
+  try {
+    if (el.getBBox) {
+      var box = el.getBBox();
+      if (box.height > box.width + 2) return 'vertical';
+      if (box.width > box.height + 2) return 'horizontal';
+    }
+  } catch(e) {}
+
+  var points = parseGridLinePathPoints(el);
+  if (!points) return null;
+  var dx = Math.abs(points.x2 - points.x1);
+  var dy = Math.abs(points.y2 - points.y1);
+  if (dy > dx + 2) return 'vertical';
+  if (dx > dy + 2) return 'horizontal';
+  return null;
+}
+
+function parseGridLinePathPoints(el) {
+  if (!el || !el.getAttribute) return null;
+  var values = (el.getAttribute('d') || '').match(/-?\d+(?:\.\d+)?/g);
+  if (!values || values.length < 4) return null;
+  return {
+    x1: parseFloat(values[0]),
+    y1: parseFloat(values[1]),
+    x2: parseFloat(values[2]),
+    y2: parseFloat(values[3])
+  };
+}
+
+function isRenderedGridLineInNavigator(el, ch, container) {
+  if (hasNavigatorAncestor(el)) return true;
+
+  try {
+    if (!el.getBoundingClientRect || !container.getBoundingClientRect) return false;
+    var lineRect = el.getBoundingClientRect();
+    var containerRect = container.getBoundingClientRect();
+    var lineMiddleY = lineRect.top + (lineRect.height / 2) - containerRect.top;
+    var plotBottom = (ch.plotTop || 0) + (ch.plotHeight || 0);
+    return lineMiddleY > plotBottom + 2;
+  } catch(e) {}
+
+  return false;
+}
+
+function hasNavigatorAncestor(el) {
+  var node = el;
+  while (node && node.getAttribute) {
+    var cls = (node.getAttribute('class') || '').toLowerCase();
+    if (cls.indexOf('navigator') !== -1) return true;
+    node = node.parentNode;
+  }
+  return false;
+}
+
 function patchGridLineElement(el, color) {
   if (!el || !el.setAttribute) return;
   el.setAttribute('stroke', color);
   el.setAttribute('stroke-opacity', '1');
   el.setAttribute('opacity', '1');
+  if (el.getAttribute('stroke-width') === '0') {
+    el.setAttribute('stroke-width', '1');
+  }
   if (el.style) {
     el.style.stroke = color;
     el.style.strokeOpacity = '1';
