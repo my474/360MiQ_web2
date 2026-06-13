@@ -221,6 +221,7 @@ function applyHighchartsTheme(isDark) {
       if (ch && ch.update) {
         try { ch.update(opts, true, false); } catch(e) {}
         themeNeutralSeriesColors(ch, isDark);
+        themeHighchartsLegendText(ch, isDark);
       }
     }
     /* Patch navigator and scrollbar in-place */
@@ -379,6 +380,70 @@ function isNeutralThemeColor(color) {
 
 function themeColorLuminance(color) {
   return (0.2126 * color.r) + (0.7152 * color.g) + (0.0722 * color.b);
+}
+
+function themeHighchartsLegendText(ch, isDark) {
+  if (!ch || !ch.container) return;
+  var fallback = isDark ? '#e8e8e8' : '#333333';
+
+  try {
+    var legendGroup = ch.legend && ch.legend.group && ch.legend.group.element;
+    if (legendGroup) {
+      patchLegendElementTree(legendGroup, fallback, isDark);
+    }
+
+    var container = typeof ch.container === 'string' ? document.getElementById(ch.container) : ch.container;
+    if (container && container.querySelectorAll) {
+      var htmlLegendText = container.querySelectorAll('.highcharts-legend span, .highcharts-legend div');
+      for (var i = 0; i < htmlLegendText.length; i++) {
+        patchLegendHTMLElement(htmlLegendText[i], isDark);
+      }
+    }
+  } catch(e) {}
+}
+
+function patchLegendElementTree(el, fallback, isDark) {
+  if (!el || !el.setAttribute) return;
+  var tag = (el.tagName || '').toLowerCase();
+  var cls = (el.getAttribute('class') || '');
+
+  if ((tag === 'text' || tag === 'tspan') && cls.indexOf('highcharts-text-outline') === -1) {
+    var fill = el.getAttribute('fill') || (el.style && (el.style.fill || el.style.color)) || '';
+    var next = fill ? themeNeutralColorValue(fill, isDark) : (tag === 'text' ? fallback : null);
+    if (next !== null) {
+      el.setAttribute('fill', next);
+      if (el.style) {
+        el.style.fill = next;
+        el.style.color = next;
+      }
+    }
+  }
+
+  var kids = el.childNodes || el.children;
+  if (kids) {
+    for (var i = 0; i < kids.length; i++) {
+      patchLegendElementTree(kids[i], fallback, isDark);
+    }
+  }
+}
+
+function patchLegendHTMLElement(el, isDark) {
+  if (!el || !el.style) return;
+  var raw = el.style.color || el.style.fill || '';
+  var next = raw ? themeNeutralColorValue(raw, isDark) : null;
+
+  if (next !== null) {
+    el.style.color = next;
+    el.style.fill = next;
+  }
+}
+
+function bindHighchartsLegendTheme() {
+  if (typeof Highcharts === 'undefined' || !Highcharts.addEvent || !Highcharts.Chart || Highcharts._legendThemeBound360) return;
+  Highcharts._legendThemeBound360 = true;
+  Highcharts.addEvent(Highcharts.Chart, 'render', function() {
+    themeHighchartsLegendText(this, document.documentElement.getAttribute('data-theme') === 'dark');
+  });
 }
 
 /* Patch navigator & scrollbar SVG in-place. chart.update() with navigator
@@ -548,6 +613,7 @@ function getHighchartsThemeOptions() {
 /* ---- auto-apply on load if dark mode already active ---- */
 
 (function boot() {
+  bindHighchartsLegendTheme();
   if (document.documentElement.getAttribute('data-theme') === 'dark') {
     applyHighchartsTheme(true);
   }
