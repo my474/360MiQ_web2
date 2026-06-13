@@ -698,8 +698,12 @@ function patchAxisGridOptions(axes, color) {
 function patchGridLineElement(el, color) {
   if (!el || !el.setAttribute) return;
   el.setAttribute('stroke', color);
+  el.setAttribute('stroke-opacity', '1');
+  el.setAttribute('opacity', '1');
   if (el.style) {
     el.style.stroke = color;
+    el.style.strokeOpacity = '1';
+    el.style.opacity = '1';
   }
 }
 

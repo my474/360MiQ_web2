@@ -155,7 +155,7 @@
   /* ---------- Chart ---------- */
   --chart-bg: #2a2a3e;
   --chart-border: #555;
-  --chart-grid-line: #2e2e2e;
+  --chart-grid-line: #45475f;
   --chart-axis-line: #444;
   --chart-tick-color: #444;
   --chart-axis-label: #cccccc;
@@ -544,6 +544,13 @@
   color: #3a3a4e !important;
   background: #3a3a4e !important;
   border-top: 1px solid #3a3a4e !important;
+}
+
+[data-theme="dark"] .highcharts-grid-line,
+[data-theme="dark"] .highcharts-minor-grid-line {
+  stroke: var(--chart-grid-line) !important;
+  stroke-opacity: 1 !important;
+  opacity: 1 !important;
 }
 
 /* ---- legend rows in HK property table ---- */
