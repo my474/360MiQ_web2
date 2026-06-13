@@ -219,8 +219,10 @@ function applyHighchartsTheme(isDark) {
     for (var i = 0; i < Highcharts.charts.length; i++) {
       var ch = Highcharts.charts[i];
       if (ch && ch.update) {
+        themeHighchartsAxisAccents(ch);
         try { ch.update(opts, true, false); } catch(e) {}
         themeNeutralSeriesColors(ch, isDark);
+        themeHighchartsAxisAccents(ch);
         themeHighchartsChartText(ch, isDark);
         themeHighchartsLegendText(ch, isDark);
       }
@@ -522,11 +524,146 @@ function patchLegendHTMLElement(el, isDark) {
   }
 }
 
+function themeHighchartsAxisAccents(ch) {
+  if (!ch || !ch.yAxis || !ch.yAxis.length) return;
+
+  for (var i = 0; i < ch.yAxis.length; i++) {
+    var axis = ch.yAxis[i];
+    if (!axis) continue;
+
+    rememberAxisAccentColors(axis);
+
+    var titleColor = axis._themeTitleAccent360 || getSingleAxisSeriesAccent(axis);
+    var labelColor = axis._themeLabelAccent360;
+    var lineColor = axis._themeLineAccent360 || titleColor;
+
+    if (titleColor) {
+      patchAxisTitleColor(axis, titleColor);
+    }
+    if (labelColor) {
+      patchAxisLabelColor(axis, labelColor);
+    }
+    if (lineColor) {
+      patchAxisLineColor(axis, lineColor);
+    }
+  }
+}
+
+function rememberAxisAccentColors(axis) {
+  var titleColor = getAxisOptionColor(axis, 'title');
+  var labelColor = getAxisOptionColor(axis, 'labels');
+  var lineColor = axis.userOptions && axis.userOptions.lineColor || axis.options && axis.options.lineColor;
+
+  if (isThemeAccentColor(titleColor)) axis._themeTitleAccent360 = titleColor;
+  if (isThemeAccentColor(labelColor)) axis._themeLabelAccent360 = labelColor;
+  if (isThemeAccentColor(lineColor)) axis._themeLineAccent360 = lineColor;
+}
+
+function getAxisOptionColor(axis, key) {
+  return axis &&
+    ((axis.userOptions && axis.userOptions[key] && axis.userOptions[key].style && axis.userOptions[key].style.color) ||
+    (axis.options && axis.options[key] && axis.options[key].style && axis.options[key].style.color) ||
+    '');
+}
+
+function getSingleAxisSeriesAccent(axis) {
+  if (!axis || !axis.series || !axis.series.length) return null;
+  var color = null;
+
+  for (var i = 0; i < axis.series.length; i++) {
+    var series = axis.series[i];
+    var seriesColor = series && (series.color || (series.options && series.options.color));
+    if (!isThemeAccentColor(seriesColor)) continue;
+    if (color && color.toLowerCase() !== String(seriesColor).toLowerCase()) return null;
+    color = seriesColor;
+  }
+
+  return color;
+}
+
+function isThemeAccentColor(value) {
+  var parsed = parseThemeColor(value);
+  return !!(parsed && parsed.a > 0.2 && !isNeutralThemeColor(parsed));
+}
+
+function patchAxisTitleColor(axis, color) {
+  if (!axis || !color) return;
+  try {
+    if (axis.axisTitle && axis.axisTitle.attr) {
+      axis.axisTitle.attr({ fill: color });
+    }
+    var el = axis.axisTitle && axis.axisTitle.element;
+    if (el) patchSvgTextColor(el, color);
+    ensureAxisStyleColor(axis, 'title', color);
+  } catch(e) {}
+}
+
+function patchAxisLabelColor(axis, color) {
+  if (!axis || !color) return;
+  try {
+    var group = axis.labelGroup && axis.labelGroup.element;
+    if (group && group.querySelectorAll) {
+      var labels = group.querySelectorAll('text,tspan');
+      for (var i = 0; i < labels.length; i++) {
+        patchSvgTextColor(labels[i], color);
+      }
+    }
+    ensureAxisStyleColor(axis, 'labels', color);
+  } catch(e) {}
+}
+
+function patchAxisLineColor(axis, color) {
+  if (!axis || !color) return;
+  try {
+    axis.options = axis.options || {};
+    axis.userOptions = axis.userOptions || {};
+    if (axis.axisLine && axis.axisLine.attr) {
+      axis.axisLine.attr({ stroke: color });
+    }
+    if (axis.tickPositions && axis.ticks) {
+      for (var i = 0; i < axis.tickPositions.length; i++) {
+        var tick = axis.ticks[axis.tickPositions[i]];
+        if (tick && tick.mark && tick.mark.attr) {
+          tick.mark.attr({ stroke: color });
+        }
+      }
+    }
+    axis.options.lineColor = color;
+    axis.options.tickColor = color;
+    axis.userOptions.lineColor = color;
+    axis.userOptions.tickColor = color;
+  } catch(e) {}
+}
+
+function patchSvgTextColor(el, color) {
+  if (!el || !color) return;
+  if (el.setAttribute) {
+    el.setAttribute('fill', color);
+  }
+  if (el.style) {
+    el.style.fill = color;
+    el.style.color = color;
+  }
+}
+
+function ensureAxisStyleColor(axis, key, color) {
+  axis.options = axis.options || {};
+  axis.userOptions = axis.userOptions || {};
+  if (!axis.options[key]) axis.options[key] = {};
+  if (!axis.options[key].style) axis.options[key].style = {};
+  axis.options[key].style.color = color;
+
+  if (!axis.userOptions[key]) axis.userOptions[key] = {};
+  if (!axis.userOptions[key].style) axis.userOptions[key].style = {};
+  axis.userOptions[key].style.color = color;
+}
+
 function bindHighchartsLegendTheme() {
   if (typeof Highcharts === 'undefined' || !Highcharts.addEvent || !Highcharts.Chart || Highcharts._legendThemeBound360) return;
   Highcharts._legendThemeBound360 = true;
   Highcharts.addEvent(Highcharts.Chart, 'render', function() {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeHighchartsAxisAccents(this);
     themeHighchartsChartText(this, isDark);
     themeHighchartsLegendText(this, isDark);
     themeNavScrollbar(this, isDark);
