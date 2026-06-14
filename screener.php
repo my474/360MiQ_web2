@@ -427,6 +427,52 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     color: #e8e8e8;
 }
 
+[data-theme="dark"] #screener_grid_wrapper .dataTables_length select {
+    background-color: #242438 !important;
+    border-color: #6f74a8 !important;
+    color: #e8e8e8 !important;
+    box-shadow: none !important;
+}
+
+[data-theme="dark"] #screener_grid_wrapper .dataTables_length select:focus {
+    border-color: #8ec8ff !important;
+    box-shadow: 0 0 0 0.2rem rgba(142, 200, 255, 0.2) !important;
+}
+
+[data-theme="dark"] #screener_grid_wrapper .dataTables_length select option {
+    background-color: #242438;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] div.dt-button-collection {
+    background-color: #242438 !important;
+    border-color: #4a4a63 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-theme="dark"] div.dt-button-collection .dt-button:not(.active),
+[data-theme="dark"] div.dt-button-collection .dropdown-item:not(.active) {
+    background-color: #242438 !important;
+    background-image: none !important;
+    color: #e8e8e8 !important;
+}
+
+[data-theme="dark"] div.dt-button-collection .dt-button.active,
+[data-theme="dark"] div.dt-button-collection .dropdown-item.active {
+    background-color: #008cff !important;
+    background-image: none !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] div.dt-button-collection .dt-button:hover,
+[data-theme="dark"] div.dt-button-collection .dt-button:focus,
+[data-theme="dark"] div.dt-button-collection .dropdown-item:hover,
+[data-theme="dark"] div.dt-button-collection .dropdown-item:focus {
+    background-color: #147dce !important;
+    background-image: none !important;
+    color: #ffffff !important;
+}
+
 [data-theme="dark"] #screener_grid_processing {
     background-color: #242438;
     color: #e8e8e8;
