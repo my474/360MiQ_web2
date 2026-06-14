@@ -1,5 +1,7 @@
 function adpie(container, datestr, advValue, title, fullname, link){   
 
+    var percentLabelStyle = 'color:#000000;-webkit-text-stroke:1px #ffffff;text-shadow:1px 0 #ffffff,-1px 0 #ffffff,0 1px #ffffff,0 -1px #ffffff;font-weight:700;';
+
     Highcharts.chart(container, {
     
         chart: {
@@ -28,6 +30,10 @@ function adpie(container, datestr, advValue, title, fullname, link){
                 dataLabels: {
                     enabled: false,
                     distance: -10,
+                    useHTML: true,
+                    formatter: function () {
+                        return '<span style="' + percentLabelStyle + '">' + this.point.name + '</span>';
+                    },
                     style: {
                         color: '#000000',
                         fontSize: '10px',
@@ -81,6 +87,10 @@ function adpie(container, datestr, advValue, title, fullname, link){
             {
                 dataLabels: {
                     enabled: true,
+                    useHTML: true,
+                    formatter: function () {
+                        return '<span style="' + percentLabelStyle + '">' + this.point.name + '</span>';
+                    },
                     style: {
                         color: '#000000',
                         textOutline: '2px #ffffff'
@@ -127,6 +137,10 @@ function adpie(container, datestr, advValue, title, fullname, link){
             {
                 dataLabels: {
                     enabled: true,
+                    useHTML: true,
+                    formatter: function () {
+                        return '<span style="' + percentLabelStyle + '">' + this.point.name + '</span>';
+                    },
                     style: {
                         color: '#000000',
                         textOutline: '2px #ffffff'

@@ -367,6 +367,8 @@
   background-color: var(--bg-secondary);
 }
 
+[data-theme="dark"] .nav-tabs .nav-link:not(.active),
+[data-theme="dark"] .nav-tabs .nav-link.mynav-link:not(.active),
 [data-theme="dark"] .nav-tabs .nav-link.nl:not(.active) {
   color: var(--text-link-bright) !important;
 }
