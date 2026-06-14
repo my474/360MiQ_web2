@@ -99,6 +99,17 @@
 <!--script type="text/javascript" src="assets/js/compromise.min.js"></script-->
 <script src="https://unpkg.com/compromise"></script>
 <style>
+html[data-theme="dark"] .nav-tabs .nav-link:hover,
+html[data-theme="dark"] .nav-tabs .nav-link:focus,
+html[data-theme="dark"] .nav-tabs .nav-link.active:hover,
+html[data-theme="dark"] .nav-tabs .nav-link.active:focus,
+html[data-theme="dark"] .nav-tabs .nav-item.show .nav-link:hover,
+html[data-theme="dark"] .nav-tabs .nav-item.show .nav-link:focus {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+</style>
+<style>
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,600");
 .chatbot {
 position: fixed;
