@@ -505,6 +505,20 @@
   color: #6ea8ff !important;
 }
 
+[data-theme="dark"] .page-footer.dark a {
+  color: #d2d1d1 !important;
+}
+
+[data-theme="dark"] .page-footer.dark a:hover,
+[data-theme="dark"] .page-footer.dark a:focus {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .page-footer.dark a[style*="color: #aaa"],
+[data-theme="dark"] .page-footer.dark a[style*="color:#aaa"] {
+  color: #aaa !important;
+}
+
 /* ============================
    LOADER DOT — dark mode override
    ============================ */
