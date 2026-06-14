@@ -243,15 +243,23 @@ figure {
         text-align: left;
     }
     [data-theme="dark"] .suggestions {
-      background: var(--bg-card);
-      border-color: var(--border-color);
+      background: #1e1e32;
+      border-color: #3a3a4e;
+      color: #e8e8e8;
     }
     .suggestion-item {
         padding: 8px 12px;
         cursor: pointer;
     }
+    [data-theme="dark"] .suggestion-item {
+        background-color: #1e1e32;
+        color: #e8e8e8;
+    }
     .suggestion-item:nth-child(even) {
         background-color: #ECF6FC;
+    }
+    [data-theme="dark"] .suggestion-item:nth-child(even) {
+        background-color: #242438;
     }
     .suggestion-item div {
         white-space: nowrap;
@@ -265,12 +273,21 @@ figure {
         font-weight: bold;
         border: none;
     }
+    [data-theme="dark"] .suggestions:not(:has(.keyboard-highlight, .highlight)) .suggestion-item:hover {
+        background-color: #147dce;
+        color: #ffffff;
+    }
     /* Mouseover highlight via JavaScript */
     .suggestion-item.highlight {
         background-color: #007bff !important;
         color: #ffffff !important;
         font-weight: bold !important;
         border: none !important;
+    }
+    [data-theme="dark"] .suggestion-item.highlight,
+    [data-theme="dark"] .suggestion-item.keyboard-highlight {
+        background-color: #147dce !important;
+        color: #ffffff !important;
     }
     /* Keyboard highlight */
     .suggestion-item.keyboard-highlight {
@@ -431,6 +448,38 @@ figure {
     border-color: #8ec8ff;
     color: #ffffff;
     box-shadow: 0 0 0 0.2rem rgba(142, 200, 255, 0.2);
+}
+
+[data-theme="dark"] #raceInput,
+[data-theme="dark"] #raceInput:hover,
+[data-theme="dark"] #raceInput:focus,
+[data-theme="dark"] #raceInput:active {
+    background-color: #242438 !important;
+    border-color: #8ec8ff !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+[data-theme="dark"] #raceInput:not(:focus) {
+    border-color: #6f74a8 !important;
+    box-shadow: none !important;
+}
+
+[data-theme="dark"] #raceInput:focus {
+    box-shadow: 0 0 0 0.2rem rgba(142, 200, 255, 0.2) !important;
+}
+
+[data-theme="dark"] #raceInput:-webkit-autofill,
+[data-theme="dark"] #raceInput:-webkit-autofill:hover,
+[data-theme="dark"] #raceInput:-webkit-autofill:focus,
+[data-theme="dark"] #raceInput:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 0 0 1000px #242438 inset !important;
+    caret-color: #ffffff;
+}
+
+[data-theme="dark"] #raceInput::-webkit-search-cancel-button {
+    filter: invert(1) brightness(1.4);
 }
 
 [data-theme="dark"] #play-range {

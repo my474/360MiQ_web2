@@ -448,17 +448,6 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     background-color: #242438 !important;
     border-color: #4a4a63 !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-}
-
-[data-theme="dark"] div.dt-button-collection .dropdown-menu,
-[data-theme="dark"] div.dt-button-collection div[role="menu"] {
-    background-color: #242438 !important;
-    background-image: none !important;
-    border-color: #4a4a63 !important;
-    margin: 0 !important;
-    padding: 0 !important;
 }
 
 [data-theme="dark"] div.dt-button-collection .dt-button:not(.active),
