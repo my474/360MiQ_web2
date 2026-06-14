@@ -336,22 +336,29 @@
    NAVBAR — override Bootstrap classes
    ============================ */
 
+.navbar .nav-analysis-link,
+.navbar .nav-analysis-link:link,
+.navbar .nav-analysis-link:visited {
+  color: #000000 !important;
+  font-weight: 700;
+}
+
 [data-theme="dark"] .navbar {
   background-color: var(--bg-navbar) !important;
 }
 
 [data-theme="dark"] .navbar .nav-link,
 [data-theme="dark"] .navbar .navbar-brand {
-  color: var(--text-secondary) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .navbar .nav-link:hover,
 [data-theme="dark"] .navbar .navbar-brand:hover {
-  color: var(--text-primary) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .navbar .navbar-toggler .navtitle {
-  color: var(--text-secondary);
+  color: #ffffff;
 }
 
 [data-theme="dark"] .navbar .dropdown-menu {
@@ -359,11 +366,11 @@
 }
 
 [data-theme="dark"] .navbar .dropdown-item {
-  color: var(--text-secondary);
+  color: #ffffff;
 }
 
 [data-theme="dark"] .navbar .dropdown-item:hover {
-  color: var(--text-primary);
+  color: #ffffff;
   background-color: var(--bg-secondary);
 }
 

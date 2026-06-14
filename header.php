@@ -59,7 +59,7 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/blog">Analysis</a>
+        <a class="nav-link nav-analysis-link" href="/blog">Analysis</a>
       </li>
       <!-- li class="nav-item">
         <a class="nav-link" href="/blog/wp-login.php" target="_blank"><i class="fa-solid fa-pen-clip fa-xl" title="Analysis Contributor Login/Register&#10;&#10;Free Sign-up for Everyone!"></i></a>
