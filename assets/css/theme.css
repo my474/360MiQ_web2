@@ -100,7 +100,7 @@
   --bg-secondary: #1a1a1a;
   --bg-card: #1e1e32;
   --bg-card-header: #2a2a3e;
-  --bg-navbar: #1a1a2e;
+  --bg-navbar: #22233a;
   --bg-bottom-nav: #1a1a2e;
   --bg-chatbot-header: #5f3dc4;
   --bg-chatbot-header-hover: #7048e8;
@@ -362,7 +362,7 @@
 }
 
 [data-theme="dark"] .navbar .dropdown-menu {
-  background-color: var(--bg-card);
+  background-color: var(--bg-navbar);
 }
 
 [data-theme="dark"] .navbar .dropdown-item {
