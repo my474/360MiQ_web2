@@ -42,6 +42,45 @@ function forceScoreGaugeZoneLabels(chart) {
     }
 }
 
+function forceScoreGaugeAxisMarks(chart) {
+    if (!chart || !chart.container || !chart.container.querySelectorAll) {
+        return;
+    }
+
+    var marks = chart.container.querySelectorAll(
+        '.highcharts-axis-line, ' +
+        '.highcharts-tick, ' +
+        '.highcharts-minor-tick, ' +
+        '.highcharts-grid-line, ' +
+        '.highcharts-minor-grid-line, ' +
+        '.highcharts-plot-line'
+    );
+
+    for (var i = 0; i < marks.length; i++) {
+        var mark = marks[i];
+        mark.setAttribute('stroke', 'transparent');
+        mark.setAttribute('stroke-opacity', '0');
+        mark.setAttribute('opacity', '0');
+        if (mark.style) {
+            mark.style.stroke = 'transparent';
+            mark.style.strokeOpacity = '0';
+            mark.style.opacity = '0';
+        }
+    }
+}
+
+function forceScoreGaugeTheme(chart) {
+    forceScoreGaugeZoneLabels(chart);
+    forceScoreGaugeAxisMarks(chart);
+}
+
+function forceScoreGaugeThemeAfterRender(chart) {
+    forceScoreGaugeTheme(chart);
+    setTimeout(function () {
+        forceScoreGaugeTheme(chart);
+    }, 0);
+}
+
 function mscore(stockcode, value, industryValue, mrq) {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var radius = '100%';
@@ -98,7 +137,7 @@ function mscore(stockcode, value, industryValue, mrq) {
             },
             events: {
                 render: function () {
-                    forceScoreGaugeZoneLabels(this);
+                    forceScoreGaugeThemeAfterRender(this);
                 }
             }
         },
@@ -145,14 +184,20 @@ function mscore(stockcode, value, industryValue, mrq) {
         },
 		yAxis: [{
             lineWidth: 0,
+            lineColor: 'transparent',
 	        min: min,
 	        max: max,
             gridLineWidth: 0,
+            gridLineColor: 'transparent',
             minorGridLineWidth: 0,
+            minorGridLineColor: 'transparent',
             minorTickInterval: null,
             minorTickLength: 0,
+            minorTickWidth: 0,
+            minorTickColor: 'transparent',
             tickLength: 0,
             tickWidth: 0,
+            tickColor: 'transparent',
             tickPositions: [border],
             labels: {
                 step: 1,
@@ -245,7 +290,7 @@ function mscore(stockcode, value, industryValue, mrq) {
             },
         }],
     });
-    forceScoreGaugeZoneLabels(chart);
+    forceScoreGaugeThemeAfterRender(chart);
     
     var animate = true;
     chart.container.onmouseover = function() {
@@ -330,10 +375,10 @@ function zscore(stockcode, value, industryValue, mrq) {
             plotShadow: false,
             style: {
                     fontFamily: 'Montserrat'
-                },
+            },
             events: {
                 render: function () {
-                    forceScoreGaugeZoneLabels(this);
+                    forceScoreGaugeThemeAfterRender(this);
                 }
             }
         },
@@ -380,14 +425,20 @@ function zscore(stockcode, value, industryValue, mrq) {
         },
 		yAxis: [{
             lineWidth: 0,
+            lineColor: 'transparent',
 	        min: min,
 	        max: max,
             gridLineWidth: 0,
+            gridLineColor: 'transparent',
             minorGridLineWidth: 0,
+            minorGridLineColor: 'transparent',
             minorTickInterval: null,
             minorTickLength: 0,
+            minorTickWidth: 0,
+            minorTickColor: 'transparent',
             tickLength: 0,
             tickWidth: 0,
+            tickColor: 'transparent',
             tickPositions: [min, 1.81, 2.99, max],
             labels: {
                 step: 1,
@@ -480,7 +531,7 @@ function zscore(stockcode, value, industryValue, mrq) {
             },
         }],
     });
-    forceScoreGaugeZoneLabels(chart);
+    forceScoreGaugeThemeAfterRender(chart);
     
     var animate = true;
     chart.container.onmouseover = function() {
