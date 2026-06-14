@@ -412,6 +412,147 @@ figure {
     color: #fff;
 }
 
+[data-theme="dark"] #tab-1 .form-control,
+[data-theme="dark"] #tab-1 .js-input-from,
+[data-theme="dark"] #tab-1 .js-input-to {
+    background-color: #242438;
+    border-color: #6f74a8;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-1 .form-control::placeholder {
+    color: #9a9aaa;
+}
+
+[data-theme="dark"] #tab-1 .form-control:focus,
+[data-theme="dark"] #tab-1 .js-input-from:focus,
+[data-theme="dark"] #tab-1 .js-input-to:focus {
+    background-color: #242438;
+    border-color: #8ec8ff;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(142, 200, 255, 0.2);
+}
+
+[data-theme="dark"] #play-range {
+    background: transparent;
+}
+
+[data-theme="dark"] #play-range::-webkit-slider-runnable-track {
+    height: 6px;
+    background: #4a4a63;
+    border-radius: 6px;
+}
+
+[data-theme="dark"] #play-range::-webkit-slider-thumb {
+    margin-top: -7px;
+}
+
+[data-theme="dark"] #play-range::-moz-range-track {
+    height: 6px;
+    background: #4a4a63;
+    border-radius: 6px;
+}
+
+[data-theme="dark"] #play-range::-moz-range-thumb {
+    background: #007bff;
+    border-color: #007bff;
+}
+
+[data-theme="dark"] .irs--round .irs-line {
+    background-color: #4a4a63;
+}
+
+[data-theme="dark"] .irs--round .irs-min,
+[data-theme="dark"] .irs--round .irs-max,
+[data-theme="dark"] .irs--round .irs-grid-text {
+    color: #b8b8c8;
+}
+
+[data-theme="dark"] #tab-2 .control-container {
+    background-color: #242438;
+    border-color: #6f74a8;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 .control-group label {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 .form-control {
+    background-color: #1e1e32;
+    border-color: #6f74a8;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 .form-control::placeholder {
+    color: #9a9aaa;
+}
+
+[data-theme="dark"] #tab-2 .form-control:focus {
+    background-color: #1e1e32;
+    border-color: #8ec8ff;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(142, 200, 255, 0.2);
+}
+
+[data-theme="dark"] #tab-2 select.form-control option,
+[data-theme="dark"] #tab-2 select.form-control optgroup {
+    background-color: #1e1e32;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 .combo-box .dropdown-arrow {
+    color: #b8b8c8;
+}
+
+[data-theme="dark"] #tab-2 .ui-autocomplete {
+    background-color: #1e1e32;
+    border-color: #6f74a8;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 .ui-autocomplete .ui-menu-item {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 .ui-autocomplete .ui-menu-item:nth-child(even) {
+    background-color: #242438;
+}
+
+[data-theme="dark"] #tab-2 .ui-autocomplete .ui-state-active {
+    background-color: #147dce;
+    color: #ffffff;
+}
+
+[data-theme="dark"] #series-list {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .highcharts-stocktools-wrapper,
+[data-theme="dark"] .highcharts-bindings-wrapper,
+[data-theme="dark"] .highcharts-bindings-wrapper .highcharts-submenu-wrapper {
+    background-color: #242438;
+    border-color: #6f74a8;
+}
+
+[data-theme="dark"] .highcharts-bindings-wrapper li,
+[data-theme="dark"] .highcharts-menu-item-btn {
+    background-color: #242438;
+    border-color: #6f74a8;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .highcharts-bindings-wrapper li:hover,
+[data-theme="dark"] .highcharts-menu-item-btn:hover,
+[data-theme="dark"] .highcharts-bindings-wrapper li.highcharts-active {
+    background-color: #33335a;
+}
+
+[data-theme="dark"] .highcharts-bindings-wrapper li > span,
+[data-theme="dark"] .highcharts-menu-item-btn {
+    filter: invert(1) brightness(1.3);
+}
+
 /* Optional styling for optgroup labels */
 select optgroup {
     color: #6c757d;
