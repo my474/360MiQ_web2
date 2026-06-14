@@ -356,6 +356,76 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     position: fixed;
     z-index: 999999;
 }
+
+[data-theme="dark"] #screenerrule,
+[data-theme="dark"] #Result,
+[data-theme="dark"] #searchresult {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    color: #d8d8e8 !important;
+    box-shadow: none;
+}
+
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle:hover,
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle:focus {
+    color: #ffffff !important;
+    background-color: #2a2a3e !important;
+}
+
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle:disabled {
+    color: #8f8fa3 !important;
+    background-color: #242438 !important;
+    opacity: 1;
+}
+
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle u {
+    color: #bfc6ff;
+    text-decoration-color: #555a85;
+}
+
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle span[style*="background-color:yellow"],
+[data-theme="dark"] #screenerrule .btn.btn-default.dropdown-toggle span[style*="background-color: yellow"] {
+    background-color: #ffd84d !important;
+    color: #111111 !important;
+}
+
+[data-theme="dark"] .dropdown-menu.screener {
+    background-color: #242438;
+    border-color: #4b5cff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .dropdown-menu.screener .dropdown-item {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .dropdown-menu.screener .dropdown-item:hover,
+[data-theme="dark"] .dropdown-menu.screener .dropdown-item:focus {
+    color: #ffffff;
+    background-color: #33335a;
+}
+
+[data-theme="dark"] .dropdown-menu.screener .dropdown-divider {
+    border-top-color: #3a3a4e;
+}
+
+[data-theme="dark"] #screener_grid,
+[data-theme="dark"] #screener_grid_wrapper,
+[data-theme="dark"] #screener_grid_wrapper .dataTables_info,
+[data-theme="dark"] #screener_grid_wrapper .dataTables_length,
+[data-theme="dark"] #screener_grid_wrapper .dataTables_filter {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #screener_grid_processing {
+    background-color: #242438;
+    color: #e8e8e8;
+    border: 1px solid #3a3a4e;
+}
 </style>
 <div id="screenerrule" class="card clean-card text-center container" style="padding: 0;">
             <!--<div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
