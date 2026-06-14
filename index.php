@@ -63,6 +63,10 @@ a:hover.recentpost {
 [data-theme="dark"] a.recentpost {
     color: #6ea8ff;
 }
+[data-theme="dark"] div[id^="featuredposttitle"] a.recentpost {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
 </style>
 <style>
     #news-bar {
