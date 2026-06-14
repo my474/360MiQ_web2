@@ -80,6 +80,14 @@ html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle::before {
   outline: none;
 }
 
+.menu-primary-items a[href$="/blog"],
+.menu-primary-items a[href$="/blog/"],
+.menu-unset ul a[href$="/blog"],
+.menu-unset ul a[href$="/blog/"] {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
 html[data-theme="dark"],
 html[data-theme="dark"] body {
   background: var(--miq-blog-dark-bg);
@@ -197,6 +205,43 @@ html[data-theme="dark"] .menu-unset ul a,
 html[data-theme="dark"] .menu-unset ul a:link,
 html[data-theme="dark"] .menu-unset ul a:visited {
   color: var(--miq-blog-dark-blue);
+}
+
+html[data-theme="dark"] .site-header .menu-primary-items a,
+html[data-theme="dark"] .site-header .menu-primary-items a:link,
+html[data-theme="dark"] .site-header .menu-primary-items a:visited,
+html[data-theme="dark"] .site-header .menu-primary-items a:hover,
+html[data-theme="dark"] .site-header .menu-primary-items a:active,
+html[data-theme="dark"] .site-header .menu-primary-items a:focus,
+html[data-theme="dark"] .site-header .menu-unset ul a,
+html[data-theme="dark"] .site-header .menu-unset ul a:link,
+html[data-theme="dark"] .site-header .menu-unset ul a:visited,
+html[data-theme="dark"] .site-header .menu-unset ul a:hover,
+html[data-theme="dark"] .site-header .menu-unset ul a:active,
+html[data-theme="dark"] .site-header .menu-unset ul a:focus,
+html[data-theme="dark"] .site-header .menu-primary-items li.current-menu-item > a,
+html[data-theme="dark"] .site-header .menu-unset ul li.current-menu-item > a {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .site-header .menu-primary-items li.menu-item-has-children:hover > a,
+html[data-theme="dark"] .site-header .menu-unset ul li.menu-item-has-children:hover > a {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .site-header .menu-primary-items li.menu-item-has-children > a:after,
+html[data-theme="dark"] .site-header .menu-primary-items li.menu-item-has-children:hover > a:after,
+html[data-theme="dark"] .site-header .menu-unset ul li.menu-item-has-children > a:after,
+html[data-theme="dark"] .site-header .menu-unset ul li.menu-item-has-children:hover > a:after {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .site-header .menu-primary-items a[href$="/blog"],
+html[data-theme="dark"] .site-header .menu-primary-items a[href$="/blog/"],
+html[data-theme="dark"] .site-header .menu-unset ul a[href$="/blog"],
+html[data-theme="dark"] .site-header .menu-unset ul a[href$="/blog/"] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
 html[data-theme="dark"] a:hover,
@@ -471,6 +516,17 @@ html[data-theme="dark"] .chatbot__input {
   background: #1e1e32 !important;
   background-color: #1e1e32 !important;
   color: #e8e8e8 !important;
+}
+
+.chatbot__input {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.chatbot__input::-webkit-scrollbar {
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
 }
 
 html[data-theme="dark"] .chatbot__input::placeholder,
