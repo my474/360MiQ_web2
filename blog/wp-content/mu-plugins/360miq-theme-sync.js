@@ -27,17 +27,17 @@
     return htmlEl.getAttribute('data-theme') === 'dark';
   }
 
+  function getToggleButton() {
+    return document.getElementById('theme-toggle') || document.getElementById('miq360-blog-theme-toggle');
+  }
+
   function updateToggleIcon(dark) {
-    var btn = document.getElementById('miq360-blog-theme-toggle');
+    var btn = getToggleButton();
     if (!btn) return;
 
     var label = dark ? 'Switch to light mode' : 'Switch to dark mode';
-    var icon = btn.querySelector('.miq360-theme-toggle-icon');
 
-    if (icon) {
-      icon.textContent = dark ? '\uD83C\uDF19' : '\u2600\uFE0F';
-    }
-
+    btn.innerHTML = dark ? '&#x1F319;' : '&#x2600;&#xFE0F;';
     btn.title = label;
     btn.setAttribute('aria-label', label);
     btn.classList.add('is-ready');
@@ -73,7 +73,7 @@
   }
 
   function initToggle() {
-    var btn = document.getElementById('miq360-blog-theme-toggle');
+    var btn = getToggleButton();
     if (!btn) return;
 
     btn.addEventListener('click', function(e) {

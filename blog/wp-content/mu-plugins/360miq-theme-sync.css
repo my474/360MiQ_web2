@@ -16,39 +16,48 @@
   margin-bottom: 0.75em;
 }
 
+.menu-primary-items #theme-toggle.miq360-theme-toggle,
+.menu-unset ul #theme-toggle.miq360-theme-toggle,
 .menu-primary-items .miq360-theme-toggle,
 .menu-unset ul .miq360-theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid #20a4e6;
-  border-radius: 3px;
+  display: inline-block;
   background: transparent;
-  color: #20a4e6;
+  border: none;
+  color: #f9a825;
   cursor: pointer;
   font-family: inherit;
-  font-size: 18px;
-  line-height: 1;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  font-size: 1.2rem;
+  line-height: inherit;
+  min-width: 1.5rem;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  top: 3px;
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
+.menu-primary-items #theme-toggle.miq360-theme-toggle:not(.is-ready),
+.menu-unset ul #theme-toggle.miq360-theme-toggle:not(.is-ready),
 .menu-primary-items .miq360-theme-toggle:not(.is-ready),
 .menu-unset ul .miq360-theme-toggle:not(.is-ready) {
   visibility: hidden;
 }
 
+.menu-primary-items #theme-toggle.miq360-theme-toggle:hover,
+.menu-primary-items #theme-toggle.miq360-theme-toggle:active,
+.menu-primary-items #theme-toggle.miq360-theme-toggle:focus,
+.menu-unset ul #theme-toggle.miq360-theme-toggle:hover,
+.menu-unset ul #theme-toggle.miq360-theme-toggle:active,
+.menu-unset ul #theme-toggle.miq360-theme-toggle:focus,
 .menu-primary-items .miq360-theme-toggle:hover,
 .menu-primary-items .miq360-theme-toggle:active,
 .menu-primary-items .miq360-theme-toggle:focus,
 .menu-unset ul .miq360-theme-toggle:hover,
 .menu-unset ul .miq360-theme-toggle:active,
 .menu-unset ul .miq360-theme-toggle:focus {
-  border-color: #23b6ff;
-  background: #23b6ff;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f9a825;
   outline: none;
 }
 
@@ -198,21 +207,30 @@ html[data-theme="dark"] .menu-unset ul li.menu-item-has-children:hover > a:after
   color: var(--miq-blog-dark-blue-hover);
 }
 
+html[data-theme="dark"] .menu-primary-items #theme-toggle.miq360-theme-toggle,
+html[data-theme="dark"] .menu-unset ul #theme-toggle.miq360-theme-toggle,
 html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle,
 html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle {
-  border-color: var(--miq-blog-dark-blue);
-  color: var(--miq-blog-dark-blue);
+  background: transparent;
+  border: none;
+  color: #9ecbff !important;
 }
 
+html[data-theme="dark"] .menu-primary-items #theme-toggle.miq360-theme-toggle:hover,
+html[data-theme="dark"] .menu-primary-items #theme-toggle.miq360-theme-toggle:active,
+html[data-theme="dark"] .menu-primary-items #theme-toggle.miq360-theme-toggle:focus,
+html[data-theme="dark"] .menu-unset ul #theme-toggle.miq360-theme-toggle:hover,
+html[data-theme="dark"] .menu-unset ul #theme-toggle.miq360-theme-toggle:active,
+html[data-theme="dark"] .menu-unset ul #theme-toggle.miq360-theme-toggle:focus,
 html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle:hover,
 html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle:active,
 html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle:focus,
 html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:hover,
 html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:active,
 html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:focus {
-  border-color: var(--miq-blog-dark-blue-hover);
-  background: var(--miq-blog-dark-blue);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #9ecbff !important;
 }
 
 html[data-theme="dark"] .post-author,
