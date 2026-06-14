@@ -656,6 +656,15 @@ background-color: #1a1a2e;
 color: #e8e8e8;
 }
 
+[data-theme="dark"] .chatbot__header {
+background-color: #5f3dc4;
+color: #fff;
+}
+
+[data-theme="dark"] .chatbot__header:hover {
+background-color: #7048e8;
+}
+
 [data-theme="dark"] .is-ai .chatbot__message {
 background-color: #2a2a3e;
 color: #e8e8e8;
