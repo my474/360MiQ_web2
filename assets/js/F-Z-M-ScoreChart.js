@@ -1,3 +1,47 @@
+function scoreGaugeZoneLabelStyle(fontSize) {
+    return {
+        color: '#ffffff',
+        fill: '#ffffff',
+        fontWeight: 'bold',
+        textOutline: '1px #000000',
+        textShadow: '0px 1px 1px black',
+        fontSize: fontSize
+    };
+}
+
+function forceScoreGaugeZoneLabels(chart) {
+    if (!chart || !chart.container || !chart.container.querySelectorAll) {
+        return;
+    }
+
+    var labels = chart.container.querySelectorAll(
+        '.highcharts-pie-series.highcharts-data-labels text, ' +
+        '.highcharts-pie-series.highcharts-data-labels tspan, ' +
+        '.highcharts-series-0.highcharts-data-labels text, ' +
+        '.highcharts-series-0.highcharts-data-labels tspan'
+    );
+
+    for (var i = 0; i < labels.length; i++) {
+        var label = labels[i];
+        if (label.removeAttribute) {
+            label.removeAttribute('data-theme-label-patched');
+        }
+        if (label.classList && label.classList.contains('highcharts-text-outline')) {
+            label.setAttribute('fill', '#000000');
+            label.setAttribute('stroke', '#000000');
+            continue;
+        }
+
+        label.setAttribute('fill', '#ffffff');
+        label.style.color = '#ffffff';
+        label.style.fill = '#ffffff';
+        label.style.stroke = '#000000';
+        label.style.strokeWidth = '2px';
+        label.style.strokeLinejoin = 'round';
+        label.style.paintOrder = 'stroke';
+    }
+}
+
 function mscore(stockcode, value, industryValue, mrq) {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var radius = '100%';
@@ -51,6 +95,11 @@ function mscore(stockcode, value, industryValue, mrq) {
             plotShadow: false,
             style: {
                 fontFamily: 'Montserrat'
+            },
+            events: {
+                render: function () {
+                    forceScoreGaugeZoneLabels(this);
+                }
             }
         },
         title: {
@@ -98,6 +147,9 @@ function mscore(stockcode, value, industryValue, mrq) {
             lineWidth: 0,
 	        min: min,
 	        max: max,
+            gridLineWidth: 0,
+            minorGridLineWidth: 0,
+            minorTickInterval: null,
             minorTickLength: 0,
             tickLength: 0,
             tickWidth: 0,
@@ -140,12 +192,7 @@ function mscore(stockcode, value, industryValue, mrq) {
                     distance: -50,
                     x: 0,
                     y: -40,
-                    style: {
-                        //fontWeight: 'bold',
-                        color: 'white',
-                        textShadow: '0px 1px 1px black',
-                        fontSize: '9px' 
-                    },
+                    style: scoreGaugeZoneLabelStyle('9px'),
                 },
                 startAngle: -90,
                 endAngle: 90,
@@ -198,6 +245,7 @@ function mscore(stockcode, value, industryValue, mrq) {
             },
         }],
     });
+    forceScoreGaugeZoneLabels(chart);
     
     var animate = true;
     chart.container.onmouseover = function() {
@@ -282,7 +330,12 @@ function zscore(stockcode, value, industryValue, mrq) {
             plotShadow: false,
             style: {
                     fontFamily: 'Montserrat'
+                },
+            events: {
+                render: function () {
+                    forceScoreGaugeZoneLabels(this);
                 }
+            }
         },
         title: {
             text: 'Altman Z-Score',
@@ -329,6 +382,9 @@ function zscore(stockcode, value, industryValue, mrq) {
             lineWidth: 0,
 	        min: min,
 	        max: max,
+            gridLineWidth: 0,
+            minorGridLineWidth: 0,
+            minorTickInterval: null,
             minorTickLength: 0,
             tickLength: 0,
             tickWidth: 0,
@@ -370,12 +426,7 @@ function zscore(stockcode, value, industryValue, mrq) {
                     distance: -40,
                     x: -10,
                     y: -12,
-                    style: {
-                        //fontWeight: 'bold',
-                        color: 'white',
-                        textShadow: '0px 1px 1px black',
-                        fontSize: '10px' 
-                    }
+                    style: scoreGaugeZoneLabelStyle('10px')
                 },
                 startAngle: -90,
                 endAngle: 90,
@@ -429,6 +480,7 @@ function zscore(stockcode, value, industryValue, mrq) {
             },
         }],
     });
+    forceScoreGaugeZoneLabels(chart);
     
     var animate = true;
     chart.container.onmouseover = function() {
