@@ -7,6 +7,7 @@ function adpie(container, datestr, advValue, title, fullname, link){
             if (!point.noTooltip || !point.dataLabel || !point.dataLabel.element) return;
 
             var label = point.dataLabel.element;
+            label.classList.add('advdec-percent-label');
             var text = label.querySelector('text');
             if (text) {
                 text.setAttribute('fill', '#000000');
@@ -122,6 +123,7 @@ function adpie(container, datestr, advValue, title, fullname, link){
             {
                 dataLabels: {
                     enabled: true,
+                    className: 'advdec-percent-label',
                     style: {
                         color: '#000000',
                         fill: '#000000',
@@ -169,6 +171,7 @@ function adpie(container, datestr, advValue, title, fullname, link){
             {
                 dataLabels: {
                     enabled: true,
+                    className: 'advdec-percent-label',
                     style: {
                         color: '#000000',
                         fill: '#000000',

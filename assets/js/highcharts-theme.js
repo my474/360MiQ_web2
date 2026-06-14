@@ -466,6 +466,8 @@ function themeHighchartsChartText(ch, isDark) {
 
 function patchChartTextElement(el, fallback, isDark) {
   if (!el || !el.setAttribute) return;
+  if (el.closest && el.closest('.advdec-percent-label')) return;
+
   var cls = el.getAttribute('class') || '';
   if (cls.indexOf('highcharts-text-outline') !== -1) return;
 

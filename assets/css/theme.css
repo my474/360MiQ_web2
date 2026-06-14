@@ -375,7 +375,40 @@
 
 [data-theme="dark"] .navbar .btn-outline-primary,
 [data-theme="dark"] .navbar .btn-outline-primary .fa-search {
+  border-color: var(--text-link-bright) !important;
   color: var(--text-link-bright) !important;
+}
+
+[data-theme="dark"] .navbar .btn-outline-primary:hover,
+[data-theme="dark"] .navbar .btn-outline-primary:focus,
+[data-theme="dark"] .navbar .btn-outline-primary:active,
+[data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled):active,
+[data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled).active,
+[data-theme="dark"] .navbar .show > .btn-outline-primary.dropdown-toggle {
+  background-color: var(--text-link-bright) !important;
+  border-color: var(--text-link-bright) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .navbar .btn-outline-primary:hover .fa-search,
+[data-theme="dark"] .navbar .btn-outline-primary:focus .fa-search,
+[data-theme="dark"] .navbar .btn-outline-primary:active .fa-search,
+[data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled):active .fa-search,
+[data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled).active .fa-search {
+  color: #ffffff !important;
+}
+
+.highcharts-data-label.advdec-percent-label text,
+.highcharts-data-label.advdec-percent-label tspan:not(.highcharts-text-outline) {
+  color: #000000 !important;
+  fill: #000000 !important;
+  stroke: none !important;
+}
+
+.highcharts-data-label.advdec-percent-label .highcharts-text-outline {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  stroke-width: 2px !important;
 }
 
 /* ============================
