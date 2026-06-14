@@ -37,7 +37,7 @@
 
     var label = dark ? 'Switch to light mode' : 'Switch to dark mode';
 
-    btn.innerHTML = dark ? '&#x1F319;' : '&#x2600;&#xFE0F;';
+    btn.textContent = '';
     btn.title = label;
     btn.setAttribute('aria-label', label);
     btn.classList.add('is-ready');

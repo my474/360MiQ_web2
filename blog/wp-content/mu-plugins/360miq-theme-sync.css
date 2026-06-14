@@ -44,6 +44,25 @@
   visibility: hidden;
 }
 
+.menu-primary-items #theme-toggle.miq360-theme-toggle::before,
+.menu-unset ul #theme-toggle.miq360-theme-toggle::before,
+.menu-primary-items .miq360-theme-toggle::before,
+.menu-unset ul .miq360-theme-toggle::before {
+  content: "\2600\FE0F";
+  display: inline-block;
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif !important;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+}
+
+html[data-theme="dark"] .menu-primary-items #theme-toggle.miq360-theme-toggle::before,
+html[data-theme="dark"] .menu-unset ul #theme-toggle.miq360-theme-toggle::before,
+html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle::before,
+html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle::before {
+  content: "\01F319";
+}
+
 .menu-primary-items #theme-toggle.miq360-theme-toggle:hover,
 .menu-primary-items #theme-toggle.miq360-theme-toggle:active,
 .menu-primary-items #theme-toggle.miq360-theme-toggle:focus,
