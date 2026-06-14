@@ -701,3 +701,76 @@
   fill: #2a2a3e !important;
 }
 
+/* ============================
+   CONTACT FORM — dark mode
+   ============================ */
+
+/* Page section background */
+[data-theme="dark"] .clean-block.clean-form {
+  background-color: var(--bg-primary);
+}
+
+[data-theme="dark"] .clean-block.clean-form .container {
+  background-color: var(--bg-primary);
+}
+
+/* Form card — slightly lighter than page so it stands out */
+[data-theme="dark"] .clean-block.clean-form form,
+[data-theme="dark"] .clean-block.clean-form .form-wrapper {
+  background-color: var(--bg-card) !important;
+  border-right: 1px solid var(--border-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  border-left: 1px solid var(--border-color) !important;
+  border-radius: 6px;
+  padding: 24px !important;
+}
+
+[data-theme="dark"] .clean-block.clean-form .block-heading h1,
+[data-theme="dark"] .clean-block.clean-form .block-heading p {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .clean-block.clean-form .form-group label {
+  color: var(--text-secondary);
+}
+
+/* Inputs — darker than card so they read as inset fields */
+[data-theme="dark"] .clean-block.clean-form .form-control {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .clean-block.clean-form .form-control:focus {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: #6ea8ff !important;
+  box-shadow: 0 0 0 0.2rem rgba(110, 168, 255, 0.2) !important;
+}
+
+[data-theme="dark"] .clean-block.clean-form .form-control::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .clean-block.clean-form .form-control:disabled {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .clean-block.clean-form .btn-primary {
+  background-color: #4a5a9e;
+  border-color: #5a6aae;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .clean-block.clean-form .btn-primary:hover:not(:disabled) {
+  background-color: #5a6aae;
+  border-color: #6a7abe;
+}
+
+[data-theme="dark"] .clean-block.clean-form .btn-primary:disabled {
+  background-color: #3a3a5e;
+  border-color: #4a4a6e;
+  color: var(--text-muted);
+}
