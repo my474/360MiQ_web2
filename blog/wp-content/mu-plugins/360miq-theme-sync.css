@@ -207,15 +207,19 @@ html[data-theme="dark"] .menu-unset ul a:visited {
   color: var(--miq-blog-dark-blue);
 }
 
+/* ── Header nav: default #bbbbbb, active/hover #ffffff ── */
 html[data-theme="dark"] .site-header .menu-primary-items a,
 html[data-theme="dark"] .site-header .menu-primary-items a:link,
 html[data-theme="dark"] .site-header .menu-primary-items a:visited,
+html[data-theme="dark"] .site-header .menu-unset ul a,
+html[data-theme="dark"] .site-header .menu-unset ul a:link,
+html[data-theme="dark"] .site-header .menu-unset ul a:visited {
+  color: #bbbbbb !important;
+}
+
 html[data-theme="dark"] .site-header .menu-primary-items a:hover,
 html[data-theme="dark"] .site-header .menu-primary-items a:active,
 html[data-theme="dark"] .site-header .menu-primary-items a:focus,
-html[data-theme="dark"] .site-header .menu-unset ul a,
-html[data-theme="dark"] .site-header .menu-unset ul a:link,
-html[data-theme="dark"] .site-header .menu-unset ul a:visited,
 html[data-theme="dark"] .site-header .menu-unset ul a:hover,
 html[data-theme="dark"] .site-header .menu-unset ul a:active,
 html[data-theme="dark"] .site-header .menu-unset ul a:focus,
@@ -233,7 +237,7 @@ html[data-theme="dark"] .site-header .menu-primary-items li.menu-item-has-childr
 html[data-theme="dark"] .site-header .menu-primary-items li.menu-item-has-children:hover > a:after,
 html[data-theme="dark"] .site-header .menu-unset ul li.menu-item-has-children > a:after,
 html[data-theme="dark"] .site-header .menu-unset ul li.menu-item-has-children:hover > a:after {
-  color: #ffffff !important;
+  color: inherit !important;
 }
 
 html[data-theme="dark"] .site-header .menu-primary-items a[href$="/blog"],

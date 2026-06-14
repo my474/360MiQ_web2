@@ -625,12 +625,6 @@ font-size: 20px;
   overflow-y: auto;
 
   box-sizing: border-box;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.chatbot__input::-webkit-scrollbar {
-  display: none;
 }
 
 .chatbot__input:focus {
