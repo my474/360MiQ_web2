@@ -377,14 +377,32 @@
   font-size: 1.2rem;
   padding: 0;
   line-height: inherit;
-  color: inherit;
+  color: #f9a825;
   text-decoration: none;
   position: relative;
   top: 3px;
+  min-width: 1.5rem;
+  text-align: center;
 }
 
 #theme-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+#theme-toggle .theme-icon-dark {
+  display: none;
+}
+
+[data-theme="dark"] #theme-toggle {
+  color: #9ecbff;
+}
+
+[data-theme="dark"] #theme-toggle .theme-icon-light {
+  display: none;
+}
+
+[data-theme="dark"] #theme-toggle .theme-icon-dark {
+  display: inline;
 }
 
 /* ============================

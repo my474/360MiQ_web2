@@ -69,7 +69,7 @@
       </li-->
       <!-- theme toggle -->
       <li class="nav-item">
-        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode">☀</a>
+        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode" aria-label="Switch theme"><span class="theme-icon-light" aria-hidden="true">&#x2600;&#xFE0F;</span><span class="theme-icon-dark" aria-hidden="true">&#x1F319;</span></a>
       </li>
       <!--li class="navbar-toggler collapsed nav-item <?php echo (isset($page) && $page == 'about' ? 'active' : ''); ?>" style="border-width:0;padding-left:0;">
         <a class="nav-link" href="about-us">About us</a>
