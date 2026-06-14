@@ -209,6 +209,22 @@ table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
     background-color: #3957a7 !important;
     color: #ffffff !important;
 }
+
+[data-theme="dark"] div.dt-button-collection .buttons-colvisRestore,
+[data-theme="dark"] div.dt-button-collection button.buttons-colvisRestore,
+[data-theme="dark"] div.dt-button-collection a.buttons-colvisRestore,
+[data-theme="dark"] div.dt-button-collection .dropdown-item.buttons-colvisRestore {
+    background-color: #242438 !important;
+    background-image: none !important;
+    border-color: #4a4a63 !important;
+    color: #e8e8e8 !important;
+}
+
+[data-theme="dark"] div.dt-button-collection .buttons-colvisRestore:hover,
+[data-theme="dark"] div.dt-button-collection .buttons-colvisRestore:focus {
+    background-color: #33335a !important;
+    color: #ffffff !important;
+}
 /*
 table.dataTable thead .sorting,table.dataTable thead .sorting_asc,table.dataTable thead .sorting_desc {
     cursor: pointer;
