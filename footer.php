@@ -651,6 +651,86 @@ transform: translateY(-3px);
 fill: #45148c;
 }
 
+[data-theme="dark"] .chatbot__message-window {
+background-color: #1a1a2e;
+color: #e8e8e8;
+}
+
+[data-theme="dark"] .is-ai .chatbot__message {
+background-color: #2a2a3e;
+color: #e8e8e8;
+}
+
+[data-theme="dark"] .is-user .chatbot__message {
+background-color: #1a3a4e;
+color: #e8e8e8;
+}
+
+[data-theme="dark"] .chatbot__message button {
+background-color: #2a2a3e;
+color: #e8e8e8;
+border-color: #9b5ce0;
+}
+
+[data-theme="dark"] .chatbot__message button:hover {
+background-color: #3a3a4e;
+}
+
+[data-theme="dark"] .chatbot__message button.no-chatbot-style {
+background-color: #1e1e32;
+color: #e8e8e8;
+border-color: #555;
+}
+
+[data-theme="dark"] .chatbot__message .card {
+background-color: #1e1e32;
+color: #e8e8e8;
+border-color: #3a3a4e;
+}
+
+[data-theme="dark"] .chatbot__message a,
+[data-theme="dark"] .chatbot__message .card .card-button {
+color: #b084ff;
+}
+
+[data-theme="dark"] .chatbot__arrow--left {
+border-right-color: #2a2a3e;
+}
+
+[data-theme="dark"] .chatbot__arrow--right {
+border-left-color: #1a3a4e;
+}
+
+[data-theme="dark"] .chatbot__entry {
+background: #1e1e32;
+border-top: 1px solid #3a3a4e;
+}
+
+[data-theme="dark"] .chatbot__input {
+background-color: #1e1e32;
+color: #e8e8e8;
+}
+
+[data-theme="dark"] .chatbot__input::placeholder {
+color: #9a9aaa;
+}
+
+[data-theme="dark"] .chatbot__input::-webkit-input-placeholder {
+color: #9a9aaa;
+}
+
+[data-theme="dark"] .chatbot__input::-moz-placeholder {
+color: #9a9aaa;
+}
+
+[data-theme="dark"] .chatbot__submit {
+fill: #ffa400;
+}
+
+[data-theme="dark"] .chatbot__submit:hover {
+fill: #ffbd3d;
+}
+
 .u-text-highlight {
 color: #00ffff;
 }
