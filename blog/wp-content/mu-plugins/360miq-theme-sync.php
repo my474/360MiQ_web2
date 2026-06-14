@@ -61,7 +61,7 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 
 		$toggle  = '<li class="menu-item miq360-theme-toggle-item">';
 		$toggle .= '<button type="button" id="miq360-blog-theme-toggle" class="miq360-theme-toggle" aria-label="Switch theme" title="Switch theme">';
-		$toggle .= '<span class="miq360-theme-toggle-icon" aria-hidden="true">&#x2600;&#xfe0f;</span>';
+		$toggle .= '<span class="miq360-theme-toggle-icon" aria-hidden="true"></span>';
 		$toggle .= '<span class="screen-reader-text">Switch theme</span>';
 		$toggle .= '</button>';
 		$toggle .= '</li>';

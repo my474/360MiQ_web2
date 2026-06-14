@@ -40,6 +40,7 @@
 
     btn.title = label;
     btn.setAttribute('aria-label', label);
+    btn.classList.add('is-ready');
   }
 
   function applyTheme(dark) {
