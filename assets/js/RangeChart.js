@@ -52,6 +52,15 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
         H.seriesTypes.lineargauge = H.extendClass(columnType, {
             type: 'lineargauge',
             //inverted: true,
+            drawLegendSymbol: function(legend, item) {
+                item.legendSymbol = this.chart.renderer.rect(0, 0, 0, 0)
+                    .attr({
+                        fill: 'transparent',
+                        stroke: 'transparent',
+                        'stroke-width': 0
+                    })
+                    .add(item.legendGroup);
+            },
             setVisible: function () {
                 columnType.prototype.setVisible.apply(this, arguments);
                 if (this.markLine) {
@@ -105,11 +114,6 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
             type: 'lineargauge',
             inverted: true,
           	height: 75,
-            events: {
-                render: function() {
-                    hideRangeChartLegendSymbols(this);
-                }
-            }
         },
         title: {
             text: null
@@ -233,8 +237,8 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
               cursor: 'default'
             },
             symbolPadding: 0,
-            symbolWidth: 0,
-            symbolHeight: 0,
+            symbolWidth: 0.1,
+            symbolHeight: 0.1,
             symbolRadius: 0,
             useHTML: true,
             labelFormatter: function() {
@@ -363,27 +367,7 @@ function rangeChart(rangecontainer, backgroundColor, low250, high250, low50, hig
     ]});
 
     registerRangeChartThemeRefresh(rangecontainer, rangeChartArgs);
-    hideRangeChartLegendSymbols(chart);
     return chart;
-}
-
-function hideRangeChartLegendSymbols(chart) {
-    try {
-        if (!chart || !chart.series) return;
-        for (var i = 0; i < chart.series.length; i++) {
-            var series = chart.series[i];
-            if (series.legendSymbol && series.legendSymbol.hide) series.legendSymbol.hide();
-            if (series.legendLine && series.legendLine.hide) series.legendLine.hide();
-            if (series.legendGroup && series.legendGroup.element && series.legendGroup.element.querySelectorAll) {
-                var symbols = series.legendGroup.element.querySelectorAll('path, rect, circle');
-                for (var j = 0; j < symbols.length; j++) {
-                    symbols[j].setAttribute('opacity', '0');
-                    symbols[j].setAttribute('fill-opacity', '0');
-                    symbols[j].setAttribute('stroke-opacity', '0');
-                }
-            }
-        }
-    } catch(e) {}
 }
 
 function registerRangeChartThemeRefresh(rangecontainer, args) {
