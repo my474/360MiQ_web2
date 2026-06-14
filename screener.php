@@ -38,6 +38,12 @@ table#screener_grid.dataTable tbody tr:hover {
 table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
   background-color: #FEFFDF !important;
 }
+
+[data-theme="dark"] table#screener_grid.dataTable tbody tr:hover,
+[data-theme="dark"] table#screener_grid.dataTable tbody tr:hover > td,
+[data-theme="dark"] table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
+  background-color: #33335a !important;
+}
 </style>
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">-->
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap4.min.css">
