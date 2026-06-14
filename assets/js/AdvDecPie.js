@@ -1,6 +1,36 @@
 function adpie(container, datestr, advValue, title, fullname, link){   
 
-    var percentLabelStyle = 'color:#000000;-webkit-text-stroke:1px #ffffff;text-shadow:1px 0 #ffffff,-1px 0 #ffffff,0 1px #ffffff,0 -1px #ffffff;font-weight:700;';
+    function forcePercentLabelColors(chart) {
+        if (!chart.series || !chart.series[0]) return;
+
+        chart.series[0].points.forEach(function (point) {
+            if (!point.noTooltip || !point.dataLabel || !point.dataLabel.element) return;
+
+            var label = point.dataLabel.element;
+            var text = label.querySelector('text');
+            if (text) {
+                text.setAttribute('fill', '#000000');
+                text.style.fill = '#000000';
+                text.style.color = '#000000';
+            }
+
+            label.querySelectorAll('tspan').forEach(function (tspan) {
+                if (tspan.classList.contains('highcharts-text-outline')) {
+                    tspan.setAttribute('fill', '#ffffff');
+                    tspan.setAttribute('stroke', '#ffffff');
+                    tspan.setAttribute('stroke-width', '2px');
+                    tspan.style.fill = '#ffffff';
+                    tspan.style.stroke = '#ffffff';
+                } else {
+                    tspan.setAttribute('fill', '#000000');
+                    tspan.setAttribute('stroke', 'none');
+                    tspan.style.fill = '#000000';
+                    tspan.style.stroke = 'none';
+                    tspan.style.color = '#000000';
+                }
+            });
+        });
+    }
 
     Highcharts.chart(container, {
     
@@ -8,6 +38,14 @@ function adpie(container, datestr, advValue, title, fullname, link){
             plotBackgroundColor: null,
             plotBorderWidth: 0,
             plotShadow: false,
+            events: {
+                load: function () {
+                    forcePercentLabelColors(this);
+                },
+                render: function () {
+                    forcePercentLabelColors(this);
+                }
+            },
             style: {
                 fontFamily: 'Montserrat'
             }
@@ -30,12 +68,9 @@ function adpie(container, datestr, advValue, title, fullname, link){
                 dataLabels: {
                     enabled: false,
                     distance: -10,
-                    useHTML: true,
-                    formatter: function () {
-                        return '<span style="' + percentLabelStyle + '">' + this.point.name + '</span>';
-                    },
                     style: {
                         color: '#000000',
+                        fill: '#000000',
                         fontSize: '10px',
                         textOutline: '2px #ffffff'
                     }
@@ -87,12 +122,9 @@ function adpie(container, datestr, advValue, title, fullname, link){
             {
                 dataLabels: {
                     enabled: true,
-                    useHTML: true,
-                    formatter: function () {
-                        return '<span style="' + percentLabelStyle + '">' + this.point.name + '</span>';
-                    },
                     style: {
                         color: '#000000',
+                        fill: '#000000',
                         textOutline: '2px #ffffff'
                     }
     			},
@@ -137,12 +169,9 @@ function adpie(container, datestr, advValue, title, fullname, link){
             {
                 dataLabels: {
                     enabled: true,
-                    useHTML: true,
-                    formatter: function () {
-                        return '<span style="' + percentLabelStyle + '">' + this.point.name + '</span>';
-                    },
                     style: {
                         color: '#000000',
+                        fill: '#000000',
                         textOutline: '2px #ffffff'
                     }
     			},

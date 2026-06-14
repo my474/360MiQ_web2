@@ -482,6 +482,27 @@ figure {
     filter: invert(1) brightness(1.4);
 }
 
+[data-theme="dark"] #tab-1 .btn-outline-primary {
+    border-color: var(--text-link-bright, #66c7ff) !important;
+    color: var(--text-link-bright, #66c7ff) !important;
+}
+
+[data-theme="dark"] #tab-1 .btn-outline-primary:hover,
+[data-theme="dark"] #tab-1 .btn-outline-primary:focus,
+[data-theme="dark"] #tab-1 .btn-outline-primary.active,
+[data-theme="dark"] #tab-1 .btn-outline-primary:not(:disabled):not(.disabled):active,
+[data-theme="dark"] #tab-1 .show > .btn-outline-primary.dropdown-toggle {
+    background-color: var(--text-link-bright, #66c7ff) !important;
+    border-color: var(--text-link-bright, #66c7ff) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] #tab-1 .btn-outline-primary:hover i,
+[data-theme="dark"] #tab-1 .btn-outline-primary:focus i,
+[data-theme="dark"] #tab-1 .btn-outline-primary.active i {
+    color: #ffffff !important;
+}
+
 [data-theme="dark"] #play-range {
     background: transparent;
 }
