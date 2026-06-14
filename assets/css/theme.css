@@ -373,6 +373,15 @@
   color: var(--text-link-bright) !important;
 }
 
+[data-theme="dark"] .nav-tabs .nav-link:not(.active):hover,
+[data-theme="dark"] .nav-tabs .nav-link:not(.active):focus,
+[data-theme="dark"] .nav-tabs .nav-link.mynav-link:not(.active):hover,
+[data-theme="dark"] .nav-tabs .nav-link.mynav-link:not(.active):focus,
+[data-theme="dark"] .nav-tabs .nav-link.nl:not(.active):hover,
+[data-theme="dark"] .nav-tabs .nav-link.nl:not(.active):focus {
+  color: var(--text-link-hover) !important;
+}
+
 [data-theme="dark"] .navbar .btn-outline-primary,
 [data-theme="dark"] .navbar .btn-outline-primary .fa-search {
   border-color: var(--text-link-bright) !important;
