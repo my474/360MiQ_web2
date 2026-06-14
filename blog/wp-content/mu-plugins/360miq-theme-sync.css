@@ -1,0 +1,310 @@
+:root {
+  --miq-blog-dark-bg: #17182b;
+  --miq-blog-dark-surface: #22233a;
+  --miq-blog-dark-surface-strong: #292a43;
+  --miq-blog-dark-border: #555a78;
+  --miq-blog-dark-text: #f4f7ff;
+  --miq-blog-dark-muted: #b9c2dc;
+  --miq-blog-dark-blue: #66c7ff;
+  --miq-blog-dark-blue-hover: #8ed8ff;
+  --miq-blog-dark-shadow: rgba(0, 0, 0, 0.36);
+}
+
+.miq360-theme-toggle-item {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.75em;
+}
+
+.menu-primary-items .miq360-theme-toggle,
+.menu-unset ul .miq360-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #20a4e6;
+  border-radius: 3px;
+  background: transparent;
+  color: #20a4e6;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.menu-primary-items .miq360-theme-toggle:hover,
+.menu-primary-items .miq360-theme-toggle:active,
+.menu-primary-items .miq360-theme-toggle:focus,
+.menu-unset ul .miq360-theme-toggle:hover,
+.menu-unset ul .miq360-theme-toggle:active,
+.menu-unset ul .miq360-theme-toggle:focus {
+  border-color: #23b6ff;
+  background: #23b6ff;
+  color: #fff;
+  outline: none;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background: var(--miq-blog-dark-bg);
+  color: var(--miq-blog-dark-text);
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] p,
+html[data-theme="dark"] li,
+html[data-theme="dark"] .post-content,
+html[data-theme="dark"] .post-content p,
+html[data-theme="dark"] .post-content li,
+html[data-theme="dark"] .comment-content,
+html[data-theme="dark"] .widget,
+html[data-theme="dark"] .widget p,
+html[data-theme="dark"] .archive-header,
+html[data-theme="dark"] .search-header {
+  color: var(--miq-blog-dark-text);
+}
+
+html[data-theme="dark"] .overflow-container,
+html[data-theme="dark"] .main-content-container {
+  background: var(--miq-blog-dark-bg);
+}
+
+html[data-theme="dark"] .primary-header,
+html[data-theme="dark"] .secondary-header,
+html[data-theme="dark"] .menu-primary-items ul,
+html[data-theme="dark"] .menu-unset ul ul,
+html[data-theme="dark"] .woocommerce-info,
+html[data-theme="dark"] .woocommerce.archive .loop-container,
+html[data-theme="dark"] .sidebar-primary .widget,
+html[data-theme="dark"] .search-header,
+html[data-theme="dark"] .entry,
+html[data-theme="dark"] .pagination a,
+html[data-theme="dark"] .pagination span,
+html[data-theme="dark"] #disqus_thread,
+html[data-theme="dark"] .comments-closed,
+html[data-theme="dark"] .comment-pagination p,
+html[data-theme="dark"] .comment-list li.comment,
+html[data-theme="dark"] .comment-list li.pingback,
+html[data-theme="dark"] .comment-respond,
+html[data-theme="dark"] .archive-header,
+html[data-theme="dark"] .bbpress .entry {
+  background: var(--miq-blog-dark-surface);
+  box-shadow: 0 0 24px 0 var(--miq-blog-dark-shadow);
+}
+
+html[data-theme="dark"] .primary-header,
+html[data-theme="dark"] .entry,
+html[data-theme="dark"] .sidebar-primary .widget,
+html[data-theme="dark"] .search-header,
+html[data-theme="dark"] .archive-header,
+html[data-theme="dark"] .comments-closed,
+html[data-theme="dark"] .comment-respond,
+html[data-theme="dark"] .comment-list li.comment,
+html[data-theme="dark"] .comment-list li.pingback,
+html[data-theme="dark"] .pagination a,
+html[data-theme="dark"] .pagination span {
+  border: 1px solid rgba(184, 195, 230, 0.18);
+}
+
+html[data-theme="dark"] .site-header:before,
+html[data-theme="dark"] .entry:before {
+  opacity: 0.9;
+}
+
+html[data-theme="dark"] .site-title a,
+html[data-theme="dark"] .site-title a:link,
+html[data-theme="dark"] .site-title a:visited,
+html[data-theme="dark"] .post-title,
+html[data-theme="dark"] .post-title a,
+html[data-theme="dark"] .post-title a:link,
+html[data-theme="dark"] .post-title a:visited,
+html[data-theme="dark"] .archive-header h1,
+html[data-theme="dark"] .widget-title,
+html[data-theme="dark"] .comment-reply-title,
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6 {
+  color: var(--miq-blog-dark-text);
+}
+
+html[data-theme="dark"] .tagline,
+html[data-theme="dark"] .post-byline,
+html[data-theme="dark"] .post-byline a,
+html[data-theme="dark"] .post-comments-link.closed a,
+html[data-theme="dark"] .comment-list .comment-footer,
+html[data-theme="dark"] .comment-list .comment-footer a,
+html[data-theme="dark"] .wp-caption-text,
+html[data-theme="dark"] .wp-caption-dd,
+html[data-theme="dark"] .wp-block-image figcaption {
+  color: var(--miq-blog-dark-muted);
+}
+
+html[data-theme="dark"] a,
+html[data-theme="dark"] a:link,
+html[data-theme="dark"] a:visited,
+html[data-theme="dark"] .widget li a,
+html[data-theme="dark"] .widget li a:link,
+html[data-theme="dark"] .widget li a:visited,
+html[data-theme="dark"] .post-author h3 a,
+html[data-theme="dark"] .post-author h3 a:link,
+html[data-theme="dark"] .post-author h3 a:visited,
+html[data-theme="dark"] .post-comments-link a,
+html[data-theme="dark"] .post-comments-link a:link,
+html[data-theme="dark"] .post-comments-link a:visited,
+html[data-theme="dark"] .menu-primary-items a,
+html[data-theme="dark"] .menu-primary-items a:link,
+html[data-theme="dark"] .menu-primary-items a:visited,
+html[data-theme="dark"] .menu-unset ul a,
+html[data-theme="dark"] .menu-unset ul a:link,
+html[data-theme="dark"] .menu-unset ul a:visited {
+  color: var(--miq-blog-dark-blue);
+}
+
+html[data-theme="dark"] a:hover,
+html[data-theme="dark"] a:active,
+html[data-theme="dark"] a:focus,
+html[data-theme="dark"] .widget li a:hover,
+html[data-theme="dark"] .widget li a:active,
+html[data-theme="dark"] .widget li a:focus,
+html[data-theme="dark"] .post-title a:hover,
+html[data-theme="dark"] .post-title a:active,
+html[data-theme="dark"] .post-title a:focus,
+html[data-theme="dark"] .menu-primary-items a:hover,
+html[data-theme="dark"] .menu-primary-items a:active,
+html[data-theme="dark"] .menu-primary-items a:focus,
+html[data-theme="dark"] .menu-unset ul a:hover,
+html[data-theme="dark"] .menu-unset ul a:active,
+html[data-theme="dark"] .menu-unset ul a:focus {
+  color: var(--miq-blog-dark-blue-hover);
+}
+
+html[data-theme="dark"] .menu-primary-items li.current-menu-item > a,
+html[data-theme="dark"] .menu-unset ul li.current-menu-item > a,
+html[data-theme="dark"] .menu-primary-items li.menu-item-has-children:hover > a,
+html[data-theme="dark"] .menu-primary-items li.menu-item-has-children:hover > a:after,
+html[data-theme="dark"] .menu-unset ul li.menu-item-has-children:hover > a,
+html[data-theme="dark"] .menu-unset ul li.menu-item-has-children:hover > a:after {
+  color: var(--miq-blog-dark-blue-hover);
+}
+
+html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle,
+html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle {
+  border-color: var(--miq-blog-dark-blue);
+  color: var(--miq-blog-dark-blue);
+}
+
+html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle:hover,
+html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle:active,
+html[data-theme="dark"] .menu-primary-items .miq360-theme-toggle:focus,
+html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:hover,
+html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:active,
+html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:focus {
+  border-color: var(--miq-blog-dark-blue-hover);
+  background: var(--miq-blog-dark-blue);
+  color: #fff;
+}
+
+html[data-theme="dark"] .post-author,
+html[data-theme="dark"] .comment-list li.comment.bypostauthor,
+html[data-theme="dark"] .comment-list li.pingback.bypostauthor,
+html[data-theme="dark"] blockquote,
+html[data-theme="dark"] pre,
+html[data-theme="dark"] code {
+  background: var(--miq-blog-dark-surface-strong);
+  color: var(--miq-blog-dark-text);
+}
+
+html[data-theme="dark"] table,
+html[data-theme="dark"] td,
+html[data-theme="dark"] th {
+  border-color: var(--miq-blog-dark-border);
+}
+
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] input[type="search"],
+html[data-theme="dark"] input[type="tel"],
+html[data-theme="dark"] input[type="url"],
+html[data-theme="dark"] textarea {
+  background: #18192b;
+  border: 1px solid var(--miq-blog-dark-border);
+  color: var(--miq-blog-dark-text);
+}
+
+html[data-theme="dark"] input[type="text"]:focus,
+html[data-theme="dark"] input[type="email"]:focus,
+html[data-theme="dark"] input[type="password"]:focus,
+html[data-theme="dark"] input[type="number"]:focus,
+html[data-theme="dark"] input[type="search"]:focus,
+html[data-theme="dark"] input[type="tel"]:focus,
+html[data-theme="dark"] input[type="url"]:focus,
+html[data-theme="dark"] textarea:focus {
+  background: #202139;
+  border-color: var(--miq-blog-dark-blue);
+  box-shadow: 0 0 0 2px rgba(102, 199, 255, 0.18);
+}
+
+html[data-theme="dark"] ::placeholder {
+  color: #8f99b8;
+}
+
+html[data-theme="dark"] input[type="submit"],
+html[data-theme="dark"] #bbp_reply_submit,
+html[data-theme="dark"] .post-tags a {
+  background: #007bff;
+  color: #fff;
+}
+
+html[data-theme="dark"] input[type="submit"]:hover,
+html[data-theme="dark"] input[type="submit"]:active,
+html[data-theme="dark"] input[type="submit"]:focus,
+html[data-theme="dark"] #bbp_reply_submit:hover,
+html[data-theme="dark"] #bbp_reply_submit:active,
+html[data-theme="dark"] #bbp_reply_submit:focus,
+html[data-theme="dark"] .post-tags a:hover,
+html[data-theme="dark"] .post-tags a:active,
+html[data-theme="dark"] .post-tags a:focus {
+  background: #23b6ff;
+  color: #fff;
+}
+
+html[data-theme="dark"] .site-footer {
+  background: #151629;
+  color: var(--miq-blog-dark-muted);
+}
+
+html[data-theme="dark"] .site-footer a,
+html[data-theme="dark"] .site-footer a:link,
+html[data-theme="dark"] .site-footer a:visited {
+  color: var(--miq-blog-dark-blue);
+}
+
+html[data-theme="dark"] .site-footer a:hover,
+html[data-theme="dark"] .site-footer a:active,
+html[data-theme="dark"] .site-footer a:focus {
+  color: var(--miq-blog-dark-blue-hover);
+}
+
+html[data-theme="dark"] .chatbot__message-window,
+html[data-theme="dark"] .chatbot__entry {
+  background: #1d1e32;
+}
+
+html[data-theme="dark"] .chatbot__input {
+  background: #1d1e32;
+  color: var(--miq-blog-dark-text);
+}
+
+@media all and (min-width: 50em) {
+  .miq360-theme-toggle-item {
+    margin-bottom: 0;
+  }
+}
