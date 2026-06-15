@@ -226,6 +226,20 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     color: #FF8C00 !important;
 }
 
+/* Dark mode overrides for bottom nav */
+[data-theme="dark"] .bottom-nav-item,
+[data-theme="dark"] .bottom-nav-item span,
+[data-theme="dark"] .bottom-nav-item i {
+    color: #999 !important;
+}
+
+[data-theme="dark"] .bottom-nav-item.active,
+[data-theme="dark"] .bottom-nav-item.active span,
+[data-theme="dark"] .bottom-nav-item.active i,
+[data-theme="dark"] .bottom-nav-item.active svg {
+    color: #FF8C00 !important;
+}
+
 @media (max-width: 639px) {
     .bottom-nav {
         display: flex;

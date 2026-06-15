@@ -247,6 +247,7 @@ function applyHighchartsTheme(isDark) {
         themeHighchartsGridLines(ch, isDark);
         themeHighchartsChartText(ch, isDark);
         themeHighchartsLegendText(ch, isDark);
+		themeHighchartsPlotLines(ch, isDark);
       }
     }
     /* Patch navigator and scrollbar in-place */
@@ -254,6 +255,38 @@ function applyHighchartsTheme(isDark) {
       themeNavScrollbar(Highcharts.charts[i], isDark);
     }
   }
+}
+
+function themeHighchartsPlotLines(chart, isDark) {
+    // 1. Fetch the targeted grid line color from your active theme config
+    var activeTheme = isDark ? highchartsDarkTheme : highchartsLightTheme;
+    var targetColor = activeTheme.yAxis && activeTheme.yAxis.gridLineColor 
+                      ? activeTheme.yAxis.gridLineColor 
+                      : '#45475f'; // Safe fallback color
+
+    // 2. Loop through every Y-axis to handle multi-axis Stock charts
+    if (chart.yAxis && chart.yAxis.length) {
+        for (var j = 0; j < chart.yAxis.length; j++) {
+            var yAxis = chart.yAxis[j];
+            
+            // Check if this axis contains any user-defined plotlines
+            if (yAxis.options && yAxis.options.plotLines && yAxis.options.plotLines.length) {
+                
+                // Map over current options to inject the updated color attribute
+                var updatedPlotLines = yAxis.options.plotLines.map(function(line) {
+                    line.color = targetColor;
+                    return line;
+                });
+
+                // Update the axis and trigger a redraw
+                yAxis.update({
+                    plotLines: updatedPlotLines
+                }, false); // Set to false to batch redraws efficiently
+            }
+        }
+        // Force a singular final redraw for performance optimizations
+        chart.redraw();
+    }
 }
 
 /* Explicit black/dark-grey series colors are readable in light mode but can

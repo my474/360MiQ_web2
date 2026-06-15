@@ -4,7 +4,7 @@
       <form id="ac" class="form-inline my-2 my-lg-0" action="stockinfo">
     <!--<input id="autocomplete" size="12" class="form-control mr-sm-2 copyMe" style="max-width:128px;padding-left:8px" type="search" placeholder="Stock Code" aria-label="Search" name="code" spellcheck="false"  maxlength="25" autofocus required>-->
         <input id="autocomplete" size="13" class="form-control mr-sm-2 copyMe" type="search" placeholder="Stock Code" onchange="this.value = this.value.trim();" aria-label="Search" name="code" spellcheck="false"  maxlength="25" required>
-        <span style="color:#ffffff">.</span>
+        &nbsp;
         <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" aria-label="Stock Search">&nbsp;<i class="fas fa-search"></i></button>
     </form>
   </span>
