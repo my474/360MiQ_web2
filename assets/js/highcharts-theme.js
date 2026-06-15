@@ -290,11 +290,20 @@ function themeHighchartsPlotLines(chart, isDark) {
 }
 
 /* Explicit black/dark-grey series colors are readable in light mode but can
-   disappear on dark backgrounds. Do the inverse when returning to light mode. */
+   disappear on dark backgrounds. Do the inverse when returning to light mode.
+   Also patches negativeColor and zones to prevent two-tone lines when a
+   neutral-colored series crosses zero and the zone color is not updated. */
 function themeNeutralSeriesColors(ch, isDark) {
   if (!ch || !ch.series || !ch.series.length) return;
+
+  /* Guard against re-entrancy: series.update() triggers a render which would
+     call this function again, causing an infinite loop. */
+  if (ch._themeNeutralColorBusy360) return;
+  ch._themeNeutralColorBusy360 = true;
+
   var needsRedraw = false;
 
+  try {
   for (var i = 0; i < ch.series.length; i++) {
     var series = ch.series[i];
     if (!series || !series.update) continue;
@@ -329,6 +338,46 @@ function themeNeutralSeriesColors(ch, isDark) {
       }
     }
 
+    /* --- Patch negativeColor to keep it in sync with series.color ---
+       If a series has a negativeColor defined and its series.color is being
+       remapped (neutral color flip), the negativeColor must also be remapped.
+       Without this, lines that cross zero render two-tone (new color above
+       zero, stale original color below zero). */
+    var seriesOpts = series.options || {};
+    if (seriesOpts.negativeColor) {
+      var negColor = themeNeutralColorValue(seriesOpts.negativeColor, isDark);
+      if (negColor !== null) {
+        update.negativeColor = negColor;
+        changed = true;
+      }
+    }
+
+    /* --- Patch zones for the same reason ---
+       Highcharts may encode the color split as zones rather than negativeColor.
+       Walk every zone and remap any neutral color found there. */
+    if (seriesOpts.zones && seriesOpts.zones.length) {
+      var newZones = null;
+      for (var z = 0; z < seriesOpts.zones.length; z++) {
+        var zone = seriesOpts.zones[z];
+        var zoneColor = zone && themeNeutralColorValue(zone.color, isDark);
+        if (zoneColor !== null) {
+          if (!newZones) {
+            /* Copy all previous zones unchanged before we start mutating */
+            newZones = seriesOpts.zones.slice(0, z).map(function(zz) { return Highcharts.merge(zz); });
+          }
+        }
+        if (newZones) {
+          var zoneCopy = Highcharts.merge(zone);
+          if (zoneColor !== null) zoneCopy.color = zoneColor;
+          newZones.push(zoneCopy);
+        }
+      }
+      if (newZones) {
+        update.zones = newZones;
+        changed = true;
+      }
+    }
+
     if (changed) {
       try {
         series.update(update, false);
@@ -339,6 +388,9 @@ function themeNeutralSeriesColors(ch, isDark) {
 
   if (needsRedraw && ch.redraw) {
     try { ch.redraw(false); } catch(e) {}
+  }
+  } finally {
+    ch._themeNeutralColorBusy360 = false;
   }
 }
 
@@ -930,6 +982,11 @@ function bindHighchartsLegendTheme() {
     themeHighchartsChartText(this, isDark);
     themeHighchartsLegendText(this, isDark);
     themeNavScrollbar(this, isDark);
+    /* Patch neutral series colors (and negativeColor/zones) on every render
+       so that charts rendered after page load on a dark page get the correct
+       color, and don't stay on the palette's auto-assigned color (e.g. purple
+       for index [1] in the dark palette instead of the intended white). */
+    themeNeutralSeriesColors(this, isDark);
   });
 }
 
@@ -1108,5 +1165,20 @@ function getHighchartsThemeOptions() {
   bindHighchartsLegendTheme();
   if (document.documentElement.getAttribute('data-theme') === 'dark') {
     applyHighchartsTheme(true);
+
+    /* applyHighchartsTheme runs before charts render on page load, so
+       themeNeutralSeriesColors finds no series to patch. Bind a one-time
+       chart load hook so each chart gets its neutral series colors (and
+       negativeColor/zones) patched immediately after it finishes rendering.
+       This prevents the second series from inheriting the dark palette's
+       index-[1] color (purple) instead of the intended white/contrast color. */
+    if (typeof Highcharts !== 'undefined' && Highcharts.addEvent && Highcharts.Chart && !Highcharts._neutralColorBootBound360) {
+      Highcharts._neutralColorBootBound360 = true;
+      Highcharts.addEvent(Highcharts.Chart, 'load', function() {
+        if (document.documentElement.getAttribute('data-theme') === 'dark') {
+          themeNeutralSeriesColors(this, true);
+        }
+      });
+    }
   }
 })();

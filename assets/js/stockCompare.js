@@ -4,7 +4,7 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
         '#7cb5ec',
         '#434348',
         '#ec73ff',
-        '#95a5a6',
+        '#27F584',
         '#90ed7d',
         '#f7a35c',
         '#8085e9',
