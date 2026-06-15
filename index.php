@@ -61,7 +61,11 @@ a:hover.recentpost {
     text-decoration: none;
 }
 [data-theme="dark"] a.recentpost {
-    color: #6ea8ff;
+  color: #fff;
+}
+
+[data-theme="dark"] a.recentpost:hover {
+  color: #6ea8ff;
 }
 [data-theme="dark"] div[id^="featuredposttitle"] a.recentpost {
     color: #ffffff !important;

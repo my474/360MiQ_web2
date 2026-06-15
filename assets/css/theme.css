@@ -565,6 +565,12 @@
   color: #6ea8ff !important;
 }
 
+[data-theme="dark"] a:not([class]):hover,
+[data-theme="dark"] a.code-link:hover,
+[data-theme="dark"] a.code-link2:hover {
+  color: #007bff !important;
+}
+
 [data-theme="dark"] .page-footer.dark a {
   color: #d2d1d1 !important;
 }
