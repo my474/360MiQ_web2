@@ -137,7 +137,7 @@ var highchartsLightTheme = {
 /* ---- DARK THEME (brighter text) ---- */
 
 var highchartsDarkTheme = {
-  colors: ['#4dc9ff', '#7b7be8', '#33ff99', '#ff8c5a', '#8fafd4',
+  colors: ['#4dc9ff', '#D0D0D0', '#33ff99', '#ff8c5a', '#8fafd4',
            '#e87fff', '#50f5e0', '#ff6b61', '#ffd08a', '#b8f5ee',
            '#ff9b9b', '#91e8e1'],
   chart: {
