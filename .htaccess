@@ -1,0 +1,67 @@
+Options -Indexes
+
+ErrorDocument 404 /error.php
+ErrorDocument 500 /error.php?err=500
+ErrorDocument 403 /maintenance.html
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule (.*) $1.php [L]
+
+<Files "*">
+Order allow,deny
+allow from 119.236.118.206
+allow from 2601:2c0:8003:7280:b92e:a901:5202:3d43
+allow from 73.166.117.160
+</Files>
+
+<Files "api.php">
+Order allow,deny
+allow from 119.236.118.206
+allow from 2601:2c0:8003:7280:b92e:a901:5202:3d43
+allow from 73.166.117.160
+</Files>
+
+<Files "maintenance.html">
+    Allow from all
+</Files>
+
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/javascript
+    AddOutputFilterByType BROTLI_COMPRESS application/javascript application/json application/xml
+    AddOutputFilterByType BROTLI_COMPRESS image/svg+xml
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(?:css|js)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    <FilesMatch "\.(?:gif|ico|jpe?g|png|svg|webp|otf|ttf|woff2?)$">
+        Header set Cache-Control "public, max-age=31536000"
+    </FilesMatch>
+</IfModule>
