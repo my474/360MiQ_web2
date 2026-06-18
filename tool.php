@@ -620,6 +620,12 @@ figure {
     background-color: transparent !important;
 }
 
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow:hover,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li:hover > button.highcharts-submenu-item-arrow {
+    background-color: transparent !important;
+}
+
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
     background-color: transparent !important;
     filter: brightness(0) invert(1) !important;
