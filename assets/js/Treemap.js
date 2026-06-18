@@ -96,9 +96,13 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                         data[i]["header"] = bestsectorcolor;
                     else if (sectorDict[data[i].product][period_idx] == items[items.length - 1][1])
                         data[i]["header"] = worstsectorcolor;
-                        
+
                     data[i].product += ' ' + (sectorDict[data[i].product][period_idx] > 0 ? '+' : (sectorDict[data[i].product][period_idx] === 0 ? '\u00B1' : '')) + sectorDict[data[i].product][period_idx] + '%';
                 }
+
+                data[i]["hoverHeader"] = Object.assign({}, data[i]["header"] || {}, {
+                    "fontColor": data[i]["header"] && data[i]["header"]["fontColor"] ? data[i]["header"]["fontColor"] : headerFontColor
+                });
             }
         }
 
