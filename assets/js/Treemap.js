@@ -99,7 +99,10 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
 
                     data[i].product += ' ' + (sectorDict[data[i].product][period_idx] > 0 ? '+' : (sectorDict[data[i].product][period_idx] === 0 ? '\u00B1' : '')) + sectorDict[data[i].product][period_idx] + '%';
                 }
+            }
 
+            if (data[i].size === undefined)
+            {
                 data[i]["hoverHeader"] = Object.assign({}, data[i]["header"] || {}, {
                     "fontColor": data[i]["header"] && data[i]["header"]["fontColor"] ? data[i]["header"]["fontColor"] : headerFontColor
                 });
