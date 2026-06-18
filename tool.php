@@ -578,28 +578,42 @@ figure {
     color: #e8e8e8;
 }
 
-[data-theme="dark"] .highcharts-stocktools-wrapper,
-[data-theme="dark"] .highcharts-bindings-wrapper,
-[data-theme="dark"] .highcharts-bindings-wrapper .highcharts-submenu-wrapper {
-    background-color: #242438;
-    border-color: #6f74a8;
+[data-theme="dark"] #tab-2 .highcharts-stocktools-wrapper,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-submenu-wrapper {
+    --highcharts-neutral-color-3: #242438;
+    --highcharts-neutral-color-10: #33335a;
+    --highcharts-button-hover-color: #33335a;
+    background: #242438 !important;
+    background-color: #242438 !important;
+    border-color: #6f74a8 !important;
 }
 
-[data-theme="dark"] .highcharts-bindings-wrapper li,
-[data-theme="dark"] .highcharts-menu-item-btn {
-    background-color: #242438;
-    border-color: #6f74a8;
-    color: #e8e8e8;
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li,
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
+    background: #242438 !important;
+    background-color: #242438 !important;
+    border-color: #6f74a8 !important;
+    color: #e8e8e8 !important;
 }
 
-[data-theme="dark"] .highcharts-bindings-wrapper li:hover,
-[data-theme="dark"] .highcharts-menu-item-btn:hover,
-[data-theme="dark"] .highcharts-bindings-wrapper li.highcharts-active {
-    background-color: #33335a;
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn:hover,
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
-[data-theme="dark"] .highcharts-bindings-wrapper li > span,
-[data-theme="dark"] .highcharts-menu-item-btn {
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li:hover,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li.highcharts-active {
+    background: #33335a !important;
+    background-color: #33335a !important;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > span,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-menu-item-btn,
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
     filter: invert(1) brightness(1.3);
 }
 
