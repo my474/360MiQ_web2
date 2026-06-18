@@ -608,6 +608,13 @@ figure {
     color: #e8e8e8 !important;
 }
 
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li.highcharts-separator,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li.highcharts-separator:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn,
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn:hover {
     background-color: transparent !important;
@@ -622,15 +629,15 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar::before {
-    content: '\2039';
+    content: '<';
     display: block;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 11px;
+    font-weight: normal;
     line-height: 10px;
 }
 
-[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar.highcharts-arrow-right::before {
-    content: '\203A';
+[data-theme="dark"] #tab-2 .highcharts-menu-wrapper.highcharts-hide + .highcharts-toggle-toolbar::before {
+    content: '>';
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li:hover,
