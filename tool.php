@@ -579,11 +579,22 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-stocktools-wrapper,
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper,
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-submenu-wrapper {
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper {
     --highcharts-neutral-color-3: #242438;
     --highcharts-neutral-color-10: #33335a;
     --highcharts-button-hover-color: #33335a;
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-menu-wrapper {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-submenu-wrapper {
     background: #242438 !important;
     background-color: #242438 !important;
     border-color: #6f74a8 !important;
@@ -603,7 +614,23 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
+    background-image: none !important;
     background-color: #242438 !important;
+    filter: none !important;
+    color: #e8e8e8 !important;
+    text-align: center;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar::before {
+    content: '\2039';
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 10px;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar.highcharts-arrow-right::before {
+    content: '\203A';
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li:hover,
@@ -619,8 +646,7 @@ figure {
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-menu-item-btn,
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-submenu-item-arrow,
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-arrow-up,
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-arrow-down,
-[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-arrow-down {
     filter: brightness(0) invert(1) !important;
 }
 
