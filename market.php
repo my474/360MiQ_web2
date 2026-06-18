@@ -1914,6 +1914,123 @@ var monthdict = {"b":"01", "c":"02", "d":"03", "e":"04", "f":"05", "g":"06", "h"
 var creditY = -388;
 var codeStrSQL = '';
 var featuredGridCount = 0;
+
+// Render expensive charts one at a time and only when they are close to the viewport.
+// This replaces empty AJAX requests that were previously used to yield to the browser.
+var chartRenderQueue = [];
+var queuedChartIds = new Set();
+var renderedChartIds = new Set();
+var chartObservers = new Map();
+var chartRenderQueueRunning = false;
+
+function yieldToBrowser()
+{
+    return new Promise(function(resolve) {
+        var scheduleFrame = window.requestAnimationFrame || function(callback) {
+            return window.setTimeout(callback, 16);
+        };
+
+        scheduleFrame(function() {
+            window.setTimeout(resolve, 0);
+        });
+    });
+}
+
+function stopObservingChart(containerId)
+{
+    var observer = chartObservers.get(containerId);
+    if (observer)
+    {
+        observer.disconnect();
+        chartObservers.delete(containerId);
+    }
+}
+
+function markChartRenderFailed(containerId, error)
+{
+    var container = document.getElementById(containerId);
+    if (container)
+        container.setAttribute('data-chart-render-error', 'true');
+
+    if (window.console && console.error)
+        console.error('Failed to render ' + containerId, error);
+}
+
+function enqueueChartRender(containerId, renderChart)
+{
+    if (renderedChartIds.has(containerId) || queuedChartIds.has(containerId))
+        return;
+
+    stopObservingChart(containerId);
+    queuedChartIds.add(containerId);
+    chartRenderQueue.push({
+        containerId: containerId,
+        renderChart: renderChart
+    });
+    runChartRenderQueue();
+}
+
+async function runChartRenderQueue()
+{
+    if (chartRenderQueueRunning)
+        return;
+
+    chartRenderQueueRunning = true;
+
+    while (chartRenderQueue.length > 0)
+    {
+        var task = chartRenderQueue.shift();
+        queuedChartIds.delete(task.containerId);
+
+        if (renderedChartIds.has(task.containerId))
+            continue;
+
+        await yieldToBrowser();
+
+        try
+        {
+            await task.renderChart();
+            renderedChartIds.add(task.containerId);
+        }
+        catch (error)
+        {
+            markChartRenderFailed(task.containerId, error);
+        }
+    }
+
+    chartRenderQueueRunning = false;
+}
+
+function lazyRenderChart(containerId, renderChart, rootMargin)
+{
+    var container = document.getElementById(containerId);
+    if (!container || renderedChartIds.has(containerId) || queuedChartIds.has(containerId) || chartObservers.has(containerId))
+        return;
+
+    if (!('IntersectionObserver' in window))
+    {
+        enqueueChartRender(containerId, renderChart);
+        return;
+    }
+
+    var observer = new IntersectionObserver(function(entries) {
+        for (var i = 0; i < entries.length; i++)
+        {
+            if (entries[i].isIntersecting)
+            {
+                enqueueChartRender(containerId, renderChart);
+                break;
+            }
+        }
+    }, {
+        root: null,
+        rootMargin: rootMargin || '800px 0px',
+        threshold: 0.01
+    });
+
+    chartObservers.set(containerId, observer);
+    observer.observe(container);
+}
 const minGridNum = 3;
 
 // remove Highcharts chart series data to prevent web scraping. if the charts act weird, remove this to restore to normal
@@ -2244,52 +2361,50 @@ function tab1()
             }
             highstock('chartcontainerA1', dict, [benchmark, "3>18", "10>50", "50>" + longMA, "Hindenburg"], "MAˢʰᵒʳᵗ > MAˡᵒⁿᵍ Market Breadth (Daily)", exchangeName, benchmarkname, "% of stocks MAˢʰᵒʳᵗ above MAˡᵒⁿᵍ", 0, 100, "day", rangeselector, "line", 1, creditY + creditYoffset, 50);
 
-            $.ajax({
-                url : "",
-        		complete: function(){
-        		    highstock('chartcontainerA2', dict, [benchmark, ">20", ">50", ">" + longMA], "Close > MA Market Breadth (Daily)", exchangeName, benchmarkname, '% of stocks Close above MA', 0, 100, "day", rangeselector, "line", 1, creditY + creditYoffset, 50);
-        		    
-        		    $.ajax({
-                        url : "",
-                		complete: function(){
-                            highstock('chartcontainerA3', dict, [benchmark, "14w>50", "14w<30", "14w>70"], "RSI Market Breadth (Weekly)", exchangeName, benchmarkname, "% of stocks 14-Week RSI", 0, 100, "week", rangeselector == 2 ? 5 : 4, "line", 1, creditY, 50);
+            renderedChartIds.add('chartcontainerA1');
 
-                		    $.ajax({
-                                url : "",
-                        		complete: function(){
-                                    highstock('chartcontainerA4', dict, [benchmark, "14d>50", "14d<30", "14d>70"], "RSI Market Breadth (Daily)", exchangeName, benchmarkname, "% of stocks 14-Day RSI", 0, 100, "day", rangeselector, "line", 1, creditY, 50);
+            lazyRenderChart('chartcontainerA2', function() {
+                highstock('chartcontainerA2', dict, [benchmark, ">20", ">50", ">" + longMA], "Close > MA Market Breadth (Daily)", exchangeName, benchmarkname, '% of stocks Close above MA', 0, 100, "day", rangeselector, "line", 1, creditY + creditYoffset, 50);
+            });
 
-                        		    $.ajax({
-                                        url : "",
-                                		complete: function(){
-                                            highstock('chartcontainerA5', dict, [benchmark, "250HL"], "250-Day High minus Low Market Breadth (Daily)", exchangeName, benchmarkname, "% of stocks at 250-Day High minus % of stocks at 250-Day Low", null, null, "day", rangeselector == 2 ? 3 : 2, "line", 1, creditY + creditYoffset, 0);
-                                            //highstock('chartcontainerA6', dict, [benchmark, "AD"], "Advance - Decline Market Breadth", benchmarkname, "Advance - Decline %", null, null, "day", rangeselector, "line", 1, true);
-                                            highstock('chartcontainerA6', dict, [benchmark, "Osc"], "McClellan Oscillator (Daily)", exchangeName, benchmarkname, "McClellan Oscillator", null, null, "day", rangeselector, "line", 1, creditY, 0);
-                                            highstock('chartcontainerA7', dict, [benchmark, "SumIdx"], "McClellan Summation Index (Daily)", exchangeName, benchmarkname, "McClellan Summation Index", null, null, "day", rangeselector == 2 ? 4 : 3, "line", 1, creditY + creditYoffset, 0);
-                                            
-                                            $.ajax({
-                                                url : "/db_market_trendgauge_get.php?data=" + data,
-                                        		success: function(result){
-                                        		    var jsonObject = result.split(/\r?\n|\r/);
-                                        		    
-                                                    var browserwidth = document.documentElement.clientWidth || document.body.clientWidth || window.innerWidth;
-                                                    var fontsize = '10px';
-                                                    if (browserwidth <= 480)
-                                                        fontsize = '9.2px';
-                                                        
-                                                    if (jsonObject.length == 3)
-                                                    	trendgauge("chartcontainerA8", parseFloat(jsonObject[0]), parseFloat(jsonObject[1]), exchangeName, "#", fontsize, undefined, benchmarkname);
-                                                	else
-                                                	    trendgauge("chartcontainerA8", -1, -1, exchangeName, "#", fontsize, undefined, benchmarkname); 
-                                        		}
-                                    		});
-                                		}
-                            		});
-                        		}
-                    		});
-                		}
-            		});
-        		}
+            lazyRenderChart('chartcontainerA3', function() {
+                highstock('chartcontainerA3', dict, [benchmark, "14w>50", "14w<30", "14w>70"], "RSI Market Breadth (Weekly)", exchangeName, benchmarkname, "% of stocks 14-Week RSI", 0, 100, "week", rangeselector == 2 ? 5 : 4, "line", 1, creditY, 50);
+            });
+
+            lazyRenderChart('chartcontainerA4', function() {
+                highstock('chartcontainerA4', dict, [benchmark, "14d>50", "14d<30", "14d>70"], "RSI Market Breadth (Daily)", exchangeName, benchmarkname, "% of stocks 14-Day RSI", 0, 100, "day", rangeselector, "line", 1, creditY, 50);
+            });
+
+            lazyRenderChart('chartcontainerA5', function() {
+                highstock('chartcontainerA5', dict, [benchmark, "250HL"], "250-Day High minus Low Market Breadth (Daily)", exchangeName, benchmarkname, "% of stocks at 250-Day High minus % of stocks at 250-Day Low", null, null, "day", rangeselector == 2 ? 3 : 2, "line", 1, creditY + creditYoffset, 0);
+            });
+
+            lazyRenderChart('chartcontainerA6', function() {
+                //highstock('chartcontainerA6', dict, [benchmark, "AD"], "Advance - Decline Market Breadth", benchmarkname, "Advance - Decline %", null, null, "day", rangeselector, "line", 1, true);
+                highstock('chartcontainerA6', dict, [benchmark, "Osc"], "McClellan Oscillator (Daily)", exchangeName, benchmarkname, "McClellan Oscillator", null, null, "day", rangeselector, "line", 1, creditY, 0);
+            });
+
+            lazyRenderChart('chartcontainerA7', function() {
+                highstock('chartcontainerA7', dict, [benchmark, "SumIdx"], "McClellan Summation Index (Daily)", exchangeName, benchmarkname, "McClellan Summation Index", null, null, "day", rangeselector == 2 ? 4 : 3, "line", 1, creditY + creditYoffset, 0);
+            });
+
+            lazyRenderChart('chartcontainerA8', function() {
+                return $.ajax({
+                    url : "/db_market_trendgauge_get.php?data=" + data,
+                    success: function(result){
+                        var jsonObject = result.split(/\r?\n|\r/);
+
+                        var browserwidth = document.documentElement.clientWidth || document.body.clientWidth || window.innerWidth;
+                        var fontsize = '10px';
+                        if (browserwidth <= 480)
+                            fontsize = '9.2px';
+
+                        if (jsonObject.length == 3)
+                            trendgauge("chartcontainerA8", parseFloat(jsonObject[0]), parseFloat(jsonObject[1]), exchangeName, "#", fontsize, undefined, benchmarkname);
+                        else
+                            trendgauge("chartcontainerA8", -1, -1, exchangeName, "#", fontsize, undefined, benchmarkname);
+                    }
+                });
             });
         }
     });   
@@ -4168,33 +4283,23 @@ function tab1()
 
             		    highstock('chartcontainerG1', price, ['Residential', 'A', 'B', 'C', 'D', 'E', '# of Sale Used_stacked', '# of Sale New_stacked'], "Hong Kong Residential Price Indices by Class", HKpropertySubtitle, "Index Value", "# of Sale", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
 
-            		    $.ajax({
-                            url : "",
-                    		complete: function(){
-                                highstock('chartcontainerG2', price, ['Residential', 'Office', 'Retail', 'Flatted Factory', '# of Sale Residential_column', '# of Sale Office_column', '# of Sale Commercial_column', '# of Sale Flatted Factory_column'], "Hong Kong Property Price Indices by Type", HKpropertySubtitle, "Index Value", "# of Sale", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
-    
-                    		    $.ajax({
-                                    url : "",
-                            		complete: function(){
-                                        highstock('chartcontainerG3', rent, ['Residential', 'Office', 'Retail', 'Flatted Factory'], "Hong Kong Property Rental Indices by Type", HKpropertySubtitle, "Index Value", "", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
-    
-                            		    $.ajax({
-                                            url : "",
-                                    		complete: function(){
-                                                highstock('chartcontainerG4', rent_price_ratio, ['Residential', 'Office', 'Retail', 'Flatted Factory'], "Hong Kong Property Rent / Price Ratio by Type", HKpropertySubtitle, "Rent / Price Ratio", "", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
-                                                
-                                                $.ajax({
-                                                    url : "",
-                                            		complete: function(){
-                                                        highstock('chartcontainerG5', r_c_v_t, ['Residential', 'Completion_column', 'Takeup_column', 'Vacancy %_column_newY'], "Hong Kong Residential Price, Completion, Takeup, Vacancy", HKpropertySubtitle, "Index Value", "# of Unit", null, null, "month", 6, "line", 1, creditY + creditY_extra, null, 'linear', true);
-                                            		}
-                                        		});
-                                    		}
-                                		});
-                            		}
-                        		});
-                    		}
-                		});
+                        renderedChartIds.add('chartcontainerG1');
+
+                        lazyRenderChart('chartcontainerG2', function() {
+                            highstock('chartcontainerG2', price, ['Residential', 'Office', 'Retail', 'Flatted Factory', '# of Sale Residential_column', '# of Sale Office_column', '# of Sale Commercial_column', '# of Sale Flatted Factory_column'], "Hong Kong Property Price Indices by Type", HKpropertySubtitle, "Index Value", "# of Sale", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
+                        });
+
+                        lazyRenderChart('chartcontainerG3', function() {
+                            highstock('chartcontainerG3', rent, ['Residential', 'Office', 'Retail', 'Flatted Factory'], "Hong Kong Property Rental Indices by Type", HKpropertySubtitle, "Index Value", "", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
+                        });
+
+                        lazyRenderChart('chartcontainerG4', function() {
+                            highstock('chartcontainerG4', rent_price_ratio, ['Residential', 'Office', 'Retail', 'Flatted Factory'], "Hong Kong Property Rent / Price Ratio by Type", HKpropertySubtitle, "Rent / Price Ratio", "", null, null, "day", 6, "line", 1, creditY + creditY_extra, null, 'linear', true, false, 'close', Infinity, true, false, [{type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:5, text:'5y'}, {type: 'year', count: 10, text: '10y'}, {type: 'year', count: 20, text: '20y'}, {type: 'year', count: 30, text: '30y'}, {type: 'all', text: 'All'}]);
+                        });
+
+                        lazyRenderChart('chartcontainerG5', function() {
+                            highstock('chartcontainerG5', r_c_v_t, ['Residential', 'Completion_column', 'Takeup_column', 'Vacancy %_column_newY'], "Hong Kong Residential Price, Completion, Takeup, Vacancy", HKpropertySubtitle, "Index Value", "# of Unit", null, null, "month", 6, "line", 1, creditY + creditY_extra, null, 'linear', true);
+                        });
                     }
                 });
             }
