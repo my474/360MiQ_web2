@@ -17,7 +17,9 @@
     <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
     <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&display=swap">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="assets/css/card.css">
@@ -46,7 +48,7 @@ table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
 }
 </style>
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">-->
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css">
 <!--<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">-->
 <link rel="stylesheet" href="assets/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.5/css/buttons.bootstrap4.min.css">
@@ -1747,18 +1749,16 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
                     </div>
     
                 </div>
-<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script>
 //document.getElementById("screener_grid").style.visibility = "hidden";
 
-jQuery(window).load(function(){
+jQuery(window).on('load', function(){
     jQuery("html,body").animate({scrollTop: 0}, 1000);
 });
 </script>
 
 
 <!-- jQuery Library -->
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.4/js/dataTables.responsive.min.js"></script>
@@ -1767,11 +1767,7 @@ jQuery(window).load(function(){
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.bootstrap4.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.colVis.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.print.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.4/js/responsive.bootstrap4.min.js"></script>
 <script type="text/javascript" src="assets/js/datatables.input.js"></script>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
@@ -1928,6 +1924,7 @@ function menu_disable()
 
 var all = ["Sector","Industry","Market_Cap","Technical_Polar","Valuation_Polar","Fundamental_Polar","Trend_Gauge","Price_Channel_Pos","Price_Channel_Trend","PE_Band_STDEV_σ","PE_Band_Trend","PB_Band_STDEV_σ","PB_Band_Trend","F-Score","Z-Score","M-Score"];
 var none = ["MA10","MA20","MA50","MA100","MA200","MA250","RSI14_Daily","RSI14_Weekly","MACD_Daily","MACD_Weekly","High_Low","Volume"];
+var pendingResultScroll = false;
 $(document).ready(function(){ 
     if (!window.mobileAndTabletcheck())
         document.getElementById("autocomplete").focus();
@@ -1962,16 +1959,20 @@ $(document).ready(function(){
         menu_enable();
     });
 
-    if (marketfromURL != '')
-        search(marketfromURL, sectorfromURL, industryfromURL);
+    if (marketfromURL != '') {
+        requestAnimationFrame(function() {
+            search(marketfromURL, sectorfromURL, industryfromURL, true);
+        });
+    }
         
     $("#resetsearchbtn .search").click(function(){
-        search('', '', '');
+        search('', '', '', true);
     });
 
 });
 
-function search(marketfromURL, sectorfromURL, industryfromURL) {
+function search(marketfromURL, sectorfromURL, industryfromURL, shouldScrollToResults) {
+    pendingResultScroll = shouldScrollToResults === true;
     //document.getElementById("screener_grid").style.visibility = "visible";
     
     var market = "";
@@ -2964,16 +2965,14 @@ function search(marketfromURL, sectorfromURL, industryfromURL) {
             { "orderSequence": [ "desc", "asc" ] }
         ],
         "drawCallback": function( settings ) {
-            $([document.documentElement, document.body]).animate({
-                scrollTop: $("#Result").offset().top - 165
+            if (pendingResultScroll) {
+                pendingResultScroll = false;
+                $([document.documentElement, document.body]).animate({
+                    scrollTop: $("#Result").offset().top - 165
                 }, 1000);
-                        
-            //var start = +new Date(),
-            $tds = $('span[data-sparkline]'),
-            fullLen = $tds.length,
-            n = 0;
-            
-            doChunk($tds, fullLen, 0);
+            }
+
+            observeSparklines($('#screener_grid span[data-sparkline]').toArray());
         }
     }); 
 
@@ -3098,67 +3097,98 @@ function bandTrend(value, type)
 }
 
 
-// Creating 153 sparkline charts is quite fast in modern browsers, but IE8 and mobile
-// can take some seconds, so we split the input into chunks and apply them in timeouts
-// in order avoid locking up the browser process and allow interaction.
-function doChunk($tds, fullLen, n) {
-    var time = +new Date(),
-        i,
-        len = $tds.length,
-        $td,
-        stringdata,
-        arr,
-        data,
-        chart;
-
-    for (i = 0; i < len; i += 1) {
-        $td = $($tds[i]);
-        stringdata = $td.data('sparkline');
-        if (stringdata === null)
-            continue;
-        arr = stringdata.split(';');
-        data = $.map(arr[0].split(','), parseFloat);
-        if (data.length > 1 &&
-            (data[data.length - 1] / data[data.length - 2] > 90 || data[data.length - 2] / data[data.length - 1] > 90)) // in case of LSE gbp gbx error
-        {
-            data.pop(); // remove last item
+var sparklineQueue = [];
+var sparklineQueueScheduled = false;
+var sparklineObserver = 'IntersectionObserver' in window ? new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+            sparklineObserver.unobserve(entry.target);
+            enqueueSparkline(entry.target);
         }
-        
-        chart = {};
+    });
+}, { rootMargin: '300px 0px' }) : null;
 
-        if (arr[1]) {
-            chart.type = arr[1];
-        }
-        $td.highcharts('SparkLine', {
-            series: [{
-                data: data,
-                pointStart: 1
-            }],
-            tooltip: {
-                headerFormat: '<span style="font-size: 10px">{point.x}:</span><br/>',
-                pointFormat: '<b>{point.y}</b>'
-            },
-            chart: chart,
-            yAxis: {
-                min: Math.min.apply(this, data) * 0.98, // : Math.min(...data) * 0.98,
-                max: Math.max.apply(this, data) * 1.02 // : Math.max(...data) * 1.02
-            },
-        });
+function observeSparklines(elements) {
+    elements.forEach(function(element) {
+        if (element.dataset.sparklineRendered === '1')
+            return;
 
-        n++;
+        if (sparklineObserver)
+            sparklineObserver.observe(element);
+        else
+            enqueueSparkline(element);
+    });
+}
 
-        // If the process takes too much time, run a timeout to allow interaction with the browser
-        if (new Date() - time > 10000) {
-            $tds.splice(0, i + 1);
-            setTimeout(doChunk, 0);
+function enqueueSparkline(element) {
+    if (element.dataset.sparklineQueued === '1' || element.dataset.sparklineRendered === '1')
+        return;
+
+    element.dataset.sparklineQueued = '1';
+    sparklineQueue.push(element);
+    scheduleSparklineQueue();
+}
+
+function scheduleSparklineQueue() {
+    if (sparklineQueueScheduled)
+        return;
+
+    sparklineQueueScheduled = true;
+    if ('requestIdleCallback' in window)
+        requestIdleCallback(renderSparklineQueue, { timeout: 100 });
+    else
+        setTimeout(renderSparklineQueue, 0);
+}
+
+function renderSparklineQueue(deadline) {
+    var frameStart = performance.now();
+    sparklineQueueScheduled = false;
+
+    while (sparklineQueue.length > 0) {
+        var element = sparklineQueue.shift();
+        if (document.body.contains(element))
+            renderSparkline(element);
+
+        if ((deadline && deadline.timeRemaining() < 2) || performance.now() - frameStart >= 12)
             break;
-        }
-
-        // Print a feedback on the performance
-        /*if (n === fullLen) {
-            $('#result').html('Generated ' + fullLen + ' sparklines in ' + (new Date() - start) + ' ms');
-        }*/
     }
+
+    if (sparklineQueue.length > 0)
+        scheduleSparklineQueue();
+}
+
+function renderSparkline(element) {
+    var $td = $(element);
+    var stringdata = $td.data('sparkline');
+    if (stringdata === null || stringdata === undefined)
+        return;
+
+    var arr = stringdata.split(';');
+    var data = $.map(arr[0].split(','), parseFloat);
+    if (data.length > 1 &&
+        (data[data.length - 1] / data[data.length - 2] > 90 || data[data.length - 2] / data[data.length - 1] > 90))
+        data.pop();
+
+    var chart = {};
+    if (arr[1])
+        chart.type = arr[1];
+
+    $td.highcharts('SparkLine', {
+        series: [{
+            data: data,
+            pointStart: 1
+        }],
+        tooltip: {
+            headerFormat: '<span style="font-size: 10px">{point.x}:</span><br/>',
+            pointFormat: '<b>{point.y}</b>'
+        },
+        chart: chart,
+        yAxis: {
+            min: Math.min.apply(this, data) * 0.98,
+            max: Math.max.apply(this, data) * 1.02
+        }
+    });
+    element.dataset.sparklineRendered = '1';
 }
     
 

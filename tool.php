@@ -17,7 +17,9 @@
     <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
     <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&display=swap">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="assets/css/card.css">
@@ -31,7 +33,6 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 </head>
 
@@ -48,26 +49,7 @@
 <script src="assets/js/Utils.js"></script>
 <script src="assets/js/TA.js"></script>
 
-<script src="https://code.highcharts.com/stock/11.4.0/highstock.js"></script>
-<script src="https://code.highcharts.com/stock/11.4.0/modules/no-data-to-display.js"></script>
-<script src="https://code.highcharts.com/stock/11.4.0/modules/exporting.js"></script>
-
-<script src="https://code.highcharts.com/stock/11.4.0/modules/pattern-fill.js"></script>
-<script src="https://code.highcharts.com/11.4.0/highcharts-more.js"></script>
-
-<script src="https://code.highcharts.com/stock/11.4.0/modules/annotations.js"></script>
-<script src="https://code.highcharts.com/stock/11.4.0/modules/data.js"></script>
-<script src="https://code.highcharts.com/stock/11.4.0/modules/accessibility.js"></script>
-
-<script src="https://code.highcharts.com/11.4.0/modules/annotations-advanced.js"></script>
-<script src="https://code.highcharts.com/11.4.0/modules/price-indicator.js"></script>
-<script src="https://code.highcharts.com/11.4.0/modules/stock-tools.js"></script>
-
-<link rel="stylesheet" type="text/css" href="https://code.highcharts.com/11.4.0/css/stocktools/gui.css">
-<link rel="stylesheet" type="text/css" href="https://code.highcharts.com/11.4.0/css/annotations/popup.css">
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
 <style>
 .irs {
 	font-family: Montserrat
@@ -132,8 +114,6 @@
 }
 </style>
 <style>
-@import url("https://netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css");
-
 figure {
     margin: 0;
 }
@@ -789,8 +769,13 @@ select optgroup {
             </div>
         </section>
     </main>
-</body>
-<?php include "./footer.php" ?>
+<script src="https://code.highcharts.com/stock/11.4.0/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/11.4.0/modules/no-data-to-display.js"></script>
+<script src="https://code.highcharts.com/stock/11.4.0/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/11.4.0/modules/pattern-fill.js"></script>
+<script src="https://code.highcharts.com/11.4.0/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/stock/11.4.0/modules/accessibility.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
 <script>
 var codefromURL = "<?php echo isset($_GET["code"]) ? $_GET["code"] : ''; ?>";
 var fromfromURL = "<?php echo isset($_GET["from"]) ? $_GET["from"] : ''; ?>";
@@ -799,6 +784,10 @@ var timeframefromURL = "<?php echo isset($_GET["tf"]) ? $_GET["tf"] : ''; ?>";
 var composerCodesfromURL = "<?php echo isset($_GET["codes"]) ? $_GET["codes"] : ''; ?>";
 var composerFromfromURL = "<?php echo isset($_GET["cfrom"]) ? $_GET["cfrom"] : ''; ?>";
 var composerTofromURL = "<?php echo isset($_GET["cto"]) ? $_GET["cto"] : ''; ?>";
+var startupURL = new URL(window.location.href);
+var startupTab = startupURL.searchParams.get('tab') || (startupURL.hash === '#tab-2' ? '2' : '1');
+var composerRuntimePromise = null;
+var composerControlsInitialized = false;
 var newRelativePathQueryTab1 = '';
 var newRelativePathQueryTab2 = '';
 var exchangesOnMarketPage = ['NYSE', 'NASDAQ', 'TSX', 'LSE', 'ASX', 'TYO', 'NSE', 'HKEX', 'SHSE', 'SZSE'];
@@ -819,6 +808,8 @@ var ele = document.getElementsByName('timeframe');
 var sliderStep = 7;
 var codeString = '';
 var loadfromDB = true;
+var raceRequestSerial = 0;
+var activeRaceRequest = null;
             
 var $range = $(".js-range-slider"),
     $inputFrom = $(".js-input-from"),
@@ -1111,11 +1102,15 @@ function race(data)
 {
     if (data === '')
         return;
+
+    var requestId = ++raceRequestSerial;
+    if (activeRaceRequest && activeRaceRequest.readyState !== 4)
+        activeRaceRequest.abort();
         
     //var isIEX = 0;
     //if (tmpname == "NYSE" || tmpname == "NASDAQ")
     //    isIEX = 1;
-    $.ajax({
+    activeRaceRequest = $.ajax({
         url : "db_top10_get.php?data=" + encodeURIComponent(data.replace(/\s/g, ',').replace(/,+/g, ',').replace(/,+$/, "")) + "&isIEX=1",
         /*method: "post",
         url : "db_top10_get.php",
@@ -1127,7 +1122,8 @@ function race(data)
             isLoading = true;
     	},
     	complete: function(){
-    		isLoading = false;
+            if (requestId === raceRequestSerial)
+                isLoading = false;
     	},
     /*	error: function (error) {
     	    $('#loader-icon').hide();
@@ -1136,6 +1132,8 @@ function race(data)
             document.getElementById("failedcell").textContent = "Failed to load. Please refresh the page.";
         },*/
         success : function(result){
+            if (requestId !== raceRequestSerial)
+                return;
             if (result == '')
             {
                 chart = raceChart(new Object());
@@ -1448,11 +1446,12 @@ function race(data)
                 pause(btn);
                 
             nameDict = new Object();
+            var namesRequest = null;
             if (data != '')
             {
                 if (codeString != '')
                 {
-                    $.ajax({
+                    namesRequest = $.ajax({
                         url : "db_top10_name_get.php?data=" + codeString,
                         success : function(names){
                             if (names != '')
@@ -1484,10 +1483,14 @@ function race(data)
                     });
                 }
             }
-        
-            chart = raceChart(nameDict);
-            if ((Object.keys(tmpXXXlyDict2)).length > 0)
-            {
+
+            var finishRaceChart = function() {
+                if (requestId !== raceRequestSerial)
+                    return;
+
+                chart = raceChart(nameDict);
+                if ((Object.keys(tmpXXXlyDict2)).length > 0)
+                {
                 var stock =(Object.keys(tmpXXXlyDict2))[0];
                 var sd = tmpXXXlyDict2[stock][0][0];
                 var ed = tmpXXXlyDict2[stock][tmpXXXlyDict2[stock].length - 1][0];
@@ -1521,8 +1524,14 @@ function race(data)
                 history.pushState(null, '', newRelativePathQueryTab1);
                 document.getElementById("chartnoteRace").style.display = "";
                 
-                play(btn);
-            }
+                    play(btn);
+                }
+            };
+
+            if (namesRequest)
+                namesRequest.always(finishRaceChart);
+            else
+                finishRaceChart();
         }
     });
 }
@@ -2054,53 +2063,39 @@ $(document).ready(function(){
     
     document.getElementById("raceInput").focus();
     
-    var initialTab =new URL(window.location).searchParams.get('tab');
-    var url = document.location.toString();
-    if (composerCodesfromURL != "" &&
-        (url.match('#') && url.split('#')[1] == 'tab-2') ||
-        (initialTab && initialTab == 2)) // if #tab-2
-    {
-        // Split by comma
-        const parts = composerCodesfromURL.split(',');
-        
-        var seriesCount = 0;
-        // Process each part
-        parts.forEach(part => {
-            // Decode URL-encoded characters (e.g., %3A to :)
-            const decoded = decodeURIComponent(part);
-            // Split by : to get key and value
-            const [value, key] = decoded.split(':');
-            // Add to dictionary
-            /*if (value == 'stock')
-                composerCodesStockDict[key] = value;
-            else
-                composerCodesNonStockDict[key] = value;*/
-                
-            if (seriesCount == maxSeriesNumber)
-                return;
-                
-            if (value == 'stock') {
-                createChart({
-                    name: '',
-                    region: '',
-                    id: key,
-                    type: value,
-                }, false);
-                
-                seriesCount++;
-            }
-            else
-            {
-                var series = findNameByIdAndType(dataStructure, key, value);
-                if (series != null)
-                {
-                    createChart(series, false);
-                    seriesCount++;
-                }
-            }
+    if (startupTab == '2') {
+        ensureComposerReady().then(function() {
+            if (composerCodesfromURL != "")
+                return restoreComposerSeries(composerCodesfromURL.split(','));
         });
     }
 })
+
+function restoreComposerSeries(parts) {
+    var seriesToLoad = parts.slice(0, maxSeriesNumber).map(function(part) {
+        const decoded = decodeURIComponent(part);
+        const pair = decoded.split(':');
+        const value = pair[0];
+        const key = pair.slice(1).join(':');
+
+        if (value == 'stock') {
+            return {
+                name: '',
+                region: '',
+                id: key,
+                type: value
+            };
+        }
+
+        return findNameByIdAndType(dataStructure, key, value);
+    }).filter(Boolean);
+
+    return seriesToLoad.reduce(function(promise, series) {
+        return promise.then(function() {
+            return createChart(series, true);
+        });
+    }, Promise.resolve());
+}
 
 
 // suppress "Added non-passive event listener to a scroll-blocking 'touchstart' event" and 'touchmove' event in browser
@@ -2319,443 +2314,8 @@ const urls = {
     HK: {tab1: 'econ?country=HK', tab7: 'econ?country=HK&tab=7'},
 }
 
-// Data structure
-const dataStructure = {
-    ASX: {
-        stock: [],
-        index: [
-            { name: 'ASX All Ordinaries Index', id: 'AORD', type: 'idx', url: urls['ASX'].tab5 },
-            { name: 'S&P/ASX 200 Index', id: 'XJO', type: 'idx', url: urls['ASX'].tab5 },
-        ],
-        market: [
-            { name: 'Australia MA10 > MA50 % Market Breadth', id: 'ASX10dSMA>50dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia RSI14 Day < 30 % Market Breadth', id: 'ASX14dRSI<30', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia RSI14 Day > 50 % Market Breadth', id: 'ASX14dRSI>50', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia RSI14 Day > 70 % Market Breadth', id: 'ASX14dRSI>70', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia RSI14 Week < 30 % Market Breadth', id: 'ASX14wRSI<30', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia RSI14 Week > 50 % Market Breadth', id: 'ASX14wRSI>50', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia RSI14 Week > 70 % Market Breadth', id: 'ASX14wRSI>70', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia 250-Day High - Low % Market Breadth', id: 'ASX250dHigh-Low', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia MA3 > MA18 % Market Breadth', id: 'ASX3dSMA>18dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia MA50 > MA200 % Market Breadth', id: 'ASX50dSMA>200dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia MA50 > MA250 % Market Breadth', id: 'ASX50dSMA>250dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia MA5 > MA20 % Market Breadth', id: 'ASX5dSMA>20dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia Advance % Market Breadth', id: 'ASXAdv', type: 'mb', url: urls['ASX'].tab5 },
-            { name: 'Australia Advance - Decline % Market Breadth', id: 'ASXAdv-Dec', type: 'mb', url: urls['ASX'].tab5 },
-            { name: 'Australia Close > MA10 % Market Breadth', id: 'ASXClose>10dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia Close > MA200 % Market Breadth', id: 'ASXClose>200dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia Close > MA20 % Market Breadth', id: 'ASXClose>20dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia Close > MA250 % Market Breadth', id: 'ASXClose>250dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia Close > MA50 % Market Breadth', id: 'ASXClose>50dSMA', type: 'mb', url: urls['ASX'].tab1 },
-            { name: 'Australia McClellan Oscillator', id: 'ASXMcClellanOsc', type: 'mb', url: urls['ASX'].tab1 },
-        ],
-    },
-    HKEX: {
-        stock: [],
-        index: [
-            { name: 'Hang Seng Index', id: 'HSI', type: 'idx', url: urls['HKEX'].tab5 },
-            { name: 'Hang Seng China Enterprises Index', id: 'HSCE', type: 'idx', url: urls['HKEX'].tab5 },
-        ],
-        market: [
-            { name: 'Hong Kong MA10 > MA50 % Market Breadth', id: 'HKEX10dSMA>50dSMA', type: 'mb', url:  urls['HKEX'].tab1 },
-            { name: 'Hong Kong RSI14 Day < 30 % Market Breadth', id: 'HKEX14dRSI<30', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong RSI14 Day > 50 % Market Breadth', id: 'HKEX14dRSI>50', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong RSI14 Day > 70 % Market Breadth', id: 'HKEX14dRSI>70', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong RSI14 Week < 30 % Market Breadth', id: 'HKEX14wRSI<30', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong RSI14 Week > 50 % Market Breadth', id: 'HKEX14wRSI>50', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong RSI14 Week > 70 % Market Breadth', id: 'HKEX14wRSI>70', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong 250-Day High - Low % Market Breadth', id: 'HKEX250dHigh-Low', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong MA3 > MA18 % Market Breadth', id: 'HKEX3dSMA>18dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong MA50 > MA200 % Market Breadth', id: 'HKEX50dSMA>200dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong MA50 > MA250 % Market Breadth', id: 'HKEX50dSMA>250dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong MA5 > MA20 % Market Breadth', id: 'HKEX5dSMA>20dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong Advance % Market Breadth', id: 'HKEXAdv', type: 'mb', url: urls['HKEX'].tab5 },
-            { name: 'Hong Kong Advance - Decline % Market Breadth', id: 'HKEXAdv-Dec', type: 'mb', url: urls['HKEX'].tab5 },
-            { name: 'Hong Kong Close > MA10 % Market Breadth', id: 'HKEXClose>10dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong Close > MA200 % Market Breadth', id: 'HKEXClose>200dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong Close > MA20 % Market Breadth', id: 'HKEXClose>20dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong Close > MA250 % Market Breadth', id: 'HKEXClose>250dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong Close > MA50 % Market Breadth', id: 'HKEXClose>50dSMA', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong McClellan Oscillator', id: 'HKEXMcClellanOsc', type: 'mb', url: urls['HKEX'].tab1 },
-            { name: 'Hong Kong Short Selling %', id: 'HKEXShortSelling', type: 'mb', url: urls['HKEX'].tab2 },
-        ],
-    },
-    LSE: {
-        stock: [],
-        index: [
-            { name: 'FTSE 100 Index', id: 'FTSE', type: 'idx', url: urls['LSE'].tab5 },
-        ],
-        market: [
-            { name: 'London MA10 > MA50 % Market Breadth', id: 'LSE10dSMA>50dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London RSI14 Day < 30 % Market Breadth', id: 'LSE14dRSI<30', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London RSI14 Day > 50 % Market Breadth', id: 'LSE14dRSI>50', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London RSI14 Day > 70 % Market Breadth', id: 'LSE14dRSI>70', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London RSI14 Week < 30 % Market Breadth', id: 'LSE14wRSI<30', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London RSI14 Week > 50 % Market Breadth', id: 'LSE14wRSI>50', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London RSI14 Week > 70 % Market Breadth', id: 'LSE14wRSI>70', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London 250-Day High - Low % Market Breadth', id: 'LSE250dHigh-Low', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London MA3 > MA18 % Market Breadth', id: 'LSE3dSMA>18dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London MA50 > MA200 % Market Breadth', id: 'LSE50dSMA>200dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London MA50 > MA250 % Market Breadth', id: 'LSE50dSMA>250dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London MA5 > MA20 % Market Breadth', id: 'LSE5dSMA>20dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London Advance % Market Breadth', id: 'LSEAdv', type: 'mb', url: urls['LSE'].tab5 },
-            { name: 'London Advance - Decline % Market Breadth', id: 'LSEAdv-Dec', type: 'mb', url: urls['LSE'].tab5 },
-            { name: 'London Close > MA10 % Market Breadth', id: 'LSEClose>10dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London Close > MA200 % Market Breadth', id: 'LSEClose>200dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London Close > MA20 % Market Breadth', id: 'LSEClose>20dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London Close > MA250 % Market Breadth', id: 'LSEClose>250dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London Close > MA50 % Market Breadth', id: 'LSEClose>50dSMA', type: 'mb', url: urls['LSE'].tab1 },
-            { name: 'London McClellan Oscillator', id: 'LSEMcClellanOsc', type: 'mb', url: urls['LSE'].tab1 },
-        ],
-    },
-    Nasdaq: {
-        stock: [],
-        index: [
-            { name: 'Nasdaq Composite Index', id: 'NCOMP', type: 'idx', url: urls['Nasdaq'].tab5 },
-            { name: 'Nasdaq 100 Index', id: 'NDX', type: 'idx', url: urls['Nasdaq'].tab5 },
-        ],
-        market: [
-            { name: 'Nasdaq MA10 > MA50 % Market Breadth', id: 'NASDAQ10dSMA>50dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq RSI14 Day < 30 % Market Breadth', id: 'NASDAQ14dRSI<30', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq RSI14 Day > 50 % Market Breadth', id: 'NASDAQ14dRSI>50', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq RSI14 Day > 70 % Market Breadth', id: 'NASDAQ14dRSI>70', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq RSI14 Week < 30 % Market Breadth', id: 'NASDAQ14wRSI<30', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq RSI14 Week > 50 % Market Breadth', id: 'NASDAQ14wRSI>50', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq RSI14 Week > 70 % Market Breadth', id: 'NASDAQ14wRSI>70', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq 250-Day High - Low % Market Breadth', id: 'NASDAQ250dHigh-Low', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq MA3 > MA18 % Market Breadth', id: 'NASDAQ3dSMA>18dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq MA50 > MA200 % Market Breadth', id: 'NASDAQ50dSMA>200dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq MA50 > MA250 % Market Breadth', id: 'NASDAQ50dSMA>250dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq MA5 > MA20 % Market Breadth', id: 'NASDAQ5dSMA>20dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq Advance % Market Breadth', id: 'NASDAQAdv', type: 'mb', url: urls['Nasdaq'].tab5 },
-            { name: 'Nasdaq Advance - Decline % Market Breadth', id: 'NASDAQAdv-Dec', type: 'mb', url: urls['Nasdaq'].tab5 },
-            { name: 'Nasdaq Close > MA10 % Market Breadth', id: 'NASDAQClose>10dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq Close > MA200 % Market Breadth', id: 'NASDAQClose>200dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq Close > MA20 % Market Breadth', id: 'NASDAQClose>20dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq Close > MA250 % Market Breadth', id: 'NASDAQClose>250dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq Close > MA50 % Market Breadth', id: 'NASDAQClose>50dSMA', type: 'mb', url: urls['Nasdaq'].tab1 },
-            { name: 'Nasdaq McClellan Oscillator', id: 'NASDAQMcClellanOsc', type: 'mb', url: urls['Nasdaq'].tab1 },
-        ],
-    },
-    NSE: {
-        stock: [],
-        index: [
-            { name: 'NIFTY 50 Index', id: 'NSEI', type: 'idx', url: urls['NSE'].tab5 },
-            { name: 'S&P BSE Sensitive Index', id: 'BSESI', type: 'idx', url: urls['NSE'].tab5 },
-        ],
-        market: [
-            { name: 'India NSE MA10 > MA50 % Market Breadth', id: 'NSE10dSMA>50dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE RSI14 Day < 30 % Market Breadth', id: 'NSE14dRSI<30', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE RSI14 Day > 50 % Market Breadth', id: 'NSE14dRSI>50', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE RSI14 Day > 70 % Market Breadth', id: 'NSE14dRSI>70', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE RSI14 Week < 30 % Market Breadth', id: 'NSE14wRSI<30', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE RSI14 Week > 50 % Market Breadth', id: 'NSE14wRSI>50', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE RSI14 Week > 70 % Market Breadth', id: 'NSE14wRSI>70', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE 250-Day High - Low % Market Breadth', id: 'NSE250dHigh-Low', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE MA3 > MA18 % Market Breadth', id: 'NSE3dSMA>18dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE MA50 > MA200 % Market Breadth', id: 'NSE50dSMA>200dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE MA50 > MA250 % Market Breadth', id: 'NSE50dSMA>250dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE MA5 > MA20 % Market Breadth', id: 'NSE5dSMA>20dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE Advance % Market Breadth', id: 'NSEAdv', type: 'mb', url: urls['NSE'].tab5 },
-            { name: 'India NSE Advance - Decline % Market Breadth', id: 'NSEAdv-Dec', type: 'mb', url: urls['NSE'].tab5 },
-            { name: 'India NSE Close > MA10 % Market Breadth', id: 'NSEClose>10dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE Close > MA200 % Market Breadth', id: 'NSEClose>200dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE Close > MA20 % Market Breadth', id: 'NSEClose>20dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE Close > MA250 % Market Breadth', id: 'NSEClose>250dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE Close > MA50 % Market Breadth', id: 'NSEClose>50dSMA', type: 'mb', url: urls['NSE'].tab1 },
-            { name: 'India NSE McClellan Oscillator', id: 'NSEMcClellanOsc', type: 'mb', url: urls['NSE'].tab1 },
-        ],
-    },
-    NYSE: {
-        stock: [],
-        index: [
-            { name: 'Dow Jones Industrial Average', id: 'DJI', type: 'idx', url: urls['NYSE'].tab9 },
-            { name: 'Dow Jones Transportation Average', id: 'DJT', type: 'idx', url: urls['NYSE'].tab9 },
-            { name: 'S&P 500 Index', id: 'SPX', type: 'idx', url: urls['NYSE'].tab5 },
-            { name: 'CBOE Volatility VIX Index', id: 'VIX', type: 'idx', url: urls['NYSE'].tab1 },
-        ],
-        market: [
-            { name: 'NYSE MA10 > MA50 % Market Breadth', id: 'NYSE10dSMA>50dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE RSI14 Day < 30 % Market Breadth', id: 'NYSE14dRSI<30', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE RSI14 Day > 50 % Market Breadth', id: 'NYSE14dRSI>50', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE RSI14 Day > 70 % Market Breadth', id: 'NYSE14dRSI>70', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE RSI14 Week < 30 % Market Breadth', id: 'NYSE14wRSI<30', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE RSI14 Week > 50 % Market Breadth', id: 'NYSE14wRSI>50', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE RSI14 Week > 70 % Market Breadth', id: 'NYSE14wRSI>70', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE 250-Day High - Low % Market Breadth', id: 'NYSE250dHigh-Low', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE MA3 > MA18 % Market Breadth', id: 'NYSE3dSMA>18dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE MA50 > MA200 % Market Breadth', id: 'NYSE50dSMA>200dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE MA50 > MA250 % Market Breadth', id: 'NYSE50dSMA>250dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE MA5 > MA20 % Market Breadth', id: 'NYSE5dSMA>20dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE Advance % Market Breadth', id: 'NYSEAdv', type: 'mb', url: urls['NYSE'].tab5 },
-            { name: 'NYSE Advance - Decline % Market Breadth', id: 'NYSEAdv-Dec', type: 'mb', url: urls['NYSE'].tab5 },
-            { name: 'NYSE Close > MA10 % Market Breadth', id: 'NYSEClose>10dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE Close > MA200 % Market Breadth', id: 'NYSEClose>200dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE Close > MA20 % Market Breadth', id: 'NYSEClose>20dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE Close > MA250 % Market Breadth', id: 'NYSEClose>250dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE Close > MA50 % Market Breadth', id: 'NYSEClose>50dSMA', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'NYSE McClellan Oscillator', id: 'NYSEMcClellanOsc', type: 'mb', url: urls['NYSE'].tab1 },
-            { name: 'FINRA Margin Debt', id: 'FinraMarginDebt', type: 'mb', url: urls['NYSE'].tab2 },
-            
-            { name: 'Shiller PE (CAPE)', id: 'SHILLER_PE_RATIO_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-            { name: 'S&P 500 Dividend Yield', id: 'SP500_DIV_YIELD_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-            { name: 'S&P 500 Earnings Yield', id: 'SP500_EARNINGS_YIELD_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-            { name: 'S&P 500 PE', id: 'SP500_PE_RATIO_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-            { name: 'S&P 500 Real Dividend Yield', id: 'SP500_REAL_DIV_YIELD_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-            { name: 'S&P 500 Real Earnings Yield', id: 'SP500_REAL_EARNINGS_YIELD_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-            { name: 'S&P 500 Real Price', id: 'SP500_REAL_PRICE_MONTH', type: 'sp500', url: urls['NYSE'].tab4 },
-        ],
-    },
-    SHSE: {
-        stock: [],
-        index: [
-            { name: 'Shanghai Composite Index', id: 'SHCOMP', type: 'idx', url: urls['SHSE'].tab5 },
-        ],
-        market: [
-            { name: 'Shanghai MA10 > MA50 % Market Breadth', id: 'SHSE10dSMA>50dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai RSI14 Day < 30 % Market Breadth', id: 'SHSE14dRSI<30', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai RSI14 Day > 50 % Market Breadth', id: 'SHSE14dRSI>50', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai RSI14 Day > 70 % Market Breadth', id: 'SHSE14dRSI>70', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai RSI14 Week < 30 % Market Breadth', id: 'SHSE14wRSI<30', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai RSI14 Week > 50 % Market Breadth', id: 'SHSE14wRSI>50', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai RSI14 Week > 70 % Market Breadth', id: 'SHSE14wRSI>70', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai 250-Day High - Low % Market Breadth', id: 'SHSE250dHigh-Low', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai MA3 > MA18 % Market Breadth', id: 'SHSE3dSMA>18dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai MA50 > MA200 % Market Breadth', id: 'SHSE50dSMA>200dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai MA50 > MA250 % Market Breadth', id: 'SHSE50dSMA>250dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai MA5 > MA20 % Market Breadth', id: 'SHSE5dSMA>20dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai Advance % Market Breadth', id: 'SHSEAdv', type: 'mb', url: urls['SHSE'].tab5 },
-            { name: 'Shanghai Advance - Decline % Market Breadth', id: 'SHSEAdv-Dec', type: 'mb', url: urls['SHSE'].tab5 },
-            { name: 'Shanghai Close > MA10 % Market Breadth', id: 'SHSEClose>10dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai Close > MA200 % Market Breadth', id: 'SHSEClose>200dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai Close > MA20 % Market Breadth', id: 'SHSEClose>20dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai Close > MA250 % Market Breadth', id: 'SHSEClose>250dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai Close > MA50 % Market Breadth', id: 'SHSEClose>50dSMA', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai McClellan Oscillator', id: 'SHSEMcClellanOsc', type: 'mb', url: urls['SHSE'].tab1 },
-            { name: 'Shanghai Margin Debt', id: 'SHSEMarginDebt', type: 'mb', url: urls['SHSE'].tab2 },
-            { name: 'Shanghai Short Selling Amount', id: 'SHSEMarginDebt', type: 'mb', url: urls['SHSE'].tab2 },
-        ],
-    },
-    SZSE: {
-        stock: [],
-        index: [
-            { name: 'Shenzhen Component Index', id: 'SZCOMP', type: 'idx', url: urls['SZSE'].tab5 },
-        ],
-        market: [
-            { name: 'Shenzhen MA10 > MA50 % Market Breadth', id: 'SZSE10dSMA>50dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen RSI14 Day < 30 % Market Breadth', id: 'SZSE14dRSI<30', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen RSI14 Day > 50 % Market Breadth', id: 'SZSE14dRSI>50', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen RSI14 Day > 70 % Market Breadth', id: 'SZSE14dRSI>70', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen RSI14 Week < 30 % Market Breadth', id: 'SZSE14wRSI<30', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen RSI14 Week > 50 % Market Breadth', id: 'SZSE14wRSI>50', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen RSI14 Week > 70 % Market Breadth', id: 'SZSE14wRSI>70', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen 250-Day High - Low % Market Breadth', id: 'SZSE250dHigh-Low', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen MA3 > MA18 % Market Breadth', id: 'SZSE3dSMA>18dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen MA50 > MA200 % Market Breadth', id: 'SZSE50dSMA>200dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen MA50 > MA250 % Market Breadth', id: 'SZSE50dSMA>250dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen MA5 > MA20 % Market Breadth', id: 'SZSE5dSMA>20dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen Advance % Market Breadth', id: 'SZSEAdv', type: 'mb', url: urls['SZSE'].tab5 },
-            { name: 'Shenzhen Advance - Decline % Market Breadth', id: 'SZSEAdv-Dec', type: 'mb', url: urls['SZSE'].tab5 },
-            { name: 'Shenzhen Close > MA10 % Market Breadth', id: 'SZSEClose>10dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen Close > MA200 % Market Breadth', id: 'SZSEClose>200dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen Close > MA20 % Market Breadth', id: 'SZSEClose>20dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen Close > MA250 % Market Breadth', id: 'SZSEClose>250dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen Close > MA50 % Market Breadth', id: 'SZSEClose>50dSMA', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen McClellan Oscillator', id: 'SZSEMcClellanOsc', type: 'mb', url: urls['SZSE'].tab1 },
-            { name: 'Shenzhen Margin Debt', id: 'SZSEMarginDebt', type: 'mb', url: urls['SZSE'].tab2 },
-            { name: 'Shenzhen Short Selling Amount', id: 'SZSEMarginDebt', type: 'mb', url: urls['SZSE'].tab2 },
-        ],
-    },
-    TSX: {
-        stock: [],
-        index: [
-            { name: 'S&P/TSX Composite Index', id: 'SPTSX', type: 'idx', url: urls['TSX'].tab5 },
-        ],
-        market: [
-            { name: 'Toronto TSX MA10 > MA50 % Market Breadth', id: 'TSX10dSMA>50dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX RSI14 Day < 30 % Market Breadth', id: 'TSX14dRSI<30', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX RSI14 Day > 50 % Market Breadth', id: 'TSX14dRSI>50', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX RSI14 Day > 70 % Market Breadth', id: 'TSX14dRSI>70', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX RSI14 Week < 30 % Market Breadth', id: 'TSX14wRSI<30', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX RSI14 Week > 50 % Market Breadth', id: 'TSX14wRSI>50', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX RSI14 Week > 70 % Market Breadth', id: 'TSX14wRSI>70', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX 250-Day High - Low % Market Breadth', id: 'TSX250dHigh-Low', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX MA3 > MA18 % Market Breadth', id: 'TSX3dSMA>18dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX MA50 > MA200 % Market Breadth', id: 'TSX50dSMA>200dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX MA50 > MA250 % Market Breadth', id: 'TSX50dSMA>250dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX MA5 > MA20 % Market Breadth', id: 'TSX5dSMA>20dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX Advance % Market Breadth', id: 'TSXAdv', type: 'mb', url: urls['TSX'].tab5 },
-            { name: 'Toronto TSX Advance - Decline % Market Breadth', id: 'TSXAdv-Dec', type: 'mb', url: urls['TSX'].tab5 },
-            { name: 'Toronto TSX Close > MA10 % Market Breadth', id: 'TSXClose>10dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX Close > MA200 % Market Breadth', id: 'TSXClose>200dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX Close > MA20 % Market Breadth', id: 'TSXClose>20dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX Close > MA250 % Market Breadth', id: 'TSXClose>250dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX Close > MA50 % Market Breadth', id: 'TSXClose>50dSMA', type: 'mb', url: urls['TSX'].tab1 },
-            { name: 'Toronto TSX McClellan Oscillator', id: 'TSXMcClellanOsc', type: 'mb', url: urls['TSX'].tab1 },
-        ],
-    },
-    TYO: {
-        stock: [],
-        index: [
-            { name: 'Nikkei 225 Index', id: 'N225', type: 'idx', url: urls['TYO'].tab5 },
-        ],
-        market: [
-            { name: 'Tokyo MA10 > MA50 % Market Breadth', id: 'TYO10dSMA>50dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo RSI14 Day < 30 % Market Breadth', id: 'TYO14dRSI<30', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo RSI14 Day > 50 % Market Breadth', id: 'TYO14dRSI>50', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo RSI14 Day > 70 % Market Breadth', id: 'TYO14dRSI>70', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo RSI14 Week < 30 % Market Breadth', id: 'TYO14wRSI<30', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo RSI14 Week > 50 % Market Breadth', id: 'TYO14wRSI>50', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo RSI14 Week > 70 % Market Breadth', id: 'TYO14wRSI>70', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo 250-Day High - Low % Market Breadth', id: 'TYO250dHigh-Low', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo MA3 > MA18 % Market Breadth', id: 'TYO3dSMA>18dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo MA50 > MA200 % Market Breadth', id: 'TYO50dSMA>200dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo MA50 > MA250 % Market Breadth', id: 'TYO50dSMA>250dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo MA5 > MA20 % Market Breadth', id: 'TYO5dSMA>20dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo Advance % Market Breadth', id: 'TYOAdv', type: 'mb', url: urls['TYO'].tab5 },
-            { name: 'Tokyo Advance - Decline % Market Breadth', id: 'TYOAdv-Dec', type: 'mb', url: urls['TYO'].tab5 },
-            { name: 'Tokyo Close > MA10 % Market Breadth', id: 'TYOClose>10dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo Close > MA200 % Market Breadth', id: 'TYOClose>200dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo Close > MA20 % Market Breadth', id: 'TYOClose>20dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo Close > MA250 % Market Breadth', id: 'TYOClose>250dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo Close > MA50 % Market Breadth', id: 'TYOClose>50dSMA', type: 'mb', url: urls['TYO'].tab1 },
-            { name: 'Tokyo McClellan Oscillator', id: 'TYOMcClellanOsc', type: 'mb', url: urls['TYO'].tab1 },
-        ],
-    },
-    US: {
-        stock: [],
-        index: [],
-        market: [],
-        econ: [
-            { name: 'Total Business Inventories ($ mil)', id: 'BUSINV', type: 'econ', url: urls['US'].tab5 },
-            { name: "Manufacturers' New Orders: Durable Goods ($ mil)", id: 'DGORDER', type: 'econ', url: urls['US'].tab5 },
-            { name: 'Existing Home Sales', id: 'EXHOSLUSM495S', type: 'econ', url: urls['US'].tab5 },
-            { name: "New One Family Homes for Sale ('000)", id: 'HNFSEPUSSA', type: 'econ', url: urls['US'].tab5 },
-            { name: "New Privately-Owned Housing Units Started: Total Units ('000)", id: 'HOUST', type: 'econ', url: urls['US'].tab5 },
-            { name: 'Motor Vehicle Retail Sales: Heavy Weight Trucks (mil)', id: 'HTRUCKSSAAR', type: 'econ', url: urls['US'].tab5 },
-            { name: "New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units ('000)", id: 'PERMIT', type: 'econ', url: urls['US'].tab5 },
-            { name: 'U of Michigan: Consumer Sentiment', id: 'UMCSENT', type: 'econ', url: urls['US'].tab5 },
-            { name: 'Government Consumption Expenditures & Gross Investment ($bil)', id: 'GCE', type: 'econ', url: urls['US'].tab6 },
-            { name: 'Federal Debt: Total Public Debt as % of GDP', id: 'GFDEGDQ188S', type: 'econ', url: urls['US'].tab6 },
-            { name: 'Sticky Price CPI less Food and Energy (YoY %)', id: 'CORESTICKM159SFRBATL', type: 'econ', url: urls['US'].tab3 },
-            { name: 'Consumer Price Index (CPI) for All Urban Consumers: All Items in US City Average', id: 'CPIAUCNS', type: 'econ', url: urls['US'].tab3 },
-            { name: 'U of Michigan: Inflation Expectations (%)', id: 'MICH', type: 'econ', url: urls['US'].tab3 },
-            { name: 'Personal Consumption Expenditures ($ bil)', id: 'PCE', type: 'econ', url: urls['US'].tab3 },
-            { name: 'Core PCE Price Index', id: 'PCEPILFE', type: 'econ', url: urls['US'].tab3 },
-            { name: 'Producer Price Index (PPI) All Commodities', id: 'PPIACO', type: 'econ', url: urls['US'].tab3 },
-            { name: 'Federal Funds Effective Rate (%)', id: 'DFF', type: 'econ', url: urls['US'].tab4 },
-            { name: '10-Year Treasury Yield (%)', id: 'DGS10', type: 'econ', url: urls['US'].tab4 },
-            { name: '3-Month Treasury Bill Secondary Market Rate, Discount Basis (%)', id: 'DTB3', type: 'econ', url: urls['US'].tab4 },
-            { name: '30-Year Mortgage Rate (%)', id: 'MORTGAGE30US', type: 'econ', url: urls['US'].tab4 },
-            { name: 'Bank Prime Loan Rate (%)', id: 'PRIME', type: 'econ', url: urls['US'].tab4 },
-            { name: 'M2 ($ bil)', id: 'WM2NS', type: 'econ', url: urls['US'].tab4 },
-            { name: 'Average Hourly Earnings ($)', id: 'AHETPI', type: 'econ', url: urls['US'].tab1 },
-            { name: 'Labor Force Participation Rate (%)', id: 'CIVPART', type: 'econ', url: urls['US'].tab1 },
-            { name: 'Employment-Population Ratio (%)', id: 'EMRATIO', type: 'econ', url: urls['US'].tab1 },
-            { name: "Job Openings: Total Nonfarm ('000)", id: 'JTSJOL', type: 'econ', url: urls['US'].tab1 },
-            { name: "All Employees, Total Nonfarm ('000)", id: 'PAYEMS', type: 'econ', url: urls['US'].tab1 },
-            { name: 'Unemployment Rate (%)', id: 'UNRATE', type: 'econ', url: urls['US'].tab1 },
-            { name: 'Real GDP Growth Rate (%)', id: 'A191RL1Q225SBEA', type: 'econ', url: urls['US'].tab2 },
-            { name: 'Gross Domestic Income ($ bil)', id: 'GDI', type: 'econ', url: urls['US'].tab2 },
-            { name: 'Gross Domestic Product (GDP) ($ bil)', id: 'GDP', type: 'econ', url: urls['US'].tab2 },
-            { name: 'Real GDP ($ bil)', id: 'GDPC1', type: 'econ', url: urls['US'].tab2 },
-            { name: 'Real Potential GDP  ($ bil)', id: 'GDPPOT', type: 'econ', url: urls['US'].tab2 },
-            { name: 'U.S. Recession', id: 'JHDUSRGDPBR', type: 'econ', url: urls['US'].tab1 },
-            { name: 'Trade Balance: Goods and Services, Balance of Payments Basis ($ mil)', id: 'BOPGSTB', type: 'econ', url: urls['US'].tab8 },
-            { name: 'Trade Balance: Goods, Balance of Payments Basis ($ mil)', id: 'BOPGTB', type: 'econ', url: urls['US'].tab8 },
-            { name: 'Trade Balance: Services, Balance of Payments Basis ($ mil)', id: 'BOPSTB', type: 'econ', url: urls['US'].tab8 },
-            { name: 'U.S. Dollar Index', id: 'DTWEXBGS', type: 'econ', url: urls['US'].tab8 },
-            { name: 'Current Account Balance ($ mil)', id: 'IEABC', type: 'econ', url: urls['US'].tab8 },
-            { name: 'Gold Price', id: 'GOLDSPOT', type: 'econ', url: urls['NYSE'].tab11 },
-        ],
-    },
-    China: {
-        stock: [],
-        index: [],
-        market: [],
-    },
-    HK: {
-        stock: [],
-        index: [{ name: 'Centa-City Leading CCL Index', id: 'HKCCLIndex', type: 'idx', url: urls['HK'].tab7 },],
-        market: [],
-        econ: [
-            { name: 'Unemployment Rate Seasonally Adjusted (%)', id: 'unemployment_rate_seasonally_adjusted', type: 'hklabor', url: urls['HK'].tab1 },
-            { name: 'Unemployment Rate (%)', id: 'unemployment_rate_both', type: 'hklabor', url: urls['HK'].tab1 },
-            { name: 'Underemployment Rate (%)', id: 'underemployment_rate_both', type: 'hklabor', url: urls['HK'].tab1 },
-            { name: "Labor Force ('000)", id: 'labor_force_both', type: 'hklabor', url: urls['HK'].tab1 },
-            { name: 'Labor Force YoY (%)', id: 'labor_force_yoy_both', type: 'hklabor', url: urls['HK'].tab1 },
-            { name: 'Labor Force Participation Rate (%)', id: 'labor_force_participation_both', type: 'hklabor', url: urls['HK'].tab1 },
-            { name: 'Residential Price Type A', id: 'A_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential Price Type B', id: 'B_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential Price Type C', id: 'C_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential Price Type D', id: 'D_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential Price Type E', id: 'E_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential Price All', id: 'All_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Office Price', id: 'All_office_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Retail Space Price', id: 'retail_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Factory Price', id: 'factory_price_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential Rent All', id: 'All_rent_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Office Rent', id: 'All_office_rent_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Retail Space Rent', id: 'retail_rent_idx', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Factory Rent', id: 'factory_rent_idx', type: 'hkhousing' },
-            { name: 'Residential # of Sale: New', id: 'residential_new_no', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential # of Sale: Used', id: 'residential_used_no', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Office# of Sale', id: 'office_no', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Commercial # of Sale', id: 'commercial_no', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Factory # of Sale', id: 'factory_no', type: 'hkhousing', url: urls['HK'].tab7 },
-            { name: 'Residential # of Unit Completion', id: 'completions_total', type: 'hkhousing1', url: urls['HK'].tab7 },
-            { name: 'Residential # of Unit Takeup', id: 'takeup_total', type: 'hkhousing1', url: urls['HK'].tab7 },
-            { name: 'Residential Vacancy %', id: 'vacancy_total', type: 'hkhousing1', url: urls['HK'].tab7 },
-        ],
-    },
-};
-
-dataStructure.US.market = [
-    ...(dataStructure.Nasdaq.market || []),
-    ...(dataStructure.NYSE.market || [])
-];
-
-dataStructure.China.market = [
-    ...(dataStructure.SHSE.market || []),
-    ...(dataStructure.SZSE.market || [])
-];
-
-dataStructure.HK.market = [
-    ...(dataStructure.HKEX.market || []),
-];
-
-dataStructure.US.index = [
-    ...(dataStructure.Nasdaq.index || []),
-    ...(dataStructure.NYSE.index || [])
-];
-
-dataStructure.China.index = [
-    ...(dataStructure.SHSE.index || []),
-    ...(dataStructure.SZSE.index || [])
-];
-
-dataStructure.HK.index = [
-    ...(dataStructure.HKEX.index || []),
-    ...(dataStructure.HK.index || []),
-];
-
-// Function to convert all id fields to uppercase
-function convertIdsToUpperCase(obj) {
-    for (const key in obj) {
-        if (Array.isArray(obj[key])) {
-            // Process arrays (stock, index, market, econ)
-            obj[key].forEach(item => {
-                if (item && typeof item === 'object' && 'id' in item) {
-                    item.id = item.id.toUpperCase();
-                }
-            });
-        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-            // Recursively process nested objects
-            convertIdsToUpperCase(obj[key]);
-        }
-    }
-}
-convertIdsToUpperCase(dataStructure);
+// Chart Composer catalog is loaded on demand.
+let dataStructure = null;
 
 Highcharts.setOptions({
     lang: {
@@ -3026,10 +2586,110 @@ const baseChartConfig = {
     },	
 };
 
-// Initialize Highstock chart
-let chartComposer = Highcharts.stockChart('container', {...baseChartConfig,
-    
-});
+let chartComposer = null;
+
+function loadScriptOnce(src) {
+    var existing = document.querySelector('script[src="' + src + '"]');
+    if (existing)
+        return existing.dataset.loaded === '1' ? Promise.resolve() : new Promise(function(resolve, reject) {
+            existing.addEventListener('load', resolve, { once: true });
+            existing.addEventListener('error', reject, { once: true });
+        });
+
+    return new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = function() {
+            script.dataset.loaded = '1';
+            resolve();
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function loadStylesheetOnce(href) {
+    if (document.querySelector('link[href="' + href + '"]'))
+        return;
+
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+}
+
+function loadComposerCatalog() {
+    if (dataStructure)
+        return Promise.resolve(dataStructure);
+
+    return fetch('assets/data/chart-composer-catalog.json', {
+        cache: 'force-cache',
+        credentials: 'same-origin'
+    }).then(function(response) {
+        if (!response.ok)
+            throw new Error('Chart Composer catalog request failed');
+        return response.json();
+    }).then(function(catalog) {
+        dataStructure = catalog;
+        return catalog;
+    });
+}
+
+function setComposerLoading(isLoading) {
+    var container = document.getElementById('container');
+    if (!container)
+        return;
+
+    $('#tab-2').find('input, select, button').prop('disabled', isLoading);
+    if (!isLoading) {
+        $addSeries.prop('disabled', true);
+        $removeAll.prop('disabled', !chartComposer || chartComposer.seriesList.length === 0);
+    }
+    container.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+    if (isLoading && !chartComposer)
+        container.innerHTML = '<div class="text-center" style="padding-top:80px">Loading Chart Composer…</div>';
+}
+
+function ensureComposerReady() {
+    if (chartComposer)
+        return Promise.resolve(chartComposer);
+    if (composerRuntimePromise)
+        return composerRuntimePromise;
+
+    setComposerLoading(true);
+    loadStylesheetOnce('https://code.highcharts.com/11.4.0/css/stocktools/gui.css');
+    loadStylesheetOnce('https://code.highcharts.com/11.4.0/css/annotations/popup.css');
+
+    var composerScripts = [
+        'https://code.highcharts.com/stock/11.4.0/modules/annotations.js',
+        'https://code.highcharts.com/stock/11.4.0/modules/data.js',
+        'https://code.highcharts.com/11.4.0/modules/annotations-advanced.js',
+        'https://code.highcharts.com/11.4.0/modules/price-indicator.js',
+        'https://code.highcharts.com/11.4.0/modules/stock-tools.js'
+    ];
+
+    composerRuntimePromise = loadComposerCatalog().then(function() {
+        return composerScripts.reduce(function(promise, src) {
+            return promise.then(function() { return loadScriptOnce(src); });
+        }, Promise.resolve());
+    }).then(function() {
+        chartComposer = Highcharts.stockChart('container', {...baseChartConfig});
+        if (!composerControlsInitialized) {
+            initializeControls();
+            composerControlsInitialized = true;
+        }
+        setComposerLoading(false);
+        return chartComposer;
+    }).catch(function(error) {
+        composerRuntimePromise = null;
+        setComposerLoading(false);
+        showNotification('Failed to load Chart Composer.');
+        throw error;
+    });
+
+    return composerRuntimePromise;
+}
 
 // Populate dropdowns and combo box
 const $regionExchange = $('#region-exchange');
@@ -3124,33 +2784,31 @@ function getSeriesList(region, category) {
     return series;
 }
 
-function fetchAjaxSeriesData(code, /*region, category,*/ type, url, isAsync, callback) {
-    $.ajax({
-        url: 'db_chartcomposer_get.php',
-        async: isAsync,
-        type: 'post',
-        dataType: 'json',
-        data: { code, /*region, category,*/ type },
-        timeout: 5000,
-        success: function(data) {
-            //console.log('fetchAjaxSeriesData:', data);
-            
-            if (code == 'JHDUSRGDPBR')
-            {
-                const steppedData = insertStepTransitions(data);
-                steppedData.url = url;
-                callback(null, steppedData);
+function fetchAjaxSeriesData(code, /*region, category,*/ type, url) {
+    return new Promise(function(resolve, reject) {
+        $.ajax({
+            url: 'db_chartcomposer_get.php',
+            async: true,
+            type: 'post',
+            dataType: 'json',
+            data: { code, /*region, category,*/ type },
+            timeout: 10000,
+            success: function(data) {
+                if (code == 'JHDUSRGDPBR') {
+                    const steppedData = insertStepTransitions(data);
+                    steppedData.url = url;
+                    resolve(steppedData);
+                }
+                else {
+                    data.url = url;
+                    resolve(data);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('fetchAjaxSeriesData error:', status, error, xhr.responseText);
+                reject(new Error('Failed to fetch series data'));
             }
-            else
-            {
-                data.url = url;
-                callback(null, data);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('fetchAjaxSeriesData error:', status, error, xhr.responseText);
-            callback(new Error('Failed to fetch series data'));
-        }
+        });
     });
 }
 
@@ -3351,6 +3009,8 @@ function initializeAutocomplete() {
 
 // Toggle dropdown on arrow click
 $comboBox.find('.dropdown-arrow').on('click', function () {
+    if (!composerControlsInitialized)
+        return;
     $dataSeries.focus();
     $dataSeries.autocomplete('search', $dataSeries.val() || '');
 });
@@ -3498,8 +3158,8 @@ $removeAll.on('click', function () {
 $(window).on('load', function() {
     setTimeout(function() {
         adjustComboBoxWidth();
-        initializeControls();
-        $dataSeries.autocomplete("close");
+        if (composerControlsInitialized)
+            $dataSeries.autocomplete("close");
         //openTabHash();
     }, 100);
     jQuery("html,body").animate({scrollTop: 0}, 1000);
@@ -3728,8 +3388,8 @@ $('.nav-tabs a').on('shown.bs.tab', function (e) {
 
   history.replaceState(null, '', url.toString());
 
-  // Manually show the tab content via Bootstrap's API or your own method if needed
-  $(e.target).tab('show');
+  if (tabId == '2')
+      ensureComposerReady();
 });
 
 //var tab1loaded = false, tab2loaded = false, tab3loaded = false, tab4loaded = false, tab5loaded = false, tab6loaded = false, tab7loaded = false, tab8loaded = false; 
@@ -3888,12 +3548,12 @@ function createChart(series, isAsync)
     var seriesType = series.type;
     if (seriesType == 'stock')
         seriesType = '';
-        
-    fetchAjaxSeriesData(series.id, /*region, category,*/ seriesType, series.url, isAsync, function(err, seriesData) {
-        if (err) {
-            showNotification('Failed to load series data.');
-            return;
-        }
+
+    return ensureComposerReady()
+    .then(function() {
+        return fetchAjaxSeriesData(series.id, /*region, category,*/ seriesType, series.url);
+    })
+    .then(function(seriesData) {
         if (seriesData && !chartComposer.seriesList.includes(seriesData.id)) {
             //var yaxisIdx = chartComposer.yAxis.length;
             //var xaxisIdx = chartComposer.xAxis.length;
@@ -3999,6 +3659,11 @@ function createChart(series, isAsync)
             $dataSeries.val('').data('selected-id', null).data('selected-region', null).data('selected-category', null).data('selected-source', null).data('selected-url', null);
             $addSeries.prop('disabled', true);
         }
+        return seriesData;
+    })
+    .catch(function(error) {
+        showNotification('Failed to load series data.');
+        return null;
     });
 }
 
@@ -4051,6 +3716,9 @@ function showNotification(msg) {
 
 // Reset button handler
 document.getElementById('reset-controls').addEventListener('click', () => {
+    if (!composerControlsInitialized || !chartComposer)
+        return;
+
     const regionExchange = document.getElementById('region-exchange');
     const category = document.getElementById('category');
     const dataSeries = document.getElementById('data-series');
@@ -4095,12 +3763,10 @@ const observer = new MutationObserver(removeBadgeIfExpired);
 observer.observe(document.body, { childList: true, subtree: true });
 </script>
     
-    
+<?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/jquery-ui1.12.1.min.js"></script>
     <!--<script src="assets/js/jquery.ui.treemap.js"></script>-->
-    <script src="assets/js/Utils.js"></script>
     <!--<script src="assets/js/yaxis-panning.js"></script>-->
 </body>
 
