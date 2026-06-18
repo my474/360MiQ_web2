@@ -611,10 +611,12 @@ figure {
     background-color: #33335a !important;
 }
 
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > span,
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-menu-item-btn,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-submenu-item-arrow,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-arrow-up,
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-arrow-down,
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
-    filter: invert(1) brightness(1.3);
+    filter: brightness(0) invert(1) !important;
 }
 
 /* Optional styling for optgroup labels */
