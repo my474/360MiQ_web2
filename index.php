@@ -17,7 +17,10 @@
     <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
     <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://code.highcharts.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="assets/css/card.css">
@@ -26,10 +29,6 @@
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <script src="assets/js/Utils.js"></script>
-    <script src="assets/js/LanguageTimezone.js"></script>
-    <script src="assets/js/TA.js"></script>
-    <script src="assets/js/AdvDecPie.js"></script>
-    <script src="assets/js/sectorPerformance.js"></script>
 </head>
 
 <body><style>
@@ -239,6 +238,56 @@ a:hover.recentpost {
   </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <script src="assets/js/jquery.sparkline.min.js"></script>
+<script>
+var homeCriticalRequests = {
+    trendGauge: $.ajax({
+        url: "/db_market_trendgauge_get.php",
+        dataType: "text"
+    }),
+    indices: $.ajax({
+        url: "db_index_get.php",
+        dataType: "text"
+    }),
+    news: $.ajax({
+        url: "db_news_get.php",
+        method: "GET"
+    })
+};
+
+var homeAjaxQueue = [];
+var homeAjaxQueueRunning = false;
+
+function scheduleHomeAjax(options)
+{
+    homeAjaxQueue.push(options);
+
+    if (homeAjaxQueueRunning)
+        return;
+
+    homeAjaxQueueRunning = true;
+
+    function startNextHomeRequest()
+    {
+        if (homeAjaxQueue.length === 0)
+        {
+            homeAjaxQueueRunning = false;
+            return;
+        }
+
+        var startRequest = function() {
+            $.ajax(homeAjaxQueue.shift());
+            window.setTimeout(startNextHomeRequest, 250);
+        };
+
+        if ('requestIdleCallback' in window)
+            window.requestIdleCallback(startRequest, { timeout: 1500 });
+        else
+            window.setTimeout(startRequest, 500);
+    }
+
+    startNextHomeRequest();
+}
+</script>
 
 <?php $page = 'home'; include "./header.php" ?>
 
@@ -329,11 +378,6 @@ function adsBlocked(callback){
   });
 }
 </script>            -->
-<script src="https://code.highcharts.com/stock/8.2.0/highstock.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/no-data-to-display.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
-<script src="assets/js/stockCompare.js"></script>
 <!--<div id="wrapper">
 <div id="gaugecontainer1" style="float:left; width: 50%; "></div>
 <div id="gaugecontainer2" style="float:right; width: 50%; "></div>
@@ -1785,15 +1829,17 @@ function adsBlocked(callback){
     <div class="card-header">
         <h2>Recent Analyses</h2>
     </div>
-    <div id="postcontainer" style="text-align:left"></div>    
+    <div id="postcontainer" style="text-align:left"></div>
 </div>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-treemap.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-data-adapter.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<link href="https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet">
-<link href="https://cdn.anychart.com/releases/8.9.0/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet">
+<script src="https://code.highcharts.com/stock/8.2.0/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/no-data-to-display.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
+<script src="assets/js/LanguageTimezone.js"></script>
+<script src="assets/js/TA.js"></script>
+<script src="assets/js/AdvDecPie.js"></script>
+<script src="assets/js/sectorPerformance.js"></script>
+<script src="assets/js/stockCompare.js"></script>
 <!--script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
@@ -1801,7 +1847,57 @@ function adsBlocked(callback){
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-data-adapter.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet">
 <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet"-->
-<script src="assets/js/Treemap.js"></script>
+<script>
+function loadHomeScript(src)
+{
+    return new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function loadHomeStyle(href)
+{
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+}
+
+var homeAnychartLoaded = false;
+var homeTreemapWaiting = false;
+var homeAnychartReady = null;
+
+function ensureHomeAnychart()
+{
+    if (homeAnychartReady)
+        return homeAnychartReady;
+
+    loadHomeStyle('https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33');
+    loadHomeStyle('https://cdn.anychart.com/releases/8.9.0/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33');
+
+    homeAnychartReady = loadHomeScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33')
+        .then(function() {
+            return Promise.all([
+                loadHomeScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
+                loadHomeScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
+                loadHomeScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-treemap.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
+                loadHomeScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-data-adapter.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33')
+            ]);
+        })
+        .then(function() {
+            return loadHomeScript('assets/js/Treemap.js');
+        })
+        .then(function() {
+            homeAnychartLoaded = true;
+        });
+
+    return homeAnychartReady;
+}
+</script>
 <script src="assets/js/GaugeChart.js"></script>
 <script type = "text/javascript">
 var scrollPosition = 0;
@@ -1814,9 +1910,7 @@ if (isIE)
 var isMobile = window.mobileAndTabletcheck();
 var dict = new Object();
 
-$.ajax({
-    url : "/db_market_trendgauge_get.php",
-    success : function(result){
+homeCriticalRequests.trendGauge.done(function(result){
         var jsonObject = result.split(/\r?\n|\r/);
         for (var i = 0; i < jsonObject.length; i++) {
             var row = jsonObject[i].split(',')
@@ -1881,14 +1975,12 @@ $.ajax({
         	trendgauge("gaugecontainer8", dict["K"], dict["H"], "Hong Kong", "market?data=HKEX", fontsize, 'pointer', '');
     	else
         	trendgauge("gaugecontainer8", -1, -1, "Hong Kong", "market?data=HKEX", fontsize, 'pointer', '');
-    }
 });
 
 var dict = new Object();
 var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"06", "7":"07", "8":"08", "9":"09", "A":"10", "B":"11", "C":"12", "D":"13", "E":"14", "F":"15", "G":"16", "H":"17", "I":"18", "J":"19", "K":"20", "L":"21", "M":"22", "N":"23", "O":"24", "P":"25", "Q":"26", "R":"27", "S":"28", "T":"29", "U":"30", "V":"31"};
 var creditY = -485;
-$.ajax({
-    url : "db_index_get.php",
+homeCriticalRequests.indices.done(function(result){
 /*    beforeSend: function(){
         document.getElementById("failedtable").style.display = "none";
 		$('#loader-icon').show();
@@ -1904,7 +1996,6 @@ $.ajax({
         document.getElementById("failedtable").style.visibility = "visible";
         document.getElementById("failedcell").textContent = "Failed to load. Please refresh the page.";
     },*/
-    success : function(result){
         var jsonObject = result.split(/\r?\n|\r/);
         for (var i = 0; i < jsonObject.length; i++) {
             if ((jsonObject[i].match(/,/g) || []).length == 1) // no data_name field
@@ -1982,7 +2073,6 @@ $.ajax({
             creditYoffset = 0;
         }
         stockCompare('weicontainer', dict, ["S&P 500", "Nasdaq Composite", "Dow Industrial", "Dow Transportation", "FTSE 100", "TSX Composite", "ASX 200", "Nifty 50", "Nikkei 225", "Hang Seng", "Shanghai Composite", "Bitcoin", "tmp"], "World Equity Indices Performance", "", "Performance %", "", "day", rangeselector, creditY + creditYoffset, 0, true);
-    }
 });
     
 var sectorDict = new Object();
@@ -2250,6 +2340,23 @@ function openTabHash()
 
 function loadTreemapScatter()
 {
+    if (!homeAnychartLoaded)
+    {
+        if (homeTreemapWaiting)
+            return;
+
+        homeTreemapWaiting = true;
+        ensureHomeAnychart().then(function() {
+            homeTreemapWaiting = false;
+            loadTreemapScatter();
+        }).catch(function(error) {
+            homeTreemapWaiting = false;
+            if (window.console && console.error)
+                console.error('Failed to load the treemap library.', error);
+        });
+        return;
+    }
+
     if (chartcontainer == "chartcontainerA1" && tab1loaded == false) // no need to load PE band when clicked as it is loaded at start for polar chart
 	{
 		anychart.data.loadJsonFile('db_treemap_get.php?data=NYSE', function (data) {
@@ -2712,7 +2819,7 @@ function loadTreemapScatter()
 	}
 }
 
-$.ajax({
+scheduleHomeAjax({
     url : "/db_adv_get2.php",
     success : function(result){
         var jsonObject = result.split(/\r?\n|\r/);
@@ -2747,7 +2854,7 @@ $.ajax({
     }
 });
 
-$.ajax({
+scheduleHomeAjax({
     url : "db_featuredblogpost_get.php",
     success : function(result){
         
@@ -2819,7 +2926,7 @@ $.ajax({
     }
 });
 
-$.ajax({
+scheduleHomeAjax({
     url : "db_blogpost_get.php",
     success : function(result){
         var html = '<div style="padding: 20px 20px 10px 20px">';
@@ -3189,7 +3296,7 @@ $(document).ready(function(){
 async function fetchLatestVideo() {
     
     try {
-        $.ajax({
+        scheduleHomeAjax({
             url : "youtube_get.php",
             success : function(result){
                 var fields = result.split(';');
@@ -3291,10 +3398,7 @@ function resetScrolling() {
 $(function () {
   const scroll = $('#news-scroll');
 
-  $.ajax({
-    url: 'db_news_get.php',
-    method: 'GET',
-    success: function (data) {
+  homeCriticalRequests.news.done(function (data) {
         var dictcode = new Object();
         if (!data || data.length === 0) {
             setTimeout(() => {
@@ -3369,8 +3473,7 @@ $(function () {
                 });
             });
         });
-    },
-    error: function () {
+    }).fail(function () {
       scroll.text('Failed to load news.');
       setTimeout(() => {
         document.getElementById("maincard").style.margin = "70px 0px 0px 0px";
@@ -3378,8 +3481,7 @@ $(function () {
         document.getElementById("maincard").style.paddingLeft = "0px";
         document.getElementById("newscard").style.display  = "none";
       }, 2500);
-    }
-  });
+    });
 
   $('.close').click(function () {
     $('#modal-overlay').fadeOut();

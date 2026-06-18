@@ -135,7 +135,10 @@
     <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
     <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://code.highcharts.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="assets/css/card.css">
@@ -243,26 +246,8 @@
     cursor: text;
 }
 </style>
-<script src="https://code.highcharts.com/stock/8.2.0/highstock.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/no-data-to-display.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/exporting.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
-<script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/Utils.js"></script>
-<script src="assets/js/TA.js"></script>
-<script src="assets/js/Highstock.js"></script>
-<script src="assets/js/stockCompare.js"></script>
-<script src="assets/js/yearlyTrendChart.js"></script>
-<script src="assets/js/seasonality.js"></script>
-<script src="assets/js/sectorPerformance.js"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-treemap.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-data-adapter.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
-<link href="https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet">
-<link href="https://cdn.anychart.com/releases/8.9.0/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet">
 <!--script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
@@ -270,17 +255,19 @@
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-data-adapter.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet">
 <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33" type="text/css" rel="stylesheet"-->
-<script src="assets/js/Treemap.js"></script>
 <!--script src="https://code.jquery.com/jquery-3.5.1.js"></script //if dataTable weird, may need this js--> 
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.4/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.4/js/responsive.bootstrap4.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css">
-<link rel="stylesheet" href="assets/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
-<script src="assets/js/jquery.sparkline.min.js"></script>
+<script>
+var marketCriticalRequests = {
+    marketData: $.ajax({
+        url: "/db_market_get.php?data=<?php echo rawurlencode($data); ?>",
+        dataType: "text"
+    }),
+    featuredPosts: $.ajax({
+        url: "db_featuredblogpost_get.php",
+        dataType: "text"
+    })
+};
+</script>
 <style>
 .irs {
 	font-family: Montserrat
@@ -544,7 +531,7 @@ function adsBlocked(callback){
                                       <div class="row masonry-item-mb" style="padding: 10px;">
                                         <div class="col-md-2 px-0">
                                           <div id="pinnedpostcontainer1">
-                                              <a href="/blog/market-breadth-can-make-you-a-better-trader-proven-by-backtesting/"><img src="https://360miq.com/blog/wp-content/uploads/2021/01/MB.jpg" style="width: 100%;height: 100%"></a>
+                                              <a href="/blog/market-breadth-can-make-you-a-better-trader-proven-by-backtesting/"><img src="https://360miq.com/blog/wp-content/uploads/2021/01/MB.jpg" width="800" height="599" fetchpriority="high" decoding="async" style="width: 100%;height: auto"></a>
                                           </div>
                                         </div>
                                         <div class="col-md-10 px-0 d-flex align-items-center text-center text-md-start">
@@ -1886,9 +1873,90 @@ function adsBlocked(callback){
         </section>
     </main>
 
-<?php include "./footer.php" ?>
+<script src="https://code.highcharts.com/stock/8.2.0/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/no-data-to-display.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
+<script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
+<script src="assets/js/TA.js"></script>
+<script src="assets/js/Highstock.js"></script>
+<script src="assets/js/stockCompare.js"></script>
+<script src="assets/js/yearlyTrendChart.js"></script>
+<script src="assets/js/seasonality.js"></script>
+<script src="assets/js/sectorPerformance.js"></script>
+<script src="assets/js/highcharts-theme.js"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
+<script>
+function loadMarketScript(src)
+{
+    return new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function loadMarketStyle(href)
+{
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+}
+
+var marketOptionalLibrariesLoaded = false;
+var marketOptionalLibrariesReady = null;
+
+function ensureMarketOptionalLibraries()
+{
+    if (marketOptionalLibrariesReady)
+        return marketOptionalLibrariesReady;
+
+    loadMarketStyle('https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33');
+    loadMarketStyle('https://cdn.anychart.com/releases/8.9.0/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33');
+    loadMarketStyle('https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css');
+    loadMarketStyle('assets/css/dataTables.bootstrap4.min.css');
+    loadMarketStyle('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css');
+
+    var marketAnychartReady = loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33')
+        .then(function() {
+            return Promise.all([
+                loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
+                loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
+                loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-treemap.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
+                loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-data-adapter.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33')
+            ]);
+        })
+        .then(function() {
+            return loadMarketScript('assets/js/Treemap.js');
+        });
+
+    var marketDataTablesReady = loadMarketScript('https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
+        .then(function() {
+            return loadMarketScript('https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js');
+        })
+        .then(function() {
+            return loadMarketScript('https://cdn.datatables.net/responsive/2.2.4/js/dataTables.responsive.min.js');
+        })
+        .then(function() {
+            return loadMarketScript('https://cdn.datatables.net/responsive/2.2.4/js/responsive.bootstrap4.min.js');
+        });
+
+    marketOptionalLibrariesReady = Promise.all([
+        marketAnychartReady,
+        marketDataTablesReady,
+        loadMarketScript('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js'),
+        loadMarketScript('assets/js/jquery.sparkline.min.js')
+    ]).then(function() {
+        marketOptionalLibrariesLoaded = true;
+    });
+
+    return marketOptionalLibrariesReady;
+}
+</script>
 <script src="assets/js/GaugeChart.js"></script>
 <script>
 var exchangeName = "<?php echo $exchangeName; ?>";
@@ -2050,9 +2118,15 @@ const minGridNum = 3;
     }, 0);
 });*/
 
-$.ajax({
-    url : "db_featuredblogpost_get.php",
-    success : function(result){
+var marketFeaturedPostsLoaded = false;
+
+function loadMarketFeaturedPosts()
+{
+    if (marketFeaturedPostsLoaded)
+        return;
+
+    marketFeaturedPostsLoaded = true;
+    marketCriticalRequests.featuredPosts.done(function(result){
         if (result == '')
         {
             document.getElementById("featuredpost").style.display = 'none';
@@ -2133,8 +2207,8 @@ $.ajax({
         }
         
         document.getElementById("blogGrid").style.columnCount = localcount < minGridNum && window.innerWidth >= 768 ? minGridNum : localcount;
-    }
-});
+    });
+}
 
 function embedVideo(videoId, videoContainer, title = '', description = '', videoDetails = '', videoTitle = '', videoDescription = '') {
     // Create iframe element
@@ -2216,6 +2290,10 @@ if (window.location.hash == "" && (!initialTab || initialTab == 1))
 
     tab1loaded = true;
 }
+else
+{
+    yieldToBrowser().then(loadMarketFeaturedPosts);
+}
 function tab1()
 {
     if (exchangeName == "Hong Kong" || exchangeName == "Shanghai" || exchangeName == "Shenzhen")
@@ -2227,24 +2305,11 @@ function tab1()
     
     var dict = new Object();
 
-    $.ajax({
-        url : "/db_market_get.php?data=" + data,
-        beforeSend: function(){
-            document.getElementById("failedtable").style.display = "none";
-			$('#loader-icon').show();
-			$('#loader-tip').show();
-		},
-		complete: function(){
-			$('#loader-icon').hide();
-			$('#loader-tip').hide();
-		},
-		error: function (error) {
-		    $('#loader-icon').hide();
-		    $('#loader-tip').hide();
-            document.getElementById("failedtable").style.visibility = "visible";
-            document.getElementById("failedcell").textContent = "Failed to load. Please refresh the page.";
-        },
-        success : function(result){
+    document.getElementById("failedtable").style.display = "none";
+    $('#loader-icon').show();
+    $('#loader-tip').show();
+
+    marketCriticalRequests.marketData.done(function(result){
             var jsonObject = result.split(/\r?\n|\r/);
             for (var i = 0; i < jsonObject.length; i++) {
                 if ((jsonObject[i].match(/,/g) || []).length == 1) // no data_name field
@@ -2362,6 +2427,7 @@ function tab1()
             highstock('chartcontainerA1', dict, [benchmark, "3>18", "10>50", "50>" + longMA, "Hindenburg"], "MAˢʰᵒʳᵗ > MAˡᵒⁿᵍ Market Breadth (Daily)", exchangeName, benchmarkname, "% of stocks MAˢʰᵒʳᵗ above MAˡᵒⁿᵍ", 0, 100, "day", rangeselector, "line", 1, creditY + creditYoffset, 50);
 
             renderedChartIds.add('chartcontainerA1');
+            yieldToBrowser().then(loadMarketFeaturedPosts);
 
             lazyRenderChart('chartcontainerA2', function() {
                 highstock('chartcontainerA2', dict, [benchmark, ">20", ">50", ">" + longMA], "Close > MA Market Breadth (Daily)", exchangeName, benchmarkname, '% of stocks Close above MA', 0, 100, "day", rangeselector, "line", 1, creditY + creditYoffset, 50);
@@ -2406,8 +2472,13 @@ function tab1()
                     }
                 });
             });
-        }
-    });   
+    }).fail(function(error) {
+        document.getElementById("failedtable").style.visibility = "visible";
+        document.getElementById("failedcell").textContent = "Failed to load. Please refresh the page.";
+    }).always(function() {
+        $('#loader-icon').hide();
+        $('#loader-tip').hide();
+    });
 }
 
     var tab2loaded = false, tab3loaded = false, tab4loaded = false, tab5loaded = false, tab6loaded = false, tab7loaded = false, tab8loaded = false, tab9loaded = false, tab10loaded = false, tab11loaded = false, tab12loaded = false, tab13loaded = false, tab14loaded = false;
@@ -2417,6 +2488,8 @@ function tab1()
         
     });
 
+    var marketOptionalTabWaiting = false;
+
     function openTabHash()
     {
         console.log('openTabHash');
@@ -2425,6 +2498,26 @@ function tab1()
         const urlNew = new URL(window.location);
         const params = urlNew.searchParams;
         let tab = params.get('tab');
+        var hashTabMatch = window.location.hash.match(/^#tab-(\d+)$/);
+        var requestedTab = tab || (hashTabMatch ? hashTabMatch[1] : "1");
+        var optionalLibraryTabs = ["3", "5", "12", "13", "14"];
+
+        if (optionalLibraryTabs.indexOf(requestedTab) !== -1 && !marketOptionalLibrariesLoaded)
+        {
+            if (marketOptionalTabWaiting)
+                return;
+
+            marketOptionalTabWaiting = true;
+            ensureMarketOptionalLibraries().then(function() {
+                marketOptionalTabWaiting = false;
+                openTabHash();
+            }).catch(function(error) {
+                marketOptionalTabWaiting = false;
+                if (window.console && console.error)
+                    console.error('Failed to load optional market libraries.', error);
+            });
+            return;
+        }
           
         var url = document.location.toString();
         if (url.match('#')) {
@@ -6907,6 +7000,8 @@ function addWeekday(str, str2 = '') {
     return `${exchange}, ${str2}, ${dateStr} ${dayAbbr}`;
 }
 </script>
+
+<?php include "./footer.php" ?>
 
     <!--<script src="assets/js/jquery.min.js"></script>-->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>

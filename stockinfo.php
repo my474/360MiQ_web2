@@ -34,34 +34,58 @@
             $stockcode = HKcode($codenum);
         }
 
-        $sqlQuery0 = "set @stock = (Select code from (SELECT IF(code=?, 1, 0) AS exact, IF(code like ?, 1, 0) AS likecode, IF(code like ?, 1, 0) AS likecode2, IF(code like ?, 1, 0) AS likecode3, IF(name_en = ?, 1, 0) AS likecode4, IF(name_en like ?, 1, 0) AS likecode5, IF(name_en like ?, 1, 0) AS likecode6, IF(name_en like ?, 1, 0) AS likecode7, IF(name_en like ?, 1, 0) AS likecode8, IF(name_en like ?, 1, 0) AS likecode9, IF(name_en like ?, 1, 0) AS likecode10, IF(name_tc = ?, 1, 0) AS likecode4a, IF(name_tc like ?, 1, 0) AS likecode5a, IF(name_tc like ?, 1, 0) AS likecode6a, IF(name_tc like ?, 1, 0) AS likecode7a, IF(name_tc like ?, 1, 0) AS likecode8a, IF(name_tc like ?, 1, 0) AS likecode9a, IF(name_tc like ?, 1, 0) AS likecode10a, code, name_tc, name_en, exchange FROM stock_code_name_exchange WHERE (code like CONCAT('%',?,'%') or name_tc like CONCAT('%',?,'%') or name_en like CONCAT('%',?,'%')) ORDER BY exact DESC, IF(FIELD(exchange,'NYSE','NASDAQ','NYSEARCA')=0,1,0), likecode DESC, likecode2 DESC, likecode3 DESC, likecode4 DESC, likecode4a DESC, likecode5 DESC, likecode5a DESC, likecode6 DESC, likecode6a DESC, likecode7 DESC, likecode7a DESC, likecode8 DESC, likecode8a DESC, likecode9 DESC, likecode9a DESC, likecode10 DESC, likecode10a DESC, CHAR_LENGTH(name_tc), CHAR_LENGTH(name_en), code LIMIT 1) a);";
-    
-        $sqlQuery1 = "set @exchange = (select exchange from stock_code_name_exchange where code = @stock and exchange <> 'N/A');";
+        $sqlExact = "SELECT code, exchange FROM stock_code_name_exchange WHERE code = ? AND exchange <> 'N/A' ORDER BY IF(FIELD(exchange,'NYSE','NASDAQ','NYSEARCA')=0,1,0) LIMIT 1";
+        $sqlQuery0 = "SELECT code, exchange FROM (SELECT IF(code=?, 1, 0) AS exact, IF(code like ?, 1, 0) AS likecode, IF(code like ?, 1, 0) AS likecode2, IF(code like ?, 1, 0) AS likecode3, IF(name_en = ?, 1, 0) AS likecode4, IF(name_en like ?, 1, 0) AS likecode5, IF(name_en like ?, 1, 0) AS likecode6, IF(name_en like ?, 1, 0) AS likecode7, IF(name_en like ?, 1, 0) AS likecode8, IF(name_en like ?, 1, 0) AS likecode9, IF(name_en like ?, 1, 0) AS likecode10, IF(name_tc = ?, 1, 0) AS likecode4a, IF(name_tc like ?, 1, 0) AS likecode5a, IF(name_tc like ?, 1, 0) AS likecode6a, IF(name_tc like ?, 1, 0) AS likecode7a, IF(name_tc like ?, 1, 0) AS likecode8a, IF(name_tc like ?, 1, 0) AS likecode9a, IF(name_tc like ?, 1, 0) AS likecode10a, code, name_tc, name_en, exchange FROM stock_code_name_exchange WHERE (code like CONCAT('%',?,'%') or name_tc like CONCAT('%',?,'%') or name_en like CONCAT('%',?,'%')) AND exchange <> 'N/A' ORDER BY exact DESC, IF(FIELD(exchange,'NYSE','NASDAQ','NYSEARCA')=0,1,0), likecode DESC, likecode2 DESC, likecode3 DESC, likecode4 DESC, likecode4a DESC, likecode5 DESC, likecode5a DESC, likecode6 DESC, likecode6a DESC, likecode7 DESC, likecode7a DESC, likecode8 DESC, likecode8a DESC, likecode9 DESC, likecode9a DESC, likecode10 DESC, likecode10a DESC, CHAR_LENGTH(name_tc), CHAR_LENGTH(name_en), code LIMIT 1) a";
         //$sqlQuery3 = "SELECT d.code, f.market_cap, f.shares, f.close, d.exchange, f.eps, round(f.pe, 1), f.currency, IF( d.name_en LIKE CONCAT('%', d.name_tc, '%'), NULL, d.name_tc ) AS name_tc, d.name_en, boardlot, shortsell_eligible, stock_options, stock_futures, isIEX, value FROM (SELECT a.code, market_cap, shares, CLOSE, a.exchange, a.name_tc, a.name_en, boardlot, shortsell_eligible, stock_options, stock_futures FROM stock_code_name_exchange AS a LEFT JOIN price_current AS b ON a.code = b.code LEFT JOIN stock_HKEX AS c ON a.code = c.code WHERE a.code = @stock AND a.exchange = @exchange) AS d left JOIN price_current AS f on d.code = f.code LEFT JOIN trendgauge_stock_current g on f.code = g.code WHERE f.code = @stock AND d.exchange = @exchange";
         //$sqlQuery3 = "SELECT d.code, f.market_cap, f.shares, f.close, d.exchange, f.eps, round(f.pe, 1), f.currency, IF( d.name_en LIKE CONCAT('%', d.name_tc, '%'), NULL, d.name_tc ) AS name_tc, d.name_en, boardlot, shortsell_eligible, stock_options, stock_futures, isIEX, value FROM (SELECT a.code, a.exchange, a.name_tc, a.name_en, boardlot, shortsell_eligible, stock_options, stock_futures FROM stock_code_name_exchange AS a LEFT JOIN stock_HKEX AS c ON a.code = c.code WHERE a.code = @stock AND a.exchange = @exchange) AS d left JOIN price_current AS f on d.code = f.code LEFT JOIN trendgauge_stock_current g on f.code = g.code WHERE f.code = @stock AND d.exchange = @exchange";
-        $sqlQuery3 = "SELECT a.code, f.market_cap, f.shares, f.close, a.exchange, f.eps, round(f.pe, 1), f.currency, IF( a.name_en LIKE CONCAT('%', a.name_tc, '%'), NULL, a.name_tc ) AS name_tc, a.name_en, boardlot, shortsell_eligible, stock_options, stock_futures, isIEX, value FROM stock_code_name_exchange AS a LEFT JOIN stock_HKEX AS c ON a.code = c.code left JOIN price_current AS f on a.code = f.code LEFT JOIN trendgauge_stock_current g on a.code = g.code WHERE (a.code = @stock or f.code = @stock) AND (a.exchange = @exchange or f.stock_exchange_short = @exchange)";
+        $sqlQuery3 = "SELECT a.code, f.market_cap, f.shares, f.close, a.exchange, f.eps, round(f.pe, 1), f.currency, IF( a.name_en LIKE CONCAT('%', a.name_tc, '%'), NULL, a.name_tc ) AS name_tc, a.name_en, boardlot, shortsell_eligible, stock_options, stock_futures, isIEX, value FROM stock_code_name_exchange AS a LEFT JOIN stock_HKEX AS c ON a.code = c.code left JOIN price_current AS f on a.code = f.code LEFT JOIN trendgauge_stock_current g on a.code = g.code WHERE a.code = ? AND (a.exchange = ? or f.stock_exchange_short = ?)";
         
-        $stmt = $connection->prepare($sqlQuery0);
+        $resolvedStock = '';
+        $resolvedExchange = '';
+
+        $stmt = $connection->prepare($sqlExact);
+        $stmt->bind_param("s", $stockcode);
+        $stmt->execute();
+        $lookupResult = $stmt->get_result();
+        if ($lookupRow = $lookupResult->fetch_assoc())
+        {
+            $resolvedStock = $lookupRow['code'];
+            $resolvedExchange = $lookupRow['exchange'];
+        }
+        $stmt->close();
+
         $likeVar1 = $stockcode."%";
         $likeVar2 = "%".$stockcode;
         $likeVar3 = "%".$stockcode."%";
         $likeVar5 = $stockcode." %";
         $likeVar6 = "% ".$stockcode;
         $likeVar7 = "% ".$stockcode." %";
-        $stmt->bind_param("sssssssssssssssssssss",  $stockcode, $likeVar1, $likeVar2, $likeVar3, $stockcode, $likeVar5, $likeVar6, $likeVar7, $likeVar1, $likeVar2, $likeVar3, $stockcode, $likeVar5, $likeVar6, $likeVar7, $likeVar1, $likeVar2, $likeVar3, $stockcode, $stockcode, $stockcode);
-        $stmt->execute();
-        $stmt->close();
+
+        if ($resolvedStock == '')
+        {
+            $stmt = $connection->prepare($sqlQuery0);
+            $stmt->bind_param("sssssssssssssssssssss",  $stockcode, $likeVar1, $likeVar2, $likeVar3, $stockcode, $likeVar5, $likeVar6, $likeVar7, $likeVar1, $likeVar2, $likeVar3, $stockcode, $likeVar5, $likeVar6, $likeVar7, $likeVar1, $likeVar2, $likeVar3, $stockcode, $stockcode, $stockcode);
+            $stmt->execute();
+            $lookupResult = $stmt->get_result();
+            if ($lookupRow = $lookupResult->fetch_assoc())
+            {
+                $resolvedStock = $lookupRow['code'];
+                $resolvedExchange = $lookupRow['exchange'];
+            }
+            $stmt->close();
+        }
+
+        $result = false;
+        if ($resolvedStock != '' && $resolvedExchange != '')
+        {
+            $stmt = $connection->prepare($sqlQuery3);
+            $stmt->bind_param("sss", $resolvedStock, $resolvedExchange, $resolvedExchange);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+        }
     
-        $stmt = $connection->prepare($sqlQuery1);
-        $stmt->execute();
-        $stmt->close();
-        
-        $stmt = $connection->prepare($sqlQuery3);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $stmt->close();
-    
-        while($itemRow = $result->fetch_assoc())
+        while($result && ($itemRow = $result->fetch_assoc()))
         {
             $exchange = $itemRow['exchange'];
             $marketcap = $itemRow['shares'] * $itemRow['close'];
@@ -244,7 +268,10 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
     <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://code.highcharts.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="assets/css/card.css">
@@ -258,9 +285,24 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <link rel="stylesheet" href="assets/css/toggleSwitch.css">
     <!--script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script-->
     <!--script defer data-cfasync="false" src="assets/js/bot-detector.js"-->
-    <script src="https://www.google.com/recaptcha/api.js?render=6LfVMmIrAAAAAMM1qvj7delYBZmU0CwbMklOaB9b"></script>
     <script>
-      if (typeof grecaptcha !== 'undefined') {
+      function reportRecaptchaMissing() {
+        fetch('/recap.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Recaptcha-Failure': 'true'
+          },
+          body: JSON.stringify({ token: null, action: 'recaptcha_missing' })
+        });
+      }
+
+      function runRecaptchaPageview() {
+        if (typeof grecaptcha === 'undefined') {
+          reportRecaptchaMissing();
+          return;
+        }
+
         grecaptcha.ready(function() {
           grecaptcha.execute('6LfVMmIrAAAAAMM1qvj7delYBZmU0CwbMklOaB9b', {action: 'pageview'}).then(function(token) {
             fetch('/recap.php', {
@@ -270,27 +312,9 @@ function trendgauge2txt($stockcode, $trendvalue) {
             });
           });
         });
-      } else {
-        fetch('/recap.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Recaptcha-Failure': 'true'
-          },
-          body: JSON.stringify({ token: null, action: 'recaptcha_missing' })
-        });
-        /*.then(response => response.json())
-        .then(data => {
-          if (!data.success && data.reason === 'reCAPTCHA not loaded') {
-            // Option 1: Block interaction
-            document.body.innerHTML = '<h1>Access denied</h1>';
-        
-            // Option 2: Redirect to an error or challenge page
-            // window.location.href = '/access-denied.html';
-          }
-        });*/
       }
     </script>
+    <script async src="https://www.google.com/recaptcha/api.js?render=6LfVMmIrAAAAAMM1qvj7delYBZmU0CwbMklOaB9b&amp;onload=runRecaptchaPageview" onerror="reportRecaptchaMissing()"></script>
     <script defer data-cfasync="false">
         const start = Date.now();
         let moveEvents = [];
@@ -559,32 +583,11 @@ a:hover.sectorperformance {
   background: var(--bg-card);
 }
 </style>
-<script src="https://code.highcharts.com/stock/8.2.0/highstock.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/no-data-to-display.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/stock/8.2.0/modules/sankey.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <!--<script src="assets/js/ValuationBands.js"></script>-->
-<script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="assets/js/Utils.js"></script>
-<script src="assets/js/TA.js"></script>
-<script src="assets/js/GaugeChart.js"></script>
-<script src="assets/js/RangeChart.js"></script>
-<script src="assets/js/F-Z-M-ScoreChart.js"></script>
-<script src="assets/js/PolarChart-Comment.js"></script>
-<script src="assets/js/TSF.js"></script>
-<script src="assets/js/priceDeviation.js"></script>
-<script src="assets/js/CCASS.js"></script>
-<script src="assets/js/stockCompare.js"></script>
-<script src="assets/js/yearlyTrendChart.js"></script>
     
 <!--script src="https://code.jquery.com/jquery-3.5.1.js"></script //if dataTable weird, may need this js--> 
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.4/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.4/js/responsive.bootstrap4.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
 <style>
 .irs {
 	font-family: Montserrat
@@ -781,8 +784,6 @@ function adsBlocked(callback){
         </div>
         <div class="col-md-12 table-condensed cf">
             
-<script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/8.2.0/modules/exporting.js"></script>
 <!--<div id="wrapper">
 <div id="gaugecontainer1" style="float:left; width: 50%; "></div>
 <div id="gaugecontainer2" style="float:right; width: 50%; "></div>
@@ -1459,8 +1460,79 @@ function adsBlocked(callback){
     </main>
     <p></p>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css">
-<link rel="stylesheet" href="assets/css/dataTables.bootstrap4.min.css">
+<script>
+function loadStockScript(src)
+{
+    return new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function loadStockStyle(href)
+{
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+}
+
+var preloadedStockQuoteRequest = null;
+<?php if ($line != "" && $stockcode != "") { ?>
+preloadedStockQuoteRequest = $.ajax({
+    url: "/db_stockquote_get.php?data=<?php echo rawurlencode($stockcode); ?>&isIEX=<?php echo rawurlencode($isIEX); ?>",
+    dataType: "text"
+});
+<?php } ?>
+
+var stockOptionalLibrariesReady = null;
+
+function ensureStockOptionalLibraries()
+{
+    if (stockOptionalLibrariesReady)
+        return stockOptionalLibrariesReady;
+
+    loadStockStyle('https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css');
+    loadStockStyle('assets/css/dataTables.bootstrap4.min.css');
+    loadStockStyle('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css');
+
+    stockOptionalLibrariesReady = loadStockScript('https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
+        .then(function() {
+            return loadStockScript('https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js');
+        })
+        .then(function() {
+            return loadStockScript('https://cdn.datatables.net/responsive/2.2.4/js/dataTables.responsive.min.js');
+        })
+        .then(function() {
+            return loadStockScript('https://cdn.datatables.net/responsive/2.2.4/js/responsive.bootstrap4.min.js');
+        })
+        .then(function() {
+            return loadStockScript('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js');
+        });
+
+    return stockOptionalLibrariesReady;
+}
+</script>
+<script src="https://code.highcharts.com/stock/8.2.0/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/no-data-to-display.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/sankey.js"></script>
+<script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
+<script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/8.2.0/modules/exporting.js"></script>
+<script src="assets/js/TA.js"></script>
+<script src="assets/js/GaugeChart.js"></script>
+<script src="assets/js/RangeChart.js"></script>
+<script src="assets/js/F-Z-M-ScoreChart.js"></script>
+<script src="assets/js/PolarChart-Comment.js"></script>
+<script src="assets/js/TSF.js"></script>
+<script src="assets/js/priceDeviation.js"></script>
+<script src="assets/js/CCASS.js"></script>
+<script src="assets/js/stockCompare.js"></script>
+<script src="assets/js/yearlyTrendChart.js"></script>
 <!--script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
 <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
 <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-exports.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
@@ -1477,10 +1549,15 @@ function adsBlocked(callback){
 <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet"-->
 <!--<link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet">-->
 <link href="assets/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet">
-<script src="assets/js/anychart-bundle.min.js"></script>
 <!--link href="https://cdn.anychart.com/releases/8.13.1/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet"-->
-<link href="https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet">
-<script src="assets/js/Anystock.js"></script>
+<link rel="preload" href="https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet"></noscript>
+<script>
+var anychartReady = loadStockScript('assets/js/anychart-bundle.min.js')
+    .then(function() {
+        return loadStockScript('assets/js/Anystock.js');
+    });
+</script>
 <script src="assets/js/seasonality.js"></script>
 <script src="assets/js/LanguageTimezone.js"></script>
 <script src="assets/js/jquery.sparkline.min.js"></script>
@@ -1625,6 +1702,11 @@ if (stockcode == "")
     document.title = (stockcode != '' ? stockcode + ' ' : '') + "Stock - 360MiQ.com";
 }
 
+var stockInfoRequest = toLoadAjax ? $.ajax({
+    url : "/db_stockinfo_get.php?data=" + encodeURIComponent(stockcode),
+    dataType: "text"
+}) : null;
+
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -1690,6 +1772,19 @@ function applyPriceInfoTheme() {
 
 document.documentElement.addEventListener('themechange', applyPriceInfoTheme);
 
+function scheduleNonCriticalStockWork(callback, timeout)
+{
+    if ('requestIdleCallback' in window)
+    {
+        window.requestIdleCallback(callback, { timeout: timeout || 2000 });
+        return;
+    }
+
+    window.setTimeout(callback, Math.min(timeout || 2000, 1000));
+}
+
+function loadPeers()
+{
 $.ajax({
     url : "./db_peers_get.php?data=" + encodeURIComponent(stockcode) + "&limit=" + numberOfPeers,
     success : function(result){
@@ -1756,21 +1851,21 @@ $.ajax({
             }
         }
     }
-});    
+});
+}
 
 if (toLoadAjax)
 {
-    $.ajax({
-        url : "/db_stockinfo_get.php?data=" + encodeURIComponent(stockcode),
-        success : function(result){
-            maincontent(result);
-        }
+    stockInfoRequest.done(function(result) {
+        maincontent(result);
     });
 }
 else
 {
     maincontent(stockinfo)
 }
+
+scheduleNonCriticalStockWork(loadPeers, 1500);
 
 function maincontent(result)
 {
@@ -2030,13 +2125,20 @@ function maincontent(result)
         document.getElementById('eps').height = "22";
     }
     
-    $.ajax({
-        url : "db_chatbot.php?search=" + stockcode + "&fullsearch=&exchange=" + exch,
-        dataType: "json",
-        success : function(result){
-            document.getElementById("chartcontainerMirrorScan").innerHTML = chatbot(result, true);
-        }
+    var stockQuoteRequest = preloadedStockQuoteRequest || $.ajax({
+        url : "/db_stockquote_get.php?data=" + encodeURIComponent(stockcode) + "&isIEX=" + isIEX,
+        dataType: "text"
     });
+
+    scheduleNonCriticalStockWork(function() {
+        $.ajax({
+            url : "db_chatbot.php?search=" + stockcode + "&fullsearch=&exchange=" + exch,
+            dataType: "json",
+            success : function(result){
+                document.getElementById("chartcontainerMirrorScan").innerHTML = chatbot(result, true);
+            }
+        });
+    }, 2500);
 
     if (toLoadAjax)
     {
@@ -2077,9 +2179,7 @@ function maincontent(result)
         document.getElementById("performanceTable").style.paddingRight = "10px";
     }*/
         
-    $.ajax({
-        url : "/db_stockquote_get.php?data=" + encodeURIComponent(stockcode) + "&isIEX=" + isIEX,
-        success : function(result){
+    stockQuoteRequest.done(function(result){
             var pricedata = "";
             var tmprows = result.split("\n");
             for (i = 0; i < tmprows.length - 1; i++)
@@ -2563,7 +2663,12 @@ function maincontent(result)
             } 
             
             //pricedata = result;
-            anystock(pricedata, stockcode, stockname_en_tc.replace(dot, " ● ").substring(0, 45), longMAperiod, 'stockcontainer', 'stockrangecontainer', true);
+            anychartReady.then(function() {
+                anystock(pricedata, stockcode, stockname_en_tc.replace(dot, " ● ").substring(0, 45), longMAperiod, 'stockcontainer', 'stockrangecontainer', true);
+            }).catch(function(error) {
+                if (window.console && console.error)
+                    console.error('Failed to load the stock chart library.', error);
+            });
 
             if (i >= longMAperiod)
                 ma250 = sum250/longMAperiod;
@@ -3780,6 +3885,7 @@ function maincontent(result)
                     r[3] = div3;
                 })*/
                  
+                ensureStockOptionalLibraries().then(function() {
                 var table = $('#monthlytable').DataTable({
                     responsive: true,
                     order: [[0, 'desc']],
@@ -3871,6 +3977,10 @@ function maincontent(result)
                         }
                     }
                 });
+                }).catch(function(error) {
+                    if (window.console && console.error)
+                        console.error('Failed to load the monthly table library.', error);
+                });
             }
             
             if (monthlydata !== null && monthlydata !== undefined && monthlydata.length > 0)
@@ -3885,6 +3995,7 @@ function maincontent(result)
                     max_current = new Date(monthlydata[monthlydata.length - 1][0]).getFullYear();
                 }
                         
+                ensureStockOptionalLibraries().then(function() {
                 $(".js-range-slider").ionRangeSlider({
                 	skin: "round",
                 	prettify_enabled: false,
@@ -3937,6 +4048,10 @@ function maincontent(result)
                                 min_current = minRangeValue;
                                 max_current = maxRangeValue;
                             }
+                });
+                }).catch(function(error) {
+                    if (window.console && console.error)
+                        console.error('Failed to load the range slider library.', error);
                 });
             }
 
@@ -4605,8 +4720,7 @@ function maincontent(result)
             		}
             	}
             );
-        }
-    });   
+    });
 }
 
 /*function rsidivergence(rsi, pricedata, pricemovepercent, isDaily)
