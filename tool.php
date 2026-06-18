@@ -621,23 +621,8 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
-    background-image: none !important;
-    background-color: #242438 !important;
-    filter: none !important;
-    color: #e8e8e8 !important;
-    text-align: center;
-}
-
-[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar::before {
-    content: '<';
-    display: block;
-    font-size: 11px;
-    font-weight: normal;
-    line-height: 10px;
-}
-
-[data-theme="dark"] #tab-2 .highcharts-menu-wrapper.highcharts-hide + .highcharts-toggle-toolbar::before {
-    content: '>';
+    background-color: transparent !important;
+    filter: brightness(0) invert(1) !important;
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li:hover,
@@ -647,7 +632,7 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar:hover {
-    background-color: #33335a !important;
+    background-color: transparent !important;
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-menu-item-btn,
