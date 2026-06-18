@@ -113,7 +113,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
     chart.credits().enabled(false);
     chart.headers().fontColor(headerFontColor).background().fill(isDark ? "#2a2a3e" : "#F7F7F7").stroke(isDark ? "#3a3a4e" : "#e0e0e0");
     if (isDark)
-        chart.hovered().headers().fontColor("#ffffff").background().fill("#3a3a50").stroke("#55556a");
+        chart.hovered().headers().background().fill("#3a3a50").stroke("#55556a");
     
     if (isMobile)
         chart.contextMenu(false);
