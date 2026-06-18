@@ -590,8 +590,7 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li,
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li,
-[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li {
     background: #242438 !important;
     background-color: #242438 !important;
     border-color: #6f74a8 !important;
@@ -599,15 +598,21 @@ figure {
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn,
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn:hover,
-[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
-    background: transparent !important;
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-menu-item-btn:hover {
     background-color: transparent !important;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
+    background-color: #242438 !important;
 }
 
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li:hover,
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li.highcharts-active {
     background: #33335a !important;
+    background-color: #33335a !important;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-toggle-toolbar:hover {
     background-color: #33335a !important;
 }
 
