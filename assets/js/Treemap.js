@@ -101,7 +101,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                 }
             }
 
-            if (data[i].size === undefined)
+            if (data[i].parent === 0 || data[i].size === undefined)
             {
                 data[i]["hoverHeader"] = Object.assign({}, data[i]["header"] || {}, {
                     "fontColor": data[i]["header"] && data[i]["header"]["fontColor"] ? data[i]["header"]["fontColor"] : headerFontColor
