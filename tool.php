@@ -620,10 +620,22 @@ figure {
     background-color: transparent !important;
 }
 
-[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow,
+#tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow {
+    background-color: rgba(108, 117, 125, 0.08) !important;
+}
+
+#tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow:hover,
+#tab-2 .highcharts-bindings-wrapper li:hover > button.highcharts-submenu-item-arrow {
+    background-color: rgba(108, 117, 125, 0.16) !important;
+}
+
+[data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow {
+    background-color: rgba(111, 116, 168, 0.18) !important;
+}
+
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li > button.highcharts-submenu-item-arrow:hover,
 [data-theme="dark"] #tab-2 .highcharts-bindings-wrapper li:hover > button.highcharts-submenu-item-arrow {
-    background-color: transparent !important;
+    background-color: rgba(111, 116, 168, 0.34) !important;
 }
 
 [data-theme="dark"] #tab-2 .highcharts-toggle-toolbar {
