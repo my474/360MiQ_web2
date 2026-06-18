@@ -488,7 +488,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
 
 /* ---- redraw all treemaps on theme change without page refresh ---- */
 document.documentElement.addEventListener('themechange', function() {
-    var containers = document.querySelectorAll('[id^="chartcontainer"]');
+    var containers = document.querySelectorAll('[id^="chartcontainer"], [id^="treecontainer"]');
     for (var i = 0; i < containers.length; i++) {
         var el = containers[i];
         if (el._treemapArgs) {
