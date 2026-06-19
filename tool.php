@@ -474,13 +474,13 @@ figure {
 [data-theme="dark"] #tab-1 .show > .btn-outline-primary.dropdown-toggle {
     background-color: var(--text-link-bright, #66c7ff) !important;
     border-color: var(--text-link-bright, #66c7ff) !important;
-    color: #ffffff !important;
+    color: var(--bg, #1a1a2e) !important;
 }
 
 [data-theme="dark"] #tab-1 .btn-outline-primary:hover i,
 [data-theme="dark"] #tab-1 .btn-outline-primary:focus i,
 [data-theme="dark"] #tab-1 .btn-outline-primary.active i {
-    color: #ffffff !important;
+    color: var(--bg, #1a1a2e) !important;
 }
 
 [data-theme="dark"] #play-range {
