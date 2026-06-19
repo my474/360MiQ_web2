@@ -1746,6 +1746,22 @@ function adsBlocked(callback){
                             <h3 class="sr-only"><?php echo "$stockcode"." "; ?>Monthly Return % Table</h3>
                             <h6 class="card-title" id="monthlytabletitle">Monthly Return %</h6>
                             <table id="monthlytable" class="display" width="99%" style="margin:0 auto"></table>
+                            <div class="chartNote">
+                                <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                                <div class="noteWrapper collapsed">
+                                    <span>
+                                        The Monthly Return % table provides the year-by-year detail behind the seasonality analysis. Each row represents a calendar year, while the monthly columns show the percentage change for January through December.
+                                    </span>
+                                    <ul style="padding-left: 20px; margin: 6px 0;">
+                                        <li><strong>Green cells</strong> show positive monthly returns, red cells show negative returns, and stronger shades represent larger moves.</li>
+                                        <li><strong>The YTD column</strong> shows the return for the full year, or the available year-to-date period when the year is not yet complete.</li>
+                                        <li><strong>The Avg row</strong> summarizes the average return for each month across the available history.</li>
+                                    </ul>
+                                    <span style="margin-top: 6px;">
+                                        Read down a month to compare how it performed across different years, or read across a row to follow the sequence of gains and losses within one year.
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1763,6 +1779,22 @@ function adsBlocked(callback){
                 <div>
                     <h3 class="sr-only"><?php echo "$stockcode"." "; ?>& Peers Performance</h3>
                     <div id="peerPerformancecontainer" style="width:auto;height:700px;"></div>
+                </div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            Peer Performance compares the stock with a group of related companies on the same percentage-return scale. Each line is rebased at the beginning of the displayed period, allowing stocks with very different share prices to be compared directly.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>A higher line</strong> indicates stronger performance over the selected period, while a lower line indicates relative underperformance.</li>
+                            <li><strong>Similar paths</strong> may show that the stocks are responding to shared industry or market forces.</li>
+                            <li><strong>Diverging paths</strong> highlight periods when one stock begins outperforming or falling behind its peers.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            Use the chart's time-range controls to compare different periods. Select <strong>RACE</strong> to open the stock and its peers in the animated performance comparison tool.
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
