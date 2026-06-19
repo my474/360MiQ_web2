@@ -1,6 +1,7 @@
 function getHighstockMajorEvents(plotMajorEvents)
 {
     var majorEvents = [];
+    var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
     var tables = '<br><br><b>84 years</b> is the time <b>Uranus</b> takes to orbit the Sun.<br><table style="border: 1px solid grey;"><tr><td><b>Date</b></td><td><b>Event</b></td><td><b>Time Since Last Event</b></td></tr><tr><td>Dec 16, 1773</td><td>Boston Tea Party</td><td></td></tr><tr><td>Aug 24, 1857</td><td>Panic of 1857</td><td>83 years 8 months 8 days</td></tr><tr><td>Dec 7, 1941</td><td>Pearl Harbor Attack</td><td>84 years 3 months 13 days</td></tr></table><br><table style="border: 1px solid grey;"><tr><td><b>Date</b></td><td><b>Event</b></td><td><b>Time Since Last Event</b></td></tr><tr><td>Jul 4, 1776</td><td>Independence Day</td><td></td></tr><tr><td>Apr 12, 1861</td><td>Civil War Begins</td><td>84 years 9 months 8 days</td></tr><tr><td>Jun 6, 1944</td><td>WWII Ends</td><td>84 years 4 months 21 days</td></tr></table><br><table style="border: 1px solid grey;"><tr><td><b>Event Pair</b></td><td><b>Time Gap in Event Pair</b></td></tr><tr><td>Boston Tea Party — Independence Day</td><td>2 years 6 months 18 days</td></tr><tr><td>Panic of 1857 — Civil War Begins</td><td>3 years 7 months 19 days</td></tr><tr><td>Pearl Harbor Attack — WWII Ends</td><td>3 years 8 months 26 days</td></tr></table><br><b>When will be the next event pair?</b>';
 
     if (plotMajorEvents == 'US')
@@ -753,6 +754,28 @@ function getHighstockMajorEvents(plotMajorEvents)
             tooltip: '<b>Bretton Woods System:</b> Jul&nbsp;1,&nbsp;1944&nbsp;to&nbsp;Aug&nbsp;15,&nbsp;1971<br>The Bretton Woods Agreement was established during a conference held from July 1 to July 22, 1944, in Bretton Woods, New Hampshire. It created a new international monetary system that pegged major world currencies to the US dollar, which was in turn convertible to gold at a fixed rate of $35 per ounce. The goal was to ensure exchange rate stability, prevent competitive devaluations, and foster post-war economic recovery. The agreement led to the creation of the International Monetary Fund and the World Bank, both formally established in 1945. The system remained in place until August 15, 1971, when President Nixon ended dollar convertibility to gold, marking the collapse of the Bretton Woods system.'
         }
     ];
+    }
+
+    if (isDarkMode)
+    {
+        majorEvents.forEach(function(event) {
+            var rgbaMatch = event.color && event.color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+            if (rgbaMatch)
+            {
+                var darkOpacity = 1 - parseFloat(rgbaMatch[4]);
+                event.color = 'rgba(' + rgbaMatch[1] + ', ' + rgbaMatch[2] + ', ' + rgbaMatch[3] + ', ' + darkOpacity + ')';
+            }
+
+            // Keep the stronger dark-mode fill behind chart series and other foreground content.
+            event.zIndex = 0;
+
+            if (event.label)
+            {
+                event.label.style = event.label.style || {};
+                event.label.style.color = '#e2e7ff';
+                event.label.style.textOutline = '1px rgba(0, 0, 0, 0.65)';
+            }
+        });
     }
 
     return majorEvents;

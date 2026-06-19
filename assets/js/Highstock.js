@@ -8,11 +8,20 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
     var majorEvents = typeof getHighstockMajorEvents === 'function' ? getHighstockMajorEvents(plotMajorEvents) : [];
     var tooltipDiv = null;
 
+    function styleMajorEventsTooltip()
+    {
+        var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+        tooltipDiv.style.background = isDarkMode ? 'rgba(24, 26, 38, 0.96)' : 'rgba(255, 255, 255, 0.8)';
+        tooltipDiv.style.color = isDarkMode ? '#f2f4ff' : 'black';
+        tooltipDiv.style.boxShadow = isDarkMode ? '0 8px 24px rgba(0, 0, 0, 0.55)' : 'none';
+    }
+
     if (majorEvents.length > 0)
     {
         tooltipDiv = document.createElement('div');
         tooltipDiv.id = 'custom-tooltip';
-        tooltipDiv.style.cssText = 'position: absolute; background: rgba(255, 255, 255, 0.8); color: black; padding: 8px; border-radius: 4px; pointer-events: none; display: none; font-size: 12px; z-index: 1031;';
+        tooltipDiv.style.cssText = 'position: absolute; padding: 8px; border-radius: 4px; pointer-events: none; display: none; font-size: 12px; z-index: 1031;';
+        styleMajorEventsTooltip();
         document.body.appendChild(tooltipDiv);
     }
 
@@ -193,7 +202,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                                             var r = rgbaMatch[1];
                                             var g = rgbaMatch[2];
                                             var b = rgbaMatch[3];
-                                            var a = svgElem.originalOpacity + 0.15;
+                                            var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                                            var a = Math.min(1, svgElem.originalOpacity + (isDarkMode ? 0.08 : 0.15));
                                             bandColor = `rgba(${r}, ${g}, ${b}, ${a})`;
                                             svgElem.attr({ fill: bandColor });
                                         }
@@ -229,6 +239,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
 
                                         var tooltipText = plotband.options.tooltip || 'No tooltip available';
                                         tooltipDiv.innerHTML = tooltipText;
+                                        styleMajorEventsTooltip();
 
                                         // Dynamically set width based on browser size
                                         var browserWidth = window.innerWidth;
@@ -242,7 +253,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                                             var r = rgbaMatch[1];
                                             var g = rgbaMatch[2];
                                             var b = rgbaMatch[3];
-                                            borderColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+                                            var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                                            borderColor = `rgba(${r}, ${g}, ${b}, ${isDarkMode ? 0.9 : 0.5})`;
                                         } else {
                                             borderColor = 'rgba(0, 0, 0, 0.5)'; // Fallback if parsing fails
                                         }
