@@ -1994,10 +1994,10 @@ function areMarketTabLibrariesLoaded(tab)
 {
     if (["3", "12", "13", "14"].indexOf(tab) !== -1)
         return marketAnychartLibrariesLoaded;
-    if (tab === "5")
+    if (["5", "10"].indexOf(tab) !== -1)
         return marketDataTableLibrariesLoaded;
     if (["9", "11"].indexOf(tab) !== -1)
-        return !marketMajorEventsEnabled || marketMajorEventsLoaded;
+        return marketDataTableLibrariesLoaded && (!marketMajorEventsEnabled || marketMajorEventsLoaded);
     return true;
 }
 
@@ -2005,10 +2005,13 @@ function ensureMarketTabLibraries(tab)
 {
     if (["3", "12", "13", "14"].indexOf(tab) !== -1)
         return ensureMarketAnychartLibraries();
-    if (tab === "5")
+    if (["5", "10"].indexOf(tab) !== -1)
         return ensureMarketDataTableLibraries();
     if (["9", "11"].indexOf(tab) !== -1)
-        return ensureMarketMajorEvents();
+        return Promise.all([
+            ensureMarketDataTableLibraries(),
+            ensureMarketMajorEvents()
+        ]);
     return Promise.resolve();
 }
 </script>
@@ -2031,7 +2034,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260619.3"></script>
+<script src="assets/js/pages/market-main.js?v=20260619.4"></script>
 
 <?php include "./footer.php" ?>
 
