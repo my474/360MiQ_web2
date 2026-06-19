@@ -1246,7 +1246,22 @@ function adsBlocked(callback){
 </div>
   <h3 class="sr-only"><?php echo "$stockcode"." "; ?>Deviation % from MA50 & 50-day High</h3>
   <div id="pricedeviationcontainer" style="width:auto;height:800px;margin-top:3px"></div>
-
+  <div class="chartNote">
+      <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+      <div class="noteWrapper collapsed">
+          <span>
+              Deviation percentage shows where the stock price stands relative to a selected moving average and its highest closing price over a selected number of trading days. The controls above the chart let you change both lookback periods to examine shorter- or longer-term price behavior.
+          </span>
+          <ul style="padding-left: 20px; margin: 6px 0;">
+              <li><strong>% from MA</strong> is calculated as the closing price divided by the selected moving average, minus one. A positive value means the price is above the moving average; a negative value means it is below.</li>
+              <li><strong>% from X-day High</strong> measures the distance below the highest closing price in the selected period. A value near 0% means the stock is close to that high, while a more negative value indicates a deeper pullback.</li>
+              <li><strong>Rising readings</strong> generally show improving price strength, while falling readings show that the stock is losing ground relative to its trend or recent high.</li>
+          </ul>
+          <span style="margin-top: 6px;">
+              Reading the two measures together helps distinguish a stock holding near its recent high from one that is stretched above its moving average, and can also highlight recoveries, consolidations and weakening trends.
+          </span>
+      </div>
+  </div>
 
         </div>
     </div>
