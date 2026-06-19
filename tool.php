@@ -842,7 +842,7 @@ window.__TOOL_PAGE_CONFIG = {
     "composerTofromURL": <?php echo json_encode(isset($_GET['cto']) ? $_GET['cto'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/tool-main.js?v=20260619"></script>
+<script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->

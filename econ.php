@@ -1030,7 +1030,7 @@ window.__ECON_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/econ-main.js?v=20260619"></script>
+<script src="assets/js/pages/econ-main.js?v=20260619.2"></script>
 
 <?php include "./footer.php" ?>
 

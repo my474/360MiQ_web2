@@ -1445,6 +1445,7 @@ function adsBlocked(callback){
         </div>
 
         <p></p>
+        <div id="peerPerformanceLoadSentinel" aria-hidden="true" style="height:1px"></div>
         <div id="PeerPerformance" class="clean-card text-center container" style="padding:0;display:none">
             <div class="card-header">
                 <h2>Peer Performance<button id="peersBtn" class="btn btn-warning btn-sm" onclick="openTOOL()" style="margin:-2px 5px 0px 0px;float:right;font-weight:bold;color:#383838;height:29px">RACE</button></h2>
@@ -1522,7 +1523,6 @@ function ensureStockOptionalLibraries()
 <script src="https://code.highcharts.com/stock/8.2.0/modules/sankey.js"></script>
 <script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/8.2.0/modules/exporting.js"></script>
 <script src="assets/js/TA.js"></script>
 <script src="assets/js/GaugeChart.js"></script>
 <script src="assets/js/RangeChart.js"></script>
@@ -1567,7 +1567,7 @@ window.__STOCKINFO_PAGE_CONFIG = {
     "stockinfo": <?php echo json_encode($line, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/stockinfo-main.js?v=20260619"></script>
+<script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
 
 <?php include "./footer.php" ?>
 

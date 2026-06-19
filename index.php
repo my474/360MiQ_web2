@@ -1899,7 +1899,7 @@ function ensureHomeAnychart()
 }
 </script>
 <script src="assets/js/GaugeChart.js"></script>
-<script src="assets/js/pages/index-main.js?v=20260619"></script>
+<script src="assets/js/pages/index-main.js?v=20260619.2"></script>
 <!--        <p></p>
         <div class = "card clean-card text-center container" style="padding:0;">
             <div class="card-header">

@@ -1907,21 +1907,20 @@ function loadMarketStyle(href)
     document.head.appendChild(link);
 }
 
-var marketOptionalLibrariesLoaded = false;
-var marketOptionalLibrariesReady = null;
+var marketAnychartLibrariesLoaded = false;
+var marketAnychartLibrariesReady = null;
+var marketDataTableLibrariesLoaded = false;
+var marketDataTableLibrariesReady = null;
 
-function ensureMarketOptionalLibraries()
+function ensureMarketAnychartLibraries()
 {
-    if (marketOptionalLibrariesReady)
-        return marketOptionalLibrariesReady;
+    if (marketAnychartLibrariesReady)
+        return marketAnychartLibrariesReady;
 
     loadMarketStyle('https://cdn.anychart.com/releases/8.9.0/css/anychart-ui.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33');
     loadMarketStyle('https://cdn.anychart.com/releases/8.9.0/fonts/css/anychart-font.min.css?hcode=c11e6e3cfefb406e8ce8d99fa8368d33');
-    loadMarketStyle('https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css');
-    loadMarketStyle('assets/css/dataTables.bootstrap4.min.css');
-    loadMarketStyle('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css');
 
-    var marketAnychartReady = loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33')
+    marketAnychartLibrariesReady = loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33')
         .then(function() {
             return Promise.all([
                 loadMarketScript('https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33'),
@@ -1932,9 +1931,27 @@ function ensureMarketOptionalLibraries()
         })
         .then(function() {
             return loadMarketScript('assets/js/Treemap.js');
+        })
+        .then(function() {
+            return loadMarketScript('assets/js/jquery.sparkline.min.js');
+        })
+        .then(function() {
+            marketAnychartLibrariesLoaded = true;
         });
 
-    var marketDataTablesReady = loadMarketScript('https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
+    return marketAnychartLibrariesReady;
+}
+
+function ensureMarketDataTableLibraries()
+{
+    if (marketDataTableLibrariesReady)
+        return marketDataTableLibrariesReady;
+
+    loadMarketStyle('https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css');
+    loadMarketStyle('assets/css/dataTables.bootstrap4.min.css');
+    loadMarketStyle('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css');
+
+    marketDataTableLibrariesReady = loadMarketScript('https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js')
         .then(function() {
             return loadMarketScript('https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js');
         })
@@ -1943,18 +1960,33 @@ function ensureMarketOptionalLibraries()
         })
         .then(function() {
             return loadMarketScript('https://cdn.datatables.net/responsive/2.2.4/js/responsive.bootstrap4.min.js');
+        })
+        .then(function() {
+            return loadMarketScript('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js');
+        })
+        .then(function() {
+            marketDataTableLibrariesLoaded = true;
         });
 
-    marketOptionalLibrariesReady = Promise.all([
-        marketAnychartReady,
-        marketDataTablesReady,
-        loadMarketScript('https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js'),
-        loadMarketScript('assets/js/jquery.sparkline.min.js')
-    ]).then(function() {
-        marketOptionalLibrariesLoaded = true;
-    });
+    return marketDataTableLibrariesReady;
+}
 
-    return marketOptionalLibrariesReady;
+function areMarketTabLibrariesLoaded(tab)
+{
+    if (["3", "12", "13", "14"].indexOf(tab) !== -1)
+        return marketAnychartLibrariesLoaded;
+    if (tab === "5")
+        return marketDataTableLibrariesLoaded;
+    return true;
+}
+
+function ensureMarketTabLibraries(tab)
+{
+    if (["3", "12", "13", "14"].indexOf(tab) !== -1)
+        return ensureMarketAnychartLibraries();
+    if (tab === "5")
+        return ensureMarketDataTableLibraries();
+    return Promise.resolve();
 }
 </script>
 <script src="assets/js/GaugeChart.js"></script>
@@ -1976,7 +2008,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260619"></script>
+<script src="assets/js/pages/market-main.js?v=20260619.2"></script>
 
 <?php include "./footer.php" ?>
 
@@ -1995,7 +2027,6 @@ window.__MARKET_PAGE_CONFIG = {
     <!--<script src="https://code.highcharts.com/stock/8.0.4/modules/pattern-fill.js"></script>-->
     <script src="assets/js/jquery-ui1.12.1.min.js"></script>
     <!--<script src="assets/js/jquery.ui.treemap.js"></script>-->
-    <script src="assets/js/Utils.js"></script>
     <script src="assets/js/ValuationBands.js"></script>
     <!--<script src="assets/js/yaxis-panning.js"></script>-->
 </body>
