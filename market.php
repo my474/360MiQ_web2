@@ -1982,7 +1982,7 @@ function ensureMarketMajorEvents()
     if (marketMajorEventsReady)
         return marketMajorEventsReady;
 
-    marketMajorEventsReady = loadMarketScript('assets/js/MajorEvents.js?v=20260619.3')
+    marketMajorEventsReady = loadMarketScript('assets/js/MajorEvents.js?v=20260619.4')
         .then(function() {
             marketMajorEventsLoaded = true;
         });

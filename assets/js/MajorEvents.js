@@ -757,6 +757,7 @@ function getHighstockMajorEvents(plotMajorEvents)
 
     majorEvents.forEach(function(event) {
         event.majorEventBaseColor = event.color;
+        event.majorEventBaseZIndex = event.zIndex;
         event.majorEventBaseLabelColor = event.label && event.label.style ? event.label.style.color : '#606060';
         applyHighstockMajorEventTheme(event);
     });
@@ -782,8 +783,7 @@ function applyHighstockMajorEventTheme(event)
         event.color = baseColor;
     }
 
-    // Plot bands stay behind chart series in both themes.
-    event.zIndex = 0;
+    event.zIndex = event.majorEventBaseZIndex === undefined ? 4 : event.majorEventBaseZIndex;
 
     if (event.label)
     {
