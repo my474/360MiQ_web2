@@ -1,7 +1,6 @@
 function getHighstockMajorEvents(plotMajorEvents)
 {
     var majorEvents = [];
-    var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
     var tables = '<br><br><b>84 years</b> is the time <b>Uranus</b> takes to orbit the Sun.<br><table style="border: 1px solid grey;"><tr><td><b>Date</b></td><td><b>Event</b></td><td><b>Time Since Last Event</b></td></tr><tr><td>Dec 16, 1773</td><td>Boston Tea Party</td><td></td></tr><tr><td>Aug 24, 1857</td><td>Panic of 1857</td><td>83 years 8 months 8 days</td></tr><tr><td>Dec 7, 1941</td><td>Pearl Harbor Attack</td><td>84 years 3 months 13 days</td></tr></table><br><table style="border: 1px solid grey;"><tr><td><b>Date</b></td><td><b>Event</b></td><td><b>Time Since Last Event</b></td></tr><tr><td>Jul 4, 1776</td><td>Independence Day</td><td></td></tr><tr><td>Apr 12, 1861</td><td>Civil War Begins</td><td>84 years 9 months 8 days</td></tr><tr><td>Jun 6, 1944</td><td>WWII Ends</td><td>84 years 4 months 21 days</td></tr></table><br><table style="border: 1px solid grey;"><tr><td><b>Event Pair</b></td><td><b>Time Gap in Event Pair</b></td></tr><tr><td>Boston Tea Party — Independence Day</td><td>2 years 6 months 18 days</td></tr><tr><td>Panic of 1857 — Civil War Begins</td><td>3 years 7 months 19 days</td></tr><tr><td>Pearl Harbor Attack — WWII Ends</td><td>3 years 8 months 26 days</td></tr></table><br><b>When will be the next event pair?</b>';
 
     if (plotMajorEvents == 'US')
@@ -756,27 +755,42 @@ function getHighstockMajorEvents(plotMajorEvents)
     ];
     }
 
-    if (isDarkMode)
-    {
-        majorEvents.forEach(function(event) {
-            var rgbaMatch = event.color && event.color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
-            if (rgbaMatch)
-            {
-                var darkOpacity = 1 - parseFloat(rgbaMatch[4]);
-                event.color = 'rgba(' + rgbaMatch[1] + ', ' + rgbaMatch[2] + ', ' + rgbaMatch[3] + ', ' + darkOpacity + ')';
-            }
-
-            // Keep the stronger dark-mode fill behind chart series and other foreground content.
-            event.zIndex = 0;
-
-            if (event.label)
-            {
-                event.label.style = event.label.style || {};
-                event.label.style.color = '#e2e7ff';
-                event.label.style.textOutline = '1px rgba(0, 0, 0, 0.65)';
-            }
-        });
-    }
+    majorEvents.forEach(function(event) {
+        event.majorEventBaseColor = event.color;
+        event.majorEventBaseLabelColor = event.label && event.label.style ? event.label.style.color : '#606060';
+        applyHighstockMajorEventTheme(event);
+    });
 
     return majorEvents;
+}
+
+function applyHighstockMajorEventTheme(event)
+{
+    var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    var baseColor = event.majorEventBaseColor || event.color || 'rgba(128, 128, 128, 0.1)';
+    var rgbaMatch = baseColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+
+    if (isDarkMode && rgbaMatch)
+    {
+        var isBlueBand = parseInt(rgbaMatch[3], 10) > parseInt(rgbaMatch[1], 10);
+        var darkRgb = isBlueBand ? [96, 165, 250] : [248, 113, 113];
+        var darkOpacity = Math.min(0.26, Math.round((parseFloat(rgbaMatch[4]) + 0.08) * 100) / 100);
+        event.color = 'rgba(' + darkRgb[0] + ', ' + darkRgb[1] + ', ' + darkRgb[2] + ', ' + darkOpacity + ')';
+    }
+    else
+    {
+        event.color = baseColor;
+    }
+
+    // Plot bands stay behind chart series in both themes.
+    event.zIndex = 0;
+
+    if (event.label)
+    {
+        event.label.style = event.label.style || {};
+        event.label.style.color = isDarkMode ? '#dce3f4' : event.majorEventBaseLabelColor;
+        event.label.style.textOutline = isDarkMode ? '1px rgba(15, 17, 28, 0.8)' : 'none';
+    }
+
+    return event;
 }

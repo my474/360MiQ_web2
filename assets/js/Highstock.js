@@ -14,6 +14,54 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
         tooltipDiv.style.background = isDarkMode ? 'rgba(24, 26, 38, 0.96)' : 'rgba(255, 255, 255, 0.8)';
         tooltipDiv.style.color = isDarkMode ? '#f2f4ff' : 'black';
         tooltipDiv.style.boxShadow = isDarkMode ? '0 8px 24px rgba(0, 0, 0, 0.55)' : 'none';
+        tooltipDiv.style.borderColor = isDarkMode ? '#64748b' : 'rgba(0, 0, 0, 0.5)';
+    }
+
+    function getMajorEventOpacity(color)
+    {
+        var rgbaMatch = color && color.match(/rgba\(\d+,\s*\d+,\s*\d+,\s*([\d.]+)\)/);
+        return rgbaMatch ? parseFloat(rgbaMatch[1]) : 0.1;
+    }
+
+    function applyMajorEventsTheme(chart)
+    {
+        if (!chart || majorEvents.length === 0 || typeof applyHighstockMajorEventTheme !== 'function')
+            return;
+
+        var eventsById = {};
+        majorEvents.forEach(function(event) {
+            applyHighstockMajorEventTheme(event);
+            eventsById[event.id] = event;
+        });
+
+        chart.xAxis[0].plotLinesAndBands.forEach(function(plotband) {
+            var event = eventsById[plotband.options.id];
+            if (!event || !plotband.svgElem)
+                return;
+
+            var isHidden = plotband.svgElem.attr('fill') === 'transparent';
+            plotband.options.color = event.color;
+            plotband.options.zIndex = event.zIndex;
+            plotband.options.label.style = event.label.style;
+            plotband.originalColor = event.color;
+            plotband.svgElem.originalColor = event.color;
+            plotband.svgElem.originalOpacity = getMajorEventOpacity(event.color);
+            plotband.svgElem.attr({
+                fill: isHidden ? 'transparent' : event.color,
+                zIndex: event.zIndex
+            });
+
+            if (plotband.label)
+            {
+                plotband.label.css(event.label.style);
+                plotband.label.attr({
+                    fill: event.label.style.color,
+                    zIndex: event.zIndex + 1
+                });
+            }
+        });
+
+        styleMajorEventsTooltip();
     }
 
     if (majorEvents.length > 0)
@@ -124,6 +172,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                     this.yAxis[1].update({
                         lineColor: this.series[1].color
                     });
+                    applyMajorEventsTheme(this);
                 },
 
                 render: function() {
@@ -203,7 +252,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                                             var g = rgbaMatch[2];
                                             var b = rgbaMatch[3];
                                             var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-                                            var a = Math.min(1, svgElem.originalOpacity + (isDarkMode ? 0.08 : 0.15));
+                                            var a = Math.min(1, svgElem.originalOpacity + (isDarkMode ? 0.1 : 0.15));
                                             bandColor = `rgba(${r}, ${g}, ${b}, ${a})`;
                                             svgElem.attr({ fill: bandColor });
                                         }
@@ -294,7 +343,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                                                 var r = rgbaMatch[1];
                                                 var g = rgbaMatch[2];
                                                 var b = rgbaMatch[3];
-                                                var a = svgElem.originalOpacity + 0.15;
+                                                var isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                                                var a = Math.min(1, svgElem.originalOpacity + (isDarkMode ? 0.1 : 0.15));
                                                 bandColor = `rgba(${r}, ${g}, ${b}, ${a})`;
                                                 svgElem.attr({ fill: bandColor });
                                             }
@@ -321,6 +371,13 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                         y: this.plotTop + 20 // 20px below plot area top
                     });
 
+                },
+
+                destroy: function() {
+                    if (this.majorEventsThemeHandler)
+                        document.documentElement.removeEventListener('themechange', this.majorEventsThemeHandler);
+                    if (tooltipDiv && tooltipDiv.parentNode)
+                        tooltipDiv.parentNode.removeChild(tooltipDiv);
                 }
             },
             style: {
@@ -851,6 +908,15 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
             //}
         }]
     });
+
+    if (majorEvents.length > 0)
+    {
+        var majorEventsChart = chart;
+        majorEventsChart.majorEventsThemeHandler = function() {
+            applyMajorEventsTheme(majorEventsChart);
+        };
+        document.documentElement.addEventListener('themechange', majorEventsChart.majorEventsThemeHandler);
+    }
 
     if (isNewYaxis)
     {
