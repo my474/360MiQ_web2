@@ -1542,7 +1542,7 @@ function adsBlocked(callback){
                               <li><strong>Lower scores</strong> indicate that fewer tests were passed and may point to weaker fundamentals or deterioration.</li>
                           </ul>
                           <span style="margin-top: 6px;">
-                              The F-Score is most useful as a screening and comparison tool. It does not measure valuation, guarantee future performance or replace analysis of the company's industry, financial statements and longer-term trend.
+                              The F-Score is most useful as a screening and comparison tool. Investors often consider it alongside valuation, industry conditions and longer-term financial trends to form a more complete view of a company.
                           </span>
                       </div>
                   </div>
