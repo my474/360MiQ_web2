@@ -18,15 +18,12 @@
     { 
         define('A',true);
     	//include connection file 
-    	include '/home2/aamiqcom/php_script/mysql_vars_stock.php';
+    	include_once("../../php_script/mysql_vars_stock.php");
     	 
     	// initilize all variable
     	$params = $columns = $totalRecords = $data = array();
     
     	$params = $_REQUEST;
-        $pageStart = isset($params['start']) ? max(0, (int) $params['start']) : 0;
-        $requestedLength = isset($params['length']) ? (int) $params['length'] : 25;
-        $pageLength = $requestedLength === -1 ? 1000 : max(1, min($requestedLength, 1000));
     
     	//define index of column
     	$columns = array( 
@@ -795,14 +792,13 @@
     	}
     
     
-        $sqlRec .=  " ORDER BY ". $columns[$params['order'][0]['column']]."   ".$params['order'][0]['dir']."  LIMIT ".$pageStart." ,".$pageLength." ";
+     	$sqlRec .=  " ORDER BY ". $columns[$params['order'][0]['column']]."   ".$params['order'][0]['dir']."  LIMIT ".$params['start']." ,".$params['length']." ";
     
-//file_put_contents("../../php_script/sql.txt", $sqlRec);
+//file_put_contents("../php_script/sql.txt", $sqlRec);
     
-    	$countSql = "SELECT COUNT(*) FROM (" . $sqlTot . ") filtered_rows";
-    	$queryTot = mysqli_query($connection, $countSql) or die("database error:". mysqli_error($connection));
-    	$countRow = mysqli_fetch_row($queryTot);
-    	$totalRecords = intval($countRow[0]);
+    	$queryTot = mysqli_query($connection, $sqlTot) or die("database error:". mysqli_error($connection));
+    
+    	$totalRecords = mysqli_num_rows($queryTot);
     
     	$queryRecords = mysqli_query($connection, $sqlRec) or die("error to fetch stock data rows");
     
@@ -1036,9 +1032,6 @@ function polar($value, $polarTXT) {
 	$params = $columns = $totalRecords = $data = array();
 
 	$params = $_REQUEST;
-    $pageStart = isset($params['start']) ? max(0, (int) $params['start']) : 0;
-    $requestedLength = isset($params['length']) ? (int) $params['length'] : 25;
-    $pageLength = $requestedLength === -1 ? 1000 : max(1, min($requestedLength, 1000));
 
 	//define index of column
 	$columns = array( 
@@ -1080,7 +1073,7 @@ function polar($value, $polarTXT) {
 	}
 
 
-	$sqlRec .=  " ORDER BY ". $columns[$params['order'][0]['column']]."   ".$params['order'][0]['dir']."  LIMIT ".$pageStart." ,".$pageLength." ";
+ 	$sqlRec .=  " ORDER BY ". $columns[$params['order'][0]['column']]."   ".$params['order'][0]['dir']."  LIMIT ".$params['start']." ,".$params['length']." ";
 
 	$queryTot = mysqli_query($connection, $sqlTot) or die("database error:". mysqli_error($connection));
 
