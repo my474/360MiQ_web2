@@ -1,10 +1,29 @@
+<IfModule mime_module>
+    AddHandler application/x-httpd-ea-php73 .php .php7 .phtml
+</IfModule>
+
 Options -Indexes
+
+Redirect 301 /tools /tool
 
 ErrorDocument 404 /error.php
 ErrorDocument 500 /error.php?err=500
-ErrorDocument 403 /maintenance.html
+ErrorDocument 403 /error.php?err=403
+#ErrorDocument 403 /maintenance.html
 
 RewriteEngine On
+
+# Force HTTPS on the canonical hostname while allowing certificate validation.
+RewriteCond %{SERVER_PORT} !^443$
+RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/[0-9a-zA-Z_-]+$
+RewriteCond %{REQUEST_URI} !^/\.well-known/cpanel-dcv/[0-9a-zA-Z_-]+$
+RewriteCond %{REQUEST_URI} !^/\.well-known/pki-validation/(?:\ Ballot169)?
+RewriteCond %{REQUEST_URI} !^/\.well-known/pki-validation/[A-F0-9]{32}\.txt(?:\ Comodo\ DCV)?$
+RewriteRule ^(.*)$ https://360miq.com%{REQUEST_URI} [R=301,L]
+
+# Redirect the mail subdomain to the main site.
+RewriteCond %{HTTP_HOST} ^mail\.360miq\.com$ [NC]
+RewriteRule ^ https://360miq.com%{REQUEST_URI} [NE,R=301,L]
 
 # Redirect public PHP URLs to their extensionless canonical equivalents.
 RewriteCond %{THE_REQUEST} \s/+index(?:\.php)?(?:[?\s]) [NC]
@@ -12,28 +31,57 @@ RewriteRule ^index(?:\.php)?$ / [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+(.+?)\.php(?:[?\s]) [NC]
 RewriteRule ^(.+)\.php$ /$1 [R=301,L,NE]
 
+# Internally resolve extensionless URLs to their PHP files.
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.php -f
-RewriteRule (.*) $1.php [L]
-
-<Files "*">
-Order allow,deny
-allow from 119.236.118.206
-allow from 2601:2c0:8003:7280:b92e:a901:5202:3d43
-allow from 73.166.117.160
-</Files>
+RewriteRule ^(.+?)/?$ $1.php [L]
 
 <Files "api.php">
-Order allow,deny
-allow from 119.236.118.206
-allow from 2601:2c0:8003:7280:b92e:a901:5202:3d43
-allow from 73.166.117.160
+    Order deny,allow
+    Deny from all
+    Allow from 119.236.118.206
+    Allow from 2601:2c0:8003:7280:b92e:a901:5202:3d43
+    Allow from 73.166.117.160
 </Files>
 
-<Files "maintenance.html">
-    Allow from all
+<Files "youtube.php">
+    Order deny,allow
+    Deny from all
+    Allow from 119.236.118.206
+    Allow from 2601:2c0:8003:7280:b92e:a901:5202:3d43
+    Allow from 73.166.117.160
 </Files>
+
+# BEGIN cPanel-generated php ini directives, do not edit
+# Manual editing of this file may result in unexpected behavior.
+# To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
+# For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
+<IfModule php8_module>
+    php_flag display_errors Off
+    php_value max_execution_time 3000
+    php_value max_input_time 6000
+    php_value max_input_vars 10000
+    php_value memory_limit 2506M
+    php_value post_max_size 2600M
+    php_value session.gc_maxlifetime 14400
+    php_value session.save_path "/var/cpanel/php/sessions/ea-php82"
+    php_value upload_max_filesize 2560M
+    php_flag zlib.output_compression On
+</IfModule>
+<IfModule lsapi_module>
+    php_flag display_errors Off
+    php_value max_execution_time 3000
+    php_value max_input_time 6000
+    php_value max_input_vars 10000
+    php_value memory_limit 2506M
+    php_value post_max_size 2600M
+    php_value session.gc_maxlifetime 14400
+    php_value session.save_path "/var/cpanel/php/sessions/ea-php82"
+    php_value upload_max_filesize 2560M
+    php_flag zlib.output_compression On
+</IfModule>
+# END cPanel-generated php ini directives, do not edit
 
 <IfModule mod_brotli.c>
     AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/javascript
@@ -75,3 +123,10 @@ allow from 73.166.117.160
         Header set Cache-Control "public, max-age=31536000"
     </FilesMatch>
 </IfModule>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php82” package as the default “PHP” programming language.
+<IfModule mime_module>
+    AddHandler application/x-httpd-ea-php82___lsphp .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
