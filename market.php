@@ -402,6 +402,13 @@ var marketCriticalRequests = {
   user-select: none;
   color: #007bff;
 }
+
+[data-theme="dark"] main.page hr {
+  border-color: #72758f !important;
+  background-color: #72758f !important;
+  color: #72758f !important;
+  opacity: 0.9;
+}
 </style>
 
 <?php $page = 'market'; include "./header.php" ?>
