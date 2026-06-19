@@ -1462,7 +1462,7 @@ function adsBlocked(callback){
             </div>
             <script>
             (function () {
-                function toggleValuationNote(control) {
+                function toggleDescriptionNote(control) {
                     var note = control.nextElementSibling;
                     var isCollapsed = note.classList.contains('collapsed');
 
@@ -1472,16 +1472,19 @@ function adsBlocked(callback){
                     control.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
                 }
 
-                document.querySelectorAll('#Valuation .showNote').forEach(function (control) {
-                    control.addEventListener('click', function () {
-                        toggleValuationNote(control);
-                    });
-                    control.addEventListener('keydown', function (event) {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            toggleValuationNote(control);
-                        }
-                    });
+                document.addEventListener('click', function (event) {
+                    var control = event.target.closest('.showNote');
+                    if (control) {
+                        toggleDescriptionNote(control);
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    var control = event.target.closest('.showNote');
+                    if (control && (event.key === 'Enter' || event.key === ' ')) {
+                        event.preventDefault();
+                        toggleDescriptionNote(control);
+                    }
                 });
             }());
             </script>
@@ -1527,6 +1530,22 @@ function adsBlocked(callback){
                         <h6 class="card-title">Efficiency</h6>
                         <div id="Efficiency"></div>
                   </div>
+                  <div class="chartNote">
+                      <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                      <div class="noteWrapper collapsed">
+                          <span>
+                              The Piotroski F-Score is a financial-strength checklist built from nine accounting tests. A company receives one point for each test it passes, producing a total score from 0 to 9 across profitability, liquidity and operating efficiency.
+                          </span>
+                          <ul style="padding-left: 20px; margin: 6px 0;">
+                              <li><strong>Higher scores</strong> indicate that more measures of financial health and recent improvement are positive.</li>
+                              <li><strong>Middle-range scores</strong> show mixed signals and are best reviewed alongside the individual test results.</li>
+                              <li><strong>Lower scores</strong> indicate that fewer tests were passed and may point to weaker fundamentals or deterioration.</li>
+                          </ul>
+                          <span style="margin-top: 6px;">
+                              The F-Score is most useful as a screening and comparison tool. It does not measure valuation, guarantee future performance or replace analysis of the company's industry, financial statements and longer-term trend.
+                          </span>
+                      </div>
+                  </div>
                 
                 <hr style="height:3px;border:3px;border-radius:3px;color:#ddd;background-color:#ddd;" />
                 <div class="row">
@@ -1539,8 +1558,24 @@ function adsBlocked(callback){
                       <div class="FA" style="border:0px;border-radius: 5px;">
                         <span class="card-title" id="ZScoreTitle" align="left"></span>
                         <div id="ZScore"></div>
+                      </div>
                   </div>
-                  </div>
+                </div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            The Altman Z-Score combines profitability, leverage, liquidity, solvency and operating-efficiency ratios into a single estimate of financial distress risk. This page uses the traditional model and groups the result into safe, grey and distress zones.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>Above 2.99</strong> falls in the safe zone and generally indicates lower measured distress risk.</li>
+                            <li><strong>From 1.81 to 2.99</strong> falls in the grey zone, where the result is less conclusive.</li>
+                            <li><strong>Below 1.81</strong> falls in the distress zone and signals that the company's financial condition deserves closer review.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            The Z-Score is a warning indicator, not a bankruptcy prediction. Its usefulness varies by industry and company type, and unusual balance sheets, financial firms or early-stage businesses may require different models and additional analysis.
+                        </span>
+                    </div>
                 </div>
 
                 <hr style="height:3px;border:3px;border-radius:3px;color:#ddd;background-color:#ddd;" />
@@ -1554,8 +1589,24 @@ function adsBlocked(callback){
                       <div class="FA" style="border:0px;border-radius: 5px;">
                         <span class="card-title" id="MScoreTitle" align="left"></span>
                         <div id="MScore"></div>
+                      </div>
                   </div>
-                  </div>
+                </div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            The Beneish M-Score uses eight financial-statement relationships to identify patterns that can be associated with earnings manipulation. It examines changes in areas such as receivables, margins, asset quality, sales growth, depreciation, expenses, leverage and accruals.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>Scores above -2.22</strong> indicate a higher likelihood that the reported figures contain manipulation-like patterns.</li>
+                            <li><strong>Scores below -2.22</strong> indicate a lower likelihood based on the model.</li>
+                            <li><strong>Changes over time</strong> can be as informative as a single reading because they may reveal a developing accounting trend.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            The M-Score is a screening signal rather than proof of misconduct. Legitimate business changes can trigger unusual readings, while manipulation may still go undetected. Review the underlying financial statements, auditor comments and company circumstances before drawing conclusions.
+                        </span>
+                    </div>
                 </div>
                 <!--<div>
                     <div class="not-selectable col-sm-6 col-lg-4 TAgauge" id="gaugecontainer2" style="float:left; min-height: 250px; "></div>
