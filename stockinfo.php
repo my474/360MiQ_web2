@@ -1313,6 +1313,61 @@ function adsBlocked(callback){
   border-color: black transparent;
   border-width: 5px 5px 0;
 }
+
+.chartNote {
+    text-align: left;
+    padding-top: 8px;
+    padding-right: 15px;
+    padding-left: 15px;
+    font-size: 15px;
+    color: #333;
+}
+
+.noteWrapper {
+    overflow: hidden;
+    position: relative;
+    max-height: 43px;
+    transition: max-height 0.5s ease;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 26px;
+}
+
+.noteWrapper.collapsed::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 18px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+}
+
+.noteWrapper.expanded {
+    max-height: 500px;
+}
+
+.noteWrapper.expanded::after {
+    display: none;
+}
+
+.showNote {
+    font-size: 14px;
+    font-weight: 550;
+    cursor: pointer;
+    margin: 6px 0 12px 0;
+    user-select: none;
+    color: #007bff;
+}
+
+[data-theme="dark"] .chartNote {
+    color: #ddd;
+}
+
+[data-theme="dark"] .noteWrapper.collapsed::after {
+    background: linear-gradient(to bottom, rgba(30,30,50,0), rgba(30,30,50,1));
+}
 </style>
 
         
@@ -1336,6 +1391,22 @@ function adsBlocked(callback){
                                 <div id="chartcontainerA1" class="not-selectable" style="height: 512px;"></div>
                             </div>
                             <div id="PEComment" style="text-align:left;padding-right: 15px"></div>
+                            <div class="chartNote">
+                                <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                                <div class="noteWrapper collapsed">
+                                    <span>
+                                        PE Band is a set of valuation ranges derived from historical Price-to-Earnings (P/E) ratios, typically showing upper and lower boundaries around a median or average P/E level. It provides a visual framework for assessing whether the current stock valuation is relatively high, low, or within normal limits.
+                                    </span>
+                                    <ul style="padding-left: 20px; margin: 6px 0;">
+                                        <li><strong>Upper band</strong> often represents overvalued territory where the stock may be priced for high future growth, increasing the risk of correction.</li>
+                                        <li><strong>Lower band</strong> suggests undervaluation or bargain levels, potentially offering an attractive entry point for long-term investors.</li>
+                                        <li><strong>Middle band</strong> reflects a normal or fair-value range based on historical data.</li>
+                                    </ul>
+                                    <span style="margin-top: 6px;">
+                                        Investors use PE Band to contextualize the current valuation relative to the stock's history, helping to set expectations for returns and risk. A price near the upper band might warrant caution, while a price near the lower band can indicate a potential buying opportunity.
+                                    </span>
+                                </div>
+                            </div>
                             
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script-->
 </div>
@@ -1355,6 +1426,22 @@ function adsBlocked(callback){
                                 <div id="chartcontainerC1" class="not-selectable" style="height: 512px;"></div>
                             </div>
                             <div id="PBComment" style="text-align:left;padding-right: 15px"></div>
+                            <div class="chartNote">
+                                <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                                <div class="noteWrapper collapsed">
+                                    <span>
+                                        PB Band is a set of valuation ranges derived from historical Price-to-Book (P/B) ratios, typically showing upper and lower boundaries around a median or average P/B level. It provides a visual framework for assessing whether the current stock price is relatively high, low, or within its normal range compared with the company's book value.
+                                    </span>
+                                    <ul style="padding-left: 20px; margin: 6px 0;">
+                                        <li><strong>Upper band</strong> often represents expensive territory where investors are paying a high premium over the company's historical book-value multiple.</li>
+                                        <li><strong>Lower band</strong> suggests that the stock is trading at a lower multiple of book value, which may indicate undervaluation if the company's assets and financial condition remain sound.</li>
+                                        <li><strong>Middle band</strong> reflects a normal or fair-value range based on the stock's historical P/B ratios.</li>
+                                    </ul>
+                                    <span style="margin-top: 6px;">
+                                        Investors use PB Band to compare the current price-to-book valuation with the stock's own history. A price near the upper band may warrant caution, while a price near the lower band can indicate a potential value opportunity. PB Band is generally most useful for asset-heavy companies and financial institutions, and less informative for businesses whose value depends heavily on intangible assets.
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <div class="tab-pane" role="tabpanel" id="tab-4">
                             <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
@@ -1373,6 +1460,31 @@ function adsBlocked(callback){
                     </div>
                 </div>
             </div>
+            <script>
+            (function () {
+                function toggleValuationNote(control) {
+                    var note = control.nextElementSibling;
+                    var isCollapsed = note.classList.contains('collapsed');
+
+                    note.classList.toggle('collapsed', !isCollapsed);
+                    note.classList.toggle('expanded', isCollapsed);
+                    control.textContent = isCollapsed ? 'Show less' : 'Show more';
+                    control.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+                }
+
+                document.querySelectorAll('#Valuation .showNote').forEach(function (control) {
+                    control.addEventListener('click', function () {
+                        toggleValuationNote(control);
+                    });
+                    control.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            toggleValuationNote(control);
+                        }
+                    });
+                });
+            }());
+            </script>
         </div>
         
         <p></p>
