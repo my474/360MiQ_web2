@@ -284,6 +284,9 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <!--script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script-->
     <!--script defer data-cfasync="false" src="assets/js/bot-detector.js"-->
     <script>
+      const RECAPTCHA_MAX_RETRIES = 2;
+      const RECAPTCHA_RETRY_DELAY_MS = 750;
+
       function reportRecaptchaMissing() {
         fetch('/recap.php', {
           method: 'POST',
@@ -292,22 +295,71 @@ function trendgauge2txt($stockcode, $trendvalue) {
             'X-Recaptcha-Failure': 'true'
           },
           body: JSON.stringify({ token: null, action: 'recaptcha_missing' })
+        }).catch(function() {
+          // The reporting endpoint may be unavailable for the same reason as reCAPTCHA.
         });
       }
 
-      function runRecaptchaPageview() {
+      function hasRecaptchaBrowserError(payload) {
+        if (!payload || typeof payload !== 'object') {
+          return false;
+        }
+
+        const errorCodes = payload['error-codes'] || payload.errorCodes || [];
+        const invalidReason = payload.invalidReason ||
+          (payload.tokenProperties && payload.tokenProperties.invalidReason);
+
+        return (Array.isArray(errorCodes) && errorCodes.some(function(code) {
+          return String(code).toLowerCase() === 'browser-error';
+        })) || String(invalidReason || '').toUpperCase() === 'BROWSER_ERROR';
+      }
+
+      function runRecaptchaPageview(attempt) {
+        attempt = attempt || 0;
+
         if (typeof grecaptcha === 'undefined') {
-          reportRecaptchaMissing();
+          if (attempt < RECAPTCHA_MAX_RETRIES) {
+            setTimeout(function() {
+              runRecaptchaPageview(attempt + 1);
+            }, RECAPTCHA_RETRY_DELAY_MS * (attempt + 1));
+          } else {
+            reportRecaptchaMissing();
+          }
           return;
         }
 
         grecaptcha.ready(function() {
           grecaptcha.execute('6LfVMmIrAAAAAMM1qvj7delYBZmU0CwbMklOaB9b', {action: 'pageview'}).then(function(token) {
-            fetch('/recap.php', {
+            return fetch('/recap.php', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ token: token, action: 'pageview' })
+            }).then(function(response) {
+              return response.text().then(function(body) {
+                let payload = null;
+
+                if (body) {
+                  try {
+                    payload = JSON.parse(body);
+                  } catch (error) {
+                    // Keep compatibility with an endpoint that returns no JSON body.
+                  }
+                }
+
+                if (!response.ok || hasRecaptchaBrowserError(payload)) {
+                  throw new Error('Retryable reCAPTCHA failure');
+                }
+              });
             });
+          }).catch(function() {
+            if (attempt < RECAPTCHA_MAX_RETRIES) {
+              setTimeout(function() {
+                // A retry must call execute() again to obtain a fresh token.
+                runRecaptchaPageview(attempt + 1);
+              }, RECAPTCHA_RETRY_DELAY_MS * (attempt + 1));
+            } else {
+              reportRecaptchaMissing();
+            }
           });
         });
       }
