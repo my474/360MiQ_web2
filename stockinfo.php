@@ -1083,6 +1083,22 @@ function adsBlocked(callback){
                 <div>
                     <div id="chartcontainerMirrorScan" class="not-selectable"></div>
                 </div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            MirrorScan helps find stocks that match the same selected characteristics as <strong class="mirrorscan-stockcode"></strong>. It converts <strong class="mirrorscan-stockcode"></strong>'s latest readings into screening criteria that you can review and adjust before searching.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>Select the criteria</strong> you want to mirror, such as price position, moving averages, RSI, trend direction or fundamental strength.</li>
+                            <li><strong>Clear criteria</strong> that are not important to your search to broaden the range of possible matches.</li>
+                            <li><strong>Run the search</strong> to discover stocks whose latest readings satisfy the selected conditions.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            The results are similarity matches based on the chosen signals, so they can include companies from different industries or with different business profiles.
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1096,6 +1112,22 @@ function adsBlocked(callback){
                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                 <div>
                     <div id="chartcontainerHKSB" class="not-selectable" style="height: 768px;"></div>
+                </div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            Stock Connect Southbound CCASS data shows shares held through the southbound trading channel for a Hong Kong-listed stock. The chart places the stock price alongside the reported Southbound shareholding and its percentage of all issued shares.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>Southbound shareholding</strong> is the number of shares recorded in CCASS through Stock Connect participants.</li>
+                            <li><strong>% of all issued shares</strong> puts that holding in context by comparing it with the company's total issued share capital.</li>
+                            <li><strong>A rising trend</strong> indicates net accumulation through the southbound channel, while a falling trend indicates that these holdings are being reduced.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            Comparing shareholding changes with the stock price can help reveal whether southbound participation is strengthening, weakening or moving differently from the market price.
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1125,6 +1157,22 @@ function adsBlocked(callback){
                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                 <div>
                     <div id="chartcontainerSankey" class="not-selectable" style="height: 512px;"></div>
+                </div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            The Income Statement Sankey chart turns the income statement into a flow diagram, showing how revenue moves through costs and expenses before arriving at operating income and net income. Wider flows represent larger amounts, making the company's earnings structure easier to see at a glance.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>Revenue</strong> is divided between cost of revenue and gross profit.</li>
+                            <li><strong>Gross profit</strong> then flows through operating expenses, including items such as selling, administrative, marketing and research costs when reported.</li>
+                            <li><strong>Operating and other income</strong>, interest, taxes and minority interests help bridge the remaining path to net income.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            Following the flow from left to right can highlight which costs absorb the largest share of revenue and whether the business retains a wide or narrow portion of sales as profit.
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1253,8 +1301,8 @@ function adsBlocked(callback){
               Deviation percentage shows where the stock price stands relative to a selected moving average and its highest closing price over a selected number of trading days. The controls above the chart let you change both lookback periods to examine shorter- or longer-term price behavior.
           </span>
           <ul style="padding-left: 20px; margin: 6px 0;">
-              <li><strong>% from MA</strong> is calculated as the closing price divided by the selected moving average, minus one. A positive value means the price is above the moving average; a negative value means it is below.</li>
-              <li><strong>% from X-day High</strong> measures the distance below the highest closing price in the selected period. A value near 0% means the stock is close to that high, while a more negative value indicates a deeper pullback.</li>
+              <li><strong>% from MA</strong> is calculated as how far (%) the closing price is away from the selected moving average. A positive value means the price is above the moving average; a negative value means it is below.</li>
+              <li><strong>% from X-day High</strong> measures the distance below the highest closing price in the selected X days. A value near 0% means the stock is close to that high, while a more negative value indicates a deeper pullback.</li>
               <li><strong>Rising readings</strong> generally show improving price strength, while falling readings show that the stock is losing ground relative to its trend or recent high.</li>
           </ul>
           <span style="margin-top: 6px;">
@@ -1796,6 +1844,11 @@ window.__STOCKINFO_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
+<script>
+document.querySelectorAll('.mirrorscan-stockcode').forEach(function (element) {
+    element.textContent = stockcode;
+});
+</script>
 
 <?php include "./footer.php" ?>
 
