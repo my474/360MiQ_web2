@@ -1105,6 +1105,22 @@ function adsBlocked(callback){
                                     </div>
                                     <h3 class="sr-only"><?php echo $indexname." "; ?>Index Yearly Trend</h3>
                                     <div id="chartcontainerYearlyTrend" class="not-selectable" style="height: 525px;"></div>
+                                    <div class="chartNote">
+                                        <div class="showNote">Show more</div>
+                                        <div class="noteWrapper collapsed">
+                                            <span>
+                                                The Yearly Trend chart aligns recent calendar years on the same January-to-December timeline, making it easier to compare how the index moved during each year. In Performance % mode, every yearly line begins near 0%, so differences in index level do not obscure the shape and strength of each year's performance.
+                                            </span>
+                                            <ul style="padding-left: 20px; margin: 6px 0;">
+                                                <li><strong>A rising line</strong> shows that the index has gained from the beginning of that year, while a falling line shows a loss.</li>
+                                                <li><strong>Similar paths across several years</strong> may reveal recurring periods of strength, weakness or consolidation.</li>
+                                                <li><strong>Large gaps between yearly lines</strong> show that performance differed substantially during the same part of the calendar year.</li>
+                                            </ul>
+                                            <span style="margin-top: 6px;">
+                                                Use the Value/Percent switch above the chart to alternate between actual historical index levels and percentage performance from the start of each displayed year.
+                                            </span>
+                                        </div>
+                                    </div>
                                     <hr>
                                     <div style="margin: 30px;">
                                         <div>
@@ -1116,10 +1132,42 @@ function adsBlocked(callback){
                                     </div>
                                     <h3 class="sr-only"><?php echo $indexname." "; ?>Index Average Monthly Return %</h3>
                                     <div id="chartcontainerSeasonality" class="not-selectable" style="height: 600px;"></div>
+                                    <div class="chartNote">
+                                        <div class="showNote">Show more</div>
+                                        <div class="noteWrapper collapsed">
+                                            <span>
+                                                The Average Monthly Return % chart summarizes the index's historical return for each calendar month. Each monthly average is calculated from the returns recorded for that month during the selected years, helping show when the index has tended to be stronger or weaker.
+                                            </span>
+                                            <ul style="padding-left: 20px; margin: 6px 0;">
+                                                <li><strong>Positive bars</strong> indicate months with a positive average historical return; negative bars indicate months with a negative average.</li>
+                                                <li><strong>Winning %</strong> shows how often the month produced a positive return within the selected period.</li>
+                                                <li><strong>Compare return and winning rate</strong> to distinguish frequently positive months from months whose average was driven by a smaller number of unusually large moves.</li>
+                                            </ul>
+                                            <span style="margin-top: 6px;">
+                                                To examine a different period, drag the left and right handles of the year-range slider above the chart. The left handle selects the starting year and the right handle selects the ending year. As the range changes, the chart recalculates the average monthly returns and winning percentages using only the years inside that range. A wider range gives a longer historical view, while a narrower range can highlight more recent seasonal behavior.
+                                            </span>
+                                        </div>
+                                    </div>
                                     <hr>
                                     <h3 class="sr-only"><?php echo $indexname." "; ?>Index Monthly Return % Table</h3>
                                     <h6 class="card-title" id="monthlytabletitle">Monthly Return %</h6>
                                     <table id="monthlytable" class="display" width="99%" style="margin:0 auto;padding: 0px 15px 15px 15px"></table>
+                                    <div class="chartNote">
+                                        <div class="showNote">Show more</div>
+                                        <div class="noteWrapper collapsed">
+                                            <span>
+                                                The Monthly Return % table provides the year-by-year detail behind the seasonality analysis. Each row represents a calendar year, while the monthly columns show the percentage change for January through December.
+                                            </span>
+                                            <ul style="padding-left: 20px; margin: 6px 0;">
+                                                <li><strong>Green cells</strong> show positive monthly returns, red cells show negative returns, and stronger shades represent larger moves.</li>
+                                                <li><strong>The YTD column</strong> shows the return for the full year, or the available year-to-date period when the year is not yet complete.</li>
+                                                <li><strong>The Avg row</strong> summarizes the average return for each month across the available history.</li>
+                                            </ul>
+                                            <span style="margin-top: 6px;">
+                                                Read down a month to compare how it performed across different years, or read across a row to follow the sequence of gains and losses within one year.
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
