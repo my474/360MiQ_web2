@@ -1144,6 +1144,22 @@ function adsBlocked(callback){
                     <div id="chartcontainerTSF" class="not-selectable" style="height: 512px;"></div>
                 </div>
                 <div id="TSFComment" style="text-align:left;padding-right: 15px"></div>
+                <div class="chartNote">
+                    <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                    <div class="noteWrapper collapsed">
+                        <span>
+                            The 10-Day Trend Forecast extends the recent closing-price trend forward by ten trading days using a time-series forecasting calculation. The vertical divider separates historical prices on the left from the projected path on the right.
+                        </span>
+                        <ul style="padding-left: 20px; margin: 6px 0;">
+                            <li><strong>An upward forecast line</strong> indicates that the recent price trend points toward higher estimated prices.</li>
+                            <li><strong>A downward forecast line</strong> indicates that the recent trend points toward lower estimated prices.</li>
+                            <li><strong>A flatter line</strong> suggests limited directional movement in the trend captured by the model.</li>
+                        </ul>
+                        <span style="margin-top: 6px;">
+                            Use the range buttons to view the forecast beside different lengths of price history. Comparing the projected direction with the preceding trend can help show whether momentum is continuing, slowing or changing direction.
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1189,6 +1205,22 @@ function adsBlocked(callback){
             </div>
             <div class="col-sm-6 col-lg-4 TAcomment" id="TAcomment" style="float:right; min-height: 250px; text-align:left; "></div>
     <div style="clear:both"></div>
+    <div class="chartNote">
+        <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+        <div class="noteWrapper collapsed">
+            <span>
+                The Technical section summarizes the stock's price trend and momentum across daily and weekly timeframes. The Trend Gauge combines these signals into a cycle that moves through Up, Strong Up, Overbought, Correction, Down, Strong Down, Oversold and Rebound.
+            </span>
+            <ul style="padding-left: 20px; margin: 6px 0;">
+                <li><strong>The outer needle</strong> shows the stock's current Trend Gauge reading.</li>
+                <li><strong>The inner blue needle</strong>, when available, shows the median reading for the stock's industry.</li>
+                <li><strong>The written analysis</strong> highlights recent signals from price, moving averages, RSI, MACD and other trend measures used on the page.</li>
+            </ul>
+            <span style="margin-top: 6px;">
+                Moving clockwise around the gauge does not always mean that conditions are improving or worsening in a straight line. The gauge represents a market cycle: an advancing trend can become overbought and enter correction, while a declining trend can become oversold and begin rebounding.
+            </span>
+        </div>
+    </div>
     
     <!--<div class="not-selectable col-sm-6 col-lg-4 TAgauge" style="float:left; font-size:8px; text-align:left; padding:0px 0px 5px 10px">Trend Gauge shows the daily trend with weekly factors considered</div>-->
     <hr style="height:3px;border:3px;border-radius:3px;color:#ddd;background-color:#ddd;" />
