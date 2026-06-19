@@ -512,6 +512,13 @@
   background: linear-gradient(to bottom, rgba(26, 26, 46, 0), rgba(26, 26, 46, 1)) !important;
 }
 
+[data-theme="dark"] main.page hr {
+  border-color: #72758f !important;
+  background-color: #72758f !important;
+  color: #72758f !important;
+  opacity: 0.9;
+}
+
 /* ============================
    GREEN / RED / BLACK TEXT — brighter in dark mode
    ============================ */
