@@ -26,10 +26,12 @@ RewriteCond %{HTTP_HOST} ^mail\.360miq\.com$ [NC]
 RewriteRule ^ https://360miq.com%{REQUEST_URI} [NE,R=301,L]
 
 # Redirect public PHP URLs to their extensionless canonical equivalents.
+RewriteCond %{REQUEST_METHOD} =GET
 RewriteCond %{THE_REQUEST} \s/+index(?:\.php)?(?:[?\s]) [NC]
 RewriteRule ^index(?:\.php)?$ / [R=301,L]
-RewriteCond %{THE_REQUEST} \s/+(.+?)\.php(?:[?\s]) [NC]
-RewriteRule ^(.+)\.php$ /$1 [R=301,L,NE]
+RewriteCond %{REQUEST_METHOD} =GET
+RewriteCond %{THE_REQUEST} \s/+[^\s?]+\.php(?:[?\s]) [NC]
+RewriteRule ^(about-us|contact-us|contact-us2|disclaimer|econ|error|market|privacypolicy|raceChart|screener|stockinfo|terms|tool|writeforus)\.php$ /$1 [R=301,L,NE]
 
 # Internally resolve extensionless URLs to their PHP files.
 RewriteCond %{REQUEST_FILENAME} !-d
