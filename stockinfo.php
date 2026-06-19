@@ -1696,6 +1696,22 @@ function adsBlocked(callback){
                             <h3 class="sr-only"><?php echo "$stockcode"." "; ?>Yearly Trend</h3>
                             <div id="chartcontainerYearlyTrend" class="not-selectable" style="height: 525px;"></div>
                         </div>
+                        <div class="chartNote">
+                            <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                            <div class="noteWrapper collapsed">
+                                <span>
+                                    The Yearly Trend chart aligns recent calendar years on the same January-to-December timeline, making it easier to compare how the stock moved during each year. In Performance % mode, every yearly line begins near 0%, so differences in price level do not obscure the shape and strength of each year's performance.
+                                </span>
+                                <ul style="padding-left: 20px; margin: 6px 0;">
+                                    <li><strong>A rising line</strong> shows that the stock has gained from the beginning of that year, while a falling line shows a loss.</li>
+                                    <li><strong>Similar paths across several years</strong> may reveal recurring periods of strength, weakness or consolidation.</li>
+                                    <li><strong>Large gaps between yearly lines</strong> show that performance differed substantially during the same part of the calendar year.</li>
+                                </ul>
+                                <span style="margin-top: 6px;">
+                                    Use the Value/Percent switch above the chart to alternate between actual historical prices and percentage performance from the start of each displayed year.
+                                </span>
+                            </div>
+                        </div>
                         <div style="padding: 0px 15px 0px;margin: 15px 0 15px 0;">
                             <hr style="height:3px;border:3px;border-radius:3px;color:#ddd;background-color:#ddd;" />
                         </div>
@@ -1709,6 +1725,22 @@ function adsBlocked(callback){
                         </div>
                         <h3 class="sr-only"><?php echo "$stockcode"." "; ?>Average Monthly Return %</h3>
                         <div id="chartcontainerSeasonality" class="not-selectable" style="height: 600px;"></div>
+                        <div class="chartNote">
+                            <div class="showNote" role="button" tabindex="0" aria-expanded="false">Show more</div>
+                            <div class="noteWrapper collapsed">
+                                <span>
+                                    The Average Monthly Return % chart summarizes the stock's historical return for each calendar month. Each monthly average is calculated from the returns recorded for that month during the selected years, helping show when the stock has tended to be stronger or weaker.
+                                </span>
+                                <ul style="padding-left: 20px; margin: 6px 0;">
+                                    <li><strong>Positive bars</strong> indicate months with a positive average historical return; negative bars indicate months with a negative average.</li>
+                                    <li><strong>Winning %</strong> shows how often the month produced a positive return within the selected period.</li>
+                                    <li><strong>Compare return and winning rate</strong> to distinguish frequently positive months from months whose average was driven by a smaller number of unusually large moves.</li>
+                                </ul>
+                                <span style="margin-top: 6px;">
+                                    To examine a different period, drag the left and right handles of the year-range slider above the chart. The left handle selects the starting year and the right handle selects the ending year. As the range changes, the chart recalculates the average monthly returns and winning percentages using only the years inside that range. A wider range gives a longer historical view, while a narrower range can highlight more recent seasonal behavior.
+                                </span>
+                            </div>
+                        </div>
                         <div style="padding: 0px 15px 0px;margin: 15px 0 15px 0;">
                             <hr style="height:3px;border:3px;border-radius:3px;color:#ddd;background-color:#ddd;" />
                             <h3 class="sr-only"><?php echo "$stockcode"." "; ?>Monthly Return % Table</h3>
