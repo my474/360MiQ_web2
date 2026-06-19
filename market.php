@@ -1879,7 +1879,7 @@ function adsBlocked(callback){
 <script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/TA.js"></script>
-<script src="assets/js/Highstock.js"></script>
+<script src="assets/js/Highstock.js?v=20260619.1"></script>
 <script src="assets/js/stockCompare.js"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <script src="assets/js/seasonality.js"></script>
@@ -1911,6 +1911,9 @@ var marketAnychartLibrariesLoaded = false;
 var marketAnychartLibrariesReady = null;
 var marketDataTableLibrariesLoaded = false;
 var marketDataTableLibrariesReady = null;
+var marketMajorEventsEnabled = <?php echo $benchmark === "SPY" ? 'true' : 'false'; ?>;
+var marketMajorEventsLoaded = false;
+var marketMajorEventsReady = null;
 
 function ensureMarketAnychartLibraries()
 {
@@ -1971,12 +1974,30 @@ function ensureMarketDataTableLibraries()
     return marketDataTableLibrariesReady;
 }
 
+function ensureMarketMajorEvents()
+{
+    if (!marketMajorEventsEnabled)
+        return Promise.resolve();
+
+    if (marketMajorEventsReady)
+        return marketMajorEventsReady;
+
+    marketMajorEventsReady = loadMarketScript('assets/js/MajorEvents.js?v=20260619.1')
+        .then(function() {
+            marketMajorEventsLoaded = true;
+        });
+
+    return marketMajorEventsReady;
+}
+
 function areMarketTabLibrariesLoaded(tab)
 {
     if (["3", "12", "13", "14"].indexOf(tab) !== -1)
         return marketAnychartLibrariesLoaded;
     if (tab === "5")
         return marketDataTableLibrariesLoaded;
+    if (["9", "11"].indexOf(tab) !== -1)
+        return !marketMajorEventsEnabled || marketMajorEventsLoaded;
     return true;
 }
 
@@ -1986,6 +2007,8 @@ function ensureMarketTabLibraries(tab)
         return ensureMarketAnychartLibraries();
     if (tab === "5")
         return ensureMarketDataTableLibraries();
+    if (["9", "11"].indexOf(tab) !== -1)
+        return ensureMarketMajorEvents();
     return Promise.resolve();
 }
 </script>
@@ -2008,7 +2031,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260619.2"></script>
+<script src="assets/js/pages/market-main.js?v=20260619.3"></script>
 
 <?php include "./footer.php" ?>
 
