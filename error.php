@@ -27,8 +27,6 @@
 <head>
     <?php include "./meta.php" ?>
     <meta property="og:title" content="<?php echo $title." - 360MiQ.com"; ?>" />
-    <meta property="og:url" content="https://360miq.com/error" />
-    <meta property="og:image" content="assets/img/360Logo_512.png" />
     <meta name="description" content="360MiQ.com Error page" />
     <meta property="og:description" content="360MiQ.com Error page" />
     

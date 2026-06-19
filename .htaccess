@@ -5,6 +5,13 @@ ErrorDocument 500 /error.php?err=500
 ErrorDocument 403 /maintenance.html
 
 RewriteEngine On
+
+# Redirect public PHP URLs to their extensionless canonical equivalents.
+RewriteCond %{THE_REQUEST} \s/+index(?:\.php)?(?:[?\s]) [NC]
+RewriteRule ^index(?:\.php)?$ / [R=301,L]
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php(?:[?\s]) [NC]
+RewriteRule ^(.+)\.php$ /$1 [R=301,L,NE]
+
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.php -f
@@ -58,6 +65,9 @@ allow from 73.166.117.160
 </IfModule>
 
 <IfModule mod_headers.c>
+    <FilesMatch "^(?:db_|LLM_).+\.php$|^(?:stock_json|youtube_get)\.php$">
+        Header set X-Robots-Tag "noindex, nofollow, nosnippet"
+    </FilesMatch>
     <FilesMatch "\.(?:css|js)$">
         Header set Cache-Control "public, max-age=2592000"
     </FilesMatch>

@@ -4,8 +4,6 @@
 <head>
     <?php include "./meta.php" ?>
     <meta property="og:title" content="Stock Screener - 360MiQ.com" />
-    <meta property="og:url" content="https://360miq.com/screener" />
-    <meta property="og:image" content="assets/img/360Logo_512.png" />
     <meta name="description" content="360MiQ.com Stock Screener. The screener can help you to screen your favorite stocks using both technical and fundamental criteria." />
     <meta property="og:description" content="360MiQ.com Stock Screener. The screener can help you to screen your favorite stocks using both technical and fundamental criteria." />
 

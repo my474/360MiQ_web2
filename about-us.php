@@ -4,8 +4,6 @@
 <head>
     <?php include "./meta.php" ?>
     <meta property="og:title" content="About Us - 360MiQ.com" />
-    <meta property="og:url" content="https://360miq.com/about-us" />
-    <meta property="og:image" content="assets/img/360Logo_512.png" />
     <meta name="description" content="360MiQ.com offers free global stock market insights & analytics in a simple and straightforward way for every investor." />
     <meta property="og:description" content="360MiQ.com offers free global stock market insights & analytics in a simple and straightforward way for every investor." />
     

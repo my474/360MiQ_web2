@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /autocomplete/
+Disallow: /fb/
+Disallow: /blog/wp-admin/
+Allow: /blog/wp-admin/admin-ajax.php
+Disallow: /db_
+Disallow: /LLM_
+Disallow: /stock_json
+Disallow: /youtube_get
+
+Sitemap: https://360miq.com/sitemap.xml
+Sitemap: https://360miq.com/blog/wp-sitemap.xml

@@ -26,10 +26,8 @@
 <head>
     <?php include "./meta.php" ?>
     <meta property="og:title" content="<?php echo $exchangeName . " Econ Indicators - 360MiQ.com"; ?>" />
-    <meta property="og:url" content="https://360miq.com/econ" />
-    <meta property="og:image" content="assets/img/360Logo_512.png" />
-    <meta name="description" content="360MiQ.com Econ Indicators: Labor, Growth, Inflation, Interest Rate, Consumer & Business, Gov Finance, Trade, Housing." />
-    <meta property="og:description" content="360MiQ.com Econ Indicators: Labor, Growth, Inflation, Interest Rate, Consumer & Business, Gov Finance, Trade, Housing." />
+    <meta name="description" content="Track <?php echo $exchangeName; ?> economic indicators for labor, growth, inflation, interest rates, trade, government finance and housing." />
+    <meta property="og:description" content="Track <?php echo $exchangeName; ?> economic indicators for labor, growth, inflation, interest rates, trade, government finance and housing." />
 
     <title><?php echo $exchangeName . " Econ Indicators - 360MiQ.com"; ?></title>
     <link rel="manifest" href="manifest.json">

@@ -258,8 +258,6 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <meta property="twitter:description" content="<?php echo $desc; ?>" />
     
     <?php include "./meta.php" ?>
-    <meta property="og:url" content="https://360miq.com/stockinfo" />
-    <meta property="og:image" content="assets/img/360Logo_512.png" />
 
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="16x15" href="assets/img/360Logo_16.png">

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://360miq.com/</loc></url>
+  <url><loc>https://360miq.com/market?data=NYSE</loc></url>
+  <url><loc>https://360miq.com/market?data=NASDAQ</loc></url>
+  <url><loc>https://360miq.com/market?data=LSE</loc></url>
+  <url><loc>https://360miq.com/market?data=TSX</loc></url>
+  <url><loc>https://360miq.com/market?data=ASX</loc></url>
+  <url><loc>https://360miq.com/market?data=NSE</loc></url>
+  <url><loc>https://360miq.com/market?data=TYO</loc></url>
+  <url><loc>https://360miq.com/market?data=HKEX</loc></url>
+  <url><loc>https://360miq.com/market?data=SHSE</loc></url>
+  <url><loc>https://360miq.com/market?data=SZSE</loc></url>
+  <url><loc>https://360miq.com/econ?country=US</loc></url>
+  <url><loc>https://360miq.com/econ?country=HK</loc></url>
+  <url><loc>https://360miq.com/stockinfo</loc></url>
+  <url><loc>https://360miq.com/screener</loc></url>
+  <url><loc>https://360miq.com/tool</loc></url>
+  <url><loc>https://360miq.com/about-us</loc></url>
+</urlset>

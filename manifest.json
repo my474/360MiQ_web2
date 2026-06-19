@@ -1,0 +1,51 @@
+{
+  "name": "360MiQ",
+  "short_name": "360MiQ",
+  "description": "Free global stock market insights and analytics for investors.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#ffc107",
+  "categories": [
+    "finance"
+  ],
+  "icons": [
+    {
+      "src": "/assets/img/360Logo_192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/img/360Logo_512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Home",
+      "short_name": "Home",
+      "url": "/"
+    },
+    {
+      "name": "Market",
+      "short_name": "Market",
+      "url": "/market"
+    },
+    {
+      "name": "Stock Info",
+      "short_name": "Stock",
+      "url": "/stockinfo"
+    },
+    {
+      "name": "Stock Screener",
+      "short_name": "Screener",
+      "url": "/screener"
+    }
+  ],
+  "prefer_related_applications": false
+}

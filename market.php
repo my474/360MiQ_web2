@@ -122,10 +122,8 @@
 <head>
     <?php include "./meta.php" ?>
     <meta property="og:title" content="<?php echo $exchangeName . " Market Indicators - 360MiQ.com"; ?>" />
-    <meta property="og:url" content="https://360miq.com/market" />
-    <meta property="og:image" content="assets/img/360Logo_512.png" />
-    <meta name="description" content="360MiQ.com Market Indicators: Market Breadth, Short Selling Ratio, Sector Performance, Market Heatmap, PE Band, Advance Decline Ratio." />
-    <meta property="og:description" content="360MiQ.com Market Indicators: Market Breadth, Short Selling Ratio, Sector Performance, Market Heatmap, PE Band, Advance Decline Ratio." />
+    <meta name="description" content="<?php echo $exchangeName; ?> market indicators including breadth, sector performance, heatmaps, valuation bands and advance-decline data." />
+    <meta property="og:description" content="<?php echo $exchangeName; ?> market indicators including breadth, sector performance, heatmaps, valuation bands and advance-decline data." />
 
     <title><?php echo $exchangeName . " Market Indicators - 360MiQ.com"; ?></title>
     <link rel="manifest" href="manifest.json">
