@@ -115,6 +115,39 @@
         header("Location: /error");
         exit();
     }
+
+    function scatterChartNoteMarkup($type)
+    {
+        $descriptions = [
+            "performance" => "The Stock Performance vs Relative Volume scatter plot compares each stock's return for the selected period with its trading activity relative to a recent volume average. Each bubble represents a stock, and larger bubbles represent companies with a larger market capitalization. Stocks farther to the right are trading at higher relative volume, while their vertical position shows the size and direction of the return. Use the chart to find unusually active gainers, laggards and market clusters.",
+            "highlow" => "This scatter plot shows where each stock sits within its 250-day trading range. The horizontal axis measures how far the price is above its 250-day low, while the vertical axis measures how far it is below its 250-day high. Each bubble represents a stock, with larger bubbles indicating larger market capitalization. Comparing both axes helps distinguish stocks trading near their highs, near their lows or between the two extremes.",
+            "ma" => "This scatter plot compares each stock's percentage deviation from its 50-day moving average with its deviation from the longer-term 200-day or 250-day moving average used for that market. Positive values mean the price is above an average and negative values mean it is below. Each bubble represents a stock, with size reflecting market capitalization. The quadrants make it easier to spot stocks with aligned short- and long-term momentum or mixed trends.",
+            "rsi" => "This scatter plot compares daily RSI on the horizontal axis with weekly RSI on the vertical axis. Each bubble represents a stock, and larger bubbles indicate larger market capitalization. Readings above 50 suggest stronger momentum for the relevant timeframe, while readings below 50 suggest weaker momentum. The upper-right and lower-left areas highlight stocks whose daily and weekly momentum are moving in the same direction."
+        ];
+
+        if (!isset($descriptions[$type])) {
+            return "";
+        }
+
+        return '<div class="chartNote scatterChartNote"><div class="showNote">Show more</div><div class="noteWrapper collapsed">'
+            . $descriptions[$type]
+            . '</div></div>';
+    }
+
+    ob_start(function ($html) {
+        return preg_replace_callback(
+            '/(<div id="(bubblecontainer|tabubblecontainer)([A-C])[1-4]" style="width:auto;height:700px;"><\/div>)/',
+            function ($matches) {
+                $type = "performance";
+                if ($matches[2] === "tabubblecontainer") {
+                    $type = ["A" => "highlow", "B" => "ma", "C" => "rsi"][$matches[3]];
+                }
+
+                return $matches[1] . scatterChartNoteMarkup($type);
+            },
+            $html
+        );
+    });
 ?>
 <!DOCTYPE html>
 <html style="opacity: 1;">
