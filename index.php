@@ -1916,7 +1916,7 @@ function adsBlocked(callback){
 <script src="assets/js/TA.js"></script>
 <script src="assets/js/AdvDecPie.js"></script>
 <script src="assets/js/sectorPerformance.js"></script>
-<script src="assets/js/stockCompare.js?v=20260623.1"></script>
+<script src="assets/js/stockCompare.js?v=20260623.2"></script>
 <!--script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>

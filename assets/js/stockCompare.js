@@ -1,5 +1,21 @@
 function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1, unitType, rangeSelected, creditY, from_Home_Market_StockInfo, clickable, isInputEnabled = false, datafull = null, creditURL = false)
 {
+    var highchartsSeriesNameMap = {
+        'S&P 500': 'SPX',
+        'Nasdaq Composite': 'Nas Composite',
+        'Dow Industrial': 'DJI',
+        'Dow Transportation': 'DJT',
+        'FTSE 100': 'UK 100',
+        'TSX Composite': 'Toronto Composite',
+        'ASX 200': 'Australia 200',
+        'Nifty 50': 'India 50',
+        'Nikkei 225': 'Japan 225',
+        'Hang Seng': 'Hong Kong'
+    };
+    var getHighchartsSeriesName = function (name) {
+        return highchartsSeriesNameMap[name] || name;
+    };
+
     var colors = [
         '#7cb5ec',
         '#434348',
@@ -81,6 +97,7 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
         for (j = 0; j < types.length - 1; j++)
         {
             codeNameDict[types[j]] = types[j];
+            codeNameDict[getHighchartsSeriesName(types[j])] = getHighchartsSeriesName(types[j]);
         }
     }
     
@@ -604,7 +621,7 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
             color: colors[0],
             shadow: from_Home_Market_StockInfo == 2,
             type: 'line',
-            name: types[0],
+            name: getHighchartsSeriesName(types[0]),
             data: data[types[0]],
             yAxis: 0,
             //dataGrouping: {
@@ -621,7 +638,7 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
             
     		chart.addSeries({
     		    type: seriesType,
-    			name: types[i],
+                name: getHighchartsSeriesName(types[i]),
     			data: data[types[i]],
     			color: colorSeries,
     			negativeColor: colorSeries,
