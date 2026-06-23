@@ -2166,27 +2166,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260623.6"></script>
-<script>
-(function () {
-    var expectedTitle = window.__MARKET_PAGE_CONFIG.indexname + " Index Monthly Return %";
-
-    function enforceMonthlyTableTitle() {
-        var title = document.getElementById("monthlytabletitle");
-        if (title && title.textContent !== expectedTitle)
-            title.textContent = expectedTitle;
-    }
-
-    enforceMonthlyTableTitle();
-
-    var observer = new MutationObserver(enforceMonthlyTableTitle);
-    observer.observe(document.documentElement, {
-        childList: true,
-        characterData: true,
-        subtree: true
-    });
-})();
-</script>
+<script src="assets/js/pages/market-main.js?v=20260623.7"></script>
 
 <?php include "./footer.php" ?>
 
