@@ -1,5 +1,31 @@
 function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1, ymin, ymax, unitType, rangeSelected, seriesType, seriesOpacity, creditY, plotlevel, YaxisType = 'linear', oneYaxis = false, updowncolor = false, dataGrouping_approximation = 'close', monthlyFund = Infinity, showPriceTooltipLegend = true, plotMajorEvents = false, rangeSelector = [{type: 'month', count: 6, text: '6m'}, {type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:2, text:'2y'}, {type: 'year', count: 3, text: '3y'}, {type: 'year', count: 8, text: '8y'}, {type: 'all', text: 'All'}])
 {
+    var isNyseValuationChart = chartcontainer == 'chartcontainerD2' || chartcontainer == 'chartcontainerD3';
+    var marketIndexNameMap = {
+        'S&P 500': 'SPX',
+        'Nasdaq Composite': 'Nas Composite',
+        'Dow Industrial': 'DJI',
+        'Dow Transportation': 'DJT',
+        'FTSE 100': 'UK 100',
+        'TSX Composite': 'Toronto Composite',
+        'ASX 200': 'Australia 200',
+        'Nifty 50': 'India 50',
+        'Nikkei 225': 'Japan 225',
+        'Hang Seng': 'Hong Kong'
+    };
+    var marketIndexDisplayName = function (text) {
+        if (isNyseValuationChart || typeof text !== 'string' || text.indexOf('S&P 500 ETF') !== -1)
+            return text;
+
+        Object.keys(marketIndexNameMap).forEach(function (oldName) {
+            text = text.replace(oldName, marketIndexNameMap[oldName]);
+        });
+        return text;
+    };
+    title = marketIndexDisplayName(title);
+    yaxis0 = marketIndexDisplayName(yaxis0);
+    yaxis1 = marketIndexDisplayName(yaxis1);
+
     if (plotlevel !== null)
         plotlevel = plotlevel.toString();
 
@@ -900,7 +926,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
             lineWidth:3,
             shadow: true,
             type: 'line',
-            name: name(types[0]),
+            name: marketIndexDisplayName(name(types[0])),
             data: data[types[0]],
             yAxis: 0,
             //dataGrouping: {
@@ -956,7 +982,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
 
     		var s = chart.addSeries({
     		    type: seriesType,
-    			name: name(types[i].replace('_stacked', '').replace('_column', '').replace('_plotBands', '').replace('_newY', '')),
+                name: marketIndexDisplayName(name(types[i].replace('_stacked', '').replace('_column', '').replace('_plotBands', '').replace('_newY', ''))),
     			data: types[i].includes('_plotBands') ? null : data[types[i]],
     			color: types[i].includes('_plotBands') ? plotbandsColor : types[i] == 'Hindenburg' ? hindenburgColor : updowncolor? {  linearGradient: { x1: 0,  x2: 0,  y1: 0,  y2: 1 },  stops: [  [0, '#BDE000'],	[0.7, '#BDD000'],	[1, '#BDC400']  ] } : colorSeries,
     			negativeColor: types[i] == 'Hindenburg' ? hindenburgColor : updowncolor? {  linearGradient: {  x1: 0,  x2: 0,  y1: 1,  y2: 0   },   stops: [ [0, '#F30'],	[0.7, '#e00'],	[1, '#d40']  ] } : colorSeries,
