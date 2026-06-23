@@ -275,19 +275,19 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
                             else if (from_Home_Market_StockInfo === 0)
                             {
                                 var exchange = 'NYSE';
-                                if (this.name == 'Nasdaq Composite')
+                                if (this.name == 'Nas Composite')
                                     exchange = 'NASDAQ';
-                                else if (this.name == 'FTSE 100')
+                                else if (this.name == 'UK 100')
                                     exchange = 'LSE';
-                                else if (this.name == 'TSX Composite')
+                                else if (this.name == 'Toronto Composite')
                                     exchange = 'TSX';
-                                else if (this.name == 'ASX 200')
+                                else if (this.name == 'Australia 200')
                                     exchange = 'ASX';
-                                else if (this.name == 'Nifty 50')
+                                else if (this.name == 'India 50')
                                     exchange = 'NSE';
-                                else if (this.name == 'Nikkei 225')
+                                else if (this.name == 'Japan 225')
                                     exchange = 'TYO';
-                                else if (this.name == 'Hang Seng')
+                                else if (this.name == 'Hong Kong')
                                     exchange = 'HKEX';
                                 else if (this.name == 'Shanghai Composite')
                                     exchange = 'SHSE';
