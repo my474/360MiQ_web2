@@ -632,9 +632,11 @@ a:hover.sectorperformance {
 [data-theme="dark"] .masonry-item {
   background: var(--bg-card);
 }
-[data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label text {
+[data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label text,
+[data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label text tspan {
   fill: #fff !important;
   color: #fff !important;
+  font-weight: 700 !important;
 }
 [data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label .highcharts-text-outline {
   fill: #2a2a3e !important;
