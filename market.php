@@ -2167,6 +2167,26 @@ window.__MARKET_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/market-main.js?v=20260623.6"></script>
+<script>
+(function () {
+    var expectedTitle = window.__MARKET_PAGE_CONFIG.indexname + " Index Monthly Return %";
+
+    function enforceMonthlyTableTitle() {
+        var title = document.getElementById("monthlytabletitle");
+        if (title && title.textContent !== expectedTitle)
+            title.textContent = expectedTitle;
+    }
+
+    enforceMonthlyTableTitle();
+
+    var observer = new MutationObserver(enforceMonthlyTableTitle);
+    observer.observe(document.documentElement, {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
+})();
+</script>
 
 <?php include "./footer.php" ?>
 
