@@ -214,6 +214,14 @@
         [data-theme="dark"] .masonry-item {
             background: var(--bg-card);
         }
+        [data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label text {
+            fill: #fff !important;
+            color: #fff !important;
+        }
+        [data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label .highcharts-text-outline {
+            fill: #2a2a3e !important;
+            stroke: #2a2a3e !important;
+        }
         @media (max-width: 768px) {
             .masonry-grid {
                 column-count: 1;

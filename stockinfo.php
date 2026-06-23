@@ -632,6 +632,14 @@ a:hover.sectorperformance {
 [data-theme="dark"] .masonry-item {
   background: var(--bg-card);
 }
+[data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label text {
+  fill: #fff !important;
+  color: #fff !important;
+}
+[data-theme="dark"] [id^="chartcontainerSeasonality"] .highcharts-data-label .highcharts-text-outline {
+  fill: #2a2a3e !important;
+  stroke: #2a2a3e !important;
+}
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <!--<script src="assets/js/ValuationBands.js"></script>-->
