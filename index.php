@@ -514,7 +514,7 @@ function adsBlocked(callback){
         <h2>World Equity Indices</h2>
     </div>
     <div>
-        <h3 class="sr-only">World Equity Indices: S&P 500, Nasdaq Composite, Dow Industrial, Dow Transportation, FTSE 100, TSX Composite, ASX 200, Nifty 50, Nikkei 225, Hang Seng, Shanghai Composite, Bitcoin</h3>
+        <h3 class="sr-only">World Equity Indices: SPX, Nas Composite, DJI, DJT, UK 100, Toronto Composite, Australia 200, India 50, Japan 225, Hong Kong, Shanghai Composite, Bitcoin</h3>
         <div id="weicontainer" style="height: 600px; min-width: 100%; margin: 5px auto 0"></div>
     </div>
 </div>
