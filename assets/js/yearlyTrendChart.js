@@ -1,4 +1,28 @@
 function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwidth, isTooltip, yAxis_name, stockname_en_tc, isPercentMode = false) {
+    var indexNameMap = {
+        'S&P 500': 'SPX',
+        'Nasdaq Composite': 'Nas Composite',
+        'Dow Industrial': 'DJI',
+        'Dow Transportation': 'DJT',
+        'FTSE 100': 'UK 100',
+        'TSX Composite': 'Toronto Composite',
+        'ASX 200': 'Australia 200',
+        'Nifty 50': 'India 50',
+        'Nikkei 225': 'Japan 225',
+        'Hang Seng': 'Hong Kong'
+    };
+    var displayIndexName = function (text) {
+        if (typeof text !== 'string' || text.indexOf('S&P 500 ETF') !== -1)
+            return text;
+
+        Object.keys(indexNameMap).forEach(function (oldName) {
+            text = text.replace(oldName, indexNameMap[oldName]);
+        });
+        return text;
+    };
+    stockcode = displayIndexName(stockcode);
+    yAxis_name = displayIndexName(yAxis_name);
+
     // Prepare data: Convert to percentages if isPercentMode is true
     let processedData = {};
     if (isPercentMode) {

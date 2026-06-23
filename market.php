@@ -1973,8 +1973,48 @@ function adsBlocked(callback){
 <script src="assets/js/TA.js"></script>
 <script src="assets/js/Highstock.js?v=20260623.4"></script>
 <script src="assets/js/stockCompare.js?v=20260623.2"></script>
-<script src="assets/js/yearlyTrendChart.js"></script>
-<script src="assets/js/seasonality.js"></script>
+<script src="assets/js/yearlyTrendChart.js?v=20260623.5"></script>
+<script src="assets/js/seasonality.js?v=20260623.5"></script>
+<script>
+(function () {
+    var originalSeasonalityChart = window.seasonalityChart;
+    if (typeof originalSeasonalityChart !== "function")
+        return;
+
+    var indexNameMap = {
+        "S&P 500": "SPX",
+        "Nasdaq Composite": "Nas Composite",
+        "Dow Industrial": "DJI",
+        "Dow Transportation": "DJT",
+        "FTSE 100": "UK 100",
+        "TSX Composite": "Toronto Composite",
+        "ASX 200": "Australia 200",
+        "Nifty 50": "India 50",
+        "Nikkei 225": "Japan 225",
+        "Hang Seng": "Hong Kong"
+    };
+
+    function displayIndexName(text) {
+        if (typeof text !== "string" || text.indexOf("S&P 500 ETF") !== -1)
+            return text;
+
+        Object.keys(indexNameMap).forEach(function (oldName) {
+            text = text.replace(oldName, indexNameMap[oldName]);
+        });
+        return text;
+    }
+
+    window.seasonalityChart = function (stockcode, pricedata, firstDailyClose, chartcontainer, subtitle) {
+        return originalSeasonalityChart(
+            displayIndexName(stockcode),
+            pricedata,
+            firstDailyClose,
+            chartcontainer,
+            displayIndexName(subtitle)
+        );
+    };
+})();
+</script>
 <script src="assets/js/sectorPerformance.js"></script>
 <script src="assets/js/highcharts-theme.js"></script>
 
