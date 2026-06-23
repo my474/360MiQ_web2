@@ -18,7 +18,7 @@
         $valuationIdx = "HSI";
         $ad = "P";
         $short_Margin = "HKEXShortSelling";
-        $indexname = "Hang Seng";
+        $indexname = "Hong Kong";
     }
     else if ($data == "SZSE")
     {
@@ -53,7 +53,7 @@
         $ad = "Q";
         $short_Margin = "NYSEMarginDebt";
         $country = "US";
-        $indexname = "S&P 500";
+        $indexname = "SPX";
     }
     else if ($data == "NASDAQ")
     {
@@ -63,34 +63,34 @@
         $valuationIdx = "NDX";
         $ad = "R";
         $short_Margin = "NASDAQMarginDebt";
-        $indexname = "Nasdaq Composite";
+        $indexname = "Nas Composite";
     }
     else if ($data == "LSE")
     {
         $exchangeName = "London";
         $benchmark = "ISF.L";
-        $benchmarkname = "FTSE 100 ETF (ISF.L)";  
+        $benchmarkname = "UK 100 ETF (ISF.L)";
         $valuationIdx = "FTSE100";
         $ad = "U";
-        $indexname = "FTSE 100";
+        $indexname = "UK 100";
     }
     else if ($data == "ASX")
     {
         $exchangeName = "Australia";
         $benchmark = "STW.AX";
-        $benchmarkname = "SP/ASX 200 Fund (STW.AX)";   
+        $benchmarkname = "Australia 200 Fund (STW.AX)";
         $valuationIdx = "AS";
         $ad = "V";
-        $indexname = "ASX 200";
+        $indexname = "Australia 200";
     }
     else if ($data == "TSX")
     {
         $exchangeName = "Toronto TSX";
         $benchmark = "XIC.TO";
-        $benchmarkname = "SP/TSX Composite Index ETF (XIC.TO)";  
+        $benchmarkname = "Toronto Composite Index ETF (XIC.TO)";
         $valuationIdx = "SPTSX";
         $ad = "W";
-        $indexname = "TSX Composite";
+        $indexname = "Toronto Composite";
     }
     else if ($data == "NSE")
     {
@@ -108,7 +108,7 @@
         $benchmarkname = "Nomura Topix Listed (1306.T)";
         $valuationIdx = "TPX";
         $ad = "Z";
-        $indexname = "Nikkei 225";
+        $indexname = "Japan 225";
     }
     else
     {
@@ -1972,7 +1972,7 @@ function adsBlocked(callback){
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/TA.js"></script>
 <script src="assets/js/Highstock.js?v=20260619.3"></script>
-<script src="assets/js/stockCompare.js"></script>
+<script src="assets/js/stockCompare.js?v=20260623.2"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <script src="assets/js/seasonality.js"></script>
 <script src="assets/js/sectorPerformance.js"></script>
@@ -2126,7 +2126,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260619.4"></script>
+<script src="assets/js/pages/market-main.js?v=20260623.1"></script>
 
 <?php include "./footer.php" ?>
 
