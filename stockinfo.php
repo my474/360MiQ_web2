@@ -1939,6 +1939,7 @@ window.__STOCKINFO_PAGE_CONFIG = {
     "stockinfo": <?php echo json_encode($line, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
+<script src="assets/js/ValuationBands.js"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
 <script>
 document.querySelectorAll('.mirrorscan-stockcode').forEach(function (element) {
@@ -1954,7 +1955,6 @@ document.querySelectorAll('.mirrorscan-stockcode').forEach(function (element) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
     <script src="assets/js/smoothproducts.min.js"></script>
     <script src="assets/js/theme.js"></script>-->
-    <script src="assets/js/ValuationBands.js"></script>
     <script src="assets/js/jquery-ui1.12.1.min.js"></script>
 </body>
 
