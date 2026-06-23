@@ -9,7 +9,7 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
         'ASX 200': 'Australia 200',
         'Nifty 50': 'India 50',
         'Nikkei 225': 'Japan 225',
-        'Hang Seng': 'Hong Kong'
+        'Hang Seng': 'HSI'
     };
     var displayIndexName = function (text) {
         if (typeof text !== 'string' || text.indexOf('S&P 500 ETF') !== -1)

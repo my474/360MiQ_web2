@@ -18,7 +18,7 @@
         $valuationIdx = "HSI";
         $ad = "P";
         $short_Margin = "HKEXShortSelling";
-        $indexname = "Hong Kong";
+        $indexname = "HSI";
     }
     else if ($data == "SZSE")
     {
@@ -1501,12 +1501,12 @@ function adsBlocked(callback){
                                     <div class="showNote">Show more</div>
                                     <div class="noteWrapper collapsed" id="I1Note">
                                       <span>
-                                        The <span id="hklength"></span>year stock index chart, dating back to the establishment of British colonial Hong Kong in 1841, is a long-term visualization that merges early HK equity market data (such as HSBC) and UK stock data with the Hong Kong Stock Index to represent centuries of equity market evolution.<!-- It is annotated with major HK and China historical events — including wars, financial crises, and the handover of Hong Kong — to show how markets responded over time.-->
+                                        The <span id="hklength"></span>year stock index chart, dating back to the establishment of British colonial Hong Kong in 1841, is a long-term visualization that merges early HK equity market data (such as HSBC) and UK stock data with HSI to represent centuries of equity market evolution.<!-- It is annotated with major HK and China historical events — including wars, financial crises, and the handover of Hong Kong — to show how markets responded over time.-->
                                       </span>
                                       <ul style="padding-left: 20px; margin: 6px 0;">
                                         <li><strong>Early data (1841–1868)</strong> reflects UK market performance during the early colonial era, serving as a proxy before Hong Kong developed formal exchanges.</li>
                                         <li><strong>Hong Kong data (1868–1964)</strong> is based on locally available equities, with HSBC and other early listings forming the backbone of market representation.</li>
-                                        <li><strong>Modern data (1964–present)</strong> is represented by the Hong Kong Stock Index, capturing the city’s transformation into an international financial hub, through global shocks, the Asian financial crisis, the tech boom, and the 2008 financial crisis.</li>
+                                        <li><strong>Modern data (1964–present)</strong> is represented by HSI, capturing the city’s transformation into an international financial hub, through global shocks, the Asian financial crisis, the tech boom, and the 2008 financial crisis.</li>
                                         <!--li><strong>Historical markers</strong> include events such as the Opium Wars, the Taiping Rebellion, World War II and the Japanese occupation, the establishment of the People’s Republic of China, the 1997 handover of Hong Kong, the 2008 global financial crisis, and the COVID-19 pandemic.</li-->
                                       </ul>
                                       <!--span style="margin-top: 6px;">
@@ -1971,9 +1971,9 @@ function adsBlocked(callback){
 <script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/TA.js"></script>
-<script src="assets/js/Highstock.js?v=20260623.4"></script>
-<script src="assets/js/stockCompare.js?v=20260623.2"></script>
-<script src="assets/js/yearlyTrendChart.js?v=20260623.5"></script>
+<script src="assets/js/Highstock.js?v=20260623.10"></script>
+<script src="assets/js/stockCompare.js?v=20260623.10"></script>
+<script src="assets/js/yearlyTrendChart.js?v=20260623.10"></script>
 <script src="assets/js/seasonality.js?v=20260623.5"></script>
 <script>
 (function () {
@@ -2166,7 +2166,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260623.9"></script>
+<script src="assets/js/pages/market-main.js?v=20260623.10"></script>
 
 <?php include "./footer.php" ?>
 

@@ -10,7 +10,7 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
         'ASX 200': 'Australia 200',
         'Nifty 50': 'India 50',
         'Nikkei 225': 'Japan 225',
-        'Hang Seng': 'Hong Kong'
+        'Hang Seng': 'HSI'
     };
     var getHighchartsSeriesName = function (name) {
         return highchartsSeriesNameMap[name] || name;
@@ -304,7 +304,7 @@ function stockCompare(chartcontainer, data, types, title, subtitle, yaxis0, yaxi
                                     exchange = 'NSE';
                                 else if (this.name == 'Japan 225')
                                     exchange = 'TYO';
-                                else if (this.name == 'Hong Kong')
+                                else if (this.name == 'HSI')
                                     exchange = 'HKEX';
                                 else if (this.name == 'Shanghai Composite')
                                     exchange = 'SHSE';

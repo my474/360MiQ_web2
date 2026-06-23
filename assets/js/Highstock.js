@@ -11,7 +11,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
         'ASX 200': 'Australia 200',
         'Nifty 50': 'India 50',
         'Nikkei 225': 'Japan 225',
-        'Hang Seng': 'Hong Kong'
+        'Hang Seng': 'HSI'
     };
     var marketIndexDisplayName = function (text) {
         if (isNyseValuationChart || typeof text !== 'string' || text.indexOf('S&P 500 ETF') !== -1)
