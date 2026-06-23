@@ -1441,7 +1441,7 @@ function adsBlocked(callback){
                             <div class="tab-pane" role="tabpanel" id="tab-9">
                                 <h2 style="text-align:center; margin:15px 0;"><?php if ($data == "NYSE") echo "US Stock Index Since 1700"; ?></h2>
                                 <div>
-                                    <h3 class="sr-only">Dow Jones Industrial Index Monthly Since 1700 with UK Stock Data & Major Historical Events</h3>
+                                    <h3 class="sr-only">DJI Monthly Since 1700 with UK Stock Data & Major Historical Events</h3>
                                     <div id="chartcontainerI1" class="not-selectable" style="height: 525px;"></div>
                                 </div>
                                 <div id="monthlyReturnComment1700" style="text-align:left;padding-right: 15px"></div>
@@ -1449,12 +1449,12 @@ function adsBlocked(callback){
                                     <div class="showNote">Show more</div>
                                     <div class="noteWrapper collapsed" id="I1Note">
                                       <span>
-                                        The <span id="uslength"></span>year stock index chart is a long-term visualization that merges early UK equity market data (such as the South Sea Company) with the Dow Jones Industrial Average (DJIA) to represent centuries of equity market evolution. It is annotated with major U.S. historical events — including wars, financial crises, and territorial expansion — to show how markets responded over time.
+                                        The <span id="uslength"></span>year stock index chart is a long-term visualization that merges early UK equity market data (such as the South Sea Company) with DJI to represent centuries of equity market evolution. It is annotated with major U.S. historical events — including wars, financial crises, and territorial expansion — to show how markets responded over time.
                                       </span>
                                       <ul style="padding-left: 20px; margin: 6px 0;">
                                         <li><strong>Early data (1700s–1800s)</strong> reflects British market performance during the colonial era, used as a proxy before U.S. financial markets were fully developed.</li>
-                                        <li><strong>Transitional data (1885–1896)</strong> is based on the first Dow Jones stock averages, primarily railroad and transportation companies, providing the earliest benchmark of U.S. market performance before the formal DJIA.</li>
-                                        <li><strong>U.S. data (post-1896)</strong> is represented by the Dow Jones Industrial Average, capturing industrialization, world wars, the Great Depression, the tech boom, and the modern era.</li>
+                                        <li><strong>Transitional data (1885–1896)</strong> is based on the first Dow Jones stock averages, primarily railroad and transportation companies, providing the earliest benchmark of U.S. market performance before the formal DJI.</li>
+                                        <li><strong>U.S. data (post-1896)</strong> is represented by DJI, capturing industrialization, world wars, the Great Depression, the tech boom, and the modern era.</li>
                                         <li><strong>Historical markers</strong> include events like the Louisiana Purchase, the Civil War, the 1929 crash, Bretton Woods Agreement, oil embargo, the 2008 financial crisis, and the COVID-19 pandemic.</li>
                                       </ul>
                                       <span style="margin-top: 6px;">
@@ -1465,7 +1465,7 @@ function adsBlocked(callback){
                                 <hr>
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
-                                    <h3 class="sr-only">Dow Jones Industrial Index Yearly Since 1700 with UK Stock Data & Major Historical Events</h3>
+                                    <h3 class="sr-only">DJI Yearly Since 1700 with UK Stock Data & Major Historical Events</h3>
                                     <div id="chartcontainerI2" class="not-selectable" style="height: 525px;"></div>
                                 </div>
                                 <div id="yearlyReturnComment1700" style="text-align:left;padding-right: 15px"></div>
@@ -1480,10 +1480,10 @@ function adsBlocked(callback){
                                             />
                                         </div>
                                     </div>
-                                    <h3 class="sr-only">Dow Jones Industrial Index Average Monthly Return %</h3>
+                                    <h3 class="sr-only">DJI Average Monthly Return %</h3>
                                     <div id="chartcontainerSeasonality1700" class="not-selectable" style="height: 600px;"></div>
                                     <hr>
-                                    <h3 class="sr-only">Dow Jones Industrial Index Monthly Return % Table</h3>
+                                    <h3 class="sr-only">DJI Monthly Return % Table</h3>
                                     <h6 class="card-title" id="monthlytabletitle1700">Monthly Return %</h6>
                                     <p>Merging with pre-February 1885 UK data</p>
                                     <table id="monthlytable1700" class="display" width="99%" style="margin:0 auto;padding: 0px 15px 15px 15px"></table>
@@ -1501,12 +1501,12 @@ function adsBlocked(callback){
                                     <div class="showNote">Show more</div>
                                     <div class="noteWrapper collapsed" id="I1Note">
                                       <span>
-                                        The <span id="hklength"></span>year stock index chart, dating back to the establishment of British colonial Hong Kong in 1841, is a long-term visualization that merges early HK equity market data (such as HSBC) and UK stock data with the Hang Seng Index (HSI) to represent centuries of equity market evolution.<!-- It is annotated with major HK and China historical events — including wars, financial crises, and the handover of Hong Kong — to show how markets responded over time.-->
+                                        The <span id="hklength"></span>year stock index chart, dating back to the establishment of British colonial Hong Kong in 1841, is a long-term visualization that merges early HK equity market data (such as HSBC) and UK stock data with the Hong Kong Stock Index to represent centuries of equity market evolution.<!-- It is annotated with major HK and China historical events — including wars, financial crises, and the handover of Hong Kong — to show how markets responded over time.-->
                                       </span>
                                       <ul style="padding-left: 20px; margin: 6px 0;">
                                         <li><strong>Early data (1841–1868)</strong> reflects UK market performance during the early colonial era, serving as a proxy before Hong Kong developed formal exchanges.</li>
                                         <li><strong>Hong Kong data (1868–1964)</strong> is based on locally available equities, with HSBC and other early listings forming the backbone of market representation.</li>
-                                        <li><strong>Modern data (1964–present)</strong> is represented by the Hang Seng Index (HSI), capturing the city’s transformation into an international financial hub, through global shocks, the Asian financial crisis, the tech boom, and the 2008 financial crisis.</li>
+                                        <li><strong>Modern data (1964–present)</strong> is represented by the Hong Kong Stock Index, capturing the city’s transformation into an international financial hub, through global shocks, the Asian financial crisis, the tech boom, and the 2008 financial crisis.</li>
                                         <!--li><strong>Historical markers</strong> include events such as the Opium Wars, the Taiping Rebellion, World War II and the Japanese occupation, the establishment of the People’s Republic of China, the 1997 handover of Hong Kong, the 2008 global financial crisis, and the COVID-19 pandemic.</li-->
                                       </ul>
                                       <!--span style="margin-top: 6px;">
@@ -2166,7 +2166,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260623.7"></script>
+<script src="assets/js/pages/market-main.js?v=20260623.8"></script>
 
 <?php include "./footer.php" ?>
 
