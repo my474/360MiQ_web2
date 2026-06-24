@@ -240,14 +240,13 @@ function applyHighchartsTheme(isDark) {
         if (shouldSkipHighchartsThemeUpdate(ch)) {
           continue;
         }
-        themeHighchartsAxisAccents(ch);
         try { ch.update(opts, true, false); } catch(e) {}
         themeNeutralSeriesColors(ch, isDark);
-        themeHighchartsAxisAccents(ch);
         themeHighchartsGridLines(ch, isDark);
         themeHighchartsChartText(ch, isDark);
         themeHighchartsLegendText(ch, isDark);
 		themeHighchartsPlotLines(ch, isDark);
+        themeHighchartsAxisAccents(ch);
       }
     }
     /* Patch navigator and scrollbar in-place */
@@ -654,7 +653,7 @@ function themeHighchartsAxisAccents(ch) {
     if (labelColor) {
       patchAxisLabelColor(axis, labelColor);
     }
-    if (lineColor) {
+    if (lineColor && !matchSentimentSeries) {
       patchAxisLineColor(axis, lineColor);
     }
   }
@@ -722,13 +721,43 @@ function getSingleAxisSeriesAccent(axis) {
 
   for (var i = 0; i < axis.series.length; i++) {
     var series = axis.series[i];
-    var seriesColor = series && (series.color || (series.options && series.options.color));
+    var seriesColor = getRenderedSeriesAccent(series);
     if (!isThemeAccentColor(seriesColor)) continue;
     if (color && color.toLowerCase() !== String(seriesColor).toLowerCase()) return null;
     color = seriesColor;
   }
 
   return color;
+}
+
+function getRenderedSeriesAccent(series) {
+  if (!series) return null;
+  var candidates = [];
+  var graphElement = series.graph && series.graph.element;
+
+  try {
+    if (graphElement && typeof window !== 'undefined' && window.getComputedStyle) {
+      candidates.push(window.getComputedStyle(graphElement).stroke);
+    }
+  } catch(e) {}
+
+  if (graphElement) {
+    if (graphElement.style && graphElement.style.stroke) {
+      candidates.push(graphElement.style.stroke);
+    }
+    if (graphElement.getAttribute) {
+      candidates.push(graphElement.getAttribute('stroke'));
+    }
+  }
+
+  candidates.push(series.color);
+  candidates.push(series.options && series.options.color);
+
+  for (var i = 0; i < candidates.length; i++) {
+    if (isThemeAccentColor(candidates[i])) return candidates[i];
+  }
+
+  return null;
 }
 
 function isThemeAccentColor(value) {
@@ -1022,7 +1051,6 @@ function bindHighchartsLegendTheme() {
   Highcharts._legendThemeBound360 = true;
   Highcharts.addEvent(Highcharts.Chart, 'render', function() {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    themeHighchartsAxisAccents(this);
     themeHighchartsGridLines(this, isDark);
     themeHighchartsChartText(this, isDark);
     themeHighchartsLegendText(this, isDark);
@@ -1032,6 +1060,7 @@ function bindHighchartsLegendTheme() {
        color, and don't stay on the palette's auto-assigned color (e.g. purple
        for index [1] in the dark palette instead of the intended white). */
     themeNeutralSeriesColors(this, isDark);
+    themeHighchartsAxisAccents(this);
   });
 }
 
