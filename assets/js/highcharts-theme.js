@@ -850,7 +850,15 @@ function patchAxisTitleColor(axis, color) {
       axis.axisTitle.attr({ fill: color });
     }
     var el = axis.axisTitle && axis.axisTitle.element;
-    if (el) patchSvgTextColor(el, color);
+    if (el) {
+      patchSvgTextColor(el, color);
+      if (el.querySelectorAll) {
+        var titleParts = el.querySelectorAll('text,tspan');
+        for (var i = 0; i < titleParts.length; i++) {
+          patchSvgTextColor(titleParts[i], color);
+        }
+      }
+    }
     ensureAxisStyleColor(axis, 'title', color);
   } catch(e) {}
 }
@@ -1144,6 +1152,26 @@ function bindHighchartsLegendTheme() {
   });
 }
 
+function bindLeftYAxisTitleTheme() {
+  if (typeof Highcharts === 'undefined' || !Highcharts.addEvent || !Highcharts.Axis ||
+      Highcharts._leftYAxisTitleThemeBound360) return;
+
+  Highcharts._leftYAxisTitleThemeBound360 = true;
+  Highcharts.addEvent(Highcharts.Axis, 'afterRender', function() {
+    if (!document.body || !document.body.classList ||
+        !document.body.classList.contains('match-left-y-axis-to-labels') ||
+        this.coll !== 'yAxis' || !isLeftYAxis(this) ||
+        isHighchartsNavigatorAxis(this, 'yAxis', this.chart)) return;
+
+    var themeColor = document.documentElement.getAttribute('data-theme') === 'dark'
+      ? '#ffffff'
+      : '#000000';
+
+    patchAxisTitleColor(this, themeColor);
+    addSvgClass(this.axisTitle && this.axisTitle.element, 'theme-left-y-axis-title');
+  });
+}
+
 /* Patch navigator & scrollbar SVG in-place. chart.update() with navigator
    options destroys the navigator (and its scrollbar) on StockChart sub-charts. */
 function themeNavScrollbar(ch, isDark) {
@@ -1317,6 +1345,7 @@ function getHighchartsThemeOptions() {
 
 (function boot() {
   bindHighchartsLegendTheme();
+  bindLeftYAxisTitleTheme();
   bindSentimentAxisThemeToggle();
   if (document.documentElement.getAttribute('data-theme') === 'dark') {
     applyHighchartsTheme(true);

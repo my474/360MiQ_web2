@@ -64,6 +64,8 @@
   user-select: none;
 }
 body.match-left-y-axis-to-labels .theme-left-y-axis-title,
+body.match-left-y-axis-to-labels .theme-left-y-axis-title text,
+body.match-left-y-axis-to-labels .theme-left-y-axis-title tspan,
 body.match-left-y-axis-to-labels .theme-left-y-axis-labels text,
 body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan,
 body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-title,
@@ -79,6 +81,8 @@ body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome .highcharts-tick 
   stroke: #000000 !important;
 }
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-title,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-title text,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-title tspan,
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels text,
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan,
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-title,
@@ -1008,7 +1012,7 @@ function adsBlocked(callback){
 <script src="assets/js/Highstock.js?v=20260624.2"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <script src="assets/js/seasonality.js"></script>
-<script src="assets/js/highcharts-theme.js?v=20260624.9"></script>
+<script src="assets/js/highcharts-theme.js?v=20260624.10"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
