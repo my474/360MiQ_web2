@@ -674,14 +674,13 @@ function themeMarketLeftAxisTitle(ch, isDark) {
     var renderTo = ch && ch.renderTo;
     if (!renderTo || !renderTo.classList ||
         !renderTo.classList.contains('market-left-axis-title-theme') ||
-        !ch.yAxis || !ch.yAxis[0] || !ch.yAxis[1]) return;
+        !ch.yAxis || !ch.yAxis[0]) return;
 
     var indexSeriesColor = getSingleAxisSeriesAccent(ch.yAxis[0]);
     if (indexSeriesColor) {
       patchAxisTitleColor(ch.yAxis[0], indexSeriesColor);
       patchAxisLabelColor(ch.yAxis[0], indexSeriesColor);
     }
-    patchAxisTitleColor(ch.yAxis[1], isDark ? '#ffffff' : '#000000');
   } catch(e) {}
 }
 
@@ -697,7 +696,10 @@ function themeLeftYAxisLinesToLabels(ch) {
           isHighchartsNavigatorAxis(axis, 'yAxis', ch)) continue;
 
       var labelColor = getRenderedAxisLabelColor(axis);
-      if (labelColor) patchAxisLineColor(axis, labelColor);
+      if (labelColor) {
+        patchAxisTitleColor(axis, labelColor);
+        patchAxisLineColor(axis, labelColor);
+      }
     }
   } catch(e) {}
 }
