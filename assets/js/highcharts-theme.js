@@ -248,6 +248,7 @@ function applyHighchartsTheme(isDark) {
 		themeHighchartsPlotLines(ch, isDark);
         themeHighchartsAxisAccents(ch);
         themeMarketLeftAxisTitle(ch, isDark);
+        themeLeftYAxisLinesToLabels(ch);
       }
     }
     /* Patch navigator and scrollbar in-place */
@@ -684,6 +685,55 @@ function themeMarketLeftAxisTitle(ch, isDark) {
   } catch(e) {}
 }
 
+function themeLeftYAxisLinesToLabels(ch) {
+  try {
+    if (!document.body || !document.body.classList ||
+        !document.body.classList.contains('match-left-y-axis-to-labels') ||
+        !ch || !ch.yAxis) return;
+
+    for (var i = 0; i < ch.yAxis.length; i++) {
+      var axis = ch.yAxis[i];
+      if (!axis || axis.opposite !== false ||
+          isHighchartsNavigatorAxis(axis, 'yAxis', ch)) continue;
+
+      var labelColor = getRenderedAxisLabelColor(axis);
+      if (labelColor) patchAxisLineColor(axis, labelColor);
+    }
+  } catch(e) {}
+}
+
+function getRenderedAxisLabelColor(axis) {
+  var candidates = [];
+  var group = axis && axis.labelGroup && axis.labelGroup.element;
+
+  try {
+    if (group && group.querySelector) {
+      var label = group.querySelector('text,tspan');
+      if (label) {
+        if (typeof window !== 'undefined' && window.getComputedStyle) {
+          var computed = window.getComputedStyle(label);
+          candidates.push(computed.fill);
+          candidates.push(computed.color);
+        }
+        if (label.style) {
+          candidates.push(label.style.fill);
+          candidates.push(label.style.color);
+        }
+        if (label.getAttribute) candidates.push(label.getAttribute('fill'));
+      }
+    }
+  } catch(e) {}
+
+  candidates.push(getAxisOptionColor(axis, 'labels'));
+
+  for (var i = 0; i < candidates.length; i++) {
+    var parsed = parseThemeColor(candidates[i]);
+    if (parsed && parsed.a > 0.2) return candidates[i];
+  }
+
+  return null;
+}
+
 function refreshSentimentAxisAccents() {
   if (typeof Highcharts === 'undefined' || !Highcharts.charts) return;
 
@@ -1079,6 +1129,7 @@ function bindHighchartsLegendTheme() {
     themeNeutralSeriesColors(this, isDark);
     themeHighchartsAxisAccents(this);
     themeMarketLeftAxisTitle(this, isDark);
+    themeLeftYAxisLinesToLabels(this);
   });
 }
 

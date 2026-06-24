@@ -53,7 +53,7 @@
     <link rel="stylesheet" href="assets/css/toggleSwitch.css">
 </head>
 
-<body>
+<body class="match-left-y-axis-to-labels">
 <style>
 .not-selectable {
   -webkit-touch-callout: none;
@@ -978,7 +978,7 @@ function adsBlocked(callback){
 <script src="assets/js/Highstock.js"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <script src="assets/js/seasonality.js"></script>
-<script src="assets/js/highcharts-theme.js"></script>
+<script src="assets/js/highcharts-theme.js?v=20260624.3"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
