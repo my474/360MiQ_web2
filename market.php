@@ -2240,7 +2240,7 @@ window.__MARKET_PAGE_CONFIG = {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
     <script src="assets/js/smoothproducts.min.js"></script>
     <script src="assets/js/theme.js"></script>-->
-    <script src="assets/js/ADChart.js"></script>
+    <script src="assets/js/ADChart.js?v=20260625.1"></script>
     <script src="assets/js/Bubble.js"></script>
     <script src="assets/js/bubble-price-policy.js?v=20260624.1"></script>
     <!--<script src="assets/js/Anystock.js"></script>
