@@ -1938,7 +1938,7 @@ function ensureStockOptionalLibraries()
 <script>
 var anychartReady = loadStockScript('assets/js/anychart-bundle.min.js')
     .then(function() {
-        return loadStockScript('assets/js/Anystock.js?v=20260625.1');
+        return loadStockScript('assets/js/Anystock.js?v=20260625.2');
     });
 </script>
 <script src="assets/js/seasonality.js"></script>

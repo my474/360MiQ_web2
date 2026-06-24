@@ -212,7 +212,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
 
                 return "\nClose: " + this.close + changePstr + "\nOpen: " + this.getData("open") + "\nHigh: " + this.getData("high") + "\nLow: " + this.getData("low");
             }
-            else if (hideStockPriceValues && (series.name() == "Vol" || series.name() == "Vol MA(20)"))
+            else if (hideStockPriceValues && series.name() == "Vol")
                 return hiddenSeriesText(series.name(), "");
             else
                 return series.name().replace(/^SMA\(/,'MA(') + ": " + Math.round(this.value*decimals)/decimals;
@@ -265,7 +265,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
       }
 	  else //if (type == 'column') 
       {
-        if (hideStockPriceValues && (series.name() == "Vol" || series.name() == "Vol MA(20)"))
+        if (hideStockPriceValues && series.name() == "Vol")
           return "<span style='color:" + (document.documentElement.getAttribute('data-theme')==='dark' ? '#cccccc' : '#455a64') + ";font-weight:600'>" + series.name() + "</span>";
 
         var value = parseFloat(this.value);

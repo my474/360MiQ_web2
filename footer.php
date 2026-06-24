@@ -1834,6 +1834,7 @@ function chatbot(result, returnTitle = false)
     
     var change = '- ';
     var changestr = '';
+    var hideStockPriceValues = window.PriceDisplayPolicy && !PriceDisplayPolicy.showStockIndexPrices();
     if (stock.close !== null)
     {
         if (stock.close_previous !== null && stock.close_previous > 0)
@@ -1843,6 +1844,9 @@ function chatbot(result, returnTitle = false)
         }
         else
             changestr = "<font style='font-weight:550'>" + stock.close + "</font> <font style='font-weight:550' color='darkgrey'><b>- %</b></font>";
+
+        if (hideStockPriceValues)
+            changestr = stock.close_previous !== null && stock.close_previous > 0 ? changestr.replace(/^<font[^>]*>.*?<\/font>\s*/, '') : '';
     
         closeSeries = (stock.closeSeries.endsWith(',' + stock.close) ? stock.closeSeries : stock.closeSeries + ',' + stock.close);
         result[0].closeSeries = closeSeries;
