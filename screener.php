@@ -204,6 +204,7 @@ table.dataTable thead .sorting_desc_disabled {
 <script src="assets/js/TA.js"></script>
 <script src="assets/js/GaugeChart.js"></script>-->
 <script src="assets/js/Utils.js"></script>
+<script src="assets/js/price-display-policy.js?v=20260624.1"></script>
 
 <?php $page = 'screener'; include "./header.php" ?>
 
@@ -1776,6 +1777,7 @@ window.__SCREENER_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/screener-main.js?v=20260619.2"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 
             <div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
                        

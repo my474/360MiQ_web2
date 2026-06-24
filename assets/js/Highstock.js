@@ -497,6 +497,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
           	        return '<span style="color:' + this.color + '">' + this.name + '</span>';
       	        else if (this.name == 'Recession')
           	        return '<span style="color:grey">' + this.name + '</span>';
+                else if (!PriceDisplayPolicy.showStockIndexPrices() && this.index === 0 && showPriceTooltipLegend)
+                    return '<span style="color:' + this.color + '">' + this.name + ': ' + PriceDisplayPolicy.formatPercent(chg_percent2) + '</span>';
           	    else if (current < 0)
           	    {
           	        if(this.index !== 0)
@@ -579,6 +581,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 if (unitType == "week")
                     return this.points.reduce(function (s, point) {
                         var point_series_color = point.series.color;
+                        if (!PriceDisplayPolicy.showStockIndexPrices() && point.series.index === 0 && showPriceTooltipLegend)
+                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': <b>' + PriceDisplayPolicy.pointPercentChange(point, 2) + '</b>';
                         if (point.y < 0)
                         {
                             if (updowncolor)
@@ -632,6 +636,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 else if (unitType == "month")
                     return this.points.reduce(function (s, point) {
                         var point_series_color = point.series.color;
+                        if (!PriceDisplayPolicy.showStockIndexPrices() && point.series.index === 0 && showPriceTooltipLegend)
+                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': <b>' + PriceDisplayPolicy.pointPercentChange(point, 2) + '</b>';
                         var yvalue = point.y;
                         if (dataGrouping_approximation == 'sum')
                             yvalue = rounding(point.y, 2);
@@ -691,6 +697,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 else if (unitType == "day" && this.color != hindenburgColor) // not Hindenburg
                     return this.points.reduce(function (s, point) {
                         var point_series_color = point.series.color;
+                        if (!PriceDisplayPolicy.showStockIndexPrices() && point.series.index === 0 && showPriceTooltipLegend)
+                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': <b>' + PriceDisplayPolicy.pointPercentChange(point, 2) + '</b>';
                         if (point.y < 0)
                         {
                             if (updowncolor)

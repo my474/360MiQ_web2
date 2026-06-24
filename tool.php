@@ -45,6 +45,7 @@
 }
 </style>
 <script src="assets/js/Utils.js"></script>
+<script src="assets/js/price-display-policy.js?v=20260624.1"></script>
 <script src="assets/js/TA.js"></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
@@ -841,6 +842,7 @@ window.__TOOL_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->

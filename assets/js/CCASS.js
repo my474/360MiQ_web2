@@ -129,6 +129,8 @@ function CCASS(chartcontainer, data, stockcode, CCASSshare, CCASSpercent, title,
                     else
                         changeStr = ' (' + change + '%)';
                     
+                    if (!PriceDisplayPolicy.showStockIndexPrices())
+                        return '<span style="color:' + this.color + '">' + this.name + ': <span style="color:' + this.color + '">' + PriceDisplayPolicy.formatPercent(change) + '</span>';
                     return '<span style="color:' + this.color + '">' + this.name + ': <span style="color:' + this.color + '">' + current + changeStr + '</span>';
                 }
                 else
@@ -222,7 +224,7 @@ function CCASS(chartcontainer, data, stockcode, CCASSshare, CCASSpercent, title,
                                 else
                                     changeStr = ' (' + change + '%)';
                             }
-                            s = s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + point.y + changeStr + '</b>';
+                            s = s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + (PriceDisplayPolicy.showStockIndexPrices() ? point.y + changeStr : PriceDisplayPolicy.formatPercent(change)) + '</b>';
                         }
                         else
                         {

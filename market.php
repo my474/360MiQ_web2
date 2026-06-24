@@ -353,6 +353,7 @@ html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-mono
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <script src="assets/js/Utils.js"></script>
+<script src="assets/js/price-display-policy.js?v=20260624.1"></script>
 <!--script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
@@ -2033,7 +2034,7 @@ function adsBlocked(callback){
 <script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/TA.js"></script>
-<script src="assets/js/Highstock.js?v=20260624.2"></script>
+<script src="assets/js/Highstock.js?v=20260624.3"></script>
 <script src="assets/js/stockCompare.js?v=20260623.10"></script>
 <script src="assets/js/yearlyTrendChart.js?v=20260623.10"></script>
 <script src="assets/js/seasonality.js?v=20260623.5"></script>
@@ -2127,7 +2128,7 @@ function ensureMarketAnychartLibraries()
             ]);
         })
         .then(function() {
-            return loadMarketScript('assets/js/Treemap.js');
+            return loadMarketScript('assets/js/Treemap.js?v=20260624.1');
         })
         .then(function() {
             return loadMarketScript('assets/js/jquery.sparkline.min.js');
@@ -2229,6 +2230,7 @@ window.__MARKET_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/market-main.js?v=20260623.10"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 
 <?php include "./footer.php" ?>
 
@@ -2240,6 +2242,7 @@ window.__MARKET_PAGE_CONFIG = {
     <script src="assets/js/theme.js"></script>-->
     <script src="assets/js/ADChart.js"></script>
     <script src="assets/js/Bubble.js"></script>
+    <script src="assets/js/bubble-price-policy.js?v=20260624.1"></script>
     <!--<script src="assets/js/Anystock.js"></script>
     <script src="assets/js/CycleChart.js"></script>-->
     <!--<script src="assets/js/GaugeChart.js"></script>-->
@@ -2247,7 +2250,7 @@ window.__MARKET_PAGE_CONFIG = {
     <!--<script src="https://code.highcharts.com/stock/8.0.4/modules/pattern-fill.js"></script>-->
     <script src="assets/js/jquery-ui1.12.1.min.js"></script>
     <!--<script src="assets/js/jquery.ui.treemap.js"></script>-->
-    <script src="assets/js/ValuationBands.js"></script>
+    <script src="assets/js/ValuationBands.js?v=20260624.1"></script>
     <!--<script src="assets/js/yaxis-panning.js"></script>-->
 </body>
 

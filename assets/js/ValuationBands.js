@@ -479,7 +479,7 @@ function valuationBands(stock, valTable, pricedata, type, container, patternup, 
                                 else
                                     changeStr = ' (' + change + '%)';
                             }
-                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + point.y + changeStr + '</b>';
+                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + (PriceDisplayPolicy.showStockIndexPrices() ? point.y + changeStr : PriceDisplayPolicy.formatPercent(change)) + '</b>';
                         }
                         else if (Array.isArray(point.series.yData[0]))
                         {
@@ -1692,7 +1692,7 @@ function Pxband(stock, valTable, pricedata, type, container, patternup, patternd
                                 else
                                     changeStr = ' (' + change + '%)';
                             }
-                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + point.y + changeStr + '</b>';
+                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + (PriceDisplayPolicy.showStockIndexPrices() ? point.y + changeStr : PriceDisplayPolicy.formatPercent(change)) + '</b>';
                         }
                         else if(Array.isArray(point.series.yData[0]))
                         {

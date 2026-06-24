@@ -63,6 +63,7 @@ ob_start(function ($html) {
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <script src="assets/js/Utils.js"></script>
+    <script src="assets/js/price-display-policy.js?v=20260624.1"></script>
 </head>
 
 <body><style>
@@ -1966,7 +1967,7 @@ function ensureHomeAnychart()
             ]);
         })
         .then(function() {
-            return loadHomeScript('assets/js/Treemap.js');
+            return loadHomeScript('assets/js/Treemap.js?v=20260624.1');
         })
         .then(function() {
             homeAnychartLoaded = true;
@@ -1977,6 +1978,7 @@ function ensureHomeAnychart()
 </script>
 <script src="assets/js/GaugeChart.js"></script>
 <script src="assets/js/pages/index-main.js?v=20260623.10"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 <script>
 $(".showNote").click(function() {
     const $btn = $(this);
@@ -2009,6 +2011,7 @@ $(".showNote").click(function() {
     <!--<script src="assets/js/jquery.min.js"></script>-->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="assets/js/Bubble.js"></script>
+    <script src="assets/js/bubble-price-policy.js?v=20260624.1"></script>
     <!--<script src="assets/js/smart-forms.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
     <script src="assets/js/smoothproducts.min.js"></script>

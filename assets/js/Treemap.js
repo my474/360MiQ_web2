@@ -408,7 +408,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                     else if (d1_d5_d20 == 20)
                         change = parseFloat(this.getData('day_change_20d'));
                         
-                    if (toShowPrice == 1 || toShowPrice == 3)
+                    if ((toShowPrice == 1 || toShowPrice == 3) && PriceDisplayPolicy.showStockIndexPrices())
                     {
                         return '<span style="color: #bfbfbf">' + 'Price: ' + '</span>' + this.getData('close') + ' (' + dayStrShort + (change > 0? '+': '') + (isNaN(change) ? '-' : change) + ', ' + (this.value > 0? '+': '') +
                             (isNaN(this.value) ? '- ' : anychart.format.number(this.value, {groupsSeparator: ' '})) + '%)' + '<br><span style="color: #bfbfbf">' + 'Industry: ' + '</span>' + industry + '<div id="hc-tooltip" style="height:70px;margin-top:3px"></div>';

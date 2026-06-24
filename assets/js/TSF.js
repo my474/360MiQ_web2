@@ -207,7 +207,7 @@ function TSFchart(stock, pricedata, container, subtitle)
                                 else
                                     changeStr = ' (' + change + '%)';
                             }
-                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + point.y + changeStr + '</b>';
+                            return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': ' + '<b>' + (PriceDisplayPolicy.showStockIndexPrices() ? point.y + changeStr : PriceDisplayPolicy.formatPercent(change)) + '</b>';
                         }
                         else if (point.series.index == 1)         
                         {

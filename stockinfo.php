@@ -646,6 +646,7 @@ a:hover.sectorperformance {
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <!--<script src="assets/js/ValuationBands.js"></script>-->
 <script src="assets/js/Utils.js"></script>
+<script src="assets/js/price-display-policy.js?v=20260624.1"></script>
     
 <!--script src="https://code.jquery.com/jquery-3.5.1.js"></script //if dataTable weird, may need this js--> 
 <style>
@@ -1910,9 +1911,9 @@ function ensureStockOptionalLibraries()
 <script src="assets/js/RangeChart.js"></script>
 <script src="assets/js/F-Z-M-ScoreChart.js"></script>
 <script src="assets/js/PolarChart-Comment.js"></script>
-<script src="assets/js/TSF.js"></script>
-<script src="assets/js/priceDeviation.js"></script>
-<script src="assets/js/CCASS.js"></script>
+<script src="assets/js/TSF.js?v=20260624.1"></script>
+<script src="assets/js/priceDeviation.js?v=20260624.1"></script>
+<script src="assets/js/CCASS.js?v=20260624.1"></script>
 <script src="assets/js/stockCompare.js"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <!--script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
@@ -1949,8 +1950,9 @@ window.__STOCKINFO_PAGE_CONFIG = {
     "stockinfo": <?php echo json_encode($line, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/ValuationBands.js"></script>
+<script src="assets/js/ValuationBands.js?v=20260624.1"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 <script>
 document.querySelectorAll('.mirrorscan-stockcode').forEach(function (element) {
     element.textContent = stockcode;
