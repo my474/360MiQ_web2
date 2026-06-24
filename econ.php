@@ -213,8 +213,15 @@ var econCriticalRequests = {
 }
 
 #chartcontainerE1 .highcharts-yaxis .highcharts-axis-line,
-#chartcontainerE1 .highcharts-yaxis .highcharts-tick {
-  stroke: #ccd6eb !important;
+#chartcontainerE1 .highcharts-yaxis .highcharts-tick,
+#chartcontainerE1 .highcharts-plot-line {
+  stroke: #e6e6e6 !important;
+}
+
+[data-theme="dark"] #chartcontainerE1 .highcharts-yaxis .highcharts-axis-line,
+[data-theme="dark"] #chartcontainerE1 .highcharts-yaxis .highcharts-tick,
+[data-theme="dark"] #chartcontainerE1 .highcharts-plot-line {
+  stroke: #45475f !important;
 }
 
 </style>

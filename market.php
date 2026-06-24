@@ -226,9 +226,19 @@
         }
         #chartcontainerH1 .highcharts-yaxis .highcharts-axis-line,
         #chartcontainerH1 .highcharts-yaxis .highcharts-tick,
+        #chartcontainerH1 .highcharts-plot-line,
         #chartcontainerH2 .highcharts-yaxis .highcharts-axis-line,
-        #chartcontainerH2 .highcharts-yaxis .highcharts-tick {
-            stroke: #ccd6eb !important;
+        #chartcontainerH2 .highcharts-yaxis .highcharts-tick,
+        #chartcontainerH2 .highcharts-plot-line {
+            stroke: #e6e6e6 !important;
+        }
+        [data-theme="dark"] #chartcontainerH1 .highcharts-yaxis .highcharts-axis-line,
+        [data-theme="dark"] #chartcontainerH1 .highcharts-yaxis .highcharts-tick,
+        [data-theme="dark"] #chartcontainerH1 .highcharts-plot-line,
+        [data-theme="dark"] #chartcontainerH2 .highcharts-yaxis .highcharts-axis-line,
+        [data-theme="dark"] #chartcontainerH2 .highcharts-yaxis .highcharts-tick,
+        [data-theme="dark"] #chartcontainerH2 .highcharts-plot-line {
+            stroke: #45475f !important;
         }
         @media (max-width: 768px) {
             .masonry-grid {
