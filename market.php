@@ -240,6 +240,18 @@
         [data-theme="dark"] #chartcontainerH2 .highcharts-plot-line {
             stroke: #45475f !important;
         }
+        [data-theme="dark"] #chartcontainerH2 .highcharts-series-1 .highcharts-graph,
+        [data-theme="dark"] #chartcontainerH2 [stroke="green"] {
+            stroke: #33ff99 !important;
+        }
+        [data-theme="dark"] #chartcontainerH2 .highcharts-yaxis-labels-1 text,
+        [data-theme="dark"] #chartcontainerH2 .highcharts-yaxis-labels-1 tspan,
+        [data-theme="dark"] #chartcontainerH2 .highcharts-legend-item:nth-child(2) text,
+        [data-theme="dark"] #chartcontainerH2 .highcharts-legend-item:nth-child(2) tspan,
+        [data-theme="dark"] #chartcontainerH2 [fill="green"] {
+            color: #33ff99 !important;
+            fill: #33ff99 !important;
+        }
         @media (max-width: 768px) {
             .masonry-grid {
                 column-count: 1;
