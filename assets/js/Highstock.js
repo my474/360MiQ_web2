@@ -880,6 +880,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 width: 4 // Width of the line
             }]
         }, {
+            className: 'theme-left-y-axis-monochrome',
           	crosshair: {
                 color: '#9d81ba88'
             },

@@ -65,22 +65,32 @@
 }
 body.match-left-y-axis-to-labels .theme-left-y-axis-title,
 body.match-left-y-axis-to-labels .theme-left-y-axis-labels text,
-body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan {
+body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan,
+body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-title,
+body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-labels text,
+body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-labels tspan {
   color: #000000 !important;
   fill: #000000 !important;
 }
 body.match-left-y-axis-to-labels .theme-left-y-axis-line,
-body.match-left-y-axis-to-labels .theme-left-y-axis-tick {
+body.match-left-y-axis-to-labels .theme-left-y-axis-tick,
+body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome .highcharts-axis-line,
+body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome .highcharts-tick {
   stroke: #000000 !important;
 }
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-title,
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels text,
-html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan {
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-title,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-labels text,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome.highcharts-axis-labels tspan {
   color: #ffffff !important;
   fill: #ffffff !important;
 }
 html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-line,
-html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-tick {
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-tick,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome .highcharts-axis-line,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-monochrome .highcharts-tick {
   stroke: #ffffff !important;
 }
 </style>
@@ -995,10 +1005,10 @@ function adsBlocked(callback){
 <script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/TA.js"></script>
-<script src="assets/js/Highstock.js?v=20260624.1"></script>
+<script src="assets/js/Highstock.js?v=20260624.2"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <script src="assets/js/seasonality.js"></script>
-<script src="assets/js/highcharts-theme.js?v=20260624.8"></script>
+<script src="assets/js/highcharts-theme.js?v=20260624.9"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>

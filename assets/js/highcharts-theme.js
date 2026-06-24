@@ -633,10 +633,14 @@ function patchLegendHTMLElement(el, isDark) {
 function themeHighchartsAxisAccents(ch) {
   if (!ch || !ch.yAxis || !ch.yAxis.length) return;
   var matchSentimentSeries = isSentimentChart(ch);
+  var forceMonochromeLeftAxes = document.body && document.body.classList &&
+    document.body.classList.contains('match-left-y-axis-to-labels');
 
   for (var i = 0; i < ch.yAxis.length; i++) {
     var axis = ch.yAxis[i];
     if (!axis) continue;
+    if (forceMonochromeLeftAxes && isLeftYAxis(axis) &&
+        !isHighchartsNavigatorAxis(axis, 'yAxis', ch)) continue;
 
     rememberAxisAccentColors(axis);
 
@@ -690,11 +694,18 @@ function markLeftYAxisElements(ch) {
         !document.body.classList.contains('match-left-y-axis-to-labels') ||
         !ch || !ch.yAxis) return;
 
+    var themeColor = document.documentElement.getAttribute('data-theme') === 'dark'
+      ? '#ffffff'
+      : '#000000';
+
     for (var i = 0; i < ch.yAxis.length; i++) {
       var axis = ch.yAxis[i];
       if (!axis || !isLeftYAxis(axis) ||
           isHighchartsNavigatorAxis(axis, 'yAxis', ch)) continue;
 
+      patchAxisTitleColor(axis, themeColor);
+      patchAxisLabelColor(axis, themeColor);
+      patchAxisLineColor(axis, themeColor);
       addSvgClass(axis.axisTitle && axis.axisTitle.element, 'theme-left-y-axis-title');
       addSvgClass(axis.labelGroup && axis.labelGroup.element, 'theme-left-y-axis-labels');
       addSvgClass(axis.axisLine && axis.axisLine.element, 'theme-left-y-axis-line');
