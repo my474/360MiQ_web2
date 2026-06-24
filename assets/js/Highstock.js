@@ -30,6 +30,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
         plotlevel = plotlevel.toString();
 
 	var plotlevel_color = (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#45475F':'#eaeaea';})();
+    var leftYAxisThemeColor = document.documentElement.getAttribute('data-theme') === 'dark' ? '#ffffff' : '#000000';
 
     var majorEvents = typeof getHighstockMajorEvents === 'function' ? getHighstockMajorEvents(plotMajorEvents) : [];
     var tooltipDiv = null;
@@ -196,7 +197,18 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                         lineColor: this.series[0].color
                     });
                     this.yAxis[1].update({
-                        lineColor: this.series[1].color
+                        lineColor: leftYAxisThemeColor,
+                        tickColor: leftYAxisThemeColor,
+                        title: {
+                            style: {
+                                color: leftYAxisThemeColor
+                            }
+                        },
+                        labels: {
+                            style: {
+                                color: leftYAxisThemeColor
+                            }
+                        }
                     });
                     applyMajorEventsTheme(this);
                 },
@@ -873,9 +885,14 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
             },
             title: {
                 //useHTML: yaxis1.indexOf('font') !== -1 ? true : false,
-                text: yaxis1
+                text: yaxis1,
+                style: {
+                    color: leftYAxisThemeColor
+                }
             },
             opposite: false,
+            lineColor: leftYAxisThemeColor,
+            tickColor: leftYAxisThemeColor,
             lineWidth: 1,
             max: ymax,
             min: ymin,
@@ -883,6 +900,9 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
             tickAmount : 5,
             labels: {
                 y: 5,
+                style: {
+                    color: leftYAxisThemeColor
+                }
             },
             plotLines: [{
                 color: plotlevel_color, // Color value
