@@ -692,7 +692,7 @@ function themeLeftYAxisLinesToLabels(ch) {
 
     for (var i = 0; i < ch.yAxis.length; i++) {
       var axis = ch.yAxis[i];
-      if (!axis || axis.opposite !== false ||
+      if (!axis || !isLeftYAxis(axis) ||
           isHighchartsNavigatorAxis(axis, 'yAxis', ch)) continue;
 
       var labelColor = getRenderedAxisLabelColor(axis);
@@ -702,6 +702,17 @@ function themeLeftYAxisLinesToLabels(ch) {
       }
     }
   } catch(e) {}
+}
+
+function isLeftYAxis(axis) {
+  if (!axis) return false;
+  if (typeof axis.opposite === 'boolean') return axis.opposite === false;
+
+  var options = axis.options || {};
+  if (typeof options.opposite === 'boolean') return options.opposite === false;
+
+  var userOptions = axis.userOptions || {};
+  return userOptions.opposite !== true;
 }
 
 function getRenderedAxisLabelColor(axis) {
