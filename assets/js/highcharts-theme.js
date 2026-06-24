@@ -668,6 +668,37 @@ function isSentimentChart(ch) {
   return false;
 }
 
+function refreshSentimentAxisAccents() {
+  if (typeof Highcharts === 'undefined' || !Highcharts.charts) return;
+
+  for (var i = 0; i < Highcharts.charts.length; i++) {
+    var ch = Highcharts.charts[i];
+    if (ch && isSentimentChart(ch)) {
+      themeHighchartsAxisAccents(ch);
+    }
+  }
+}
+
+function bindSentimentAxisThemeToggle() {
+  if (typeof document === 'undefined' || !document.documentElement ||
+      document.documentElement._sentimentAxisThemeBound360) return;
+
+  document.documentElement._sentimentAxisThemeBound360 = true;
+  document.documentElement.addEventListener('themechange', function() {
+    var refresh = function() {
+      refreshSentimentAxisAccents();
+    };
+
+    if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+      window.requestAnimationFrame(function() {
+        window.requestAnimationFrame(refresh);
+      });
+    } else {
+      setTimeout(refresh, 0);
+    }
+  });
+}
+
 function rememberAxisAccentColors(axis) {
   var titleColor = getAxisOptionColor(axis, 'title');
   var labelColor = getAxisOptionColor(axis, 'labels');
@@ -1177,6 +1208,7 @@ function getHighchartsThemeOptions() {
 
 (function boot() {
   bindHighchartsLegendTheme();
+  bindSentimentAxisThemeToggle();
   if (document.documentElement.getAttribute('data-theme') === 'dark') {
     applyHighchartsTheme(true);
 
