@@ -608,7 +608,7 @@ function adsBlocked(callback){
                                 <h2 style="text-align:center; margin:15px 0;"><?php echo $exchangeName." ";?> Consumer & Business Activity</h2>
                                 <div>
                                     <h3 class="sr-only"><?php echo $country." "; ?>Economic Surprise Index</h3>
-                                    <div id="chartcontainerE1" class="not-selectable" style="height: 825px;"></div>
+                                    <div id="chartcontainerE1" class="not-selectable sentiment-chart" style="height: 825px;"></div>
                                 </div>
 
                                 <hr>

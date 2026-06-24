@@ -631,6 +631,7 @@ function patchLegendHTMLElement(el, isDark) {
 
 function themeHighchartsAxisAccents(ch) {
   if (!ch || !ch.yAxis || !ch.yAxis.length) return;
+  var matchSentimentSeries = isSentimentChart(ch);
 
   for (var i = 0; i < ch.yAxis.length; i++) {
     var axis = ch.yAxis[i];
@@ -638,8 +639,13 @@ function themeHighchartsAxisAccents(ch) {
 
     rememberAxisAccentColors(axis);
 
-    var titleColor = axis._themeTitleAccent360 || getSingleAxisSeriesAccent(axis);
-    var labelColor = axis._themeLabelAccent360;
+    var seriesColor = getSingleAxisSeriesAccent(axis);
+    var titleColor = matchSentimentSeries && seriesColor
+      ? seriesColor
+      : axis._themeTitleAccent360 || seriesColor;
+    var labelColor = matchSentimentSeries && seriesColor
+      ? seriesColor
+      : axis._themeLabelAccent360;
     var lineColor = axis._themeLineAccent360 || titleColor;
 
     if (titleColor) {
@@ -652,6 +658,14 @@ function themeHighchartsAxisAccents(ch) {
       patchAxisLineColor(axis, lineColor);
     }
   }
+}
+
+function isSentimentChart(ch) {
+  try {
+    var renderTo = ch && ch.renderTo;
+    return !!(renderTo && renderTo.classList && renderTo.classList.contains('sentiment-chart'));
+  } catch(e) {}
+  return false;
 }
 
 function rememberAxisAccentColors(axis) {

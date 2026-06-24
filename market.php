@@ -1420,7 +1420,7 @@ function adsBlocked(callback){
                                 <h2 style="text-align:center; margin:15px 0;"><?php if ($data == "NYSE") echo "US Economic Surprise Index, Fear & Greed Index"; else if ($data == "SHSE") echo "China Economic Surprise Index"; ?></h2>
                                 <div>
                                     <h3 class="sr-only"><?php echo $country." "; ?>Economic Surprise Index</h3>
-                                    <div id="chartcontainerH1" class="not-selectable" style="height: 825px;"></div>
+                                    <div id="chartcontainerH1" class="not-selectable sentiment-chart" style="height: 825px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -1444,7 +1444,7 @@ function adsBlocked(callback){
                                     <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                     <div>
                                         <h3 class="sr-only"><?php echo $country." "; ?>Stock Fear and Greed Index</h3>
-                                        <div id="chartcontainerH2" class="not-selectable" style="height: 725px;"></div>
+                                        <div id="chartcontainerH2" class="not-selectable sentiment-chart" style="height: 725px;"></div>
                                     </div>
                                     <div class="chartNote">
                                         <div class="showNote">Show more</div>
