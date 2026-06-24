@@ -12,7 +12,7 @@
         //$data = "NYSE";
         $exchangeName = $country;
         $country = "US";
-        $indexname = "S&P 500";
+        $indexname = "SPX";
     }
     else
     {
@@ -210,6 +210,11 @@ var econCriticalRequests = {
   margin: 6px 0 12px 0;
   user-select: none;
   color: #007bff;
+}
+
+#chartcontainerE1 .highcharts-yaxis .highcharts-axis-line,
+#chartcontainerE1 .highcharts-yaxis .highcharts-tick {
+  stroke: #ccd6eb !important;
 }
 
 </style>

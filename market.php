@@ -224,6 +224,12 @@
             fill: #2a2a3e !important;
             stroke: #2a2a3e !important;
         }
+        #chartcontainerH1 .highcharts-yaxis .highcharts-axis-line,
+        #chartcontainerH1 .highcharts-yaxis .highcharts-tick,
+        #chartcontainerH2 .highcharts-yaxis .highcharts-axis-line,
+        #chartcontainerH2 .highcharts-yaxis .highcharts-tick {
+            stroke: #ccd6eb !important;
+        }
         @media (max-width: 768px) {
             .masonry-grid {
                 column-count: 1;
