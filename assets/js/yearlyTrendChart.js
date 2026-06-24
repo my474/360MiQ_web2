@@ -1,4 +1,5 @@
 function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwidth, isTooltip, yAxis_name, stockname_en_tc, isPercentMode = false) {
+    var hideStockPriceValues = !isPercentMode && window.PriceDisplayPolicy && !PriceDisplayPolicy.showStockIndexPrices();
     var indexNameMap = {
         'S&P 500': 'SPX',
         'Nasdaq Composite': 'Nas Composite',
@@ -219,11 +220,11 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
                             point.series.color +
                             '">●</span> ' +
                             point.series.name +
-                            ': ' +
+                            (hideStockPriceValues ? '' : ': ' +
                                                         (isPercentMode && point.y < 0 ? '<span style="color:red;font-weight:bold">' : (isPercentMode && point.y === 0 ? '<span style="color:grey;font-weight:bold">\u00B1' : '<span style="color:' + (document.documentElement.getAttribute('data-theme') === 'dark' ? '#cccccc' : 'black') + ';font-weight:bold">' + (isPercentMode ? '+' : ''))) +
                             point.y +
                             (isPercentMode ? '%' : '') +
-                            '</span>';
+                            '</span>');
                     }
                 }
 
@@ -235,6 +236,8 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
             borderWidth: 0,
             layout: 'horizontal',
             labelFormatter: function () {
+                if (hideStockPriceValues)
+                    return '<span style="color:' + this.color + '">' + this.name + '</span>';
                 
                 var lastValue = this.yData[this.yData.length - 1];
                 var color = 'black';
