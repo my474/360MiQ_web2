@@ -678,12 +678,18 @@ function themeMarketLeftAxisTitle(ch, isDark) {
     var renderTo = ch && ch.renderTo;
     if (!renderTo || !renderTo.classList ||
         !renderTo.classList.contains('market-left-axis-title-theme') ||
-        !ch.yAxis || !ch.yAxis[0] || !ch.yAxis[1]) return;
+        !ch.yAxis) return;
 
-    var indexSeriesColor = getSingleAxisSeriesAccent(ch.yAxis[0]);
-    if (indexSeriesColor) {
-      patchAxisTitleColor(ch.yAxis[0], indexSeriesColor);
-      patchAxisLabelColor(ch.yAxis[0], indexSeriesColor);
+    for (var i = 0; i < ch.yAxis.length; i++) {
+      var axis = ch.yAxis[i];
+      if (!axis || !isRightYAxis(axis) ||
+          isHighchartsNavigatorAxis(axis, 'yAxis', ch)) continue;
+
+      var indexSeriesColor = getSingleAxisSeriesAccent(axis);
+      if (indexSeriesColor) {
+        patchAxisTitleColor(axis, indexSeriesColor);
+        patchAxisLabelColor(axis, indexSeriesColor);
+      }
     }
   } catch(e) {}
 }
@@ -730,6 +736,17 @@ function isLeftYAxis(axis) {
 
   var userOptions = axis.userOptions || {};
   return userOptions.opposite !== true;
+}
+
+function isRightYAxis(axis) {
+  if (!axis) return false;
+  if (typeof axis.opposite === 'boolean') return axis.opposite === true;
+
+  var options = axis.options || {};
+  if (typeof options.opposite === 'boolean') return options.opposite === true;
+
+  var userOptions = axis.userOptions || {};
+  return userOptions.opposite === true;
 }
 
 function addSvgClass(element, className) {
