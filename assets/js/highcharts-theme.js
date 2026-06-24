@@ -691,6 +691,13 @@ function themeMarketLeftAxisTitle(ch, isDark) {
         patchAxisLabelColor(axis, indexSeriesColor);
       }
     }
+
+    /* Highstock.js defines its primary left y-axis at index 1. Keep this
+       explicit assignment from ff4ab299: axis-side inference is unreliable
+       while Stock navigator axes are being created during initial render. */
+    if (ch.yAxis[1]) {
+      patchAxisTitleColor(ch.yAxis[1], isDark ? '#ffffff' : '#000000');
+    }
   } catch(e) {}
 }
 
