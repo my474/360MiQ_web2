@@ -21,6 +21,11 @@ function applyAnystockTheme(stockChart, plots) {
         stockChart.background().stroke(t.background);
     } catch(e) {}
 
+    try {
+        stockChart.label(1).fontColor(t.dark ? '#cccccc' : '#455a64').enabled(true);
+        stockChart.label(2).fontColor(t.dark ? '#cccccc' : '#455a64').enabled(true);
+    } catch(e) {}
+
     if (!plots) return;
     for (var i = 0; i < plots.length; i++) {
         var plot = plots[i];
@@ -134,7 +139,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
     labelstockcode.text(stockcode);
     labelstockcode.fontOpacity(0.2);
     labelstockcode.fontWeight(600);
-    labelstockcode.zIndex(1); // Without this line, dragging the chart on the label won't work
+    labelstockcode.zIndex(1000); // Keep the watermark above plot backgrounds.
     
     var labelstockname = chart.label(2);
     //labelstockname.padding(5, 5, 5, 5);
@@ -149,7 +154,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
     labelstockname.text(stockname);
     labelstockname.fontOpacity(0.3);
     labelstockname.fontWeight(400);
-    labelstockname.zIndex(1); // Without this line, dragging the chart on the label won't work
+    labelstockname.zIndex(1000); // Keep the watermark above plot backgrounds.
     
 	chart.contextMenu().itemsFormatter(function(items){
         // Disable save as image option
@@ -445,6 +450,8 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
 		.fallingStroke('red', 0.5);
 
     aaplSeries.legendItem().iconType('rising-falling');
+    if (hideStockPriceValues)
+        aaplSeries.legendItem().enabled(false);
     
     // map loaded data
 	var mapping1 = dataTable.mapAs({'value': 4});
@@ -681,6 +688,8 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
 		iconEnabled: !hideStockPriceValues,
 		textOverflow: ''
 	});
+    if (hideStockPriceValues)
+        volumeMaIndicator.volumeSeries().tooltip().enabled(false);
   
   	// set series settings
 	maSeries.name('Vol MA(20)')
