@@ -307,6 +307,26 @@
   -ms-user-select: none;
   user-select: none;
 }
+body.match-left-y-axis-to-labels .theme-left-y-axis-title,
+body.match-left-y-axis-to-labels .theme-left-y-axis-labels text,
+body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan {
+  color: #000000 !important;
+  fill: #000000 !important;
+}
+body.match-left-y-axis-to-labels .theme-left-y-axis-line,
+body.match-left-y-axis-to-labels .theme-left-y-axis-tick {
+  stroke: #000000 !important;
+}
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-title,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels text,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-labels tspan {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-line,
+html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-tick {
+  stroke: #ffffff !important;
+}
 .selectable {
     /* override parent */
     -webkit-user-select: text !important;
@@ -2044,7 +2064,7 @@ function adsBlocked(callback){
 })();
 </script>
 <script src="assets/js/sectorPerformance.js"></script>
-<script src="assets/js/highcharts-theme.js?v=20260624.6"></script>
+<script src="assets/js/highcharts-theme.js?v=20260624.7"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
