@@ -247,6 +247,7 @@ function applyHighchartsTheme(isDark) {
         themeHighchartsLegendText(ch, isDark);
 		themeHighchartsPlotLines(ch, isDark);
         themeHighchartsAxisAccents(ch);
+        themeMarketLeftAxisTitle(ch, isDark);
       }
     }
     /* Patch navigator and scrollbar in-place */
@@ -667,6 +668,17 @@ function isSentimentChart(ch) {
   return false;
 }
 
+function themeMarketLeftAxisTitle(ch, isDark) {
+  try {
+    var renderTo = ch && ch.renderTo;
+    if (!renderTo || !renderTo.classList ||
+        !renderTo.classList.contains('market-left-axis-title-theme') ||
+        !ch.yAxis || !ch.yAxis[1]) return;
+
+    patchAxisTitleColor(ch.yAxis[1], isDark ? '#ffffff' : '#000000');
+  } catch(e) {}
+}
+
 function refreshSentimentAxisAccents() {
   if (typeof Highcharts === 'undefined' || !Highcharts.charts) return;
 
@@ -1061,6 +1073,7 @@ function bindHighchartsLegendTheme() {
        for index [1] in the dark palette instead of the intended white). */
     themeNeutralSeriesColors(this, isDark);
     themeHighchartsAxisAccents(this);
+    themeMarketLeftAxisTitle(this, isDark);
   });
 }
 

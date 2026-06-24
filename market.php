@@ -631,7 +631,7 @@ function adsBlocked(callback){
                                         </tr>
                                     </table>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>Short MA > Long MA Market Breadth</h3>
-                                    <div id="chartcontainerA1" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA1" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -650,7 +650,7 @@ function adsBlocked(callback){
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>Close > MA Market Breadth</h3>
-                                    <div id="chartcontainerA2" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA2" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -673,7 +673,7 @@ function adsBlocked(callback){
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>Weekly RSI Market Breadth</h3>
-                                    <div id="chartcontainerA3" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA3" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -696,7 +696,7 @@ function adsBlocked(callback){
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>Daily RSI Market Breadth</h3>
-                                    <div id="chartcontainerA4" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA4" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -723,7 +723,7 @@ function adsBlocked(callback){
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>250-Day High minus Low Market Breadth</h3>
-                                    <div id="chartcontainerA5" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA5" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -746,7 +746,7 @@ function adsBlocked(callback){
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>McClellan Oscillator</h3>
-                                    <div id="chartcontainerA6" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA6" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -769,7 +769,7 @@ function adsBlocked(callback){
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div>
                                     <h3 class="sr-only"><?php echo $exchangeName." "; ?>McClellan Summation Index</h3>
-                                    <div id="chartcontainerA7" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerA7" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div class="chartNote">
                                     <div class="showNote">Show more</div>
@@ -799,7 +799,7 @@ function adsBlocked(callback){
                             <div class="tab-pane" role="tabpanel" id="tab-2">
                                 <h2 style="text-align:center; margin:15px 0;"><?php if ($data == "HKEX") echo "Hong Kong Short Selling Ratio"; else if ($data == "NYSE" || $data == "NASDAQ") echo "FINRA Margin Debt"; else if ($data == "SHSE" || $data == "SZSE") echo $exchangeName." Short Selling & Margin Debt"; ?></h2>
                                 <div>
-                                    <div id="chartcontainerB1" class="not-selectable" style="height: 525px;"></div>
+                                    <div id="chartcontainerB1" class="not-selectable market-left-axis-title-theme" style="height: 525px;"></div>
                                 </div>
                                 <div id="marginComment" style="text-align:left;padding-right: 15px"></div>
                                 
@@ -868,7 +868,7 @@ function adsBlocked(callback){
                                         echo "<hr>";
                                         echo "<div class='text-center' style='margin: 15px 0;'><!--<a href='#'><img src='assets/img/Ad_h.png'></a>--></div>";
                                         echo "<div>";
-                                        echo "<div id='chartcontainerB2' class='not-selectable' style='height: 525px;'></div>";
+                                        echo "<div id='chartcontainerB2' class='not-selectable market-left-axis-title-theme' style='height: 525px;'></div>";
                                         echo "</div>";
                                         
                                         
@@ -2044,7 +2044,7 @@ function adsBlocked(callback){
 })();
 </script>
 <script src="assets/js/sectorPerformance.js"></script>
-<script src="assets/js/highcharts-theme.js"></script>
+<script src="assets/js/highcharts-theme.js?v=20260624.1"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
