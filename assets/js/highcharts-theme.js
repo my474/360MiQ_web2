@@ -983,7 +983,7 @@ function isHighchartsNavigatorAxis(axis, axisType, ch) {
   var opts = axis.options || {};
   var user = axis.userOptions || {};
   var id = String(opts.id || user.id || '').toLowerCase();
-  if (id.indexOf('navigator') !== -1 || !!axis.navigatorAxis) return true;
+  if (id.indexOf('navigator') !== -1) return true;
 
   var nav = (ch && ch.navigator) || (axis.chart && axis.chart.navigator);
   if (!nav) return false;
