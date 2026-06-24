@@ -8,20 +8,6 @@
         return PriceDisplayPolicy.extractLastPercent(text);
     }
 
-    function applyStockHeader() {
-        var heading = document.getElementById('heading-card');
-        var subtext = document.getElementById('cardheader-subtext');
-        if (!heading || !subtext)
-            return;
-
-        var percent = percentFromText(subtext.textContent);
-        if (!percent)
-            return;
-
-        heading.textContent = percent;
-        subtext.textContent = '';
-    }
-
     function applyPeerRows(root) {
         if (!root)
             return;
@@ -164,7 +150,6 @@
     }
 
     function applyAll() {
-        applyStockHeader();
         applyPeerRows(document.getElementById('peersContent'));
         applyScreenerHeaders();
         applyScreenerRows(document.querySelector('#screener_grid tbody'));
