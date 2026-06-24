@@ -213,7 +213,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
                 return "\nClose: " + this.close + changePstr + "\nOpen: " + this.getData("open") + "\nHigh: " + this.getData("high") + "\nLow: " + this.getData("low");
             }
             else if (hideStockPriceValues && series.name() == "Vol")
-                return hiddenSeriesText(series.name(), "");
+                return "";
             else
                 return series.name().replace(/^SMA\(/,'MA(') + ": " + Math.round(this.value*decimals)/decimals;
         });
@@ -677,7 +677,8 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
 		.maxHeight('33%')
 		.bottom(0);
 	volumeMaIndicator.volumeSeries().legendItem({
-		iconEnabled: true,
+		enabled: !hideStockPriceValues,
+		iconEnabled: !hideStockPriceValues,
 		textOverflow: ''
 	});
   
