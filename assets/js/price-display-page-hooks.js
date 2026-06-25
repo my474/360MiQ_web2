@@ -16,15 +16,20 @@
             if (cell.dataset.pricePolicyApplied === '1')
                 return;
 
-            var html = cell.innerHTML;
-            var updated = html.replace(
-                /\s-?\d+(?:,\d{3})*(?:\.\d+)?\s+(<span[^>]*>[+\-\u00B1Â]*\d+(?:\.\d+)?%<\/span>)/,
-                ' $1'
-            );
-            if (updated !== html) {
-                cell.innerHTML = updated;
-                cell.dataset.pricePolicyApplied = '1';
+            var percentSpan = Array.prototype.find.call(cell.querySelectorAll('span'), function (span) {
+                return /%$/.test(span.textContent.trim());
+            });
+            if (!percentSpan)
+                return;
+
+            var textNode = percentSpan.previousSibling;
+            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                textNode.nodeValue = textNode.nodeValue.replace(
+                    /\s-?\d+(?:,\d{3})*(?:\.\d+)?\s*$/,
+                    ' '
+                );
             }
+            cell.dataset.pricePolicyApplied = '1';
         });
     }
 

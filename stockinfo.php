@@ -1952,7 +1952,7 @@ window.__STOCKINFO_PAGE_CONFIG = {
 </script>
 <script src="assets/js/ValuationBands.js?v=20260624.1"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
-<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260625.2"></script>
 <script>
 document.querySelectorAll('.mirrorscan-stockcode').forEach(function (element) {
     element.textContent = stockcode;
