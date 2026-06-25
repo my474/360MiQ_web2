@@ -1,5 +1,8 @@
-function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwidth, isTooltip, yAxis_name, stockname_en_tc, isPercentMode = false) {
-    var hideStockPriceValues = !isPercentMode && window.PriceDisplayPolicy && !PriceDisplayPolicy.showStockIndexPrices();
+function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwidth, isTooltip, yAxis_name, stockname_en_tc, isPercentMode = false, alwaysHideValueModeValues = false) {
+    var hideStockPriceValues = !isPercentMode && (
+        alwaysHideValueModeValues ||
+        (window.PriceDisplayPolicy && !PriceDisplayPolicy.showStockIndexPrices())
+    );
     var indexNameMap = {
         'S&P 500': 'SPX',
         'Nasdaq Composite': 'Nas Composite',
