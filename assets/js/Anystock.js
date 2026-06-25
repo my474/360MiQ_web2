@@ -130,7 +130,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
     //labelstockcode.padding(5, 5, 5, 5);
     labelstockcode.position("center-top");
     labelstockcode.anchor("center-top");
-    labelstockcode.offsetY(10);
+    labelstockcode.offsetY(12);
     //labelstockcode.offsetX(100);
     //labelstockcode.width(170);
     labelstockcode.hAlign("center");
@@ -145,7 +145,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
     //labelstockname.padding(5, 5, 5, 5);
     labelstockname.position("center-top");
     labelstockname.anchor("center-top");
-    labelstockname.offsetY(36);
+    labelstockname.offsetY(38);
     //labelstockname.offsetX(100);
     //labelstockname.width(170);
     labelstockname.hAlign("center");
