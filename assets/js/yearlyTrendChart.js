@@ -3,6 +3,13 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
         alwaysHideValueModeValues ||
         (window.PriceDisplayPolicy && !PriceDisplayPolicy.showStockIndexPrices())
     );
+    var isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+    var axisLabelColor = isDarkTheme ? '#cccccc' : '#555555';
+    var axisTitleColor = isDarkTheme ? '#cccccc' : '#333333';
+    var axisLineColor = isDarkTheme ? '#666666' : '#cccccc';
+    var chartContainer = typeof id === 'string' ? document.getElementById(id) : id;
+    if (chartContainer && chartContainer.classList)
+        chartContainer.classList.add('yearly-trend-uniform-axes');
     var indexNameMap = {
         'S&P 500': 'SPX',
         'Nasdaq Composite': 'Nas Composite',
@@ -97,7 +104,12 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
             crosshair: {
                 color: '#9d81ba88'
             },
-            title: { text: 'Day of Year' },
+            lineColor: axisLineColor,
+            tickColor: axisLineColor,
+            title: {
+                text: 'Day of Year',
+                style: { color: axisTitleColor }
+            },
             tickInterval: 30,
             tickAmount: 12,
             ceiling: 366,
@@ -108,7 +120,8 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
             minPadding: 0.0,
             maxPadding: 0.0,
             labels: {
-                rotation: browserwidth <= 576 ? -45 : 0
+                rotation: browserwidth <= 576 ? -45 : 0,
+                style: { color: axisLabelColor }
             },
             plotLines: [{
                 color: '#c9c9c9', // Color value
@@ -162,12 +175,18 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
                 crosshair: {
                     color: '#9d81ba88'
                 },
-                title: { text: isPercentMode ? 'Performance %' : yAxis_name },
+                lineColor: axisLineColor,
+                tickColor: axisLineColor,
+                title: {
+                    text: isPercentMode ? 'Performance %' : yAxis_name,
+                    style: { color: axisTitleColor }
+                },
                 lineWidth: 1,
                 tickAmount: 8,
                 opposite: true,
                 labels: {
-                    format: isPercentMode ? '{value}%' : '{value}' // Add % symbol in percent mode
+                    format: isPercentMode ? '{value}%' : '{value}', // Add % symbol in percent mode
+                    style: { color: axisLabelColor }
                 },
                 endOnTick: false,
                 startOnTick: false,
@@ -183,12 +202,18 @@ function yearlyTrendChart(id, dictYearlyTrend, seriesname, stockcode, browserwid
                 crosshair: {
                     color: '#9d81ba88'
                 },
-                title: { text: isPercentMode ? 'Performance %' : yAxis_name },
+                lineColor: axisLineColor,
+                tickColor: axisLineColor,
+                title: {
+                    text: isPercentMode ? 'Performance %' : yAxis_name,
+                    style: { color: axisTitleColor }
+                },
                 lineWidth: 1,
                 tickAmount: 8,
                 opposite: false,
                 labels: {
-                    format: isPercentMode ? '{value}%' : '{value}' // Add % symbol in percent mode
+                    format: isPercentMode ? '{value}%' : '{value}', // Add % symbol in percent mode
+                    style: { color: axisLabelColor }
                 },
                 endOnTick: false,
                 startOnTick: false,

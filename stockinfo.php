@@ -1915,7 +1915,7 @@ function ensureStockOptionalLibraries()
 <script src="assets/js/priceDeviation.js?v=20260624.1"></script>
 <script src="assets/js/CCASS.js?v=20260624.1"></script>
 <script src="assets/js/stockCompare.js"></script>
-<script src="assets/js/yearlyTrendChart.js?v=20260625.2"></script>
+<script src="assets/js/yearlyTrendChart.js?v=20260625.3"></script>
 <!--script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
 <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
 <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-exports.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>

@@ -632,6 +632,25 @@ function patchLegendHTMLElement(el, isDark) {
 
 function themeHighchartsAxisAccents(ch) {
   if (!ch || !ch.yAxis || !ch.yAxis.length) return;
+  var renderTo = ch.renderTo;
+  if (renderTo && renderTo.classList &&
+      renderTo.classList.contains('yearly-trend-uniform-axes')) {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var labelColor = isDark ? '#cccccc' : '#555555';
+    var titleColor = isDark ? '#cccccc' : '#333333';
+    var lineColor = isDark ? '#666666' : '#cccccc';
+
+    for (var axisIndex = 0; axisIndex < ch.yAxis.length; axisIndex++) {
+      var yearlyTrendAxis = ch.yAxis[axisIndex];
+      if (!yearlyTrendAxis ||
+          isHighchartsNavigatorAxis(yearlyTrendAxis, 'yAxis', ch)) continue;
+      patchAxisTitleColor(yearlyTrendAxis, titleColor);
+      patchAxisLabelColor(yearlyTrendAxis, labelColor);
+      patchAxisLineColor(yearlyTrendAxis, lineColor);
+    }
+    return;
+  }
+
   var matchSentimentSeries = isSentimentChart(ch);
   var forceMonochromeLeftAxes = document.body && document.body.classList &&
     document.body.classList.contains('match-left-y-axis-to-labels');
