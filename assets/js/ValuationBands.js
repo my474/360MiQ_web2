@@ -290,26 +290,28 @@ function valuationBands(stock, valTable, pricedata, type, container, patternup, 
                     	    x2 = null;
                         }
                         
-                        this.addSeries({
-                            type: 'flags',
-                            name: 'Price Tag',
-                            zIndex: 4,
-                            color: 'orange',
-                            //showInLegend: false,
-                            data: [{
-                                x: x1,
-                                y: min,
-                                title: min,
-                            }, {
-                                x: x2,
-                                y: max,
-                                title: max,
-                            }, {
-                                x: lastx,
-                                y: lasty,
-                                title: lasty,
-                            }]
-                        });
+                        if (!window.PriceDisplayPolicy || PriceDisplayPolicy.showStockIndexPrices()) {
+                            this.addSeries({
+                                type: 'flags',
+                                name: 'Price Tag',
+                                zIndex: 4,
+                                color: 'orange',
+                                //showInLegend: false,
+                                data: [{
+                                    x: x1,
+                                    y: min,
+                                    title: min,
+                                }, {
+                                    x: x2,
+                                    y: max,
+                                    title: max,
+                                }, {
+                                    x: lastx,
+                                    y: lasty,
+                                    title: lasty,
+                                }]
+                            });
+                        }
                     }
                     
 
@@ -1565,26 +1567,28 @@ function Pxband(stock, valTable, pricedata, type, container, patternup, patternd
                     	    x2 = null;
                         }
                         
-                        this.addSeries({
-                            type: 'flags',
-                            name: 'Price Tag',
-                            zIndex: 4,
-                            color: 'orange',
-                            //showInLegend: false,
-                            data: [{
-                                x: x1,
-                                y: min,
-                                title: min,
-                            }, {
-                                x: x2,
-                                y: max,
-                                title: max,
-                            }, {
-                                x: lastx,
-                                y: lasty,
-                                title: lasty,
-                            }]
-                        });
+                        if (!window.PriceDisplayPolicy || PriceDisplayPolicy.showStockIndexPrices()) {
+                            this.addSeries({
+                                type: 'flags',
+                                name: 'Price Tag',
+                                zIndex: 4,
+                                color: 'orange',
+                                //showInLegend: false,
+                                data: [{
+                                    x: x1,
+                                    y: min,
+                                    title: min,
+                                }, {
+                                    x: x2,
+                                    y: max,
+                                    title: max,
+                                }, {
+                                    x: lastx,
+                                    y: lasty,
+                                    title: lasty,
+                                }]
+                            });
+                        }
                     }
                 }
             }

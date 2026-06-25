@@ -2270,7 +2270,7 @@ function YearlyTrendToggle(isPercent, id, Series_Name = "") {
     <!--<script src="https://code.highcharts.com/stock/8.0.4/modules/pattern-fill.js"></script>-->
     <script src="assets/js/jquery-ui1.12.1.min.js"></script>
     <!--<script src="assets/js/jquery.ui.treemap.js"></script>-->
-    <script src="assets/js/ValuationBands.js?v=20260624.1"></script>
+    <script src="assets/js/ValuationBands.js?v=20260625.1"></script>
     <!--<script src="assets/js/yaxis-panning.js"></script>-->
 </body>
 

@@ -1950,7 +1950,7 @@ window.__STOCKINFO_PAGE_CONFIG = {
     "stockinfo": <?php echo json_encode($line, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/ValuationBands.js?v=20260624.1"></script>
+<script src="assets/js/ValuationBands.js?v=20260625.1"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260625.2"></script>
 <script>
