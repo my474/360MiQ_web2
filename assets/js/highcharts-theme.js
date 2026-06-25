@@ -672,6 +672,21 @@ function themeHighchartsAxisAccents(ch) {
     return;
   }
 
+  if (isBubblePerformanceChart(ch)) {
+    var bubbleIsDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var bubbleAxisColor = bubbleIsDark ? '#cccccc' : '#555555';
+    var bubbleAxisLineColor = bubbleIsDark ? '#666666' : '#cccccc';
+    var bubbleYAxis = ch.yAxis[0];
+
+    if (bubbleYAxis) {
+      patchAxisTitleColor(bubbleYAxis, bubbleAxisColor);
+      patchAxisLabelColor(bubbleYAxis, bubbleAxisColor);
+      patchAxisLineColor(bubbleYAxis, bubbleAxisLineColor);
+      patchBubbleZeroLabel(bubbleYAxis, bubbleAxisColor);
+    }
+    return;
+  }
+
   if (renderTo && renderTo.classList &&
       renderTo.classList.contains('yearly-trend-uniform-axes')) {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -823,6 +838,39 @@ function addSvgClass(element, className) {
     var current = element.getAttribute('class') || '';
     if ((' ' + current + ' ').indexOf(' ' + className + ' ') === -1) {
       element.setAttribute('class', (current + ' ' + className).trim());
+    }
+  }
+}
+
+function isBubblePerformanceChart(ch) {
+  var renderTo = ch && ch.renderTo;
+  var id = renderTo && renderTo.id ? renderTo.id.toLowerCase() : '';
+  return id.indexOf('bubblecontainer') !== -1;
+}
+
+function patchBubbleZeroLabel(axis, fallbackColor) {
+  if (!axis || !axis.ticks) return;
+  var zeroColor = fallbackColor;
+  var plotLines = axis.options && axis.options.plotLines;
+
+  if (plotLines && plotLines.length) {
+    for (var i = 0; i < plotLines.length; i++) {
+      if (Number(plotLines[i].value) === 0 && plotLines[i].color) {
+        zeroColor = plotLines[i].color;
+        break;
+      }
+    }
+  }
+
+  var zeroTick = axis.ticks[0] || axis.ticks['0'];
+  var label = zeroTick && zeroTick.label;
+  if (label && label.attr) label.attr({ fill: zeroColor });
+  var element = label && label.element;
+  if (element) {
+    patchSvgTextColor(element, zeroColor);
+    if (element.querySelectorAll) {
+      var parts = element.querySelectorAll('text,tspan');
+      for (var j = 0; j < parts.length; j++) patchSvgTextColor(parts[j], zeroColor);
     }
   }
 }
