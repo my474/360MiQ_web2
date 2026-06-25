@@ -1941,7 +1941,7 @@ var anychartReady = loadStockScript('assets/js/anychart-bundle.min.js')
         return loadStockScript('assets/js/Anystock.js?v=20260625.5');
     });
 </script>
-<script src="assets/js/seasonality.js"></script>
+<script src="assets/js/seasonality.js?v=20260625.1"></script>
 <script src="assets/js/LanguageTimezone.js"></script>
 <script src="assets/js/jquery.sparkline.min.js"></script>
 <script>

@@ -634,6 +634,28 @@ function themeHighchartsAxisAccents(ch) {
   if (!ch || !ch.yAxis || !ch.yAxis.length) return;
   var renderTo = ch.renderTo;
   if (renderTo && renderTo.classList &&
+      renderTo.classList.contains('average-monthly-return-axes')) {
+    var monthlyIsDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var monthlyAxisLabelColor = monthlyIsDark ? '#cccccc' : '#555555';
+    var monthlyAxisTitleColor = monthlyAxisLabelColor;
+    var monthlyAxisLineColor = monthlyIsDark ? '#666666' : '#cccccc';
+    var returnAxis = ch.yAxis[0];
+    var winningAxis = ch.yAxis[1];
+
+    if (returnAxis) {
+      patchAxisTitleColor(returnAxis, monthlyAxisTitleColor);
+      patchAxisLineColor(returnAxis, monthlyAxisLineColor);
+      patchSignedMonthlyReturnLabels(returnAxis, monthlyAxisLabelColor);
+    }
+    if (winningAxis) {
+      patchAxisTitleColor(winningAxis, 'gold');
+      patchAxisLabelColor(winningAxis, 'gold');
+      patchAxisLineColor(winningAxis, 'gold');
+    }
+    return;
+  }
+
+  if (renderTo && renderTo.classList &&
       renderTo.classList.contains('yearly-trend-uniform-axes')) {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var labelColor = isDark ? '#cccccc' : '#555555';
@@ -784,6 +806,26 @@ function addSvgClass(element, className) {
     var current = element.getAttribute('class') || '';
     if ((' ' + current + ' ').indexOf(' ' + className + ' ') === -1) {
       element.setAttribute('class', (current + ' ' + className).trim());
+    }
+  }
+}
+
+function patchSignedMonthlyReturnLabels(axis, zeroColor) {
+  if (!axis || !axis.ticks) return;
+  var positions = axis.tickPositions || Object.keys(axis.ticks);
+  for (var i = 0; i < positions.length; i++) {
+    var position = Number(positions[i]);
+    var tick = axis.ticks[positions[i]];
+    var color = position > 0 ? '#00bbff' : (position < 0 ? '#ff9600' : zeroColor);
+    var label = tick && tick.label;
+    if (label && label.attr) label.attr({ fill: color });
+    var element = label && label.element;
+    if (element) {
+      patchSvgTextColor(element, color);
+      if (element.querySelectorAll) {
+        var parts = element.querySelectorAll('text,tspan');
+        for (var j = 0; j < parts.length; j++) patchSvgTextColor(parts[j], color);
+      }
     }
   }
 }

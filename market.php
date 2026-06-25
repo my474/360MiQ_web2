@@ -2037,7 +2037,7 @@ function adsBlocked(callback){
 <script src="assets/js/Highstock.js?v=20260624.3"></script>
 <script src="assets/js/stockCompare.js?v=20260623.10"></script>
 <script src="assets/js/yearlyTrendChart.js?v=20260625.3"></script>
-<script src="assets/js/seasonality.js?v=20260623.5"></script>
+<script src="assets/js/seasonality.js?v=20260625.1"></script>
 <script>
 (function () {
     var originalSeasonalityChart = window.seasonalityChart;
@@ -2079,7 +2079,7 @@ function adsBlocked(callback){
 })();
 </script>
 <script src="assets/js/sectorPerformance.js"></script>
-<script src="assets/js/highcharts-theme.js?v=20260625.1"></script>
+<script src="assets/js/highcharts-theme.js?v=20260625.2"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
