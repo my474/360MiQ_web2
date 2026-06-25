@@ -81,6 +81,7 @@ $structured_data = array(
 <!-- Anti-FOUC: before all stylesheets -->
 <script>(function(){var s=localStorage.getItem('360miq-dark-mode');if(s==='true'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script>window.__SITE_DISPLAY_POLICY={showStockIndexPrices:<?php echo $show_stock_index_prices ? 'true' : 'false'; ?>};</script>
+<script>window.__SCHEMA_MARKUP_CONFIG={siteUrl:<?php echo json_encode($site_url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,canonicalUrl:<?php echo json_encode($canonical_url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,route:<?php echo json_encode($route === '' ? 'home' : $route, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>};</script>
 <link rel="canonical" href="<?php echo htmlspecialchars($canonical_url, ENT_QUOTES, 'UTF-8'); ?>" />
 <meta name="robots" content="<?php echo $robots_content; ?>">
 <meta name="theme-color" content="#ffc107">
