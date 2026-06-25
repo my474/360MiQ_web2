@@ -2230,6 +2230,25 @@ window.__MARKET_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/market-main.js?v=20260623.10"></script>
+<script>
+function YearlyTrendToggle(isPercent, id, Series_Name = "") {
+    if (Series_Name == "")
+        Series_Name = indexname;
+
+    var browserwidth = document.documentElement.clientWidth || document.body.clientWidth || window.innerWidth;
+    yearlyTrendChart(
+        id,
+        id.endsWith("1920") ? dictYearlyTrend1920 : dictYearlyTrend,
+        seriesname,
+        Series_Name + (id.endsWith("1920") ? "" : " Index"),
+        browserwidth,
+        true,
+        indexname,
+        "",
+        isPercent
+    );
+}
+</script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 
 <?php include "./footer.php" ?>
