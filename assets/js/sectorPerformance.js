@@ -40,6 +40,10 @@ function sectorPerformance(barcontainer, title, href, dict_sector, toShowBreadth
   var show20 = true;
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   var labelColor = isDark ? '#cccccc' : '#555555';
+  var axisLineColor = isDark ? '#666666' : '#cccccc';
+  var chartContainerElement = typeof barcontainer === 'string' ? document.getElementById(barcontainer) : barcontainer;
+  if (chartContainerElement && chartContainerElement.classList)
+    chartContainerElement.classList.add('sector-performance-uniform-axes');
   if (showbar !== '')
   {
     if (showbar == '1')
@@ -421,6 +425,8 @@ function sectorPerformance(barcontainer, title, href, dict_sector, toShowBreadth
     },
     
   xAxis: {
+    lineColor: axisLineColor,
+    tickColor: axisLineColor,
     labels: {
         rotation: 300,
         align: 'right',
@@ -434,26 +440,38 @@ function sectorPerformance(barcontainer, title, href, dict_sector, toShowBreadth
 
   yAxis: [{
       allowDecimals: false,
+      lineWidth: 1,
+      lineColor: axisLineColor,
+      tickColor: axisLineColor,
       labels: {
         style: {
-            color: 'grey'
+            color: labelColor
         },
       },
       title: {
         text: '% Gain/Loss',
-        margin: 3
+        margin: 3,
+        style: {
+            color: labelColor
+        }
       },
       //tickInterval: 1,
       gridLineDashStyle: 'dot'
   },{
+      lineWidth: 1,
+      lineColor: axisLineColor,
+      tickColor: axisLineColor,
       labels: {
         style: {
-            color: 'grey'
+            color: labelColor
         },
       },      
       title: {
         text: '',
-        margin: 0
+        margin: 0,
+        style: {
+            color: labelColor
+        }
       },
       linkedTo:0,
       opposite:true,

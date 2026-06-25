@@ -656,6 +656,23 @@ function themeHighchartsAxisAccents(ch) {
   }
 
   if (renderTo && renderTo.classList &&
+      renderTo.classList.contains('sector-performance-uniform-axes')) {
+    var sectorIsDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var sectorAxisColor = sectorIsDark ? '#cccccc' : '#555555';
+    var sectorAxisLineColor = sectorIsDark ? '#666666' : '#cccccc';
+
+    for (var sectorAxisIndex = 0; sectorAxisIndex < ch.yAxis.length; sectorAxisIndex++) {
+      var sectorAxis = ch.yAxis[sectorAxisIndex];
+      if (!sectorAxis ||
+          isHighchartsNavigatorAxis(sectorAxis, 'yAxis', ch)) continue;
+      patchAxisTitleColor(sectorAxis, sectorAxisColor);
+      patchAxisLabelColor(sectorAxis, sectorAxisColor);
+      patchAxisLineColor(sectorAxis, sectorAxisLineColor);
+    }
+    return;
+  }
+
+  if (renderTo && renderTo.classList &&
       renderTo.classList.contains('yearly-trend-uniform-axes')) {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var labelColor = isDark ? '#cccccc' : '#555555';
