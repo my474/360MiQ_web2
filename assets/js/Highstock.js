@@ -1,6 +1,8 @@
 function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1, ymin, ymax, unitType, rangeSelected, seriesType, seriesOpacity, creditY, plotlevel, YaxisType = 'linear', oneYaxis = false, updowncolor = false, dataGrouping_approximation = 'close', monthlyFund = Infinity, showPriceTooltipLegend = true, plotMajorEvents = false, rangeSelector = [{type: 'month', count: 6, text: '6m'}, {type: 'ytd', text: 'YTD'}, {type: 'year', count: 1, text: '1y'}, {type: 'year', count:2, text:'2y'}, {type: 'year', count: 3, text: '3y'}, {type: 'year', count: 8, text: '8y'}, {type: 'all', text: 'All'}])
 {
     var isNyseValuationChart = chartcontainer == 'chartcontainerD2' || chartcontainer == 'chartcontainerD3';
+    var showPolicyPriceValues = !window.PriceDisplayPolicy || PriceDisplayPolicy.showStockIndexPrices();
+    var showPriceValues = showPolicyPriceValues || plotMajorEvents === 'GOLD';
     var marketIndexNameMap = {
         'S&P 500': 'SPX',
         'Nasdaq Composite': 'Nas Composite',
@@ -497,7 +499,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
           	        return '<span style="color:' + this.color + '">' + this.name + '</span>';
       	        else if (this.name == 'Recession')
           	        return '<span style="color:grey">' + this.name + '</span>';
-                else if (!PriceDisplayPolicy.showStockIndexPrices() && this.index === 0 && showPriceTooltipLegend)
+                else if (!showPriceValues && this.index === 0 && showPriceTooltipLegend)
                     return '<span style="color:' + this.color + '">' + this.name + ': ' + PriceDisplayPolicy.formatPercent(chg_percent2) + '</span>';
           	    else if (current < 0)
           	    {
@@ -581,7 +583,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 if (unitType == "week")
                     return this.points.reduce(function (s, point) {
                         var point_series_color = point.series.color;
-                        if (!PriceDisplayPolicy.showStockIndexPrices() && point.series.index === 0 && showPriceTooltipLegend)
+                        if (!showPriceValues && point.series.index === 0 && showPriceTooltipLegend)
                             return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': <b>' + PriceDisplayPolicy.pointPercentChange(point, 2) + '</b>';
                         if (point.y < 0)
                         {
@@ -636,7 +638,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 else if (unitType == "month")
                     return this.points.reduce(function (s, point) {
                         var point_series_color = point.series.color;
-                        if (!PriceDisplayPolicy.showStockIndexPrices() && point.series.index === 0 && showPriceTooltipLegend)
+                        if (!showPriceValues && point.series.index === 0 && showPriceTooltipLegend)
                             return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': <b>' + PriceDisplayPolicy.pointPercentChange(point, 2) + '</b>';
                         var yvalue = point.y;
                         if (dataGrouping_approximation == 'sum')
@@ -697,7 +699,7 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
                 else if (unitType == "day" && this.color != hindenburgColor) // not Hindenburg
                     return this.points.reduce(function (s, point) {
                         var point_series_color = point.series.color;
-                        if (!PriceDisplayPolicy.showStockIndexPrices() && point.series.index === 0 && showPriceTooltipLegend)
+                        if (!showPriceValues && point.series.index === 0 && showPriceTooltipLegend)
                             return s + '<br/><span style="color:' + point.series.color + '">●</span> ' + point.series.name + ': <b>' + PriceDisplayPolicy.pointPercentChange(point, 2) + '</b>';
                         if (point.y < 0)
                         {

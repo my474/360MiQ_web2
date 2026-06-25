@@ -2034,7 +2034,7 @@ function adsBlocked(callback){
 <script src="https://code.highcharts.com/stock/8.2.0/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>
 <script src="assets/js/TA.js"></script>
-<script src="assets/js/Highstock.js?v=20260624.3"></script>
+<script src="assets/js/Highstock.js?v=20260625.1"></script>
 <script src="assets/js/stockCompare.js?v=20260623.10"></script>
 <script src="assets/js/yearlyTrendChart.js?v=20260625.3"></script>
 <script src="assets/js/seasonality.js?v=20260625.1"></script>
