@@ -706,8 +706,7 @@ function themeHighchartsAxisAccents(ch) {
   }
 
   var matchSentimentSeries = isSentimentChart(ch);
-  var forceMonochromeLeftAxes = document.body && document.body.classList &&
-    document.body.classList.contains('match-left-y-axis-to-labels');
+  var forceMonochromeLeftAxes = isMarketBreadthAxisChart(ch);
 
   for (var i = 0; i < ch.yAxis.length; i++) {
     var axis = ch.yAxis[i];
@@ -776,9 +775,7 @@ function themeMarketLeftAxisTitle(ch, isDark) {
 
 function markLeftYAxisElements(ch) {
   try {
-    if (!document.body || !document.body.classList ||
-        !document.body.classList.contains('match-left-y-axis-to-labels') ||
-        !ch || !ch.yAxis) return;
+    if (!isMarketBreadthAxisChart(ch) || !ch.yAxis) return;
 
     var themeColor = document.documentElement.getAttribute('data-theme') === 'dark'
       ? '#ffffff'
@@ -805,6 +802,15 @@ function markLeftYAxisElements(ch) {
       }
     }
   } catch(e) {}
+}
+
+function isMarketBreadthAxisChart(ch) {
+  try {
+    var renderTo = ch && ch.renderTo;
+    return !!(renderTo && renderTo.classList &&
+      renderTo.classList.contains('market-left-axis-title-theme'));
+  } catch(e) {}
+  return false;
 }
 
 function isLeftYAxis(axis) {
@@ -1308,8 +1314,7 @@ function bindLeftYAxisTitleTheme() {
 
   Highcharts._leftYAxisTitleThemeBound360 = true;
   Highcharts.addEvent(Highcharts.Axis, 'afterRender', function() {
-    if (!document.body || !document.body.classList ||
-        !document.body.classList.contains('match-left-y-axis-to-labels') ||
+    if (!isMarketBreadthAxisChart(this.chart) ||
         this.coll !== 'yAxis' || !isLeftYAxis(this) ||
         isHighchartsNavigatorAxis(this, 'yAxis', this.chart)) return;
 
