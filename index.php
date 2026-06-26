@@ -379,8 +379,7 @@ function scheduleHomeAjax(options)
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quam urna, dignissim nec auctor in, mattis vitae leo.</p>
         <a href="#"><img src = "assets/img/Ad_h.png" widht = "970" height = "90"/></a>
     </div-->
-    <div id="newscard" class="card clean-card text-center" style="margin:70px 0 16px 0;float:left; width: 100%;">
-        <!--div id="stockname" style="padding:8px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div-->
+    <!--div id="newscard" class="card clean-card text-center" style="margin:70px 0 16px 0;float:left; width: 100%;">
         <div style="padding:8px; font-size: 14px;">
             <div id="news-bar"><div id="news-scroll">Loading news...</div></div>
         </div>
@@ -393,9 +392,10 @@ function scheduleHomeAjax(options)
             <p id="modal-content"></p>
           </div>
         </div>
-
-    </div>
-    <div id="maincard" class="row justify-content-center" style="margin:0;padding-right:0.1px;padding-left:0px"> <!-- layout goes haywire if both padding-left & right = 0, and without margin:0. Only happens after News feature added -->
+    </div-->
+	
+	<!--div id="maincard" class="row justify-content-center" style="margin:0;padding-right:0.1px;padding-left:0px"-->
+    <div id="maincard" class="row justify-content-center" style="margin:70px 0 16px 0;padding-right:0.1px;padding-left:0px"> <!-- layout goes haywire if both padding-left & right = 0, and without margin:0. Only happens after News feature added -->
         <div class="col-md-12 table-condensed cf">
 <!--<div id="adblockerMSG" class="container">
   Our website is made possible by displaying online advertisements to our visitors.<br>
