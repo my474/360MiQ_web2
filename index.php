@@ -1626,7 +1626,38 @@ function adsBlocked(callback){
 
         <div class="col-sm-6 col-lg-4"><!-- style="padding:0px 0px 0px 15px">-->
             
-<div class = "card clean-card text-center container" style="padding:0;">
+<style>
+.market-summary-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.market-summary-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border: 1px solid var(--border-color);
+    border-radius: inherit;
+}
+
+.market-summary-card .tradingview-widget-container {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0 1px;
+}
+
+.market-summary-card .tradingview-widget-container__widget,
+.market-summary-card .tradingview-widget-container iframe {
+    box-sizing: border-box;
+    display: block;
+    max-width: 100%;
+    width: 100% !important;
+}
+</style>
+<div class = "card clean-card text-center container market-summary-card" style="padding:0;">
     <div class="card-header">
         <h2>Summary</h2>
     </div>
