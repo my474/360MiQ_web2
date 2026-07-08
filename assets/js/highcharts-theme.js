@@ -109,7 +109,7 @@ var highchartsLightTheme = {
     }
   },
   scrollbar: {
-    barBackgroundColor:  '#f0f0f0',
+    barBackgroundColor:  '#c9dced',
     barBorderColor:      '#ccc',
     buttonBackgroundColor: '#f0f0f0',
     buttonArrowColor:    '#333',
@@ -200,7 +200,7 @@ var highchartsDarkTheme = {
     }
   },
   scrollbar: {
-    barBackgroundColor:  '#2a2a3e',
+    barBackgroundColor:  '#46516d',
     barBorderColor:      '#444',
     buttonBackgroundColor: '#2a2a3e',
     buttonArrowColor:    '#aaa',
@@ -1334,8 +1334,10 @@ function themeNavScrollbar(ch, isDark) {
   var bg   = isDark ? '#2a2a3e' : '#f0f0f0';
   var edge = isDark ? '#444' : '#ccc';
   var arr  = isDark ? '#aaa' : '#333';
+  var barBg = isDark ? '#46516d' : '#c9dced';
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
+  var maskInside = isDark ? 'rgba(111,132,190,0.42)' : 'rgba(72,139,196,0.26)';
   var grid = isDark ? '#45475f' : '#e6e6e6';
   var hndl = isDark ? '#555' : '#777';
   var hndlBg = isDark ? '#4b5673' : '#d9e6f2';
@@ -1370,6 +1372,8 @@ function themeNavScrollbar(ch, isDark) {
       if (!el || !el.setAttribute) return;
       var t = (el.tagName || '').toLowerCase();
       var c = (el.getAttribute('class') || '');
+      var pc = (el.parentNode && el.parentNode.getAttribute && el.parentNode.getAttribute('class')) || '';
+      var cc = c + ' ' + pc;
       var s = function(a, v) {
         try { el.setAttribute(a, v); } catch(e) {}
         try {
@@ -1389,12 +1393,13 @@ function themeNavScrollbar(ch, isDark) {
         else if (c.indexOf('handle') !== -1) {
           s('fill', hndlBg); s('fill-opacity', '1'); s('stroke', hndl);
         }
-        else if (c.indexOf('navigator') !== -1 && c.indexOf('mask') !== -1) {
-          s('fill', mask);
+        else if (cc.indexOf('navigator') !== -1 && cc.indexOf('mask') !== -1) {
+          s('fill', cc.indexOf('inside') !== -1 ? maskInside : mask);
         }
-        else if (c.indexOf('scrollbar') !== -1) {
-          if (c.indexOf('track') !== -1) { s('fill', trBg); s('stroke', outl); }
-          else if (c.indexOf('button') !== -1) { s('fill', bg); s('stroke', outl); }
+        else if (cc.indexOf('scrollbar') !== -1) {
+          if (cc.indexOf('track') !== -1) { s('fill', trBg); s('stroke', outl); }
+          else if (cc.indexOf('button') !== -1) { s('fill', bg); s('stroke', outl); }
+          else if (cc.indexOf('thumb') !== -1) { s('fill', barBg); s('stroke', outl); }
           else { s('fill', bg); s('stroke', outl); }
         }
         else if (c.indexOf('navigator') !== -1 && c.indexOf('button') !== -1) {
@@ -1415,7 +1420,7 @@ function themeNavScrollbar(ch, isDark) {
         else if (c.indexOf('outline') !== -1) {
           s('stroke', outl);
         }
-        else if (c.indexOf('scrollbar') !== -1) {
+        else if (cc.indexOf('scrollbar') !== -1) {
           var d = (el.getAttribute('d') || '');
           if (d.length > 60) { s('stroke', arr); }
           else { s('fill', arr); s('stroke', arr); }
