@@ -242,7 +242,8 @@ function valuationBands(stock, valTable, pricedata, type, container, patternup, 
         'M', 0, 9,
         'm', -r, 0,
         'a', r, r, 0, 1, 0, 2 * r, 0,
-        'a', r, r, 0, 1, 0, -2 * r, 0
+        'a', r, r, 0, 1, 0, -2 * r, 0,
+        'z'
       ];
     };
 
@@ -1521,7 +1522,8 @@ function Pxband(stock, valTable, pricedata, type, container, patternup, patternd
         'M', 0, 9,
         'm', -r, 0,
         'a', r, r, 0, 1, 0, 2 * r, 0,
-        'a', r, r, 0, 1, 0, -2 * r, 0
+        'a', r, r, 0, 1, 0, -2 * r, 0,
+        'z'
       ];
     };
 
@@ -2383,7 +2385,8 @@ function Pxband_index(stock, valTable, pricedata, type, container, patternup, pa
         'M', 0, 9,
         'm', -r, 0,
         'a', r, r, 0, 1, 0, 2 * r, 0,
-        'a', r, r, 0, 1, 0, -2 * r, 0
+        'a', r, r, 0, 1, 0, -2 * r, 0,
+        'z'
       ];
     };
 

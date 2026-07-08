@@ -1370,14 +1370,24 @@ function themeNavScrollbar(ch, isDark) {
       if (!el || !el.setAttribute) return;
       var t = (el.tagName || '').toLowerCase();
       var c = (el.getAttribute('class') || '');
-      var s = function(a, v) { try { el.setAttribute(a, v); } catch(e) {} };
+      var s = function(a, v) {
+        try { el.setAttribute(a, v); } catch(e) {}
+        try {
+          if (el.style) {
+            if (a === 'fill') el.style.fill = v;
+            else if (a === 'stroke') el.style.stroke = v;
+            else if (a === 'fill-opacity') el.style.fillOpacity = v;
+            else if (a === 'stroke-opacity') el.style.strokeOpacity = v;
+          }
+        } catch(e) {}
+      };
 
       if (t === 'rect') {
         if (c.indexOf('outline') !== -1) {
           s('stroke', outl);
         }
         else if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl);
+          s('fill', hndlBg); s('fill-opacity', '1'); s('stroke', hndl);
         }
         else if (c.indexOf('navigator') !== -1 && c.indexOf('mask') !== -1) {
           s('fill', mask);
@@ -1400,7 +1410,7 @@ function themeNavScrollbar(ch, isDark) {
       }
       else if (t === 'path') {
         if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl);
+          s('fill', hndlBg); s('fill-opacity', '1'); s('stroke', hndl);
         }
         else if (c.indexOf('outline') !== -1) {
           s('stroke', outl);
@@ -1413,7 +1423,7 @@ function themeNavScrollbar(ch, isDark) {
       }
       else if (t === 'circle') {
         if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl);
+          s('fill', hndlBg); s('fill-opacity', '1'); s('stroke', hndl);
         }
       }
       else if (t === 'line') {
