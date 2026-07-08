@@ -109,7 +109,7 @@ var highchartsLightTheme = {
     }
   },
   scrollbar: {
-    barBackgroundColor:  '#c9dced',
+    barBackgroundColor:  '#9fc4e2',
     barBorderColor:      '#ccc',
     buttonBackgroundColor: '#f0f0f0',
     buttonArrowColor:    '#333',
@@ -1334,10 +1334,10 @@ function themeNavScrollbar(ch, isDark) {
   var bg   = isDark ? '#2a2a3e' : '#f0f0f0';
   var edge = isDark ? '#444' : '#ccc';
   var arr  = isDark ? '#aaa' : '#333';
-  var barBg = isDark ? '#46516d' : '#c9dced';
+  var barBg = isDark ? '#46516d' : '#9fc4e2';
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
-  var maskInside = isDark ? 'rgba(111,132,190,0.42)' : 'rgba(72,139,196,0.26)';
+  var maskInside = isDark ? 'rgba(111,132,190,0.42)' : 'rgba(45,123,190,0.34)';
   var grid = isDark ? '#45475f' : '#e6e6e6';
   var hndl = isDark ? '#555' : '#777';
   var hndlBg = isDark ? '#4b5673' : '#d9e6f2';

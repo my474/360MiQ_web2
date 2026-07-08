@@ -1012,7 +1012,7 @@ function adsBlocked(callback){
 <script src="assets/js/Highstock.js?v=20260709.5"></script>
 <script src="assets/js/yearlyTrendChart.js"></script>
 <script src="assets/js/seasonality.js"></script>
-<script src="assets/js/highcharts-theme.js?v=20260709.6"></script>
+<script src="assets/js/highcharts-theme.js?v=20260709.7"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
