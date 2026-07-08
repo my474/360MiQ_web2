@@ -298,6 +298,35 @@ a:hover.recentpost {
     [data-theme="dark"] #modal-date {
       color: #999999;
     }
+    #WEI #weicontainer {
+      height: clamp(360px, 70vw, 600px) !important;
+      min-height: 360px;
+      min-width: 100%;
+    }
+    #minimal-tabs [id^="barcontainer"] {
+      height: clamp(320px, 62vw, 400px) !important;
+      min-height: 320px;
+    }
+    #content [id^="chartcontainer"][style*="height:600px"],
+    #content [id^="bubblecontainer"][style*="height:600px"] {
+      height: clamp(380px, 78vw, 600px) !important;
+      min-height: 380px;
+    }
+    #content [id^="tabubblecontainer"][style*="height:700px"] {
+      height: clamp(420px, 86vw, 700px) !important;
+      min-height: 420px;
+    }
+    @media (max-width: 480px) {
+      #WEI #weicontainer,
+      #content [id^="chartcontainer"][style*="height:600px"],
+      #content [id^="bubblecontainer"][style*="height:600px"],
+      #content [id^="tabubblecontainer"][style*="height:700px"] {
+        min-height: 340px;
+      }
+      #minimal-tabs [id^="barcontainer"] {
+        min-height: 300px;
+      }
+    }
   </style>
   <style>
     .tooltip-bubble {

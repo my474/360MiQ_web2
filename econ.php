@@ -258,6 +258,29 @@ var econCriticalRequests = {
   stroke: #45475f !important;
 }
 
+main.page div[id^="chartcontainer"][style*="height: 525px"],
+main.page div[id^="chartcontainer"][style*="height: 525px;"] {
+  height: clamp(340px, 68vw, 525px) !important;
+  min-height: 340px;
+}
+main.page div[id^="chartcontainerSeasonality"][style*="height: 600px"] {
+  height: clamp(420px, 78vw, 600px) !important;
+  min-height: 420px;
+}
+main.page .sentiment-chart[style*="height: 825px"] {
+  height: clamp(520px, 88vw, 825px) !important;
+  min-height: 520px;
+}
+@media (max-width: 480px) {
+  main.page div[id^="chartcontainer"][style*="height: 525px"],
+  main.page div[id^="chartcontainerSeasonality"][style*="height: 600px"] {
+    min-height: 340px;
+  }
+  main.page .sentiment-chart[style*="height: 825px"] {
+    min-height: 460px;
+  }
+}
+
 </style>
 
 <?php $page = 'econ'; include "./header.php" ?>

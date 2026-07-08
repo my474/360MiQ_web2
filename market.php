@@ -350,6 +350,52 @@ html[data-theme="dark"] body.match-left-y-axis-to-labels .theme-left-y-axis-mono
     /* keep cursor familiar */
     cursor: text;
 }
+main.page div[id^="chartcontainer"][style*="height: 525px"],
+main.page div[id^="chartcontainer"][style*="height: 525px;"] {
+  height: clamp(340px, 68vw, 525px) !important;
+  min-height: 340px;
+}
+main.page div[id^="chartcontainerSeasonality"][style*="height: 600px"] {
+  height: clamp(420px, 78vw, 600px) !important;
+  min-height: 420px;
+}
+main.page .sentiment-chart[style*="height: 825px"] {
+  height: clamp(520px, 88vw, 825px) !important;
+  min-height: 520px;
+}
+main.page #chartcontainerH2.sentiment-chart[style*="height: 725px"] {
+  height: clamp(500px, 84vw, 725px) !important;
+  min-height: 500px;
+}
+main.page #chartcontainerA8[style*="height: 311px"] {
+  height: clamp(260px, 45vw, 311px) !important;
+  min-height: 260px;
+}
+main.page [id^="barcontainer"][style*="height: 500px"] {
+  height: clamp(340px, 64vw, 500px) !important;
+  min-height: 340px;
+}
+main.page [id^="treecontainer"][style*="height:700px"],
+main.page [id^="bubblecontainer"][style*="height:700px"],
+main.page [id^="tabubblecontainer"][style*="height:700px"],
+main.page [id^="top10container"][style*="height:700px"] {
+  height: clamp(420px, 86vw, 700px) !important;
+  min-height: 420px;
+}
+@media (max-width: 480px) {
+  main.page div[id^="chartcontainer"][style*="height: 525px"],
+  main.page div[id^="chartcontainerSeasonality"][style*="height: 600px"],
+  main.page [id^="treecontainer"][style*="height:700px"],
+  main.page [id^="bubblecontainer"][style*="height:700px"],
+  main.page [id^="tabubblecontainer"][style*="height:700px"],
+  main.page [id^="top10container"][style*="height:700px"] {
+    min-height: 340px;
+  }
+  main.page .sentiment-chart[style*="height: 825px"],
+  main.page #chartcontainerH2.sentiment-chart[style*="height: 725px"] {
+    min-height: 460px;
+  }
+}
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <script src="assets/js/Utils.js"></script>
