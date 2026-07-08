@@ -930,8 +930,8 @@ function highstock(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1,
           outlineWidth: 1,
           maskFill: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'rgba(0, 0, 0, 0.35)':'rgba(0, 0, 0, 0.15)';})(),
           handles: {
-            backgroundColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#3f415c':'#ffffff';})(),
-            borderColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#9aa0bf':'#6f7280';})(),
+            backgroundColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#6ea8ff':'#eaf3ff';})(),
+            borderColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#dbeafe':'#1f6feb';})(),
             symbols: [
               'customcircle',
               'customcircle'
