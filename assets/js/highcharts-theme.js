@@ -90,8 +90,8 @@ var highchartsLightTheme = {
   navigator: {
     maskFill: 'rgba(0, 0, 0, 0.15)',
     handles: {
-      backgroundColor: '#eaf3ff',
-      borderColor: '#1f6feb'
+      backgroundColor: '#ffffff',
+      borderColor: '#777'
     },
     series: {
       lineColor: 'rgba(0, 128, 255, 0.5)',
@@ -181,8 +181,8 @@ var highchartsDarkTheme = {
   navigator: {
     maskFill: 'rgba(0, 0, 0, 0.35)',
     handles: {
-      backgroundColor: '#6ea8ff',
-      borderColor: '#dbeafe'
+      backgroundColor: '#3f415c',
+      borderColor: '#555'
     },
     series: {
       lineColor: 'rgba(0, 128, 255, 0.5)',
@@ -1337,8 +1337,8 @@ function themeNavScrollbar(ch, isDark) {
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
   var grid = isDark ? '#45475f' : '#e6e6e6';
-  var hndl = isDark ? '#dbeafe' : '#1f6feb';
-  var hndlBg = isDark ? '#6ea8ff' : '#eaf3ff';
+  var hndl = isDark ? '#555' : '#777';
+  var hndlBg = isDark ? '#3f415c' : '#ffffff';
   var outl = isDark ? '#555' : '#ccc';
 
   try {
@@ -1377,7 +1377,7 @@ function themeNavScrollbar(ch, isDark) {
           s('stroke', outl);
         }
         else if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl); s('stroke-width', '2');
+          s('fill', hndlBg); s('stroke', hndl);
         }
         else if (c.indexOf('navigator') !== -1 && c.indexOf('mask') !== -1) {
           s('fill', mask);
@@ -1400,7 +1400,7 @@ function themeNavScrollbar(ch, isDark) {
       }
       else if (t === 'path') {
         if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl); s('stroke-width', '2');
+          s('fill', hndlBg); s('stroke', hndl);
         }
         else if (c.indexOf('outline') !== -1) {
           s('stroke', outl);
@@ -1413,7 +1413,7 @@ function themeNavScrollbar(ch, isDark) {
       }
       else if (t === 'circle') {
         if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl); s('stroke-width', '2');
+          s('fill', hndlBg); s('stroke', hndl);
         }
       }
       else if (t === 'line') {
