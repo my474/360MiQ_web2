@@ -181,8 +181,8 @@ var highchartsDarkTheme = {
   navigator: {
     maskFill: 'rgba(0, 0, 0, 0.35)',
     handles: {
-      backgroundColor: '#d9e6f2',
-      borderColor: '#777'
+      backgroundColor: '#657396',
+      borderColor: '#c8d4ee'
     },
     series: {
       lineColor: 'rgba(0, 128, 255, 0.5)',
@@ -1339,8 +1339,8 @@ function themeNavScrollbar(ch, isDark) {
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
   var maskInside = isDark ? 'rgba(111,132,190,0.42)' : 'rgba(45,123,190,0.34)';
   var grid = isDark ? '#45475f' : '#e6e6e6';
-  var hndl = '#777';
-  var hndlBg = '#d9e6f2';
+  var hndl = isDark ? '#c8d4ee' : '#777';
+  var hndlBg = isDark ? '#657396' : '#d9e6f2';
   var outl = isDark ? '#555' : '#ccc';
 
   try {

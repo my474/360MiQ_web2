@@ -2079,7 +2079,7 @@ function adsBlocked(callback){
 })();
 </script>
 <script src="assets/js/sectorPerformance.js?v=20260625.1"></script>
-<script src="assets/js/highcharts-theme.js?v=20260709.8"></script>
+<script src="assets/js/highcharts-theme.js?v=20260709.9"></script>
 
 <!--script src="https://code.jquery.com/jquery-1.9.1.min.js"></script // commented out for DataTables -->
 <script>
