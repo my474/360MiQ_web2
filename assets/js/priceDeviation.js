@@ -446,7 +446,7 @@ function priceDeviation(chartcontainer, data, stockcode, MA_amount, High_amount,
           outlineWidth: 1,
           maskFill: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'rgba(0, 0, 0, 0.35)':'rgba(0, 0, 0, 0.15)';})(),
           handles: {
-            backgroundColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#3f415c':'#ffffff';})(),
+            backgroundColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#4b5673':'#d9e6f2';})(),
             borderColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#555':'#777';})(),
             symbols: [
               'customcircle',
