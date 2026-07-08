@@ -90,8 +90,8 @@ var highchartsLightTheme = {
   navigator: {
     maskFill: 'rgba(0, 0, 0, 0.15)',
     handles: {
-      backgroundColor: '#eee',
-      borderColor: '#777'
+      backgroundColor: '#ffffff',
+      borderColor: '#6f7280'
     },
     series: {
       lineColor: 'rgba(0, 128, 255, 0.5)',
@@ -181,8 +181,8 @@ var highchartsDarkTheme = {
   navigator: {
     maskFill: 'rgba(0, 0, 0, 0.35)',
     handles: {
-      backgroundColor: '#2a2a3e',
-      borderColor: '#555'
+      backgroundColor: '#3f415c',
+      borderColor: '#9aa0bf'
     },
     series: {
       lineColor: 'rgba(0, 128, 255, 0.5)',
@@ -1337,8 +1337,8 @@ function themeNavScrollbar(ch, isDark) {
   var trBg = isDark ? '#1a1a2e' : '#e6e6e6';
   var mask = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.15)';
   var grid = isDark ? '#45475f' : '#e6e6e6';
-  var hndl = isDark ? '#555' : '#777';
-  var hndlBg = isDark ? '#2a2a3e' : '#eee';
+  var hndl = isDark ? '#9aa0bf' : '#6f7280';
+  var hndlBg = isDark ? '#3f415c' : '#ffffff';
   var outl = isDark ? '#555' : '#ccc';
 
   try {
@@ -1377,7 +1377,7 @@ function themeNavScrollbar(ch, isDark) {
           s('stroke', outl);
         }
         else if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl);
+          s('fill', hndlBg); s('stroke', hndl); s('stroke-width', '1.5');
         }
         else if (c.indexOf('navigator') !== -1 && c.indexOf('mask') !== -1) {
           s('fill', mask);
@@ -1400,7 +1400,7 @@ function themeNavScrollbar(ch, isDark) {
       }
       else if (t === 'path') {
         if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl);
+          s('fill', hndlBg); s('stroke', hndl); s('stroke-width', '1.5');
         }
         else if (c.indexOf('outline') !== -1) {
           s('stroke', outl);
@@ -1413,7 +1413,7 @@ function themeNavScrollbar(ch, isDark) {
       }
       else if (t === 'circle') {
         if (c.indexOf('handle') !== -1) {
-          s('fill', hndlBg); s('stroke', hndl);
+          s('fill', hndlBg); s('stroke', hndl); s('stroke-width', '1.5');
         }
       }
       else if (t === 'line') {
@@ -1496,13 +1496,14 @@ function getHighchartsThemeOptions() {
   };
 }
 
-/* ---- auto-apply on load if dark mode already active ---- */
+/* ---- patch already-rendered charts on load ---- */
 
 (function boot() {
   bindHighchartsLegendTheme();
   bindLeftYAxisTitleTheme();
   bindSentimentAxisThemeToggle();
-  if (document.documentElement.getAttribute('data-theme') === 'dark') {
+  var bootIsDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (bootIsDark) {
     applyHighchartsTheme(true);
 
     /* applyHighchartsTheme runs before charts render on page load, so
@@ -1518,6 +1519,10 @@ function getHighchartsThemeOptions() {
           themeNeutralSeriesColors(this, true);
         }
       });
+    }
+  } else if (typeof Highcharts !== 'undefined' && Highcharts.charts && Highcharts.charts.length) {
+    for (var i = 0; i < Highcharts.charts.length; i++) {
+      themeNavScrollbar(Highcharts.charts[i], false);
     }
   }
 })();

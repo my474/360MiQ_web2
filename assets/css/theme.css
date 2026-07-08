@@ -75,8 +75,8 @@
   --chart-legend-hover: #000000;
   --chart-credits: #999;
   --chart-mask-fill: rgba(0, 0, 0, 0.15);
-  --chart-navigator-handle-bg: #eee;
-  --chart-navigator-handle-border: #777;
+  --chart-navigator-handle-bg: #ffffff;
+  --chart-navigator-handle-border: #6f7280;
   --chart-navigator-outline: #ccc;
   --chart-scrollbar-bar-bg: #f0f0f0;
   --chart-scrollbar-bar-border: #ccc;
@@ -169,8 +169,8 @@
   --chart-legend-hover: #ffffff;
   --chart-credits: #666;
   --chart-mask-fill: rgba(0, 0, 0, 0.35);
-  --chart-navigator-handle-bg: #2a2a3e;
-  --chart-navigator-handle-border: #555;
+  --chart-navigator-handle-bg: #3f415c;
+  --chart-navigator-handle-border: #9aa0bf;
   --chart-navigator-outline: #555;
   --chart-scrollbar-bar-bg: #2a2a3e;
   --chart-scrollbar-bar-border: #444;

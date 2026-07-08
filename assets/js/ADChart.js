@@ -195,8 +195,8 @@ function adchart(chartcontainer, data, types, title, subtitle, yaxis0, yaxis1, y
 			outlineWidth: 1,
 			maskFill: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'rgba(0, 0, 0, 0.35)':'rgba(0, 0, 0, 0.15)';})(),
 			handles: {
-			  backgroundColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#2a2a3e':'#eee';})(),
-			  borderColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#555':'#777';})(),
+			  backgroundColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#3f415c':'#ffffff';})(),
+			  borderColor: (function(){var d=document.documentElement.getAttribute('data-theme');return d==='dark'?'#9aa0bf':'#6f7280';})(),
 			  symbols: [
 				'customcircle',
 				'customcircle'
