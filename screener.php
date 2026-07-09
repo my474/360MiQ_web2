@@ -495,9 +495,15 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
 
 .screener-share-actions .btn {
     min-width: 104px;
+    border-color: #007bff !important;
     border-width: 1px;
+    color: #007bff !important;
     box-shadow: none;
     outline: 0;
+}
+
+.screener-share-actions .btn i {
+    color: #007bff !important;
 }
 
 .screener-share-actions .btn:focus,
@@ -511,9 +517,19 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     outline-offset: 2px;
 }
 
+.screener-share-actions .btn:hover,
+.screener-share-actions .btn:focus,
+.screener-share-actions .btn.focus,
 .screener-share-actions .btn:not(:disabled):not(.disabled):active {
-    background-color: #fff;
-    color: #007bff;
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: #fff !important;
+}
+
+.screener-share-actions .btn:hover i,
+.screener-share-actions .btn:focus i,
+.screener-share-actions .btn:not(:disabled):not(.disabled):active i {
+    color: #fff !important;
 }
 
 [data-theme="dark"] .screener-share-actions .btn {
