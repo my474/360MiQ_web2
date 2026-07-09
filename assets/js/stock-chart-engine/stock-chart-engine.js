@@ -21,6 +21,8 @@
     '#be123c', '#0369a1', '#ca8a04', '#16a34a', '#c2410c', '#7f1d1d'
   ];
 
+  var DRAWING_TOOLS = createDrawingTools();
+
   var DEFAULT_LIGHT_THEME = {
     name: 'light',
     background: '#ffffff',
@@ -85,6 +87,110 @@
       });
     }
     return output;
+  }
+
+  function createDrawingTools() {
+    var specs = [
+      ['trendline', 'Trendline', 'trend', 'line', 2, ['trend_line']],
+      ['arrow', 'Arrow', 'trend', 'arrow', 2],
+      ['ray', 'Ray', 'trend', 'ray', 2],
+      ['info_line', 'Info line', 'trend', 'measurement', 2],
+      ['extended_line', 'Extended line', 'trend', 'extendedLine', 2],
+      ['trend_angle', 'Trend angle', 'trend', 'angle', 2],
+      ['hline', 'Horizontal line', 'trend', 'hline', 1, ['horizontal_line']],
+      ['horizontal_ray', 'Horizontal ray', 'trend', 'horizontalRay', 1],
+      ['vline', 'Vertical line', 'trend', 'vline', 1, ['vertical_line']],
+      ['crossline', 'Crossline', 'trend', 'crossline', 1],
+      ['parallel_channel', 'Parallel channel', 'trend', 'channel', 3],
+      ['regression_trend', 'Regression trend', 'trend', 'channel', 2],
+      ['flat_top_bottom', 'Flat top/bottom', 'trend', 'channel', 3],
+      ['disjoint_channel', 'Disjoint channel', 'trend', 'channel', 4],
+      ['anchored_vwap', 'Anchored VWAP', 'trend', 'vwapAnchor', 1],
+      ['fib_retracement', 'Fib retracement', 'fibonacci', 'fibRetracement', 2],
+      ['trend_based_fib_extension', 'Trend-based fib extension', 'fibonacci', 'fibExtension', 3],
+      ['pitchfork', 'Pitchfork', 'fibonacci', 'pitchfork', 3],
+      ['schiff_pitchfork', 'Schiff pitchfork', 'fibonacci', 'pitchfork', 3],
+      ['modified_schiff_pitchfork', 'Modified Schiff pitchfork', 'fibonacci', 'pitchfork', 3],
+      ['inside_pitchfork', 'Inside pitchfork', 'fibonacci', 'pitchfork', 3],
+      ['fib_channel', 'Fib channel', 'fibonacci', 'fibChannel', 3],
+      ['fib_time_zone', 'Fib time zone', 'fibonacci', 'timeZones', 2],
+      ['gann_box', 'Gann box', 'fibonacci', 'gridBox', 2],
+      ['gann_square_fixed', 'Gann square fixed', 'fibonacci', 'gridBox', 2],
+      ['gann_square', 'Gann square', 'fibonacci', 'gridBox', 2],
+      ['gann_fan', 'Gann fan', 'fibonacci', 'fan', 2],
+      ['fib_speed_resistance_fan', 'Fib speed resistance fan', 'fibonacci', 'fan', 2],
+      ['trend_based_fib_time', 'Trend-based fib time', 'fibonacci', 'timeZones', 3],
+      ['fib_circles', 'Fib circles', 'fibonacci', 'circles', 2],
+      ['pitchfan', 'Pitchfan', 'fibonacci', 'fan', 3],
+      ['fib_spiral', 'Fib spiral', 'fibonacci', 'spiral', 2],
+      ['fib_speed_resistance_arcs', 'Fib speed resistance arcs', 'fibonacci', 'arcs', 2],
+      ['fib_wedge', 'Fib wedge', 'fibonacci', 'wedge', 3],
+      ['brush', 'Brush', 'geometric', 'path', 2],
+      ['highlighter', 'Highlighter', 'geometric', 'path', 2],
+      ['rectangle', 'Rectangle', 'geometric', 'rectangle', 2],
+      ['circle', 'Circle', 'geometric', 'ellipse', 2],
+      ['ellipse', 'Ellipse', 'geometric', 'ellipse', 2],
+      ['path', 'Path', 'geometric', 'path', 2],
+      ['curve', 'Curve', 'geometric', 'curve', 3],
+      ['polyline', 'Polyline', 'geometric', 'polyline', 3],
+      ['triangle', 'Triangle', 'geometric', 'polygon', 3],
+      ['rotated_rectangle', 'Rotated rectangle', 'geometric', 'rotatedRectangle', 3],
+      ['arc', 'Arc', 'geometric', 'arc', 3],
+      ['double_curve', 'Double curve', 'geometric', 'doubleCurve', 4],
+      ['text', 'Text', 'annotation', 'text', 1],
+      ['note', 'Note', 'annotation', 'text', 1],
+      ['anchored_note', 'Anchored note', 'annotation', 'text', 1, ['anchored_text']],
+      ['signpost', 'Signpost', 'annotation', 'callout', 1],
+      ['callout', 'Callout', 'annotation', 'callout', 2],
+      ['comment', 'Comment', 'annotation', 'callout', 1],
+      ['price_label', 'Price label', 'annotation', 'priceLabel', 1],
+      ['price_note', 'Price note', 'annotation', 'priceLabel', 1],
+      ['arrow_marker', 'Arrow marker', 'annotation', 'marker', 1],
+      ['arrow_mark_left', 'Arrow mark left', 'annotation', 'markerLeft', 1],
+      ['arrow_mark_right', 'Arrow mark right', 'annotation', 'markerRight', 1],
+      ['arrow_mark_up', 'Arrow mark up', 'annotation', 'markerUp', 1],
+      ['arrow_mark_down', 'Arrow mark down', 'annotation', 'markerDown', 1],
+      ['flag_mark', 'Flag mark', 'annotation', 'flag', 1],
+      ['xabcd_pattern', 'XABCD pattern', 'pattern', 'pattern', 5],
+      ['cypher_pattern', 'Cypher pattern', 'pattern', 'pattern', 5],
+      ['abcd_pattern', 'ABCD pattern', 'pattern', 'pattern', 4],
+      ['triangle_pattern', 'Triangle pattern', 'pattern', 'polygon', 3],
+      ['three_drives_pattern', 'Three drives pattern', 'pattern', 'pattern', 6],
+      ['head_and_shoulders', 'Head and shoulders', 'pattern', 'pattern', 5],
+      ['elliott_impulse_wave', 'Elliott impulse wave (12345)', 'pattern', 'numberedWave', 5, ['elliot_impulse_wave', 'elliott_impulse_wave_12345', 'elliot_impulse_wave_12345']],
+      ['elliott_triangle_wave', 'Elliott triangle wave (ABCDE)', 'pattern', 'letteredWave', 5, ['elliot_triangle_wave', 'elliott_triangle_wave_abcde', 'elliot_triangle_wave_abcde']],
+      ['elliott_triple_combo_wave', 'Elliott triple combo wave (WXYXZ)', 'pattern', 'letteredWave', 5, ['elliot_triple_combo_wave']],
+      ['elliott_correction_wave', 'Elliott correction wave (ABC)', 'pattern', 'letteredWave', 3, ['elliot_correction_wave', 'elliott_correction_wave_abc', 'elliot_correction_wave_abc']],
+      ['elliott_double_combo_wave', 'Elliott double combo wave (WXY)', 'pattern', 'letteredWave', 3, ['elliot_double_combo_wave']],
+      ['cyclic_lines', 'Cyclic lines', 'pattern', 'cyclicLines', 2],
+      ['time_cycles', 'Time cycles', 'pattern', 'cyclicLines', 2],
+      ['sine_line', 'Sine line', 'pattern', 'sine', 2],
+      ['long_position', 'Long position', 'measurement', 'positionLong', 2],
+      ['short_position', 'Short position', 'measurement', 'positionShort', 2],
+      ['position_forecast', 'Position forecast', 'measurement', 'positionForecast', 2],
+      ['date_range', 'Date range', 'measurement', 'dateRange', 2],
+      ['price_range', 'Price range', 'measurement', 'priceRange', 2],
+      ['date_and_price_range', 'Date and price range', 'measurement', 'datePriceRange', 2],
+      ['bars_pattern', 'Bars pattern', 'measurement', 'barsPattern', 2],
+      ['ghost_feed', 'Ghost feed', 'measurement', 'ghostFeed', 2],
+      ['sector', 'Sector', 'measurement', 'sector', 3],
+      ['fixed_range_volume_profile', 'Fixed range volume profile', 'measurement', 'volumeProfile', 2],
+      ['icon', 'Icon', 'icon', 'marker', 1],
+      ['sticker', 'Sticker', 'sticker', 'marker', 1],
+      ['emoji', 'Emoji', 'emoji', 'text', 1]
+    ];
+    var tools = {};
+    specs.forEach(function (spec) {
+      tools[spec[0]] = {
+        id: spec[0],
+        name: spec[1],
+        category: spec[2],
+        renderKind: spec[3],
+        points: spec[4],
+        aliases: spec[5] || []
+      };
+    });
+    return tools;
   }
 
   function uid(prefix) {
@@ -2075,27 +2181,49 @@
     if (!points.length) return false;
     points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return false;
+    var tool = drawingToolDefinition(drawing.type);
+    var kind = tool.renderKind;
+    var rect = this.getPaneRect(drawing.paneId);
+    var bounds = pointBounds(points);
 
-    if ((drawing.type === 'trendline' || drawing.type === 'arrow') && points[0] && points[1]) {
-      return distanceToSegment(pointer, points[0], points[1]) <= tolerance;
-    }
-    if (drawing.type === 'rectangle' && points[0] && points[1]) {
-      var minX = Math.min(points[0].x, points[1].x);
-      var maxX = Math.max(points[0].x, points[1].x);
-      var minY = Math.min(points[0].y, points[1].y);
-      var maxY = Math.max(points[0].y, points[1].y);
-      var nearEdge = Math.abs(pointer.x - minX) <= tolerance || Math.abs(pointer.x - maxX) <= tolerance || Math.abs(pointer.y - minY) <= tolerance || Math.abs(pointer.y - maxY) <= tolerance;
-      return pointer.x >= minX - tolerance && pointer.x <= maxX + tolerance && pointer.y >= minY - tolerance && pointer.y <= maxY + tolerance && nearEdge;
-    }
-    if (drawing.type === 'hline' && points[0]) {
+    if ((kind === 'hline' || kind === 'horizontalRay') && points[0]) {
+      if (kind === 'horizontalRay' && pointer.x < points[0].x - tolerance) return false;
       return Math.abs(pointer.y - points[0].y) <= tolerance;
     }
-    if (drawing.type === 'vline' && points[0]) {
+    if (kind === 'vline' && points[0]) {
       return Math.abs(pointer.x - points[0].x) <= tolerance;
     }
-    if (drawing.type === 'text' && points[0]) {
-      return pointer.x >= points[0].x - tolerance && pointer.x <= points[0].x + 110 && pointer.y >= points[0].y - 20 && pointer.y <= points[0].y + 8;
+    if (kind === 'crossline' && points[0]) {
+      return Math.abs(pointer.x - points[0].x) <= tolerance || Math.abs(pointer.y - points[0].y) <= tolerance;
     }
+    if (kind === 'text' || kind === 'priceLabel' || kind === 'callout' || kind === 'vwapAnchor' || kind.indexOf('marker') === 0 || kind === 'flag') {
+      return pointer.x >= points[0].x - tolerance && pointer.x <= points[0].x + 130 && pointer.y >= points[0].y - 26 && pointer.y <= points[0].y + 14;
+    }
+
+    if (points.length > 1) {
+      for (var i = 0; i < points.length - 1; i += 1) {
+        if (distanceToSegment(pointer, points[i], points[i + 1]) <= tolerance) return true;
+      }
+    }
+
+    if (kind === 'rectangle' || kind === 'gridBox' || kind === 'rotatedRectangle' || kind === 'ellipse' ||
+      kind === 'polygon' || kind === 'channel' || kind === 'fibChannel' || kind === 'wedge' ||
+      kind.indexOf('position') === 0 || kind === 'dateRange' || kind === 'priceRange' || kind === 'datePriceRange' ||
+      kind === 'barsPattern' || kind === 'ghostFeed' || kind === 'volumeProfile') {
+      return pointerInBounds(pointer, bounds, tolerance);
+    }
+
+    if (kind === 'ray' || kind === 'extendedLine') {
+      if (!rect || !points[1]) return false;
+      var leftX = kind === 'ray' ? points[0].x : rect.x;
+      var rightX = rect.x + rect.width;
+      return distanceToSegment(pointer, { x: leftX, y: lineYAtX(points[0], points[1], leftX) }, { x: rightX, y: lineYAtX(points[0], points[1], rightX) }) <= tolerance;
+    }
+
+    if (kind === 'fibRetracement' || kind === 'fibExtension' || kind === 'timeZones' || kind === 'cyclicLines' || kind === 'fan') {
+      return pointerInBounds(pointer, bounds, Math.max(tolerance, 18));
+    }
+
     return false;
   };
 
@@ -2489,64 +2617,154 @@
 
   Chart.prototype.drawDrawing = function (rect, range, theme, drawing) {
     var ctx = this.ctx;
-    var points = drawing.points || [];
+    var rawPoints = drawing.points || [];
+    var points = this.drawingScreenPoints(drawing).filter(function (point) { return point.y != null; });
+    var tool = drawingToolDefinition(drawing.type);
+    var kind = tool.renderKind;
     var style = merge({ color: theme.drawing, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, drawing.style || {});
     if (!style.color) style.color = theme.drawing;
+    if (!points.length) return;
+
+    function point(index) {
+      return points[Math.min(index, points.length - 1)];
+    }
+
+    function drawValueLabel(text, anchor) {
+      ctx.fillStyle = style.color;
+      ctx.fillText(text, anchor.x + 6, anchor.y - 6);
+      ctx.fillStyle = style.fill;
+    }
+
     ctx.save();
     ctx.strokeStyle = style.color;
     ctx.fillStyle = style.fill;
     ctx.lineWidth = style.width || 2;
     ctx.font = style.font || '12px sans-serif';
-    if (drawing.type === 'hline' && points[0]) {
-      var y = this.yForValue(points[0].value, rect, range);
-      if (y == null) {
-        ctx.restore();
-        return;
-      }
+    ctx.setLineDash(lineDashForStyle(style.lineStyle));
+
+    if (kind === 'hline' && point(0)) {
+      var y = point(0).y;
       ctx.beginPath();
       ctx.moveTo(rect.x, y);
       ctx.lineTo(rect.x + rect.width, y);
       ctx.stroke();
-    } else if (drawing.type === 'vline' && points[0]) {
-      var x = this.xForTime(points[0].time, rect);
+    } else if (kind === 'horizontalRay' && point(0)) {
+      ctx.beginPath();
+      ctx.moveTo(point(0).x, point(0).y);
+      ctx.lineTo(rect.x + rect.width, point(0).y);
+      ctx.stroke();
+    } else if (kind === 'vline' && point(0)) {
+      var x = point(0).x;
       ctx.beginPath();
       ctx.moveTo(x, rect.y);
       ctx.lineTo(x, rect.y + rect.height);
       ctx.stroke();
-    } else if (drawing.type === 'rectangle' && points[0] && points[1]) {
-      var x1 = this.xForTime(points[0].time, rect);
-      var y1 = this.yForValue(points[0].value, rect, range);
-      var x2 = this.xForTime(points[1].time, rect);
-      var y2 = this.yForValue(points[1].value, rect, range);
-      if (y1 == null || y2 == null) {
-        ctx.restore();
-        return;
-      }
-      ctx.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
-      ctx.strokeRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
-    } else if (drawing.type === 'text' && points[0]) {
-      var textY = this.yForValue(points[0].value, rect, range);
-      if (textY == null) {
-        ctx.restore();
-        return;
-      }
-      ctx.fillStyle = style.color;
-      ctx.fillText(drawing.text || 'Note', this.xForTime(points[0].time, rect), textY);
-    } else if ((drawing.type === 'trendline' || drawing.type === 'arrow') && points[0] && points[1]) {
-      var ax = this.xForTime(points[0].time, rect);
-      var ay = this.yForValue(points[0].value, rect, range);
-      var bx = this.xForTime(points[1].time, rect);
-      var by = this.yForValue(points[1].value, rect, range);
-      if (ay == null || by == null) {
-        ctx.restore();
-        return;
-      }
+    } else if (kind === 'crossline' && point(0)) {
       ctx.beginPath();
-      ctx.moveTo(ax, ay);
-      ctx.lineTo(bx, by);
+      ctx.moveTo(rect.x, point(0).y);
+      ctx.lineTo(rect.x + rect.width, point(0).y);
+      ctx.moveTo(point(0).x, rect.y);
+      ctx.lineTo(point(0).x, rect.y + rect.height);
       ctx.stroke();
-      if (drawing.type === 'arrow') drawArrowHead(ctx, ax, ay, bx, by, style.color);
+    } else if ((kind === 'rectangle' || kind === 'gridBox') && point(1)) {
+      drawScreenRectangle(ctx, point(0), point(1), true);
+      if (kind === 'gridBox') drawGridBox(ctx, point(0), point(1), 3, 3);
+    } else if (kind === 'rotatedRectangle' && point(2)) {
+      drawPolyline(ctx, rotatedRectanglePoints(point(0), point(1), point(2)), true);
+      ctx.fill();
+      ctx.stroke();
+    } else if (kind === 'ellipse' && point(1)) {
+      drawEllipseApprox(ctx, point(0), point(1));
+      ctx.fill();
+      ctx.stroke();
+    } else if (kind === 'text' && point(0)) {
+      ctx.fillStyle = style.color;
+      ctx.fillText(drawing.text || tool.name, point(0).x, point(0).y);
+    } else if (kind === 'priceLabel' && point(0)) {
+      var label = drawing.text || formatNumber(rawPoints[0] && rawPoints[0].value != null ? rawPoints[0].value : point(0).value);
+      drawTag(ctx, label, point(0), style.color, theme.background);
+    } else if (kind === 'callout' && point(0)) {
+      var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
+      drawLine(ctx, point(0), target);
+      drawTag(ctx, drawing.text || tool.name, target, style.color, theme.background);
+    } else if (kind.indexOf('marker') === 0 || kind === 'flag') {
+      drawMarker(ctx, point(0), kind, style.color);
+      if (drawing.text) drawValueLabel(drawing.text, point(0));
+    } else if (kind === 'line' || kind === 'arrow' || kind === 'measurement' || kind === 'angle') {
+      if (point(1)) {
+        drawLine(ctx, point(0), point(1));
+        if (kind === 'arrow') drawArrowHead(ctx, point(0).x, point(0).y, point(1).x, point(1).y, style.color);
+        if (kind === 'measurement') drawValueLabel(measurementLabel(rawPoints[0], rawPoints[1]), midpoint(point(0), point(1)));
+        if (kind === 'angle') drawValueLabel(angleLabel(point(0), point(1)), midpoint(point(0), point(1)));
+      }
+    } else if ((kind === 'ray' || kind === 'extendedLine') && point(1)) {
+      drawProjectedLine(ctx, point(0), point(1), rect, kind === 'ray');
+    } else if (kind === 'channel' || kind === 'fibChannel' || kind === 'wedge') {
+      drawChannel(ctx, points, kind === 'fibChannel');
+    } else if (kind === 'fibRetracement' && point(1)) {
+      drawFibLevels(ctx, rect, point(0), point(1), style.color, false);
+    } else if (kind === 'fibExtension' && point(2)) {
+      drawPolyline(ctx, [point(0), point(1), point(2)], false);
+      ctx.stroke();
+      drawFibLevels(ctx, rect, point(1), point(2), style.color, true);
+    } else if (kind === 'timeZones' && point(1)) {
+      drawTimeZones(ctx, rect, point(0), point(1), style.color);
+    } else if (kind === 'fan' && point(1)) {
+      drawFan(ctx, rect, point(0), point(1), style.color);
+    } else if (kind === 'pitchfork' && point(2)) {
+      drawPitchfork(ctx, rect, point(0), point(1), point(2));
+    } else if (kind === 'circles' && point(1)) {
+      drawFibCircles(ctx, point(0), point(1));
+    } else if (kind === 'spiral' && point(1)) {
+      drawSpiral(ctx, point(0), point(1));
+    } else if (kind === 'arcs' && point(1)) {
+      drawFibArcs(ctx, point(0), point(1));
+    } else if (kind === 'arc' && point(2)) {
+      drawArcThroughPoints(ctx, point(0), point(1), point(2));
+    } else if (kind === 'curve' || kind === 'doubleCurve') {
+      drawSmoothPolyline(ctx, points);
+      ctx.stroke();
+    } else if (kind === 'polygon') {
+      drawPolyline(ctx, points, true);
+      ctx.fill();
+      ctx.stroke();
+    } else if (kind === 'polyline' || kind === 'path') {
+      if (drawing.type === 'highlighter') {
+        ctx.lineWidth = Math.max(8, (style.width || 2) * 4);
+      }
+      drawPolyline(ctx, points, false);
+      ctx.stroke();
+    } else if (kind === 'pattern' || kind === 'numberedWave' || kind === 'letteredWave') {
+      drawPolyline(ctx, points, false);
+      ctx.stroke();
+      drawPatternLabels(ctx, points, kind, style.color);
+    } else if (kind === 'cyclicLines' && point(1)) {
+      drawCyclicLines(ctx, rect, point(0), point(1), style.color);
+    } else if (kind === 'sine' && point(1)) {
+      drawSineLine(ctx, point(0), point(1));
+      ctx.stroke();
+    } else if (kind.indexOf('position') === 0 || kind === 'dateRange' || kind === 'priceRange' || kind === 'datePriceRange') {
+      if (point(1)) {
+        drawScreenRectangle(ctx, point(0), point(1), true);
+        drawValueLabel(rangeLabel(kind, rawPoints[0], rawPoints[1]), midpoint(point(0), point(1)));
+      }
+    } else if (kind === 'barsPattern' || kind === 'ghostFeed') {
+      drawGhostBars(ctx, point(0), point(1) || { x: point(0).x + 80, y: point(0).y - 30 }, kind === 'ghostFeed');
+    } else if (kind === 'sector' && point(2)) {
+      drawSector(ctx, point(0), point(1), point(2));
+      ctx.stroke();
+    } else if (kind === 'volumeProfile' && point(1)) {
+      drawVolumeProfile(ctx, point(0), point(1), style.color);
+    } else if (kind === 'vwapAnchor' && point(0)) {
+      drawMarker(ctx, point(0), 'markerUp', style.color);
+      drawValueLabel('Anchored VWAP', point(0));
+    } else if (point(1)) {
+      drawPolyline(ctx, points, false);
+      ctx.stroke();
+    } else {
+      drawMarker(ctx, point(0), 'marker', style.color);
     }
+
     if (drawing.id === this.selectedDrawingId || drawing.id === this.hoverDrawingId) {
       this.drawDrawingSelection(drawing, theme);
     }
@@ -2648,6 +2866,365 @@
     ctx.restore();
   }
 
+  function drawLine(ctx, a, b) {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+
+  function drawPolyline(ctx, points, closed) {
+    if (!points.length) return;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (var i = 1; i < points.length; i += 1) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    if (closed && points.length > 2) ctx.closePath();
+  }
+
+  function drawSmoothPolyline(ctx, points) {
+    if (points.length < 3 || !ctx.quadraticCurveTo) {
+      drawPolyline(ctx, points, false);
+      return;
+    }
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (var i = 1; i < points.length - 1; i += 1) {
+      var mid = midpoint(points[i], points[i + 1]);
+      ctx.quadraticCurveTo(points[i].x, points[i].y, mid.x, mid.y);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+  }
+
+  function drawScreenRectangle(ctx, a, b, fill) {
+    var x = Math.min(a.x, b.x);
+    var y = Math.min(a.y, b.y);
+    var width = Math.abs(b.x - a.x);
+    var height = Math.abs(b.y - a.y);
+    if (fill) ctx.fillRect(x, y, width, height);
+    ctx.strokeRect(x, y, width, height);
+  }
+
+  function drawGridBox(ctx, a, b, columns, rows) {
+    var minX = Math.min(a.x, b.x);
+    var maxX = Math.max(a.x, b.x);
+    var minY = Math.min(a.y, b.y);
+    var maxY = Math.max(a.y, b.y);
+    ctx.beginPath();
+    for (var c = 1; c < columns; c += 1) {
+      var x = minX + (maxX - minX) * c / columns;
+      ctx.moveTo(x, minY);
+      ctx.lineTo(x, maxY);
+    }
+    for (var r = 1; r < rows; r += 1) {
+      var y = minY + (maxY - minY) * r / rows;
+      ctx.moveTo(minX, y);
+      ctx.lineTo(maxX, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawEllipseApprox(ctx, a, b) {
+    var cx = (a.x + b.x) / 2;
+    var cy = (a.y + b.y) / 2;
+    var rx = Math.max(2, Math.abs(b.x - a.x) / 2);
+    var ry = Math.max(2, Math.abs(b.y - a.y) / 2);
+    ctx.beginPath();
+    for (var i = 0; i <= 40; i += 1) {
+      var angle = Math.PI * 2 * i / 40;
+      var x = cx + Math.cos(angle) * rx;
+      var y = cy + Math.sin(angle) * ry;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+  }
+
+  function drawArcApprox(ctx, center, radius, startAngle, endAngle, steps) {
+    ctx.beginPath();
+    for (var i = 0; i <= steps; i += 1) {
+      var angle = startAngle + (endAngle - startAngle) * i / steps;
+      var x = center.x + Math.cos(angle) * radius;
+      var y = center.y + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+  }
+
+  function drawFibCircles(ctx, a, b) {
+    var base = Math.max(4, distance(a, b));
+    [0.382, 0.5, 0.618, 1].forEach(function (ratio) {
+      drawArcApprox(ctx, a, base * ratio, 0, Math.PI * 2, 48);
+      ctx.stroke();
+    });
+  }
+
+  function drawFibArcs(ctx, a, b) {
+    var base = Math.max(4, distance(a, b));
+    [0.382, 0.5, 0.618, 1].forEach(function (ratio) {
+      drawArcApprox(ctx, a, base * ratio, 0, Math.PI, 32);
+      ctx.stroke();
+    });
+  }
+
+  function drawSpiral(ctx, a, b) {
+    var base = Math.max(6, distance(a, b) / 8);
+    ctx.beginPath();
+    for (var i = 0; i <= 96; i += 1) {
+      var angle = i / 8;
+      var radius = base * Math.pow(1.045, i);
+      var x = a.x + Math.cos(angle) * radius;
+      var y = a.y + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawArcThroughPoints(ctx, a, b, c) {
+    var center = b;
+    var radius = Math.max(4, distance(a, center));
+    var start = Math.atan2(a.y - center.y, a.x - center.x);
+    var end = Math.atan2(c.y - center.y, c.x - center.x);
+    drawArcApprox(ctx, center, radius, start, end, 32);
+    ctx.stroke();
+  }
+
+  function rotatedRectanglePoints(a, b, c) {
+    return [a, b, c, { x: a.x + c.x - b.x, y: a.y + c.y - b.y }];
+  }
+
+  function lineYAtX(a, b, x) {
+    if (b.x === a.x) return a.y;
+    return a.y + (b.y - a.y) * ((x - a.x) / (b.x - a.x));
+  }
+
+  function drawProjectedLine(ctx, a, b, rect, rayOnly) {
+    if (a.x === b.x) {
+      ctx.beginPath();
+      ctx.moveTo(a.x, rayOnly ? a.y : rect.y);
+      ctx.lineTo(a.x, rect.y + rect.height);
+      ctx.stroke();
+      return;
+    }
+    var startX = rayOnly ? a.x : rect.x;
+    var endX = rect.x + rect.width;
+    drawLine(ctx, { x: startX, y: lineYAtX(a, b, startX) }, { x: endX, y: lineYAtX(a, b, endX) });
+  }
+
+  function drawChannel(ctx, points, fib) {
+    if (points.length < 2) return;
+    drawLine(ctx, points[0], points[1]);
+    var offset = points[2] ? { x: points[2].x - points[0].x, y: points[2].y - points[0].y } : { x: 0, y: -40 };
+    var p2 = { x: points[0].x + offset.x, y: points[0].y + offset.y };
+    var p3 = { x: points[1].x + offset.x, y: points[1].y + offset.y };
+    drawLine(ctx, p2, p3);
+    drawPolyline(ctx, [points[0], points[1], p3, p2], true);
+    ctx.fill();
+    if (fib) {
+      [0.236, 0.382, 0.5, 0.618, 0.786].forEach(function (ratio) {
+        drawLine(ctx,
+          { x: points[0].x + offset.x * ratio, y: points[0].y + offset.y * ratio },
+          { x: points[1].x + offset.x * ratio, y: points[1].y + offset.y * ratio }
+        );
+      });
+    }
+  }
+
+  function drawFibLevels(ctx, rect, a, b, color, extension) {
+    var levels = extension ? [0, 0.618, 1, 1.272, 1.618, 2.618] : [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    var topX = Math.min(a.x, b.x);
+    var bottomX = Math.max(a.x, b.x);
+    ctx.fillStyle = color;
+    levels.forEach(function (level) {
+      var y = a.y + (b.y - a.y) * level;
+      ctx.beginPath();
+      ctx.moveTo(topX, y);
+      ctx.lineTo(Math.max(bottomX, rect.x + rect.width), y);
+      ctx.stroke();
+      ctx.fillText(String(level), topX + 4, y - 4);
+    });
+  }
+
+  function drawTimeZones(ctx, rect, a, b, color) {
+    var step = Math.max(8, Math.abs(b.x - a.x));
+    var fib = [0, 1, 2, 3, 5, 8, 13, 21, 34];
+    ctx.fillStyle = color;
+    fib.forEach(function (value) {
+      var x = a.x + step * value;
+      if (x > rect.x + rect.width) return;
+      ctx.beginPath();
+      ctx.moveTo(x, rect.y);
+      ctx.lineTo(x, rect.y + rect.height);
+      ctx.stroke();
+      ctx.fillText(String(value), x + 3, rect.y + 12);
+    });
+  }
+
+  function drawCyclicLines(ctx, rect, a, b, color) {
+    var step = Math.max(8, Math.abs(b.x - a.x));
+    ctx.fillStyle = color;
+    for (var x = a.x; x <= rect.x + rect.width; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, rect.y);
+      ctx.lineTo(x, rect.y + rect.height);
+      ctx.stroke();
+    }
+  }
+
+  function drawFan(ctx, rect, a, b, color) {
+    var ratios = [0.25, 0.333, 0.5, 0.667, 1, 1.5, 2, 3];
+    ctx.fillStyle = color;
+    ratios.forEach(function (ratio) {
+      var target = { x: b.x, y: a.y + (b.y - a.y) * ratio };
+      drawProjectedLine(ctx, a, target, rect, true);
+    });
+  }
+
+  function drawPitchfork(ctx, rect, a, b, c) {
+    var forkMid = midpoint(b, c);
+    drawProjectedLine(ctx, a, forkMid, rect, true);
+    var offsetB = { x: b.x - forkMid.x, y: b.y - forkMid.y };
+    var offsetC = { x: c.x - forkMid.x, y: c.y - forkMid.y };
+    drawProjectedLine(ctx, { x: a.x + offsetB.x, y: a.y + offsetB.y }, b, rect, true);
+    drawProjectedLine(ctx, { x: a.x + offsetC.x, y: a.y + offsetC.y }, c, rect, true);
+  }
+
+  function drawMarker(ctx, p, kind, color) {
+    var size = 9;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    if (kind === 'markerLeft') {
+      ctx.moveTo(p.x - size, p.y);
+      ctx.lineTo(p.x + size, p.y - size);
+      ctx.lineTo(p.x + size, p.y + size);
+    } else if (kind === 'markerRight') {
+      ctx.moveTo(p.x + size, p.y);
+      ctx.lineTo(p.x - size, p.y - size);
+      ctx.lineTo(p.x - size, p.y + size);
+    } else if (kind === 'markerDown') {
+      ctx.moveTo(p.x, p.y + size);
+      ctx.lineTo(p.x - size, p.y - size);
+      ctx.lineTo(p.x + size, p.y - size);
+    } else {
+      ctx.moveTo(p.x, p.y - size);
+      ctx.lineTo(p.x - size, p.y + size);
+      ctx.lineTo(p.x + size, p.y + size);
+    }
+    ctx.closePath();
+    ctx.fill();
+    if (kind === 'flag') {
+      ctx.fillRect(p.x, p.y - 22, 22, 13);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y - 22);
+      ctx.lineTo(p.x, p.y + 12);
+      ctx.stroke();
+    }
+  }
+
+  function drawTag(ctx, label, p, color, background) {
+    var width = Math.max(52, approximateTextWidth(label) + 14);
+    var height = 22;
+    ctx.fillStyle = color;
+    ctx.fillRect(p.x, p.y - height, width, height);
+    ctx.fillStyle = background || '#fff';
+    ctx.fillText(label, p.x + 7, p.y - 7);
+  }
+
+  function drawPatternLabels(ctx, points, kind, color) {
+    var letters = ['A', 'B', 'C', 'D', 'E', 'W', 'X', 'Y', 'X', 'Z'];
+    ctx.fillStyle = color;
+    points.forEach(function (point, index) {
+      var label = kind === 'numberedWave' ? String(index + 1) : letters[index] || String(index + 1);
+      ctx.fillText(label, point.x + 5, point.y - 5);
+    });
+  }
+
+  function drawSineLine(ctx, a, b) {
+    var amplitude = Math.max(8, Math.abs(b.y - a.y) / 2);
+    var centerY = (a.y + b.y) / 2;
+    ctx.beginPath();
+    for (var i = 0; i <= 80; i += 1) {
+      var t = i / 80;
+      var x = a.x + (b.x - a.x) * t;
+      var y = centerY + Math.sin(t * Math.PI * 4) * amplitude;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+  }
+
+  function drawGhostBars(ctx, a, b, ghost) {
+    var minX = Math.min(a.x, b.x);
+    var maxX = Math.max(a.x, b.x);
+    var width = Math.max(6, (maxX - minX) / 8);
+    for (var i = 0; i < 8; i += 1) {
+      var x = minX + i * width;
+      var high = Math.min(a.y, b.y) + (i % 3) * 8;
+      var low = Math.max(a.y, b.y) - (i % 2) * 8;
+      ctx.strokeRect(x, high, Math.max(3, width * 0.55), Math.max(8, low - high));
+    }
+    if (ghost) drawScreenRectangle(ctx, a, b, false);
+  }
+
+  function drawSector(ctx, center, a, b) {
+    drawLine(ctx, center, a);
+    drawLine(ctx, center, b);
+    drawArcThroughPoints(ctx, a, center, b);
+  }
+
+  function drawVolumeProfile(ctx, a, b, color) {
+    var minX = Math.min(a.x, b.x);
+    var minY = Math.min(a.y, b.y);
+    var maxY = Math.max(a.y, b.y);
+    var height = (maxY - minY) / 8;
+    ctx.fillStyle = color;
+    for (var i = 0; i < 8; i += 1) {
+      var width = Math.abs(b.x - a.x) * (0.35 + (Math.sin(i) + 1) * 0.3);
+      ctx.fillRect(minX, minY + i * height, width, Math.max(2, height - 2));
+    }
+  }
+
+  function midpoint(a, b) {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  }
+
+  function measurementLabel(a, b) {
+    if (!a || !b) return '';
+    return formatNumber((b.value || 0) - (a.value || 0));
+  }
+
+  function rangeLabel(kind, a, b) {
+    if (!a || !b) return kind;
+    if (kind === 'dateRange') return Math.abs(Math.round((b.time - a.time) / 86400)) + ' bars';
+    if (kind === 'priceRange') return formatNumber((b.value || 0) - (a.value || 0));
+    return Math.abs(Math.round((b.time - a.time) / 86400)) + ' bars / ' + formatNumber((b.value || 0) - (a.value || 0));
+  }
+
+  function angleLabel(a, b) {
+    var angle = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+    return Math.abs(angle).toFixed(1) + ' deg';
+  }
+
+  function pointBounds(points) {
+    var bounds = { minX: points[0].x, maxX: points[0].x, minY: points[0].y, maxY: points[0].y };
+    points.forEach(function (point) {
+      bounds.minX = Math.min(bounds.minX, point.x);
+      bounds.maxX = Math.max(bounds.maxX, point.x);
+      bounds.minY = Math.min(bounds.minY, point.y);
+      bounds.maxY = Math.max(bounds.maxY, point.y);
+    });
+    return bounds;
+  }
+
+  function pointerInBounds(pointer, bounds, tolerance) {
+    return pointer.x >= bounds.minX - tolerance && pointer.x <= bounds.maxX + tolerance && pointer.y >= bounds.minY - tolerance && pointer.y <= bounds.maxY + tolerance;
+  }
+
+  function drawingToolDefinition(type) {
+    return DRAWING_TOOLS[normalizeDrawingType(type)] || DRAWING_TOOLS.text;
+  }
+
   function nearestSeriesPoint(data, time) {
     if (!data || !data.length) return null;
     if (time == null) return data[data.length - 1];
@@ -2683,21 +3260,34 @@
   }
 
   function normalizeDrawingType(type) {
-    var map = {
-      arrow: 'arrow',
-      anchored_text: 'text',
+    var key = normalizeDrawingKey(type || 'text');
+    if (DRAWING_TOOLS[key]) return key;
+    var legacyMap = {
       horizontal_line: 'hline',
-      hline: 'hline',
-      icon: 'text',
-      note: 'text',
-      rectangle: 'rectangle',
-      text: 'text',
-      trend_line: 'trendline',
-      trendline: 'trendline',
       vertical_line: 'vline',
-      vline: 'vline'
+      trend_line: 'trendline',
+      anchored_text: 'anchored_note',
+      arrowmark_left: 'arrow_mark_left',
+      arrowmark_right: 'arrow_mark_right',
+      arrowmark_up: 'arrow_mark_up',
+      arrowmark_down: 'arrow_mark_down'
     };
-    return map[type] || type || 'text';
+    if (legacyMap[key]) return legacyMap[key];
+    var ids = Object.keys(DRAWING_TOOLS);
+    for (var i = 0; i < ids.length; i += 1) {
+      if (DRAWING_TOOLS[ids[i]].aliases.indexOf(key) !== -1) return ids[i];
+    }
+    return key || 'text';
+  }
+
+  function normalizeDrawingKey(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .replace(/_+/g, '_');
   }
 
   function normalizeChartType(type) {
@@ -2828,6 +3418,7 @@
     EventBus: EventBus,
     LocalStorageAdapter: LocalStorageAdapter,
     Indicators: Indicators,
+    drawingTools: DRAWING_TOOLS,
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,
     computeIndicatorGraph: computeIndicatorGraph,

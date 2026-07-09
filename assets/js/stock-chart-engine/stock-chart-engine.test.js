@@ -110,6 +110,7 @@ class FakeCanvas extends FakeElement {
       fillText: noop,
       lineTo: noop,
       moveTo: noop,
+      quadraticCurveTo: noop,
       restore: noop,
       save: noop,
       setLineDash: noop,
@@ -294,6 +295,29 @@ chart.getShapeById(shapeId).setPoints([
 assert.strictEqual(chart.getShapeById(shapeId).getProperties().points.length, 2);
 chart.removeEntity(shapeId);
 assert.ok(!chart.getAllShapes().find((drawing) => drawing.id === shapeId));
+
+assert.ok(Object.keys(StockChartEngine.drawingTools).length >= 84);
+const registryShapeId = chart.createMultipointShape([
+  { time: data[data.length - 22].time, price: data[data.length - 22].close },
+  { time: data[data.length - 8].time, price: data[data.length - 8].close }
+], { shape: 'trend_line' });
+assert.strictEqual(chart.getDrawingById(registryShapeId).type, 'trendline');
+chart.removeEntity(registryShapeId);
+
+Object.keys(StockChartEngine.drawingTools).forEach((toolId, toolIndex) => {
+  const tool = StockChartEngine.drawingTools[toolId];
+  const pointCount = Math.max(1, tool.points || 1);
+  const points = Array.from({ length: pointCount }, (_, pointIndex) => {
+    const index = Math.max(0, data.length - 80 + toolIndex % 12 + pointIndex * 4);
+    return { time: data[index].time, value: data[index].close + pointIndex * 0.3 };
+  });
+  const id = chart.addDrawing(toolId, points, {
+    paneId: 'price',
+    text: tool.name,
+    style: { color: '#123456', width: 2 }
+  });
+  assert.strictEqual(chart.getDrawingById(id).type, toolId);
+});
 
 assert.strictEqual(chart.save(), true);
 assert.ok(chart.storage.load('default').drawings.length > 0);

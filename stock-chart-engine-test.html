@@ -269,6 +269,10 @@
 
       <div class="test-group">
         <span class="test-label">Annotations</span>
+        <div class="field-row">
+          <select id="drawingTool" aria-label="Drawing tool"></select>
+          <button type="button" id="addDrawingTool">Add Tool</button>
+        </div>
         <div class="button-grid">
           <button type="button" id="addTrendline">Trendline</button>
           <button type="button" id="addRectangle">Rectangle</button>
@@ -341,6 +345,16 @@
         return { time: data[index].time, value: data[index].close };
       }
 
+      function sampleDrawingPoints(toolId) {
+        var tool = StockChartEngine.drawingTools[toolId] || StockChartEngine.drawingTools.text;
+        var count = Math.max(1, tool.points || 1);
+        var points = [];
+        for (var i = 0; i < count; i += 1) {
+          points.push(samplePoint(110 - i * 14));
+        }
+        return points;
+      }
+
       function indicatorPaneId(type) {
         var found = chart.document.indicators.filter(function (indicator) {
           return indicator.type === type;
@@ -390,6 +404,27 @@
         if (previous && doc.panes.some(function (pane) { return pane.id === previous; })) {
           select.value = previous;
         }
+      }
+
+      function renderDrawingToolOptions() {
+        var select = document.getElementById('drawingTool');
+        var grouped = {};
+        Object.keys(StockChartEngine.drawingTools).forEach(function (id) {
+          var tool = StockChartEngine.drawingTools[id];
+          if (!grouped[tool.category]) grouped[tool.category] = [];
+          grouped[tool.category].push(tool);
+        });
+        Object.keys(grouped).forEach(function (category) {
+          var group = document.createElement('optgroup');
+          group.label = category;
+          grouped[category].forEach(function (tool) {
+            var option = document.createElement('option');
+            option.value = tool.id;
+            option.textContent = tool.name;
+            group.appendChild(option);
+          });
+          select.appendChild(group);
+        });
       }
 
       function renderIndicatorSettingsOptions(doc) {
@@ -549,6 +584,17 @@
         renderState();
       });
 
+      document.getElementById('addDrawingTool').addEventListener('click', function () {
+        var toolId = document.getElementById('drawingTool').value || 'trendline';
+        var tool = StockChartEngine.drawingTools[toolId] || StockChartEngine.drawingTools.trendline;
+        chart.addDrawing(toolId, sampleDrawingPoints(toolId), {
+          paneId: 'price',
+          text: tool.name,
+          style: { color: '#2563eb', width: tool.category === 'geometric' ? 2 : 1.8 }
+        });
+        renderState();
+      });
+
       document.getElementById('addTrendline').addEventListener('click', function () {
         chart.addDrawing('trendline', [samplePoint(90), samplePoint(20)], {
           paneId: 'price',
@@ -605,6 +651,7 @@
         renderState();
       });
 
+      renderDrawingToolOptions();
       seedChart('light', true);
     }());
   </script>
