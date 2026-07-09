@@ -682,6 +682,18 @@ select optgroup {
 .notification.show {
   opacity: 1;
 }
+
+.chart-share-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.chart-share-actions .btn {
+  min-width: 104px;
+}
 </style>
 <?php $page = 'tool'; include "./header.php" ?>
 <body>
@@ -754,7 +766,13 @@ select optgroup {
                                                 <input type="radio" name="timeframe" id="radio_monthly" onchange="timeframeBTN()">Monthly
                                             </label>
                                         </div>
-                                        <div id="chartnoteRace" style="display:none;font-size:14px;">Bookmark this chart in your browser for future viewing</div>
+                                        <div id="chartnoteRace" style="display:none;font-size:14px;">
+                                            Bookmark this chart in your browser for future viewing
+                                            <div class="chart-share-actions">
+                                                <button id="copyLinkRace" class="btn btn-outline-primary btn-sm" type="button" title="Copy chart link"><i class="fas fa-link"></i> Copy Link</button>
+                                                <button id="shareChartRace" class="btn btn-outline-primary btn-sm" type="button" title="Share chart"><i class="fas fa-share-alt"></i> Share</button>
+                                            </div>
+                                        </div>
                                         <div id="raceContainer"></div>
                                     </figure>
                                 </div>
@@ -813,7 +831,13 @@ select optgroup {
                                     </div>
                                 </div>
                                 <div id="series-list"></div>
-                                <div id="chartnoteComposer" style="display:none;font-size:14px;">Bookmark this chart in your browser for future viewing</div>
+                                <div id="chartnoteComposer" style="display:none;font-size:14px;">
+                                    Bookmark this chart in your browser for future viewing
+                                    <div class="chart-share-actions">
+                                        <button id="copyLinkComposer" class="btn btn-outline-primary btn-sm" type="button" title="Copy chart link"><i class="fas fa-link"></i> Copy Link</button>
+                                        <button id="shareChartComposer" class="btn btn-outline-primary btn-sm" type="button" title="Share chart"><i class="fas fa-share-alt"></i> Share</button>
+                                    </div>
+                                </div>
                                 <div id="notification" class="notification"></div>
                                 <div id="container" class="not-selectable" style="height: 725px;"></div>
                             </div>
@@ -842,6 +866,7 @@ window.__TOOL_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
+<script src="assets/js/pages/tool-share.js?v=20260709.1"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
     
 <?php include "./footer.php" ?>
