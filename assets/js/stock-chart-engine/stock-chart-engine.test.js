@@ -200,11 +200,24 @@ const drawingId = chart.addDrawing('trendline', [
 ], { paneId: 'price' });
 assert.ok(chart.serialize().drawings.find((drawing) => drawing.id === drawingId));
 const beforeMoveValue = chart.getDrawingById(drawingId).points[0].value;
+const secondPointBeforeHandleMove = chart.getDrawingById(drawingId).points[1].value;
 const screenPoint = chart.drawingScreenPoints(chart.getDrawingById(drawingId))[0];
 chart.handlePointerDown({ clientX: screenPoint.x, clientY: screenPoint.y });
 chart.handlePointerMove({ clientX: screenPoint.x + 16, clientY: screenPoint.y + 12 });
 chart.handlePointerUp();
 assert.notStrictEqual(chart.getDrawingById(drawingId).points[0].value, beforeMoveValue);
+assert.strictEqual(chart.getDrawingById(drawingId).points[1].value, secondPointBeforeHandleMove);
+
+const bodyDragPointsBefore = chart.getDrawingById(drawingId).points.map((point) => point.value);
+const bodyScreenPoints = chart.drawingScreenPoints(chart.getDrawingById(drawingId));
+const bodyMidpoint = {
+  x: (bodyScreenPoints[0].x + bodyScreenPoints[1].x) / 2,
+  y: (bodyScreenPoints[0].y + bodyScreenPoints[1].y) / 2
+};
+chart.handlePointerDown({ clientX: bodyMidpoint.x, clientY: bodyMidpoint.y });
+chart.handlePointerMove({ clientX: bodyMidpoint.x + 10, clientY: bodyMidpoint.y + 10 });
+chart.handlePointerUp();
+assert.notDeepStrictEqual(chart.getDrawingById(drawingId).points.map((point) => point.value), bodyDragPointsBefore);
 assert.ok(chart.indicatorLegendItems(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId, last.time, chart.theme()).length > 0);
 
 const shapeId = chart.createMultipointShape([

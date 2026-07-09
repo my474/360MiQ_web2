@@ -990,6 +990,7 @@
     if (!hit.drawing.locked) {
       this.dragState = {
         drawingId: hit.drawing.id,
+        pointIndex: hit.pointIndex,
         paneId: hit.drawing.paneId,
         startPointer: this.pointer,
         startValue: this.valueFromPoint(this.pointer, hit.drawing.paneId),
@@ -1029,6 +1030,16 @@
     var deltaValue = current.value - state.startValue.value;
     var drawing = this.getDrawingById(state.drawingId);
     if (!drawing || drawing.locked) return;
+    if (state.pointIndex != null && state.originalPoints[state.pointIndex]) {
+      drawing.points = state.originalPoints.map(function (point, index) {
+        if (index !== state.pointIndex) return point;
+        return {
+          time: Math.round(current.time),
+          value: current.value
+        };
+      });
+      return;
+    }
     drawing.points = state.originalPoints.map(function (point) {
       return {
         time: Math.round(point.time + deltaTime),
@@ -1259,7 +1270,18 @@
       if (drawing.visible === false) continue;
       var rect = this.getPaneRect(drawing.paneId);
       if (!rect || pointer.x < rect.x || pointer.x > rect.x + rect.width || pointer.y < rect.y || pointer.y > rect.y + rect.height) continue;
-      if (this.isPointOnDrawing(pointer, drawing)) return { drawing: drawing };
+      var pointIndex = this.hitTestDrawingPoint(pointer, drawing);
+      if (pointIndex != null) return { drawing: drawing, pointIndex: pointIndex };
+      if (this.isPointOnDrawing(pointer, drawing)) return { drawing: drawing, pointIndex: null };
+    }
+    return null;
+  };
+
+  Chart.prototype.hitTestDrawingPoint = function (pointer, drawing) {
+    var points = this.drawingScreenPoints(drawing);
+    var tolerance = 8;
+    for (var i = points.length - 1; i >= 0; i -= 1) {
+      if (distance(pointer, points[i]) <= tolerance) return i;
     }
     return null;
   };
@@ -1268,10 +1290,6 @@
     var points = this.drawingScreenPoints(drawing);
     var tolerance = 8;
     if (!points.length) return false;
-
-    for (var i = 0; i < points.length; i += 1) {
-      if (distance(pointer, points[i]) <= tolerance) return true;
-    }
 
     if ((drawing.type === 'trendline' || drawing.type === 'arrow') && points[0] && points[1]) {
       return distanceToSegment(pointer, points[0], points[1]) <= tolerance;
