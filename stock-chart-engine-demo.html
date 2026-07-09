@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>360MiQ Stock Chart Engine Demo</title>
+  <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css">
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      background: #eef2f7;
+      color: #111827;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    html[data-theme="dark"] body {
+      background: #0f172a;
+      color: #f9fafb;
+    }
+
+    .demo-shell {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+      padding: 12px;
+    }
+
+    .demo-actions {
+      align-items: center;
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+    }
+
+    .demo-actions button {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      color: #111827;
+      cursor: pointer;
+      height: 30px;
+      padding: 0 10px;
+    }
+
+    html[data-theme="dark"] .demo-actions button {
+      background: #1f2937;
+      border-color: #475569;
+      color: #f9fafb;
+    }
+
+    #chart {
+      flex: 1 1 auto;
+      min-height: 520px;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-shell">
+    <div class="demo-actions">
+      <button type="button" id="themeToggle">Toggle Theme</button>
+      <button type="button" id="addBbands">Bollinger</button>
+      <button type="button" id="addSmaOnRsi">SMA on RSI</button>
+      <button type="button" id="addNote">Add Note</button>
+    </div>
+    <div id="chart"></div>
+  </div>
+
+  <script src="assets/js/stock-chart-engine/stock-chart-engine.js"></script>
+  <script>
+    (function () {
+      var data = StockChartEngine.createDemoData(240);
+      var chart = new StockChartEngine.Chart('#chart', {
+        symbol: 'DEMO',
+        interval: '1D',
+        data: data,
+        layoutId: 'stock-chart-engine-demo'
+      });
+
+      chart.addIndicator('VOLUME', { placement: 'new' });
+      var rsiId = chart.addIndicator('RSI', { placement: 'new' });
+
+      document.getElementById('themeToggle').addEventListener('click', function () {
+        var html = document.documentElement;
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        html.dispatchEvent(new CustomEvent('themechange', {
+          detail: { theme: next, isDark: next === 'dark' }
+        }));
+      });
+
+      document.getElementById('addBbands').addEventListener('click', function () {
+        chart.addIndicator('BBANDS', { placement: 'source' });
+      });
+
+      document.getElementById('addSmaOnRsi').addEventListener('click', function () {
+        chart.addIndicator('SMA', {
+          source: { kind: 'indicator', indicatorId: rsiId, output: 'value' },
+          inputs: { length: 9 }
+        });
+      });
+
+      document.getElementById('addNote').addEventListener('click', function () {
+        var last = data[data.length - 1];
+        chart.addDrawing('text', [{ time: last.time, value: last.close }], {
+          paneId: 'price',
+          text: 'Saved annotation',
+          style: { color: '#d97706' }
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

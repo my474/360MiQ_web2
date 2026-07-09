@@ -1,0 +1,84 @@
+.sce-root {
+  --sce-border: #d1d5db;
+  --sce-panel: #f8fafc;
+  --sce-text: #111827;
+  --sce-muted: #6b7280;
+  border: 1px solid var(--sce-border);
+  color: var(--sce-text);
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  min-height: 420px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.sce-root[data-sce-theme="dark"] {
+  --sce-border: #374151;
+  --sce-panel: #172033;
+  --sce-text: #f9fafb;
+  --sce-muted: #cbd5e1;
+}
+
+.sce-toolbar {
+  align-items: center;
+  background: var(--sce-panel);
+  border-bottom: 1px solid var(--sce-border);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  min-height: 38px;
+  overflow-x: auto;
+  padding: 5px 8px;
+}
+
+.sce-title {
+  color: var(--sce-text);
+  flex: 1 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.sce-toolbar button {
+  background: transparent;
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  color: var(--sce-text);
+  cursor: pointer;
+  font-size: 12px;
+  height: 28px;
+  line-height: 1;
+  padding: 0 9px;
+  white-space: nowrap;
+}
+
+.sce-toolbar button:hover,
+.sce-toolbar button:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-toolbar button:hover,
+.sce-root[data-sce-theme="dark"] .sce-toolbar button:focus {
+  border-color: #60a5fa;
+}
+
+.sce-canvas-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+}
+
+.sce-canvas {
+  cursor: crosshair;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.sce-canvas.sce-crosshair-drawing {
+  cursor: copy;
+}
