@@ -44,6 +44,21 @@ table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
 [data-theme="dark"] table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
   background-color: #33335a !important;
 }
+
+table#screener_grid font[color="green"] {
+  color: green !important;
+  font-weight: 550;
+}
+
+table#screener_grid font[color="red"] {
+  color: red !important;
+  font-weight: 550;
+}
+
+table#screener_grid font[color="grey"] {
+  color: darkgrey !important;
+  font-weight: 550;
+}
 </style>
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">-->
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css">
