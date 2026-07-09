@@ -144,6 +144,40 @@
       grid-template-columns: 1fr 84px;
     }
 
+    .drawing-tool-palette {
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 4px;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      margin: 8px 0;
+      max-height: 214px;
+      overflow: auto;
+      padding: 6px;
+    }
+
+    .drawing-tool-button {
+      align-items: center;
+      aspect-ratio: 1;
+      color: var(--muted);
+      display: flex;
+      height: auto;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0;
+    }
+
+    .drawing-tool-button svg {
+      height: 20px;
+      pointer-events: none;
+      width: 20px;
+    }
+
+    .drawing-tool-button.is-selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
     .state-box {
       background: rgba(100, 116, 139, 0.1);
       border: 1px solid var(--border);
@@ -273,6 +307,7 @@
           <select id="drawingTool" aria-label="Drawing tool"></select>
           <button type="button" id="addDrawingTool">Add Tool</button>
         </div>
+        <div id="drawingToolPalette" class="drawing-tool-palette" role="toolbar" aria-label="Drawing tools"></div>
         <div class="button-grid">
           <button type="button" id="addTrendline">Trendline</button>
           <button type="button" id="addRectangle">Rectangle</button>
@@ -408,7 +443,10 @@
 
       function renderDrawingToolOptions() {
         var select = document.getElementById('drawingTool');
+        var palette = document.getElementById('drawingToolPalette');
         var grouped = {};
+        select.innerHTML = '';
+        palette.innerHTML = '';
         Object.keys(StockChartEngine.drawingTools).forEach(function (id) {
           var tool = StockChartEngine.drawingTools[id];
           if (!grouped[tool.category]) grouped[tool.category] = [];
@@ -422,8 +460,32 @@
             option.value = tool.id;
             option.textContent = tool.name;
             group.appendChild(option);
+
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'drawing-tool-button';
+            button.dataset.toolId = tool.id;
+            button.title = tool.name;
+            button.setAttribute('aria-label', tool.name);
+            button.innerHTML = tool.icon || StockChartEngine.drawingToolIconSvg(tool.id);
+            button.addEventListener('click', function () {
+              select.value = tool.id;
+              syncDrawingToolButtons();
+            });
+            palette.appendChild(button);
           });
           select.appendChild(group);
+        });
+        select.addEventListener('change', syncDrawingToolButtons);
+        syncDrawingToolButtons();
+      }
+
+      function syncDrawingToolButtons() {
+        var selected = document.getElementById('drawingTool').value;
+        Array.prototype.forEach.call(document.querySelectorAll('.drawing-tool-button'), function (button) {
+          var isSelected = button.dataset.toolId === selected;
+          button.classList.toggle('is-selected', isSelected);
+          button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         });
       }
 

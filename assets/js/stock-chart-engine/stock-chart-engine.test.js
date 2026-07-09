@@ -297,6 +297,10 @@ chart.removeEntity(shapeId);
 assert.ok(!chart.getAllShapes().find((drawing) => drawing.id === shapeId));
 
 assert.ok(Object.keys(StockChartEngine.drawingTools).length >= 84);
+Object.keys(StockChartEngine.drawingTools).forEach((toolId) => {
+  assert.ok(StockChartEngine.drawingTools[toolId].icon.indexOf('<svg') === 0, `${toolId} should expose an icon`);
+});
+assert.ok(StockChartEngine.drawingToolIconSvg('trendline').indexOf('<svg') === 0);
 const registryShapeId = chart.createMultipointShape([
   { time: data[data.length - 22].time, price: data[data.length - 22].close },
   { time: data[data.length - 8].time, price: data[data.length - 8].close }

@@ -187,10 +187,92 @@
         category: spec[2],
         renderKind: spec[3],
         points: spec[4],
-        aliases: spec[5] || []
+        aliases: spec[5] || [],
+        icon: drawingToolIconSvg(spec[0], spec[3])
       };
     });
     return tools;
+  }
+
+  function drawingToolIconSvg(type, renderKind) {
+    var tool = DRAWING_TOOLS && DRAWING_TOOLS[normalizeDrawingType(type)];
+    var kind = renderKind || (tool ? tool.renderKind : normalizeDrawingKey(type));
+    var id = tool ? tool.id : normalizeDrawingKey(type);
+    var common = ' fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+
+    function svg(body) {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"' + common + '>' + body + '</svg>';
+    }
+
+    if (id === 'arrow_mark_left') return svg('<path d="M6 12h12"/><path d="M10 8l-4 4 4 4"/>');
+    if (id === 'arrow_mark_right') return svg('<path d="M6 12h12"/><path d="M14 8l4 4-4 4"/>');
+    if (id === 'arrow_mark_up') return svg('<path d="M12 18V6"/><path d="M8 10l4-4 4 4"/>');
+    if (id === 'arrow_mark_down') return svg('<path d="M12 6v12"/><path d="M8 14l4 4 4-4"/>');
+    if (id.indexOf('elliott') === 0) return svg('<path d="M3 16l4-8 4 6 4-7 6 9"/><path d="M5 19h14"/>');
+    if (id.indexOf('xabcd') === 0 || id.indexOf('cypher') === 0 || id.indexOf('abcd') === 0) return svg('<path d="M3 16l5-9 5 8 4-6 4 7"/><path d="M3 16h18"/>');
+    if (id === 'head_and_shoulders') return svg('<path d="M3 17c3-7 4-7 6 0 2-12 4-12 6 0 2-7 3-7 6 0"/>');
+    if (id === 'three_drives_pattern') return svg('<path d="M3 18l3-7 3 5 3-8 3 6 3-9 3 13"/>');
+
+    var icons = {
+      line: '<path d="M4 18L20 6"/><circle cx="4" cy="18" r="1.5"/><circle cx="20" cy="6" r="1.5"/>',
+      arrow: '<path d="M4 18L20 6"/><path d="M14 6h6v6"/>',
+      ray: '<path d="M4 18L18 8"/><path d="M15 7l4 1-1 4"/><circle cx="4" cy="18" r="1.5"/>',
+      measurement: '<path d="M4 17L20 7"/><path d="M5 13l4 4"/><path d="M15 7l4 4"/>',
+      extendedLine: '<path d="M2 20L22 4"/><path d="M5 18h4"/><path d="M15 6h4"/>',
+      angle: '<path d="M5 18h14"/><path d="M5 18L17 7"/><path d="M9 18a4 4 0 0 1 2-3"/>',
+      hline: '<path d="M3 12h18"/><path d="M5 8v8"/><path d="M19 8v8"/>',
+      horizontalRay: '<path d="M5 12h14"/><path d="M15 8l4 4-4 4"/><circle cx="5" cy="12" r="1.5"/>',
+      vline: '<path d="M12 3v18"/><path d="M8 5h8"/><path d="M8 19h8"/>',
+      crossline: '<path d="M12 3v18"/><path d="M3 12h18"/>',
+      channel: '<path d="M4 17L18 7"/><path d="M6 21L20 11"/>',
+      vwapAnchor: '<path d="M12 4v16"/><path d="M6 10c4-4 8 8 12 0"/><circle cx="12" cy="4" r="2"/>',
+      fibRetracement: '<path d="M5 5h14"/><path d="M5 9h14"/><path d="M5 12h14"/><path d="M5 15h14"/><path d="M5 19h14"/>',
+      fibExtension: '<path d="M4 17l5-10 5 6"/><path d="M13 8h8"/><path d="M13 12h8"/><path d="M13 16h8"/>',
+      pitchfork: '<path d="M5 19L19 5"/><path d="M9 19l10-10"/><path d="M3 15l10-10"/>',
+      fibChannel: '<path d="M4 18L19 8"/><path d="M6 21L21 11"/><path d="M5 20L20 10"/><path d="M5 17L20 7"/>',
+      timeZones: '<path d="M5 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/><path d="M21 4v16"/>',
+      gridBox: '<rect x="4" y="5" width="16" height="14"/><path d="M9 5v14"/><path d="M15 5v14"/><path d="M4 10h16"/><path d="M4 15h16"/>',
+      fan: '<path d="M4 19L20 5"/><path d="M4 19l16-1"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
+      circles: '<circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8"/>',
+      spiral: '<path d="M12 12c3-1 3 3 0 4-5 1-8-4-5-8 4-6 14-3 14 5"/>',
+      arcs: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M8 18a4 4 0 0 1 8 0"/>',
+      wedge: '<path d="M4 18L20 6"/><path d="M4 18l16-1"/><path d="M8 16h10"/>',
+      path: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/>',
+      rectangle: '<rect x="5" y="6" width="14" height="12"/>',
+      ellipse: '<ellipse cx="12" cy="12" rx="8" ry="5"/>',
+      curve: '<path d="M4 17c5-12 10 12 16-5"/>',
+      polyline: '<path d="M4 17l5-8 5 5 6-8"/>',
+      polygon: '<path d="M5 18l7-12 7 12z"/>',
+      rotatedRectangle: '<path d="M8 4l12 6-4 10-12-6z"/>',
+      arc: '<path d="M5 17a8 8 0 0 1 14 0"/><path d="M5 17h3"/><path d="M16 17h3"/>',
+      doubleCurve: '<path d="M4 9c5-6 11 6 16 0"/><path d="M4 16c5-6 11 6 16 0"/>',
+      text: '<path d="M5 6h14"/><path d="M12 6v12"/><path d="M8 18h8"/>',
+      callout: '<path d="M5 6h14v9H9l-4 4z"/>',
+      priceLabel: '<path d="M4 8h11l5 4-5 4H4z"/><path d="M8 12h5"/>',
+      marker: '<path d="M12 4l7 16H5z"/>',
+      markerLeft: '<path d="M5 12l10-7v14z"/><path d="M15 12h5"/>',
+      markerRight: '<path d="M19 12L9 5v14z"/><path d="M4 12h5"/>',
+      markerUp: '<path d="M12 5l7 10H5z"/><path d="M12 15v4"/>',
+      markerDown: '<path d="M12 19L5 9h14z"/><path d="M12 5v4"/>',
+      flag: '<path d="M6 20V5"/><path d="M6 5h12l-2 4 2 4H6"/>',
+      pattern: '<path d="M3 17l5-8 4 5 4-8 5 11"/><circle cx="8" cy="9" r="1"/><circle cx="16" cy="6" r="1"/>',
+      numberedWave: '<path d="M3 17l5-8 4 5 4-8 5 11"/><path d="M6 20h2"/><path d="M12 20h2"/><path d="M18 20h2"/>',
+      letteredWave: '<path d="M3 17l5-8 4 5 4-8 5 11"/><path d="M5 21l1-3 1 3"/><path d="M13 18v3"/><path d="M12 18h3"/>',
+      cyclicLines: '<path d="M5 4v16"/><path d="M12 4v16"/><path d="M19 4v16"/><path d="M5 18c3-4 4-4 7 0s4 4 7 0"/>',
+      sine: '<path d="M3 12c3-8 6 8 9 0s6-8 9 0"/>',
+      positionLong: '<rect x="5" y="5" width="14" height="14"/><path d="M5 12h14"/><path d="M12 16V8"/><path d="M8 12l4-4 4 4"/>',
+      positionShort: '<rect x="5" y="5" width="14" height="14"/><path d="M5 12h14"/><path d="M12 8v8"/><path d="M8 12l4 4 4-4"/>',
+      positionForecast: '<rect x="5" y="6" width="14" height="12"/><path d="M7 15l4-4 3 2 3-5"/>',
+      dateRange: '<path d="M5 7v10"/><path d="M19 7v10"/><path d="M5 12h14"/><path d="M8 9l-3 3 3 3"/><path d="M16 9l3 3-3 3"/>',
+      priceRange: '<path d="M8 5h8"/><path d="M8 19h8"/><path d="M12 5v14"/><path d="M9 8l3-3 3 3"/><path d="M9 16l3 3 3-3"/>',
+      datePriceRange: '<rect x="5" y="6" width="14" height="12"/><path d="M5 12h14"/><path d="M12 6v12"/>',
+      barsPattern: '<path d="M5 17v-6"/><path d="M9 17V7"/><path d="M13 17v-8"/><path d="M17 17V5"/>',
+      ghostFeed: '<path d="M5 17v-6" opacity=".45"/><path d="M9 17V7" opacity=".45"/><path d="M13 17v-8" opacity=".45"/><path d="M17 17V5" opacity=".45"/><path d="M4 20h16"/>',
+      sector: '<path d="M7 18L17 6"/><path d="M7 18h12"/><path d="M7 18a12 12 0 0 1 10-12"/>',
+      volumeProfile: '<path d="M5 6h11"/><path d="M5 10h14"/><path d="M5 14h9"/><path d="M5 18h13"/>'
+    };
+
+    return svg(icons[kind] || icons.marker);
   }
 
   function uid(prefix) {
@@ -3419,6 +3501,7 @@
     LocalStorageAdapter: LocalStorageAdapter,
     Indicators: Indicators,
     drawingTools: DRAWING_TOOLS,
+    drawingToolIconSvg: drawingToolIconSvg,
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,
     computeIndicatorGraph: computeIndicatorGraph,
