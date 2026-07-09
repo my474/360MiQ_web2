@@ -174,6 +174,14 @@ const chart = new StockChartEngine.Chart('#chart', {
 });
 
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+
+assert.strictEqual(chart.setChartType('bar'), 'bar');
+assert.strictEqual(chart.document.settings.chartType, 'bar');
+assert.strictEqual(chart.setChartType('line'), 'line');
+assert.strictEqual(chart.document.settings.chartType, 'line');
+assert.strictEqual(chart.setChartType('candles'), 'candlestick');
+assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 
 chart.setTheme('dark');
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');

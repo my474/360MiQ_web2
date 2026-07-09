@@ -42,12 +42,12 @@
   white-space: nowrap;
 }
 
-.sce-toolbar button {
+.sce-toolbar button,
+.sce-toolbar select {
   background: transparent;
   border: 1px solid var(--sce-border);
   border-radius: 4px;
   color: var(--sce-text);
-  cursor: pointer;
   font-size: 12px;
   height: 28px;
   line-height: 1;
@@ -55,14 +55,24 @@
   white-space: nowrap;
 }
 
+.sce-toolbar button {
+  cursor: pointer;
+}
+
+.sce-toolbar select {
+  min-width: 112px;
+}
+
 .sce-toolbar button:hover,
-.sce-toolbar button:focus {
+.sce-toolbar button:focus,
+.sce-toolbar select:focus {
   border-color: #2563eb;
   outline: none;
 }
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:hover,
-.sce-root[data-sce-theme="dark"] .sce-toolbar button:focus {
+.sce-root[data-sce-theme="dark"] .sce-toolbar button:focus,
+.sce-root[data-sce-theme="dark"] .sce-toolbar select:focus {
   border-color: #60a5fa;
 }
 

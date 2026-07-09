@@ -484,7 +484,7 @@
       theme: options.theme || null,
       visibleRange: null,
       settings: {
-        chartType: options.chartType || 'candles',
+        chartType: normalizeChartType(options.chartType || 'candlestick'),
         priceField: 'close',
         autosave: options.autosave !== false
       },
@@ -504,6 +504,7 @@
     migrated.indicators = migrated.indicators || [];
     migrated.drawings = migrated.drawings || [];
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
+    migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
     return migrated;
   }
 
@@ -627,6 +628,11 @@
     this.toolbar.className = 'sce-toolbar';
     this.toolbar.innerHTML = [
       '<span class="sce-title"></span>',
+      '<select class="sce-chart-type" data-sce-chart-type aria-label="Chart type">',
+      '<option value="candlestick">Candlestick</option>',
+      '<option value="bar">Bar</option>',
+      '<option value="line">Line</option>',
+      '</select>',
       '<button type="button" data-sce-action="sma">SMA</button>',
       '<button type="button" data-sce-action="rsi">RSI</button>',
       '<button type="button" data-sce-action="macd">MACD</button>',
@@ -657,6 +663,11 @@
       if (action === 'macd') self.addIndicator('MACD', { placement: 'new' });
       if (action === 'line') self.startDrawing('trendline');
       if (action === 'save') self.save();
+    });
+    this.toolbar.addEventListener('change', function (event) {
+      if (event.target && event.target.getAttribute('data-sce-chart-type') != null) {
+        self.setChartType(event.target.value);
+      }
     });
 
     this.canvas.addEventListener('mousedown', function (event) {
@@ -756,6 +767,13 @@
     this.compute();
     this.draw();
     this.emitChange('bar', normalized);
+  };
+
+  Chart.prototype.setChartType = function (chartType) {
+    this.document.settings.chartType = normalizeChartType(chartType);
+    this.draw();
+    this.emitChange('chart:type', { chartType: this.document.settings.chartType });
+    return this.document.settings.chartType;
   };
 
   Chart.prototype.addPane = function (pane) {
@@ -1081,6 +1099,8 @@
   Chart.prototype.updateToolbar = function () {
     var title = this.toolbar.querySelector('.sce-title');
     if (title) title.textContent = this.document.symbol + ' ' + this.document.interval;
+    var chartType = this.toolbar.querySelector('[data-sce-chart-type]');
+    if (chartType) chartType.value = this.document.settings.chartType;
   };
 
   Chart.prototype.resize = function () {
@@ -1355,7 +1375,7 @@
     ctx.fillStyle = theme.paneBackground;
     ctx.fillRect(rect.x, rect.y, rect.width + rect.scaleWidth, rect.height);
     this.drawGrid(rect, range, theme);
-    if (rect.paneId === 'price') this.drawCandles(rect, range, theme);
+    if (rect.paneId === 'price') this.drawPriceSeries(rect, range, theme);
     this.drawIndicators(rect, range, theme);
     this.drawDrawings(rect, range, theme);
     this.drawScale(rect, range, theme);
@@ -1493,6 +1513,19 @@
     ctx.restore();
   };
 
+  Chart.prototype.drawPriceSeries = function (rect, range, theme) {
+    var chartType = normalizeChartType(this.document.settings.chartType);
+    if (chartType === 'bar') {
+      this.drawBars(rect, range, theme);
+      return;
+    }
+    if (chartType === 'line') {
+      this.drawPriceLine(rect, range, theme);
+      return;
+    }
+    this.drawCandles(rect, range, theme);
+  };
+
   Chart.prototype.drawCandles = function (rect, range, theme) {
     var ctx = this.ctx;
     var bars = this.visibleBars();
@@ -1518,6 +1551,43 @@
       ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
     }, this);
     ctx.restore();
+  };
+
+  Chart.prototype.drawBars = function (rect, range, theme) {
+    var ctx = this.ctx;
+    var bars = this.visibleBars();
+    if (!bars.length) return;
+    var spacing = rect.width / Math.max(1, bars.length);
+    var tickWidth = clamp(spacing * 0.34, 3, 10);
+    ctx.save();
+    ctx.lineWidth = 1.25;
+    bars.forEach(function (bar) {
+      var x = this.xForTime(bar.time, rect);
+      var open = this.yForValue(bar.open, rect, range);
+      var close = this.yForValue(bar.close, rect, range);
+      var high = this.yForValue(bar.high, rect, range);
+      var low = this.yForValue(bar.low, rect, range);
+      ctx.strokeStyle = bar.close >= bar.open ? theme.up : theme.down;
+      ctx.beginPath();
+      ctx.moveTo(x, high);
+      ctx.lineTo(x, low);
+      ctx.moveTo(x - tickWidth, open);
+      ctx.lineTo(x, open);
+      ctx.moveTo(x, close);
+      ctx.lineTo(x + tickWidth, close);
+      ctx.stroke();
+    }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawPriceLine = function (rect, range, theme) {
+    var data = this.visibleBars().map(function (bar) {
+      return { time: bar.time, value: bar.close };
+    });
+    this.drawLineSeries(rect, range, theme, data, {
+      color: theme.indicatorPalette[0],
+      lineWidth: 2
+    });
   };
 
   Chart.prototype.drawIndicators = function (rect, range, theme) {
@@ -1809,6 +1879,21 @@
       vline: 'vline'
     };
     return map[type] || type || 'text';
+  }
+
+  function normalizeChartType(type) {
+    var normalized = String(type || 'candlestick').toLowerCase();
+    var map = {
+      candle: 'candlestick',
+      candles: 'candlestick',
+      candlestick: 'candlestick',
+      candlesticks: 'candlestick',
+      bar: 'bar',
+      bars: 'bar',
+      ohlc: 'bar',
+      line: 'line'
+    };
+    return map[normalized] || 'candlestick';
   }
 
   function approximateTextWidth(text) {

@@ -180,6 +180,11 @@
       <button type="button" id="loadLayout">Load</button>
       <button type="button" id="resetLayout">Reset Saved</button>
       <button type="button" id="newData">New Demo Data</button>
+      <select id="chartType" aria-label="Chart type">
+        <option value="candlestick">Candlestick</option>
+        <option value="bar">Bar</option>
+        <option value="line">Line</option>
+      </select>
     </div>
 
     <section id="chart" class="test-chart"></section>
@@ -269,6 +274,7 @@
         }
         chart.on('change', renderState);
         chart.on('save', renderState);
+        document.getElementById('chartType').value = chart.document.settings.chartType;
         renderState();
       }
 
@@ -297,6 +303,7 @@
           theme: doc.theme,
           symbol: doc.symbol,
           interval: doc.interval,
+          chartType: doc.settings.chartType,
           panes: doc.panes.map(function (pane) {
             return { id: pane.id, title: pane.title, height: pane.height };
           }),
@@ -336,6 +343,7 @@
         chart.load(layoutId);
         trackedRsiId = findFirstIndicator('RSI');
         trackedMacdId = findFirstIndicator('MACD');
+        document.getElementById('chartType').value = chart.document.settings.chartType;
         renderState();
       });
 
@@ -349,6 +357,11 @@
       document.getElementById('newData').addEventListener('click', function () {
         data = StockChartEngine.createDemoData(260);
         chart.setData(data);
+        renderState();
+      });
+
+      document.getElementById('chartType').addEventListener('change', function () {
+        chart.setChartType(this.value);
         renderState();
       });
 
