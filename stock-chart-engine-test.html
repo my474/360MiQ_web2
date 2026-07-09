@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>360MiQ Stock Chart Engine Test</title>
+  <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css">
+  <style>
+    :root {
+      --page-bg: #eef2f7;
+      --panel-bg: #ffffff;
+      --border: #cbd5e1;
+      --text: #111827;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-text: #ffffff;
+    }
+
+    html[data-theme="dark"] {
+      --page-bg: #0f172a;
+      --panel-bg: #172033;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #60a5fa;
+      --accent-text: #0f172a;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .test-shell {
+      box-sizing: border-box;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      grid-template-rows: auto minmax(0, 1fr);
+      height: 100%;
+      padding: 10px;
+    }
+
+    .test-toolbar,
+    .test-sidebar {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .test-toolbar {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      grid-column: 1 / 3;
+      min-height: 44px;
+      padding: 7px;
+    }
+
+    .test-chart {
+      min-height: 500px;
+    }
+
+    .test-sidebar {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .test-group {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .test-group:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .test-label {
+      color: var(--muted);
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    button,
+    select,
+    input {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-sizing: border-box;
+      color: var(--text);
+      font: inherit;
+      height: 32px;
+      max-width: 100%;
+      padding: 0 9px;
+    }
+
+    button {
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      font-weight: 700;
+    }
+
+    button:hover,
+    button:focus,
+    select:focus,
+    input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .button-grid {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .field-row {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: 1fr 84px;
+    }
+
+    .state-box {
+      background: rgba(100, 116, 139, 0.1);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 11px;
+      margin: 0;
+      min-height: 160px;
+      overflow: auto;
+      padding: 8px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 880px) {
+      .test-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 62vh auto;
+      }
+
+      .test-toolbar,
+      .test-sidebar {
+        grid-column: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="test-shell">
+    <div class="test-toolbar">
+      <button type="button" class="primary" id="toggleTheme">Toggle Theme</button>
+      <button type="button" id="lightTheme">Light Load</button>
+      <button type="button" id="darkTheme">Dark Load</button>
+      <button type="button" id="saveLayout">Save</button>
+      <button type="button" id="loadLayout">Load</button>
+      <button type="button" id="resetLayout">Reset Saved</button>
+      <button type="button" id="newData">New Demo Data</button>
+    </div>
+
+    <section id="chart" class="test-chart"></section>
+
+    <aside class="test-sidebar">
+      <div class="test-group">
+        <span class="test-label">Indicators</span>
+        <div class="field-row">
+          <select id="indicatorType">
+            <option value="SMA">SMA</option>
+            <option value="EMA">EMA</option>
+            <option value="RSI">RSI</option>
+            <option value="MACD">MACD</option>
+            <option value="BBANDS">Bollinger</option>
+            <option value="VOLUME">Volume</option>
+            <option value="ATR">ATR</option>
+            <option value="STOCH">Stochastic</option>
+            <option value="VWAP">VWAP</option>
+          </select>
+          <button type="button" id="addIndicator">Add</button>
+        </div>
+      </div>
+
+      <div class="test-group">
+        <span class="test-label">Indicator on Indicator</span>
+        <div class="button-grid">
+          <button type="button" id="addRsiStack">RSI + SMA</button>
+          <button type="button" id="addMacdStack">MACD + EMA</button>
+        </div>
+      </div>
+
+      <div class="test-group">
+        <span class="test-label">Annotations</span>
+        <div class="button-grid">
+          <button type="button" id="addTrendline">Trendline</button>
+          <button type="button" id="addRectangle">Rectangle</button>
+          <button type="button" id="addPriceNote">Price Note</button>
+          <button type="button" id="addPaneNote">Pane Note</button>
+        </div>
+      </div>
+
+      <div class="test-group">
+        <span class="test-label">Live Data</span>
+        <button type="button" id="appendBar">Append Bar</button>
+      </div>
+
+      <div class="test-group">
+        <span class="test-label">Serialized Chart Document</span>
+        <pre id="state" class="state-box"></pre>
+      </div>
+    </aside>
+  </main>
+
+  <script src="assets/js/stock-chart-engine/stock-chart-engine.js"></script>
+  <script>
+    (function () {
+      var layoutId = 'stock-chart-engine-manual-test';
+      var data = StockChartEngine.createDemoData(260);
+      var chart = null;
+      var trackedRsiId = null;
+      var trackedMacdId = null;
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.dispatchEvent(new CustomEvent('themechange', {
+          detail: { theme: theme, isDark: theme === 'dark' }
+        }));
+      }
+
+      function seedChart(theme, loadSaved) {
+        if (chart) chart.destroy();
+        setTheme(theme || document.documentElement.getAttribute('data-theme') || 'light');
+        chart = new StockChartEngine.Chart('#chart', {
+          symbol: 'DEMO.TEST',
+          interval: '1D',
+          data: data,
+          layoutId: layoutId,
+          load: loadSaved !== false
+        });
+        if (!chart.document.indicators.length) {
+          chart.addIndicator('VOLUME', { placement: 'new' });
+          trackedRsiId = chart.addIndicator('RSI', { placement: 'new' });
+        } else {
+          trackedRsiId = findFirstIndicator('RSI');
+          trackedMacdId = findFirstIndicator('MACD');
+        }
+        chart.on('change', renderState);
+        chart.on('save', renderState);
+        renderState();
+      }
+
+      function findFirstIndicator(type) {
+        var found = chart.document.indicators.filter(function (indicator) {
+          return indicator.type === type;
+        })[0];
+        return found ? found.id : null;
+      }
+
+      function samplePoint(offset) {
+        var index = Math.max(0, data.length - offset);
+        return { time: data[index].time, value: data[index].close };
+      }
+
+      function indicatorPaneId(type) {
+        var found = chart.document.indicators.filter(function (indicator) {
+          return indicator.type === type;
+        })[0];
+        return found ? found.paneId : 'price';
+      }
+
+      function renderState() {
+        var doc = chart.serialize();
+        var summary = {
+          theme: doc.theme,
+          symbol: doc.symbol,
+          interval: doc.interval,
+          panes: doc.panes.map(function (pane) {
+            return { id: pane.id, title: pane.title, height: pane.height };
+          }),
+          indicators: doc.indicators.map(function (indicator) {
+            return {
+              id: indicator.id,
+              type: indicator.type,
+              paneId: indicator.paneId,
+              source: indicator.source
+            };
+          }),
+          drawings: doc.drawings.map(function (drawing) {
+            return { id: drawing.id, type: drawing.type, paneId: drawing.paneId };
+          })
+        };
+        document.getElementById('state').textContent = JSON.stringify(summary, null, 2);
+      }
+
+      document.getElementById('toggleTheme').addEventListener('click', function () {
+        setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      });
+
+      document.getElementById('lightTheme').addEventListener('click', function () {
+        seedChart('light', false);
+      });
+
+      document.getElementById('darkTheme').addEventListener('click', function () {
+        seedChart('dark', false);
+      });
+
+      document.getElementById('saveLayout').addEventListener('click', function () {
+        chart.save();
+        renderState();
+      });
+
+      document.getElementById('loadLayout').addEventListener('click', function () {
+        chart.load(layoutId);
+        trackedRsiId = findFirstIndicator('RSI');
+        trackedMacdId = findFirstIndicator('MACD');
+        renderState();
+      });
+
+      document.getElementById('resetLayout').addEventListener('click', function () {
+        chart.storage.remove(layoutId);
+        trackedRsiId = null;
+        trackedMacdId = null;
+        seedChart(document.documentElement.getAttribute('data-theme'), false);
+      });
+
+      document.getElementById('newData').addEventListener('click', function () {
+        data = StockChartEngine.createDemoData(260);
+        chart.setData(data);
+        renderState();
+      });
+
+      document.getElementById('addIndicator').addEventListener('click', function () {
+        var type = document.getElementById('indicatorType').value;
+        var placement = ['SMA', 'EMA', 'BBANDS', 'VWAP'].indexOf(type) >= 0 ? 'source' : 'new';
+        var id = chart.addIndicator(type, { placement: placement });
+        if (type === 'RSI') trackedRsiId = id;
+        if (type === 'MACD') trackedMacdId = id;
+        renderState();
+      });
+
+      document.getElementById('addRsiStack').addEventListener('click', function () {
+        if (!trackedRsiId) trackedRsiId = chart.addIndicator('RSI', { placement: 'new' });
+        chart.addIndicator('SMA', {
+          source: { kind: 'indicator', indicatorId: trackedRsiId, output: 'value' },
+          inputs: { length: 9 }
+        });
+        renderState();
+      });
+
+      document.getElementById('addMacdStack').addEventListener('click', function () {
+        if (!trackedMacdId) trackedMacdId = chart.addIndicator('MACD', { placement: 'new' });
+        chart.addIndicator('EMA', {
+          source: { kind: 'indicator', indicatorId: trackedMacdId, output: 'macd' },
+          inputs: { length: 5 }
+        });
+        renderState();
+      });
+
+      document.getElementById('addTrendline').addEventListener('click', function () {
+        chart.addDrawing('trendline', [samplePoint(90), samplePoint(20)], {
+          paneId: 'price',
+          style: { color: '#2563eb', width: 2 }
+        });
+        renderState();
+      });
+
+      document.getElementById('addRectangle').addEventListener('click', function () {
+        chart.addDrawing('rectangle', [samplePoint(70), samplePoint(35)], {
+          paneId: 'price',
+          style: { color: '#7c3aed', fill: 'rgba(124, 58, 237, 0.14)' }
+        });
+        renderState();
+      });
+
+      document.getElementById('addPriceNote').addEventListener('click', function () {
+        chart.addDrawing('text', [samplePoint(8)], {
+          paneId: 'price',
+          text: 'Price annotation',
+          style: { color: '#d97706' }
+        });
+        renderState();
+      });
+
+      document.getElementById('addPaneNote').addEventListener('click', function () {
+        chart.addDrawing('text', [{ time: samplePoint(12).time, value: 55 }], {
+          paneId: indicatorPaneId('RSI'),
+          text: 'Pane annotation',
+          style: { color: '#0891b2' }
+        });
+        renderState();
+      });
+
+      document.getElementById('appendBar').addEventListener('click', function () {
+        var last = data[data.length - 1];
+        var open = last.close;
+        var close = Math.max(5, open + (Math.random() - 0.45) * 3);
+        var bar = {
+          time: last.time + 86400,
+          open: open,
+          high: Math.max(open, close) + Math.random() * 1.8,
+          low: Math.min(open, close) - Math.random() * 1.8,
+          close: close,
+          volume: 800000 + Math.random() * 1800000
+        };
+        data.push(bar);
+        chart.updateBar(bar);
+        renderState();
+      });
+
+      seedChart('light', true);
+    }());
+  </script>
+</body>
+</html>
