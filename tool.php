@@ -688,6 +688,7 @@ select optgroup {
   justify-content: center;
   gap: 8px;
   margin-top: 8px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
 }
 
@@ -704,8 +705,9 @@ select optgroup {
 .chart-share-actions .btn:not(:disabled):not(.disabled):active {
   border-color: #007bff;
   border-width: 1px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.22);
-  outline: 0;
+  box-shadow: none;
+  outline: 2px solid rgba(0, 123, 255, 0.35);
+  outline-offset: 2px;
 }
 
 .chart-share-actions .btn:not(:disabled):not(.disabled):active {
