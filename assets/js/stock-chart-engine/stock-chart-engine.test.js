@@ -240,6 +240,7 @@ additionalIndicators.forEach((type) => {
 });
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
+assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
 const smaOnRsiId = chart.addIndicator('SMA', {
   source: { kind: 'indicator', indicatorId: rsiId, output: 'value' },
   inputs: { length: 9 }

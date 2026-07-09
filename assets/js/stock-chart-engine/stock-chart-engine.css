@@ -92,3 +92,61 @@
 .sce-canvas.sce-crosshair-drawing {
   cursor: copy;
 }
+
+.sce-settings-popup {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+  box-sizing: border-box;
+  color: var(--sce-text);
+  display: grid;
+  gap: 8px;
+  min-width: 260px;
+  padding: 10px;
+  position: absolute;
+  z-index: 4;
+}
+
+.sce-settings-popup[hidden] {
+  display: none;
+}
+
+.sce-settings-title {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sce-settings-title button,
+.sce-settings-actions button {
+  background: transparent;
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  color: var(--sce-text);
+  cursor: pointer;
+  height: 26px;
+}
+
+.sce-settings-popup label {
+  color: var(--sce-muted);
+  display: grid;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.sce-settings-popup input,
+.sce-settings-popup select {
+  background: transparent;
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: var(--sce-text);
+  height: 28px;
+  padding: 0 7px;
+}
+
+.sce-settings-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}

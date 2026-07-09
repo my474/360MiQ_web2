@@ -1094,6 +1094,7 @@
     this.document.theme = this.document.theme || getThemeName(options.theme);
     this.indicatorResults = {};
     this.paneRects = [];
+    this.legendHitZones = [];
     this.pointer = null;
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
@@ -1134,7 +1135,11 @@
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'sce-canvas';
     this.canvas.setAttribute('tabindex', '0');
+    this.settingsPopup = document.createElement('div');
+    this.settingsPopup.className = 'sce-settings-popup';
+    this.settingsPopup.setAttribute('hidden', 'hidden');
     this.canvasWrap.appendChild(this.canvas);
+    this.canvasWrap.appendChild(this.settingsPopup);
     this.root.appendChild(this.toolbar);
     this.root.appendChild(this.canvasWrap);
     this.container.innerHTML = '';
@@ -1471,6 +1476,92 @@
     return this.updateIndicatorSettings(indicatorId, { styles: styles });
   };
 
+  Chart.prototype.hitTestLegend = function (pointer) {
+    for (var i = this.legendHitZones.length - 1; i >= 0; i -= 1) {
+      var zone = this.legendHitZones[i];
+      if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) {
+        return zone;
+      }
+    }
+    return null;
+  };
+
+  Chart.prototype.openIndicatorSettingsPopup = function (legendHit, pointer) {
+    var indicator = this.document.indicators.filter(function (item) {
+      return item.id === legendHit.indicatorId;
+    })[0];
+    if (!indicator) return;
+    var definition = Indicators[indicator.type] || {};
+    var output = legendHit.output || Object.keys(indicator.styles || { value: {} })[0];
+    var style = indicator.styles && indicator.styles[output] || {};
+    var length = indicator.inputs && indicator.inputs.length != null ? indicator.inputs.length : '';
+    var left = clamp(pointer.x + 12, 8, Math.max(8, this.canvas.clientWidth - 286));
+    var top = clamp(pointer.y + 12, 8, Math.max(8, this.canvas.clientHeight - 218));
+    this.settingsPopup.style.left = left + 'px';
+    this.settingsPopup.style.top = top + 'px';
+    this.settingsPopup.innerHTML = [
+      '<div class="sce-settings-title">',
+      '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
+      '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
+      '</div>',
+      '<label>Period<input type="number" min="1" max="1000" data-sce-popup-field="length" value="', escapeHtml(length), '"></label>',
+      '<label>Output<input type="text" readonly data-sce-popup-field="output" value="', escapeHtml(output), '"></label>',
+      '<label>Color<input type="color" data-sce-popup-field="color" value="', escapeHtml(style.color || '#2563eb'), '"></label>',
+      '<label>Thickness<input type="number" min="1" max="8" data-sce-popup-field="lineWidth" value="', escapeHtml(style.lineWidth || 2), '"></label>',
+      '<label>Style<select data-sce-popup-field="lineStyle">',
+      '<option value="solid"', normalizeLineStyle(style.lineStyle) === 'solid' ? ' selected' : '', '>Solid</option>',
+      '<option value="dash"', normalizeLineStyle(style.lineStyle) === 'dash' ? ' selected' : '', '>Dash</option>',
+      '<option value="dot"', normalizeLineStyle(style.lineStyle) === 'dot' ? ' selected' : '', '>Dot</option>',
+      '</select></label>',
+      '<div class="sce-settings-actions">',
+      '<button type="button" data-sce-popup-action="remove">Remove</button>',
+      '<button type="button" data-sce-popup-action="apply">Apply</button>',
+      '</div>'
+    ].join('');
+    this.settingsPopup.removeAttribute('hidden');
+    this.settingsPopup.dataset.indicatorId = indicator.id;
+    this.settingsPopup.dataset.output = output;
+    this.bindSettingsPopup();
+  };
+
+  Chart.prototype.bindSettingsPopup = function () {
+    var self = this;
+    this.settingsPopup.onclick = function (event) {
+      var action = event.target && event.target.getAttribute('data-sce-popup-action');
+      if (!action) return;
+      if (action === 'close') self.closeIndicatorSettingsPopup();
+      if (action === 'remove') {
+        self.removeIndicator(self.settingsPopup.dataset.indicatorId);
+        self.closeIndicatorSettingsPopup();
+      }
+      if (action === 'apply') self.applyIndicatorSettingsPopup();
+    };
+  };
+
+  Chart.prototype.closeIndicatorSettingsPopup = function () {
+    this.settingsPopup.setAttribute('hidden', 'hidden');
+  };
+
+  Chart.prototype.applyIndicatorSettingsPopup = function () {
+    var indicatorId = this.settingsPopup.dataset.indicatorId;
+    var output = this.settingsPopup.dataset.output || 'value';
+    var length = this.settingsPopup.querySelector('[data-sce-popup-field="length"]');
+    var color = this.settingsPopup.querySelector('[data-sce-popup-field="color"]');
+    var lineWidth = this.settingsPopup.querySelector('[data-sce-popup-field="lineWidth"]');
+    var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="lineStyle"]');
+    var style = {};
+    style[output] = {
+      color: color ? color.value : '#2563eb',
+      lineWidth: lineWidth ? Number(lineWidth.value) : 2,
+      lineStyle: lineStyle ? lineStyle.value : 'solid'
+    };
+    this.updateIndicatorSettings(indicatorId, {
+      inputs: length && length.value ? { length: Number(length.value) } : {},
+      styles: style
+    });
+    this.closeIndicatorSettingsPopup();
+  };
+
   Chart.prototype.moveIndicatorToPane = function (indicatorId, paneId) {
     return this.updateIndicator(indicatorId, { paneId: paneId });
   };
@@ -1570,6 +1661,12 @@
   };
 
   Chart.prototype.handleCanvasClick = function (event) {
+    var pointer = this.pointerFromEvent(event);
+    var legendHit = this.hitTestLegend(pointer);
+    if (legendHit) {
+      this.openIndicatorSettingsPopup(legendHit, pointer);
+      return;
+    }
     if (!this.pendingDrawing) return;
     var point = this.valueFromEvent(event);
     if (!point) return;
@@ -1977,6 +2074,7 @@
     this.updateToolbar();
     this.clear(theme);
     this.layoutPanes();
+    this.legendHitZones = [];
     for (var i = 0; i < this.paneRects.length; i += 1) {
       this.drawPane(this.paneRects[i], theme, i);
     }
@@ -2029,11 +2127,20 @@
 
     this.indicatorLegendItems(rect.paneId, legendTime, theme).forEach(function (item) {
       if (x > rect.x + rect.width - 80) return;
+      var itemWidth = approximateTextWidth(item.label) + 24;
+      this.legendHitZones.push({
+        x: x - 3,
+        y: y - 11,
+        width: itemWidth,
+        height: 22,
+        indicatorId: item.indicatorId,
+        output: item.output
+      });
       ctx.fillStyle = item.color;
       ctx.fillRect(x, y - 4, 8, 8);
       ctx.fillText(item.label, x + 12, y);
-      x += approximateTextWidth(item.label) + 28;
-    });
+      x += itemWidth + 4;
+    }, this);
     ctx.restore();
   };
 
@@ -2074,6 +2181,8 @@
         var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
         if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
         items.push({
+          indicatorId: indicator.id,
+          output: renderItem.output,
           color: style.color,
           label: indicatorLegendName(indicator, renderItem.output) + ' ' + formatNumber(valuePoint.value)
         });
@@ -2573,6 +2682,12 @@
     var t = ((point.x - a.x) * dx + (point.y - a.y) * dy) / (dx * dx + dy * dy);
     t = clamp(t, 0, 1);
     return distance(point, { x: a.x + t * dx, y: a.y + t * dy });
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+    });
   }
 
   function formatNumber(value) {
