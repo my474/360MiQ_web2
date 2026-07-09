@@ -693,6 +693,29 @@ select optgroup {
 
 .chart-share-actions .btn {
   min-width: 104px;
+  border-width: 1px;
+  box-shadow: none;
+  outline: 0;
+}
+
+.chart-share-actions .btn:focus,
+.chart-share-actions .btn.focus,
+.chart-share-actions .btn:active,
+.chart-share-actions .btn:not(:disabled):not(.disabled):active {
+  border-color: #007bff;
+  border-width: 1px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.22);
+  outline: 0;
+}
+
+.chart-share-actions .btn:not(:disabled):not(.disabled):active {
+  background-color: #fff;
+  color: #007bff;
+}
+
+[data-theme="dark"] .chart-share-actions .btn:not(:disabled):not(.disabled):active {
+  background-color: transparent;
+  color: #8ec8ff;
 }
 </style>
 <?php $page = 'tool'; include "./header.php" ?>
