@@ -72,8 +72,9 @@ table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
   color: darkgrey !important;
 }
 
-:root:not([data-theme="dark"]) #screener_grid .screener-trend-icon {
-  filter: brightness(0.7) contrast(1.35) saturate(1.1);
+:root:not([data-theme="dark"]) #screener_grid .screener-trend-icon,
+:root:not([data-theme="dark"]) #screener_grid tbody td:nth-child(2) span.mytooltip3 img.not-selectable[src^="assets/img/"] {
+  filter: brightness(0.45) contrast(1.7) saturate(1.15) !important;
 }
 
 :root:not([data-theme="dark"]) #screener_grid .help-tip4 {
