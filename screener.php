@@ -537,6 +537,10 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     color: var(--text-link-bright, #66c7ff) !important;
 }
 
+[data-theme="dark"] .screener-share-actions .btn i {
+    color: var(--text-link-bright, #66c7ff) !important;
+}
+
 [data-theme="dark"] .screener-share-actions .btn:focus,
 [data-theme="dark"] .screener-share-actions .btn.focus,
 [data-theme="dark"] .screener-share-actions .btn:active,
