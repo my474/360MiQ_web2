@@ -72,6 +72,14 @@ table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
   color: darkgrey !important;
 }
 
+:root:not([data-theme="dark"]) #screener_grid .screener-trend-icon {
+  filter: brightness(0.7) contrast(1.35) saturate(1.1);
+}
+
+:root:not([data-theme="dark"]) #screener_grid .help-tip4 {
+  color: #6f9eb8;
+}
+
 </style>
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">-->
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css">
@@ -1908,7 +1916,7 @@ window.__SCREENER_PAGE_CONFIG = {
     "industryfromURL": <?php echo json_encode(isset($_GET['industry']) ? $_GET['industry'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/screener-main.js?v=20260709.3"></script>
+<script src="assets/js/pages/screener-main.js?v=20260710.1"></script>
 <script src="assets/js/pages/screener-share.js?v=20260709.1"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260709.1"></script>
 
