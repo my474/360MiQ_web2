@@ -178,6 +178,13 @@
       color: var(--accent-text);
     }
 
+    .drawing-tool-status {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      min-height: 32px;
+    }
+
     .state-box {
       background: rgba(100, 116, 139, 0.1);
       border: 1px solid var(--border);
@@ -308,6 +315,7 @@
           <button type="button" id="addDrawingTool">Add Tool</button>
         </div>
         <div id="drawingToolPalette" class="drawing-tool-palette" role="toolbar" aria-label="Drawing tools"></div>
+        <div id="drawingToolStatus" class="drawing-tool-status"></div>
         <div class="button-grid">
           <button type="button" id="addTrendline">Trendline</button>
           <button type="button" id="addRectangle">Rectangle</button>
@@ -362,7 +370,11 @@
           trackedRsiId = findFirstIndicator('RSI');
           trackedMacdId = findFirstIndicator('MACD');
         }
-        chart.on('change', renderState);
+        chart.on('change', function (event) {
+          renderState();
+          if (event.type === 'drawing:add') setDrawingToolStatus('Drawing created. Select another icon to draw again.');
+          if (event.type === 'drawing:cancel') setDrawingToolStatus('Drawing canceled.');
+        });
         chart.on('save', renderState);
         document.getElementById('chartType').value = chart.document.settings.chartType;
         renderState();
@@ -471,13 +483,18 @@
             button.addEventListener('click', function () {
               select.value = tool.id;
               syncDrawingToolButtons();
+              startSelectedDrawingTool();
             });
             palette.appendChild(button);
           });
           select.appendChild(group);
         });
-        select.addEventListener('change', syncDrawingToolButtons);
+        select.addEventListener('change', function () {
+          syncDrawingToolButtons();
+          startSelectedDrawingTool();
+        });
         syncDrawingToolButtons();
+        setDrawingToolStatus('');
       }
 
       function syncDrawingToolButtons() {
@@ -487,6 +504,20 @@
           button.classList.toggle('is-selected', isSelected);
           button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         });
+      }
+
+      function setDrawingToolStatus(message) {
+        document.getElementById('drawingToolStatus').textContent = message || 'Select an icon, then click on the chart to place its points.';
+      }
+
+      function startSelectedDrawingTool() {
+        var toolId = document.getElementById('drawingTool').value || 'trendline';
+        var tool = StockChartEngine.drawingTools[toolId] || StockChartEngine.drawingTools.trendline;
+        chart.startDrawing(toolId, {
+          text: tool.name,
+          style: { color: '#2563eb', width: tool.category === 'geometric' ? 2 : 1.8 }
+        });
+        setDrawingToolStatus(tool.name + ': click ' + Math.max(1, tool.points || 1) + ' point' + ((tool.points || 1) === 1 ? '' : 's') + ' on the chart. Esc cancels.');
       }
 
       function renderIndicatorSettingsOptions(doc) {

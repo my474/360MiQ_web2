@@ -1287,6 +1287,7 @@
     this.pointer = null;
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
+    this.pendingDrawing = null;
     this.dragState = null;
     this.autosaveTimer = null;
     this.destroyed = false;
@@ -1375,6 +1376,11 @@
       self.handleCanvasClick(event);
     });
     this.canvas.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && self.pendingDrawing) {
+        event.preventDefault();
+        self.cancelDrawing();
+        return;
+      }
       if ((event.key === 'Delete' || event.key === 'Backspace') && self.selectedDrawingId) {
         event.preventDefault();
         self.removeDrawing(self.selectedDrawingId);
@@ -1886,31 +1892,68 @@
     }), drawingOptions);
   };
 
-  Chart.prototype.startDrawing = function (type) {
-    this.pendingDrawing = { type: type, points: [] };
+  Chart.prototype.startDrawing = function (type, options) {
+    options = options || {};
+    type = normalizeDrawingType(type);
+    var tool = drawingToolDefinition(type);
+    this.pendingDrawing = {
+      type: type,
+      points: [],
+      paneId: options.paneId || null,
+      requiredPoints: drawingRequiredPointCount(type),
+      text: options.text || tool.name,
+      style: merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {})
+    };
+    this.selectedDrawingId = null;
     this.canvas.classList.add('sce-crosshair-drawing');
+    this.canvas.style.cursor = 'crosshair';
+    this.draw();
+    this.emitChange('drawing:start', { type: type, requiredPoints: this.pendingDrawing.requiredPoints });
+    return this.pendingDrawing;
+  };
+
+  Chart.prototype.cancelDrawing = function () {
+    if (!this.pendingDrawing) return false;
+    this.pendingDrawing = null;
+    this.canvas.classList.remove('sce-crosshair-drawing');
+    this.draw();
+    this.emitChange('drawing:cancel', {});
+    return true;
   };
 
   Chart.prototype.handleCanvasClick = function (event) {
     var pointer = this.pointerFromEvent(event);
-    var scaleHit = this.hitTestScaleMode(pointer);
-    if (scaleHit) {
-      this.togglePaneScaleMode(scaleHit.paneId);
+    if (!this.pendingDrawing) {
+      var scaleHit = this.hitTestScaleMode(pointer);
+      if (scaleHit) {
+        this.togglePaneScaleMode(scaleHit.paneId);
+        return;
+      }
+      var legendHit = this.hitTestLegend(pointer);
+      if (legendHit) {
+        this.openIndicatorSettingsPopup(legendHit, pointer);
+        return;
+      }
       return;
     }
-    var legendHit = this.hitTestLegend(pointer);
-    if (legendHit) {
-      this.openIndicatorSettingsPopup(legendHit, pointer);
-      return;
-    }
-    if (!this.pendingDrawing) return;
     var point = this.valueFromEvent(event);
     if (!point) return;
+    if (this.pendingDrawing.paneId && point.paneId !== this.pendingDrawing.paneId) return;
+    if (!this.pendingDrawing.paneId) this.pendingDrawing.paneId = point.paneId;
     this.pendingDrawing.points.push({ time: point.time, value: point.value });
-    if (this.pendingDrawing.points.length >= 2 || this.pendingDrawing.type === 'hline' || this.pendingDrawing.type === 'text') {
-      this.addDrawing(this.pendingDrawing.type, this.pendingDrawing.points, { paneId: point.paneId });
+    if (this.pendingDrawing.points.length >= this.pendingDrawing.requiredPoints) {
+      var pending = this.pendingDrawing;
+      var drawingId = this.addDrawing(pending.type, pending.points, {
+        paneId: pending.paneId,
+        text: pending.text,
+        style: pending.style
+      });
+      this.selectedDrawingId = drawingId;
       this.pendingDrawing = null;
       this.canvas.classList.remove('sce-crosshair-drawing');
+      this.draw();
+    } else {
+      this.draw();
     }
   };
 
@@ -1949,6 +1992,12 @@
 
   Chart.prototype.handlePointerMove = function (event) {
     this.pointer = this.pointerFromEvent(event);
+    if (this.pendingDrawing) {
+      this.hoverDrawingId = null;
+      this.canvas.style.cursor = 'crosshair';
+      this.draw();
+      return;
+    }
     if (this.dragState) {
       this.moveSelectedDrawing(this.pointer);
       this.draw();
@@ -2186,7 +2235,7 @@
     for (var i = 0; i < this.paneRects.length; i += 1) {
       var rect = this.paneRects[i];
       var inPane = point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
-      if ((forcedPaneId && rect.paneId === forcedPaneId) || inPane) {
+      if (forcedPaneId ? rect.paneId === forcedPaneId : inPane) {
         var range = this.paneRange(rect.paneId);
         return {
           paneId: rect.paneId,
@@ -2360,6 +2409,7 @@
     if (rect.paneId === 'price') this.drawPriceSeries(rect, range, theme);
     this.drawIndicators(rect, range, theme);
     this.drawDrawings(rect, range, theme);
+    this.drawPendingDrawing(rect, range, theme);
     this.drawScale(rect, range, theme);
     this.drawPaneLegend(rect, range, theme, paneIndex);
     ctx.strokeStyle = theme.border;
@@ -2701,6 +2751,28 @@
       return (a.zIndex || 0) - (b.zIndex || 0);
     }).forEach(function (drawing) {
       self.drawDrawing(rect, range, theme, drawing);
+    });
+  };
+
+  Chart.prototype.drawPendingDrawing = function (rect, range, theme) {
+    if (!this.pendingDrawing) return;
+    if (this.pendingDrawing.paneId && this.pendingDrawing.paneId !== rect.paneId) return;
+    var points = clone(this.pendingDrawing.points || []);
+    if (this.pointer && points.length && points.length < this.pendingDrawing.requiredPoints) {
+      var preview = this.valueFromPoint(this.pointer, rect.paneId);
+      if (preview && (!this.pendingDrawing.paneId || preview.paneId === this.pendingDrawing.paneId)) {
+        points.push({ time: preview.time, value: preview.value });
+      }
+    }
+    if (!points.length) return;
+    this.drawDrawing(rect, range, theme, {
+      id: 'pending-drawing',
+      type: this.pendingDrawing.type,
+      paneId: rect.paneId,
+      points: points,
+      text: this.pendingDrawing.text,
+      style: merge({ color: theme.drawing, width: 2, fill: 'rgba(37, 99, 235, 0.08)', lineStyle: 'dash' }, this.pendingDrawing.style || {}),
+      visible: true
     });
   };
 
@@ -3312,6 +3384,11 @@
 
   function drawingToolDefinition(type) {
     return DRAWING_TOOLS[normalizeDrawingType(type)] || DRAWING_TOOLS.text;
+  }
+
+  function drawingRequiredPointCount(type) {
+    var tool = drawingToolDefinition(type);
+    return Math.max(1, tool.points || 1);
   }
 
   function nearestSeriesPoint(data, time) {

@@ -297,6 +297,24 @@ chart.handlePointerUp();
 assert.notDeepStrictEqual(chart.getDrawingById(drawingId).points.map((point) => point.value), bodyDragPointsBefore);
 assert.ok(chart.indicatorLegendItems(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId, last.time, chart.theme()).length > 0);
 
+const interactiveCountBefore = chart.getAllShapes().length;
+chart.startDrawing('triangle');
+const interactiveRect = chart.getPaneRect('price');
+const interactiveRange = chart.paneRange('price');
+[
+  { time: data[data.length - 40].time, value: data[data.length - 40].close },
+  { time: data[data.length - 34].time, value: data[data.length - 34].close + 4 },
+  { time: data[data.length - 28].time, value: data[data.length - 28].close }
+].forEach((point, index) => {
+  chart.handleCanvasClick({
+    clientX: chart.xForTime(point.time, interactiveRect),
+    clientY: chart.yForValue(point.value, interactiveRect, interactiveRange)
+  });
+  if (index < 2) assert.strictEqual(chart.getAllShapes().length, interactiveCountBefore);
+});
+assert.strictEqual(chart.getAllShapes().length, interactiveCountBefore + 1);
+assert.strictEqual(chart.getDrawingById(chart.selectedDrawingId).type, 'triangle');
+
 const shapeId = chart.createMultipointShape([
   { time: data[data.length - 20].time, price: data[data.length - 20].close },
   { time: last.time, price: last.close }
