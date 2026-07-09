@@ -516,9 +516,32 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     color: #007bff;
 }
 
+[data-theme="dark"] .screener-share-actions .btn {
+    border-color: var(--text-link-bright, #66c7ff) !important;
+    color: var(--text-link-bright, #66c7ff) !important;
+}
+
+[data-theme="dark"] .screener-share-actions .btn:focus,
+[data-theme="dark"] .screener-share-actions .btn.focus,
+[data-theme="dark"] .screener-share-actions .btn:active,
 [data-theme="dark"] .screener-share-actions .btn:not(:disabled):not(.disabled):active {
-    background-color: transparent;
-    color: #8ec8ff;
+    border-color: var(--text-link-bright, #66c7ff) !important;
+    outline-color: rgba(102, 199, 255, 0.35);
+}
+
+[data-theme="dark"] .screener-share-actions .btn:hover,
+[data-theme="dark"] .screener-share-actions .btn:focus,
+[data-theme="dark"] .screener-share-actions .btn.focus,
+[data-theme="dark"] .screener-share-actions .btn:not(:disabled):not(.disabled):active {
+    background-color: var(--text-link-bright, #66c7ff) !important;
+    border-color: var(--text-link-bright, #66c7ff) !important;
+    color: var(--bg, #1a1a2e) !important;
+}
+
+[data-theme="dark"] .screener-share-actions .btn:hover i,
+[data-theme="dark"] .screener-share-actions .btn:focus i,
+[data-theme="dark"] .screener-share-actions .btn:not(:disabled):not(.disabled):active i {
+    color: var(--bg, #1a1a2e) !important;
 }
 
 .screener-share-notification {
