@@ -258,6 +258,69 @@
     return { k: k, d: rollingSma(k, smoothD) };
   }
 
+  function rollingWma(data, length) {
+    var out = [];
+    var denominator = length * (length + 1) / 2;
+    for (var i = length - 1; i < data.length; i += 1) {
+      var sum = 0;
+      for (var j = 0; j < length; j += 1) {
+        sum += data[i - j].value * (length - j);
+      }
+      out.push({ time: data[i].time, value: sum / denominator });
+    }
+    return out;
+  }
+
+  function combineSeries(left, right, combiner) {
+    var byTime = {};
+    left.forEach(function (point) {
+      byTime[point.time] = { left: point.value };
+    });
+    right.forEach(function (point) {
+      if (!byTime[point.time]) byTime[point.time] = {};
+      byTime[point.time].right = point.value;
+    });
+    return Object.keys(byTime).map(function (time) {
+      var pair = byTime[time];
+      return pair.left != null && pair.right != null ? { time: Number(time), value: combiner(pair.left, pair.right) } : null;
+    }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
+  }
+
+  function typicalPriceSeries(bars) {
+    return bars.map(function (bar) {
+      return { time: bar.time, value: (bar.high + bar.low + bar.close) / 3 };
+    });
+  }
+
+  function highestLowest(bars, index, length) {
+    var high = -Infinity;
+    var low = Infinity;
+    for (var i = index - length + 1; i <= index; i += 1) {
+      high = Math.max(high, bars[i].high);
+      low = Math.min(low, bars[i].low);
+    }
+    return { high: high, low: low };
+  }
+
+  function rollingSum(data, length) {
+    var out = [];
+    var sum = 0;
+    for (var i = 0; i < data.length; i += 1) {
+      sum += data[i].value;
+      if (i >= length) sum -= data[i - length].value;
+      if (i >= length - 1) out.push({ time: data[i].time, value: sum });
+    }
+    return out;
+  }
+
+  function cumulativeLine(bars, mapper) {
+    var total = 0;
+    return bars.map(function (bar, index) {
+      total += mapper(bar, index, bars);
+      return { time: bar.time, value: total };
+    });
+  }
+
   function createIndicatorResult(indicator, outputs, render) {
     return {
       id: indicator.id,
@@ -453,6 +516,418 @@
     }
   };
 
+  merge(Indicators, {
+    WMA: {
+      id: 'WMA',
+      name: 'Weighted Moving Average',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var value = rollingWma(compactSeries(sourceSeries(context, indicator.source)), Math.max(1, input.length));
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    HMA: {
+      id: 'HMA',
+      name: 'Hull Moving Average',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var length = Math.max(2, input.length);
+        var data = compactSeries(sourceSeries(context, indicator.source));
+        var half = rollingWma(data, Math.max(1, Math.round(length / 2)));
+        var full = rollingWma(data, length);
+        var diff = combineSeries(half, full, function (a, b) { return 2 * a - b; });
+        var value = rollingWma(diff, Math.max(1, Math.round(Math.sqrt(length))));
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    DEMA: {
+      id: 'DEMA',
+      name: 'Double EMA',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var ema1 = rollingEma(compactSeries(sourceSeries(context, indicator.source)), input.length);
+        var ema2 = rollingEma(ema1, input.length);
+        return createIndicatorResult(indicator, { value: combineSeries(ema1, ema2, function (a, b) { return 2 * a - b; }) }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    TEMA: {
+      id: 'TEMA',
+      name: 'Triple EMA',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var ema1 = rollingEma(compactSeries(sourceSeries(context, indicator.source)), input.length);
+        var ema2 = rollingEma(ema1, input.length);
+        var ema3 = rollingEma(ema2, input.length);
+        var value = [];
+        ema1.forEach(function (point) {
+          var two = seriesValueAt(ema2, point.time);
+          var three = seriesValueAt(ema3, point.time);
+          if (two != null && three != null) value.push({ time: point.time, value: 3 * point.value - 3 * two + three });
+        });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    ROC: {
+      id: 'ROC',
+      name: 'Rate of Change',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 12 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var data = compactSeries(sourceSeries(context, indicator.source));
+        var value = [];
+        for (var i = input.length; i < data.length; i += 1) {
+          value.push({ time: data[i].time, value: data[i - input.length].value ? ((data[i].value - data[i - input.length].value) / data[i - input.length].value) * 100 : 0 });
+        }
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    },
+    MOM: {
+      id: 'MOM',
+      name: 'Momentum',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 10 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var data = compactSeries(sourceSeries(context, indicator.source));
+        var value = [];
+        for (var i = input.length; i < data.length; i += 1) value.push({ time: data[i].time, value: data[i].value - data[i - input.length].value });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    },
+    CCI: {
+      id: 'CCI',
+      name: 'Commodity Channel Index',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var typical = typicalPriceSeries(context.bars);
+        var basis = rollingSma(typical, input.length);
+        var value = [];
+        for (var i = input.length - 1; i < typical.length; i += 1) {
+          var mean = seriesValueAt(basis, typical[i].time);
+          if (mean == null) continue;
+          var deviation = 0;
+          for (var j = i - input.length + 1; j <= i; j += 1) deviation += Math.abs(typical[j].value - mean);
+          deviation /= input.length;
+          value.push({ time: typical[i].time, value: deviation ? (typical[i].value - mean) / (0.015 * deviation) : 0 });
+        }
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'level100', type: 'level', value: 100 }, { output: 'level-100', type: 'level', value: -100 }]);
+      }
+    },
+    MFI: {
+      id: 'MFI',
+      name: 'Money Flow Index',
+      category: 'Volume',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 14 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var pos = [], neg = [];
+        for (var i = 0; i < context.bars.length; i += 1) {
+          var typical = (context.bars[i].high + context.bars[i].low + context.bars[i].close) / 3;
+          var prevTypical = i ? (context.bars[i - 1].high + context.bars[i - 1].low + context.bars[i - 1].close) / 3 : typical;
+          var flow = typical * context.bars[i].volume;
+          pos.push({ time: context.bars[i].time, value: typical > prevTypical ? flow : 0 });
+          neg.push({ time: context.bars[i].time, value: typical < prevTypical ? flow : 0 });
+        }
+        var posSum = rollingSum(pos, input.length);
+        var negSum = rollingSum(neg, input.length);
+        var value = combineSeries(posSum, negSum, function (a, b) { return b === 0 ? 100 : 100 - (100 / (1 + a / b)); });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'level80', type: 'level', value: 80 }, { output: 'level20', type: 'level', value: 20 }]);
+      }
+    },
+    ADX: {
+      id: 'ADX',
+      name: 'Average Directional Index',
+      category: 'Trend',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 14 },
+      defaultStyles: { adx: { color: null, lineWidth: 2 }, plusDI: { color: null, lineWidth: 1 }, minusDI: { color: null, lineWidth: 1 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var plusDM = [], minusDM = [], tr = [];
+        for (var i = 1; i < context.bars.length; i += 1) {
+          var upMove = context.bars[i].high - context.bars[i - 1].high;
+          var downMove = context.bars[i - 1].low - context.bars[i].low;
+          var previousClose = context.bars[i - 1].close;
+          plusDM.push({ time: context.bars[i].time, value: upMove > downMove && upMove > 0 ? upMove : 0 });
+          minusDM.push({ time: context.bars[i].time, value: downMove > upMove && downMove > 0 ? downMove : 0 });
+          tr.push({ time: context.bars[i].time, value: Math.max(context.bars[i].high - context.bars[i].low, Math.abs(context.bars[i].high - previousClose), Math.abs(context.bars[i].low - previousClose)) });
+        }
+        var trEma = rollingEma(tr, input.length);
+        var plusDI = combineSeries(rollingEma(plusDM, input.length), trEma, function (a, b) { return b ? 100 * a / b : 0; });
+        var minusDI = combineSeries(rollingEma(minusDM, input.length), trEma, function (a, b) { return b ? 100 * a / b : 0; });
+        var dx = combineSeries(plusDI, minusDI, function (a, b) { return (a + b) ? 100 * Math.abs(a - b) / (a + b) : 0; });
+        var adx = rollingEma(dx, input.length);
+        return createIndicatorResult(indicator, { adx: adx, plusDI: plusDI, minusDI: minusDI }, [{ output: 'adx', type: 'line' }, { output: 'plusDI', type: 'line' }, { output: 'minusDI', type: 'line' }]);
+      }
+    },
+    OBV: {
+      id: 'OBV',
+      name: 'On Balance Volume',
+      category: 'Volume',
+      defaultPanePolicy: 'new',
+      defaultInputs: {},
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var value = cumulativeLine(context.bars, function (bar, index, bars) {
+          if (!index) return 0;
+          return bar.close > bars[index - 1].close ? bar.volume : (bar.close < bars[index - 1].close ? -bar.volume : 0);
+        });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    ADL: {
+      id: 'ADL',
+      name: 'Accumulation/Distribution Line',
+      category: 'Volume',
+      defaultPanePolicy: 'new',
+      defaultInputs: {},
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var value = cumulativeLine(context.bars, function (bar) {
+          var range = bar.high - bar.low;
+          return range ? (((bar.close - bar.low) - (bar.high - bar.close)) / range) * bar.volume : 0;
+        });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    CMF: {
+      id: 'CMF',
+      name: 'Chaikin Money Flow',
+      category: 'Volume',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var mfv = context.bars.map(function (bar) {
+          var range = bar.high - bar.low;
+          var multiplier = range ? (((bar.close - bar.low) - (bar.high - bar.close)) / range) : 0;
+          return { time: bar.time, value: multiplier * bar.volume };
+        });
+        var vol = context.bars.map(function (bar) { return { time: bar.time, value: bar.volume }; });
+        var value = combineSeries(rollingSum(mfv, input.length), rollingSum(vol, input.length), function (a, b) { return b ? a / b : 0; });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    },
+    WILLIAMS: {
+      id: 'WILLIAMS',
+      name: 'Williams %R',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 14 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var value = [];
+        for (var i = input.length - 1; i < context.bars.length; i += 1) {
+          var range = highestLowest(context.bars, i, input.length);
+          value.push({ time: context.bars[i].time, value: range.high === range.low ? -50 : ((range.high - context.bars[i].close) / (range.high - range.low)) * -100 });
+        }
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'level-20', type: 'level', value: -20 }, { output: 'level-80', type: 'level', value: -80 }]);
+      }
+    },
+    DONCHIAN: {
+      id: 'DONCHIAN',
+      name: 'Donchian Channels',
+      category: 'Volatility',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20 },
+      defaultStyles: { upper: { color: null, lineWidth: 1 }, middle: { color: null, lineWidth: 1 }, lower: { color: null, lineWidth: 1 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var upper = [], middle = [], lower = [];
+        for (var i = input.length - 1; i < context.bars.length; i += 1) {
+          var range = highestLowest(context.bars, i, input.length);
+          upper.push({ time: context.bars[i].time, value: range.high });
+          lower.push({ time: context.bars[i].time, value: range.low });
+          middle.push({ time: context.bars[i].time, value: (range.high + range.low) / 2 });
+        }
+        return createIndicatorResult(indicator, { upper: upper, middle: middle, lower: lower }, [{ output: 'upper', type: 'line' }, { output: 'middle', type: 'line' }, { output: 'lower', type: 'line' }]);
+      }
+    },
+    KELTNER: {
+      id: 'KELTNER',
+      name: 'Keltner Channels',
+      category: 'Volatility',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20, multiplier: 2 },
+      defaultStyles: { upper: { color: null, lineWidth: 1 }, basis: { color: null, lineWidth: 1 }, lower: { color: null, lineWidth: 1 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var basis = rollingEma(typicalPriceSeries(context.bars), input.length);
+        var atr = computeAtr(context.bars, input.length);
+        var upper = combineSeries(basis, atr, function (a, b) { return a + input.multiplier * b; });
+        var lower = combineSeries(basis, atr, function (a, b) { return a - input.multiplier * b; });
+        return createIndicatorResult(indicator, { upper: upper, basis: basis, lower: lower }, [{ output: 'upper', type: 'line' }, { output: 'basis', type: 'line' }, { output: 'lower', type: 'line' }]);
+      }
+    },
+    ICHIMOKU: {
+      id: 'ICHIMOKU',
+      name: 'Ichimoku Cloud',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { conversion: 9, base: 26, spanB: 52 },
+      defaultStyles: { conversion: { color: null, lineWidth: 1 }, base: { color: null, lineWidth: 1 }, spanA: { color: null, lineWidth: 1 }, spanB: { color: null, lineWidth: 1 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var conversion = [], base = [], spanA = [], spanB = [];
+        for (var i = 0; i < context.bars.length; i += 1) {
+          if (i >= input.conversion - 1) {
+            var c = highestLowest(context.bars, i, input.conversion);
+            conversion.push({ time: context.bars[i].time, value: (c.high + c.low) / 2 });
+          }
+          if (i >= input.base - 1) {
+            var b = highestLowest(context.bars, i, input.base);
+            base.push({ time: context.bars[i].time, value: (b.high + b.low) / 2 });
+          }
+          var conv = seriesValueAt(conversion, context.bars[i].time);
+          var bas = seriesValueAt(base, context.bars[i].time);
+          if (conv != null && bas != null) spanA.push({ time: context.bars[i].time, value: (conv + bas) / 2 });
+          if (i >= input.spanB - 1) {
+            var s = highestLowest(context.bars, i, input.spanB);
+            spanB.push({ time: context.bars[i].time, value: (s.high + s.low) / 2 });
+          }
+        }
+        return createIndicatorResult(indicator, { conversion: conversion, base: base, spanA: spanA, spanB: spanB }, [{ output: 'conversion', type: 'line' }, { output: 'base', type: 'line' }, { output: 'spanA', type: 'line' }, { output: 'spanB', type: 'line' }]);
+      }
+    },
+    SUPERTREND: {
+      id: 'SUPERTREND',
+      name: 'SuperTrend',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 10, multiplier: 3 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var atr = computeAtr(context.bars, input.length);
+        var value = [];
+        var trend = 1;
+        var previous = null;
+        context.bars.forEach(function (bar) {
+          var atrValue = seriesValueAt(atr, bar.time);
+          if (atrValue == null) return;
+          var hl2 = (bar.high + bar.low) / 2;
+          var upper = hl2 + input.multiplier * atrValue;
+          var lower = hl2 - input.multiplier * atrValue;
+          if (previous != null) {
+            if (bar.close > previous) trend = 1;
+            if (bar.close < previous) trend = -1;
+          }
+          previous = trend === 1 ? lower : upper;
+          value.push({ time: bar.time, value: previous });
+        });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    PIVOTS: {
+      id: 'PIVOTS',
+      name: 'Pivot Points',
+      category: 'Support/Resistance',
+      defaultPanePolicy: 'source',
+      defaultInputs: {},
+      defaultStyles: { pivot: { color: null, lineWidth: 1 }, r1: { color: null, lineWidth: 1 }, s1: { color: null, lineWidth: 1 } },
+      compute: function (context, indicator) {
+        var pivot = [], r1 = [], s1 = [];
+        for (var i = 1; i < context.bars.length; i += 1) {
+          var previous = context.bars[i - 1];
+          var p = (previous.high + previous.low + previous.close) / 3;
+          pivot.push({ time: context.bars[i].time, value: p });
+          r1.push({ time: context.bars[i].time, value: 2 * p - previous.low });
+          s1.push({ time: context.bars[i].time, value: 2 * p - previous.high });
+        }
+        return createIndicatorResult(indicator, { pivot: pivot, r1: r1, s1: s1 }, [{ output: 'pivot', type: 'line' }, { output: 'r1', type: 'line' }, { output: 's1', type: 'line' }]);
+      }
+    },
+    PSAR: {
+      id: 'PSAR',
+      name: 'Parabolic SAR',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { step: 0.02, max: 0.2 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        if (context.bars.length < 2) return createIndicatorResult(indicator, { value: [] }, [{ output: 'value', type: 'line' }]);
+        var value = [];
+        var rising = context.bars[1].close >= context.bars[0].close;
+        var sar = rising ? context.bars[0].low : context.bars[0].high;
+        var ep = rising ? context.bars[0].high : context.bars[0].low;
+        var af = input.step;
+        for (var i = 1; i < context.bars.length; i += 1) {
+          sar += af * (ep - sar);
+          if (rising) {
+            if (context.bars[i].low < sar) {
+              rising = false;
+              sar = ep;
+              ep = context.bars[i].low;
+              af = input.step;
+            } else if (context.bars[i].high > ep) {
+              ep = context.bars[i].high;
+              af = Math.min(input.max, af + input.step);
+            }
+          } else if (context.bars[i].high > sar) {
+            rising = true;
+            sar = ep;
+            ep = context.bars[i].high;
+            af = input.step;
+          } else if (context.bars[i].low < ep) {
+            ep = context.bars[i].low;
+            af = Math.min(input.max, af + input.step);
+          }
+          value.push({ time: context.bars[i].time, value: sar });
+        }
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    TRIX: {
+      id: 'TRIX',
+      name: 'TRIX',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 15 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var ema1 = rollingEma(compactSeries(sourceSeries(context, indicator.source)), input.length);
+        var ema2 = rollingEma(ema1, input.length);
+        var ema3 = rollingEma(ema2, input.length);
+        var value = [];
+        for (var i = 1; i < ema3.length; i += 1) {
+          value.push({ time: ema3[i].time, value: ema3[i - 1].value ? ((ema3[i].value - ema3[i - 1].value) / ema3[i - 1].value) * 100 : 0 });
+        }
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    }
+  });
+
   function EventBus() {
     this.listeners = {};
   }
@@ -489,7 +964,7 @@
         autosave: options.autosave !== false
       },
       panes: [
-        { id: 'price', title: 'Price', height: 420, seriesIds: ['main'], scaleIds: ['right'], type: 'price' }
+        { id: 'price', title: 'Price', height: 420, seriesIds: ['main'], scaleIds: ['right'], scaleMode: 'linear', type: 'price' }
       ],
       indicators: [],
       drawings: [],
@@ -501,6 +976,9 @@
     var migrated = merge(createDefaultDocument(), doc || {});
     migrated.schemaVersion = SCHEMA_VERSION;
     migrated.panes = migrated.panes && migrated.panes.length ? migrated.panes : createDefaultDocument().panes;
+    migrated.panes.forEach(function (pane) {
+      pane.scaleMode = normalizeScaleMode(pane.scaleMode);
+    });
     migrated.indicators = migrated.indicators || [];
     migrated.drawings = migrated.drawings || [];
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
@@ -637,6 +1115,8 @@
       '<button type="button" data-sce-action="rsi">RSI</button>',
       '<button type="button" data-sce-action="macd">MACD</button>',
       '<button type="button" data-sce-action="line">Line</button>',
+      '<button type="button" data-sce-action="log">Log</button>',
+      '<button type="button" data-sce-action="theme">Dark</button>',
       '<button type="button" data-sce-action="save">Save</button>'
     ].join('');
     this.canvasWrap = document.createElement('div');
@@ -662,6 +1142,8 @@
       if (action === 'rsi') self.addIndicator('RSI', { placement: 'new' });
       if (action === 'macd') self.addIndicator('MACD', { placement: 'new' });
       if (action === 'line') self.startDrawing('trendline');
+      if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
+      if (action === 'theme') self.toggleTheme();
       if (action === 'save') self.save();
     });
     this.toolbar.addEventListener('change', function (event) {
@@ -776,6 +1258,49 @@
     return this.document.settings.chartType;
   };
 
+  Chart.prototype.setPaneScaleMode = function (paneId, scaleMode) {
+    var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
+    if (!pane) return null;
+    pane.scaleMode = normalizeScaleMode(scaleMode);
+    this.draw();
+    this.emitChange('pane:scale', { paneId: paneId, scaleMode: pane.scaleMode });
+    return pane.scaleMode;
+  };
+
+  Chart.prototype.togglePaneScaleMode = function (paneId) {
+    var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
+    if (!pane) return null;
+    return this.setPaneScaleMode(paneId, pane.scaleMode === 'log' ? 'linear' : 'log');
+  };
+
+  Chart.prototype.paneScaleMode = function (paneId) {
+    var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
+    return pane ? normalizeScaleMode(pane.scaleMode) : 'linear';
+  };
+
+  Chart.prototype.activePaneId = function () {
+    if (this.pointer) {
+      for (var i = 0; i < this.paneRects.length; i += 1) {
+        var rect = this.paneRects[i];
+        if (this.pointer.y >= rect.y && this.pointer.y <= rect.y + rect.height) return rect.paneId;
+      }
+    }
+    return this.document.panes[0] ? this.document.panes[0].id : 'price';
+  };
+
+  Chart.prototype.toggleTheme = function () {
+    var next = this.document.theme === 'dark' ? 'light' : 'dark';
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', next);
+      document.documentElement.dispatchEvent(new CustomEvent('themechange', {
+        detail: { theme: next, isDark: next === 'dark' }
+      }));
+    } else {
+      this.setTheme(next);
+    }
+    return next;
+  };
+
   Chart.prototype.addPane = function (pane) {
     var created = merge({
       id: uid('pane'),
@@ -783,8 +1308,10 @@
       height: pane && pane.height ? pane.height : 180,
       seriesIds: [],
       scaleIds: ['right'],
+      scaleMode: 'linear',
       type: 'indicator'
     }, pane || {});
+    created.scaleMode = normalizeScaleMode(created.scaleMode);
     this.document.panes.push(created);
     this.resize();
     this.emitChange('pane:add', created);
@@ -1101,6 +1628,10 @@
     if (title) title.textContent = this.document.symbol + ' ' + this.document.interval;
     var chartType = this.toolbar.querySelector('[data-sce-chart-type]');
     if (chartType) chartType.value = this.document.settings.chartType;
+    var themeButton = this.toolbar.querySelector('[data-sce-action="theme"]');
+    if (themeButton) themeButton.textContent = this.document.theme === 'dark' ? 'Light' : 'Dark';
+    var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
+    if (logButton) logButton.textContent = 'Log: ' + this.paneScaleMode(this.activePaneId()).toUpperCase();
   };
 
   Chart.prototype.resize = function () {
@@ -1183,6 +1714,10 @@
       });
     });
     if (!values.length) return { min: 0, max: 1 };
+    if (this.paneScaleMode(paneId) === 'log') {
+      values = values.filter(function (value) { return value > 0; });
+      if (!values.length) return { min: 1, max: 10 };
+    }
     var min = Math.min.apply(null, values);
     var max = Math.max.apply(null, values);
     if (min === max) {
@@ -1203,6 +1738,12 @@
   };
 
   Chart.prototype.yForValue = function (value, rect, range) {
+    if (this.paneScaleMode(rect.paneId) === 'log') {
+      var logMin = Math.log10(Math.max(range.min, 0.0000001));
+      var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
+      var logValue = Math.log10(Math.max(value, range.min, 0.0000001));
+      return rect.y + ((logMax - logValue) / (logMax - logMin || 1)) * rect.height;
+    }
     return rect.y + ((range.max - value) / (range.max - range.min)) * rect.height;
   };
 
@@ -1215,6 +1756,12 @@
   };
 
   Chart.prototype.valueForY = function (y, rect, range) {
+    if (this.paneScaleMode(rect.paneId) === 'log') {
+      var logMin = Math.log10(Math.max(range.min, 0.0000001));
+      var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
+      var logValue = logMax - ((y - rect.y) / rect.height) * (logMax - logMin);
+      return Math.pow(10, logValue);
+    }
     return range.max - ((y - rect.y) / rect.height) * (range.max - range.min);
   };
 
@@ -1505,8 +2052,14 @@
     ctx.font = '11px sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
+    ctx.fillText(this.paneScaleMode(rect.paneId).toUpperCase(), rect.scaleX + 6, rect.y + 12);
     for (var i = 0; i <= 4; i += 1) {
       var value = range.max - ((range.max - range.min) / 4) * i;
+      if (this.paneScaleMode(rect.paneId) === 'log') {
+        var logMin = Math.log10(Math.max(range.min, 0.0000001));
+        var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
+        value = Math.pow(10, logMax - ((logMax - logMin) / 4) * i);
+      }
       var y = rect.y + (rect.height / 4) * i;
       ctx.fillText(formatNumber(value), rect.scaleX + 6, y);
     }
@@ -1894,6 +2447,10 @@
       line: 'line'
     };
     return map[normalized] || 'candlestick';
+  }
+
+  function normalizeScaleMode(mode) {
+    return String(mode || 'linear').toLowerCase() === 'log' ? 'log' : 'linear';
   }
 
   function approximateTextWidth(text) {

@@ -146,6 +146,9 @@ function createFakeDom() {
     addEventListener() {},
     removeEventListener() {}
   };
+  global.CustomEvent = function CustomEvent(type, options) {
+    return { type, detail: options && options.detail };
+  };
   const store = {};
   global.localStorage = {
     getItem(key) {
@@ -175,6 +178,10 @@ const chart = new StockChartEngine.Chart('#chart', {
 
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+assert.strictEqual(chart.setPaneScaleMode('price', 'log'), 'log');
+assert.strictEqual(chart.paneScaleMode('price'), 'log');
+assert.strictEqual(chart.togglePaneScaleMode('price'), 'linear');
+assert.strictEqual(chart.paneScaleMode('price'), 'linear');
 
 assert.strictEqual(chart.setChartType('bar'), 'bar');
 assert.strictEqual(chart.document.settings.chartType, 'bar');
@@ -188,6 +195,30 @@ assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+chart.toggleTheme();
+assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
+chart.toggleTheme();
+assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+
+const additionalIndicators = [
+  'WMA', 'HMA', 'DEMA', 'TEMA', 'ROC', 'MOM', 'CCI', 'MFI', 'ADX', 'OBV',
+  'ADL', 'CMF', 'WILLIAMS', 'DONCHIAN', 'KELTNER', 'ICHIMOKU', 'SUPERTREND',
+  'PIVOTS', 'PSAR', 'TRIX'
+];
+additionalIndicators.forEach((type) => {
+  const id = `test-${type}`;
+  const result = StockChartEngine.computeIndicatorGraph(data, [{
+    id,
+    type,
+    paneId: 'price',
+    source: { kind: 'price', field: 'close' },
+    inputs: {},
+    styles: {},
+    visible: true
+  }])[id];
+  assert.ok(result, `${type} should compute`);
+  assert.ok(Object.keys(result.outputs).length > 0, `${type} should expose outputs`);
+});
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 const smaOnRsiId = chart.addIndicator('SMA', {

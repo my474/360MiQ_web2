@@ -203,8 +203,36 @@
             <option value="ATR">ATR</option>
             <option value="STOCH">Stochastic</option>
             <option value="VWAP">VWAP</option>
+            <option value="WMA">WMA</option>
+            <option value="HMA">HMA</option>
+            <option value="DEMA">DEMA</option>
+            <option value="TEMA">TEMA</option>
+            <option value="ROC">ROC</option>
+            <option value="MOM">Momentum</option>
+            <option value="CCI">CCI</option>
+            <option value="MFI">MFI</option>
+            <option value="ADX">ADX</option>
+            <option value="OBV">OBV</option>
+            <option value="ADL">ADL</option>
+            <option value="CMF">CMF</option>
+            <option value="WILLIAMS">Williams %R</option>
+            <option value="DONCHIAN">Donchian</option>
+            <option value="KELTNER">Keltner</option>
+            <option value="ICHIMOKU">Ichimoku</option>
+            <option value="SUPERTREND">SuperTrend</option>
+            <option value="PIVOTS">Pivot Points</option>
+            <option value="PSAR">Parabolic SAR</option>
+            <option value="TRIX">TRIX</option>
           </select>
           <button type="button" id="addIndicator">Add</button>
+        </div>
+      </div>
+
+      <div class="test-group">
+        <span class="test-label">Pane Scale</span>
+        <div class="field-row">
+          <select id="paneScalePane"></select>
+          <button type="button" id="togglePaneScale">Log</button>
         </div>
       </div>
 
@@ -299,13 +327,14 @@
 
       function renderState() {
         var doc = chart.serialize();
+        renderPaneScaleOptions(doc);
         var summary = {
           theme: doc.theme,
           symbol: doc.symbol,
           interval: doc.interval,
           chartType: doc.settings.chartType,
           panes: doc.panes.map(function (pane) {
-            return { id: pane.id, title: pane.title, height: pane.height };
+            return { id: pane.id, title: pane.title, height: pane.height, scaleMode: pane.scaleMode };
           }),
           indicators: doc.indicators.map(function (indicator) {
             return {
@@ -320,6 +349,21 @@
           })
         };
         document.getElementById('state').textContent = JSON.stringify(summary, null, 2);
+      }
+
+      function renderPaneScaleOptions(doc) {
+        var select = document.getElementById('paneScalePane');
+        var previous = select.value;
+        select.innerHTML = '';
+        doc.panes.forEach(function (pane) {
+          var option = document.createElement('option');
+          option.value = pane.id;
+          option.textContent = (pane.title || pane.id) + ' - ' + (pane.scaleMode || 'linear').toUpperCase();
+          select.appendChild(option);
+        });
+        if (previous && doc.panes.some(function (pane) { return pane.id === previous; })) {
+          select.value = previous;
+        }
       }
 
       document.getElementById('toggleTheme').addEventListener('click', function () {
@@ -365,9 +409,15 @@
         renderState();
       });
 
+      document.getElementById('togglePaneScale').addEventListener('click', function () {
+        chart.togglePaneScaleMode(document.getElementById('paneScalePane').value || 'price');
+        renderState();
+      });
+
       document.getElementById('addIndicator').addEventListener('click', function () {
         var type = document.getElementById('indicatorType').value;
-        var placement = ['SMA', 'EMA', 'BBANDS', 'VWAP'].indexOf(type) >= 0 ? 'source' : 'new';
+        var definition = StockChartEngine.Indicators[type];
+        var placement = definition && definition.defaultPanePolicy === 'source' ? 'source' : 'new';
         var id = chart.addIndicator(type, { placement: placement });
         if (type === 'RSI') trackedRsiId = id;
         if (type === 'MACD') trackedMacdId = id;
