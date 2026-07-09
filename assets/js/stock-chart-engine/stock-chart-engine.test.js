@@ -87,6 +87,8 @@ class FakeElement {
     (this.listeners[event.type] || []).forEach((handler) => handler(event));
   }
 
+  focus() {}
+
   getBoundingClientRect() {
     return { left: 0, top: 0, width: 900, height: 560 };
   }
@@ -197,8 +199,44 @@ const drawingId = chart.addDrawing('trendline', [
   { time: last.time, value: last.close }
 ], { paneId: 'price' });
 assert.ok(chart.serialize().drawings.find((drawing) => drawing.id === drawingId));
+const beforeMoveValue = chart.getDrawingById(drawingId).points[0].value;
+const screenPoint = chart.drawingScreenPoints(chart.getDrawingById(drawingId))[0];
+chart.handlePointerDown({ clientX: screenPoint.x, clientY: screenPoint.y });
+chart.handlePointerMove({ clientX: screenPoint.x + 16, clientY: screenPoint.y + 12 });
+chart.handlePointerUp();
+assert.notStrictEqual(chart.getDrawingById(drawingId).points[0].value, beforeMoveValue);
+assert.ok(chart.indicatorLegendItems(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId, last.time, chart.theme()).length > 0);
+
+const shapeId = chart.createMultipointShape([
+  { time: data[data.length - 20].time, price: data[data.length - 20].close },
+  { time: last.time, price: last.close }
+], { shape: 'trendline' });
+assert.ok(chart.getAllShapes().find((drawing) => drawing.id === shapeId));
+chart.getShapeById(shapeId).setPoints([
+  { time: data[data.length - 18].time, value: data[data.length - 18].close },
+  { time: last.time, value: last.close + 2 }
+]);
+assert.strictEqual(chart.getShapeById(shapeId).getProperties().points.length, 2);
+chart.removeEntity(shapeId);
+assert.ok(!chart.getAllShapes().find((drawing) => drawing.id === shapeId));
 
 assert.strictEqual(chart.save(), true);
 assert.ok(chart.storage.load('default').drawings.length > 0);
 
 chart.destroy();
+
+const darkDom = createFakeDom();
+darkDom.documentElement.setAttribute('data-theme', 'dark');
+const darkChart = new StockChartEngine.Chart('#chart', {
+  data,
+  symbol: 'TEST',
+  interval: '1D',
+  load: false,
+  autosave: false
+});
+assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'dark');
+darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
+assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'light');
+darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
+assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'dark');
+darkChart.destroy();

@@ -606,6 +606,9 @@
     this.indicatorResults = {};
     this.paneRects = [];
     this.pointer = null;
+    this.hoverDrawingId = null;
+    this.selectedDrawingId = null;
+    this.dragState = null;
     this.autosaveTimer = null;
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
@@ -634,6 +637,7 @@
     this.canvasWrap.className = 'sce-canvas-wrap';
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'sce-canvas';
+    this.canvas.setAttribute('tabindex', '0');
     this.canvasWrap.appendChild(this.canvas);
     this.root.appendChild(this.toolbar);
     this.root.appendChild(this.canvasWrap);
@@ -655,16 +659,29 @@
       if (action === 'save') self.save();
     });
 
+    this.canvas.addEventListener('mousedown', function (event) {
+      self.handlePointerDown(event);
+    });
     this.canvas.addEventListener('mousemove', function (event) {
-      self.pointer = self.pointerFromEvent(event);
-      self.draw();
+      self.handlePointerMove(event);
+    });
+    this.canvas.addEventListener('mouseup', function () {
+      self.handlePointerUp();
     });
     this.canvas.addEventListener('mouseleave', function () {
+      self.handlePointerUp();
       self.pointer = null;
+      self.hoverDrawingId = null;
       self.draw();
     });
     this.canvas.addEventListener('click', function (event) {
       self.handleCanvasClick(event);
+    });
+    this.canvas.addEventListener('keydown', function (event) {
+      if ((event.key === 'Delete' || event.key === 'Backspace') && self.selectedDrawingId) {
+        event.preventDefault();
+        self.removeDrawing(self.selectedDrawingId);
+      }
     });
     window.addEventListener('resize', this.resizeListener);
     document.documentElement.addEventListener('themechange', this.themeListener);
@@ -817,6 +834,9 @@
     this.document.indicators = this.document.indicators.filter(function (indicator) {
       return indicator.id !== indicatorId && !(indicator.source && indicator.source.kind === 'indicator' && indicator.source.indicatorId === indicatorId);
     });
+    this.document.drawings = this.document.drawings.filter(function (drawing) {
+      return drawing.ownerStudyId !== indicatorId;
+    });
     this.compute();
     this.draw();
     this.emitChange('indicator:remove', { indicatorId: indicatorId, removed: before - this.document.indicators.length });
@@ -826,6 +846,11 @@
     var indicator = this.document.indicators.filter(function (item) { return item.id === indicatorId; })[0];
     if (!indicator) return false;
     merge(indicator, patch || {});
+    if (patch && patch.paneId) {
+      this.document.drawings.forEach(function (drawing) {
+        if (drawing.ownerStudyId === indicatorId) drawing.paneId = patch.paneId;
+      });
+    }
     this.compute();
     this.draw();
     this.emitChange('indicator:update', indicator);
@@ -838,10 +863,15 @@
 
   Chart.prototype.addDrawing = function (type, points, options) {
     options = options || {};
+    type = normalizeDrawingType(type);
+    var ownerStudy = options.ownerStudyId ? this.document.indicators.filter(function (indicator) {
+      return indicator.id === options.ownerStudyId;
+    })[0] : null;
     var drawing = {
       id: options.id || uid('drawing'),
       type: type,
-      paneId: options.paneId || 'price',
+      paneId: options.paneId || (ownerStudy ? ownerStudy.paneId : 'price'),
+      ownerStudyId: options.ownerStudyId || null,
       points: clone(points || []),
       text: options.text || '',
       style: merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {}),
@@ -857,8 +887,67 @@
 
   Chart.prototype.removeDrawing = function (drawingId) {
     this.document.drawings = this.document.drawings.filter(function (drawing) { return drawing.id !== drawingId; });
+    if (this.selectedDrawingId === drawingId) this.selectedDrawingId = null;
+    if (this.hoverDrawingId === drawingId) this.hoverDrawingId = null;
     this.draw();
     this.emitChange('drawing:remove', { drawingId: drawingId });
+  };
+
+  Chart.prototype.getAllShapes = function () {
+    return clone(this.document.drawings);
+  };
+
+  Chart.prototype.getShapeById = function (drawingId) {
+    var self = this;
+    var drawing = this.getDrawingById(drawingId);
+    if (!drawing) return null;
+    return {
+      id: drawing.id,
+      getProperties: function () {
+        return clone(drawing);
+      },
+      setProperties: function (patch) {
+        merge(drawing, patch || {});
+        self.draw();
+        self.emitChange('drawing:update', drawing);
+      },
+      setPoints: function (points) {
+        drawing.points = clone(points || []);
+        self.draw();
+        self.emitChange('drawing:move', drawing);
+      },
+      remove: function () {
+        self.removeDrawing(drawing.id);
+      }
+    };
+  };
+
+  Chart.prototype.removeEntity = function (id) {
+    this.removeDrawing(id);
+  };
+
+  Chart.prototype.removeAllShapes = function () {
+    this.document.drawings = [];
+    this.selectedDrawingId = null;
+    this.hoverDrawingId = null;
+    this.draw();
+    this.emitChange('drawing:removeAll', {});
+  };
+
+  Chart.prototype.createShape = function (point, options) {
+    options = options || {};
+    var shape = options.shape || 'text';
+    var drawingOptions = merge({}, options, { text: options.text || '', style: options.overrides || options.style || {} });
+    return this.addDrawing(shape, [{ time: point.time, value: point.price != null ? point.price : point.value }], drawingOptions);
+  };
+
+  Chart.prototype.createMultipointShape = function (points, options) {
+    options = options || {};
+    var shape = options.shape || 'trendline';
+    var drawingOptions = merge({}, options, { text: options.text || '', style: options.overrides || options.style || {} });
+    return this.addDrawing(shape, (points || []).map(function (point) {
+      return { time: point.time, value: point.price != null ? point.price : point.value };
+    }), drawingOptions);
   };
 
   Chart.prototype.startDrawing = function (type) {
@@ -876,6 +965,76 @@
       this.pendingDrawing = null;
       this.canvas.classList.remove('sce-crosshair-drawing');
     }
+  };
+
+  Chart.prototype.handlePointerDown = function (event) {
+    this.canvas.focus();
+    if (this.pendingDrawing) return;
+    this.pointer = this.pointerFromEvent(event);
+    var deleteHit = this.hitTestDrawingDelete(this.pointer);
+    if (deleteHit) {
+      this.removeDrawing(deleteHit.id);
+      return;
+    }
+
+    var hit = this.hitTestDrawing(this.pointer);
+    if (!hit) {
+      this.selectedDrawingId = null;
+      this.hoverDrawingId = null;
+      this.draw();
+      return;
+    }
+
+    this.selectedDrawingId = hit.drawing.id;
+    this.hoverDrawingId = hit.drawing.id;
+    if (!hit.drawing.locked) {
+      this.dragState = {
+        drawingId: hit.drawing.id,
+        paneId: hit.drawing.paneId,
+        startPointer: this.pointer,
+        startValue: this.valueFromPoint(this.pointer, hit.drawing.paneId),
+        originalPoints: clone(hit.drawing.points || [])
+      };
+    }
+    this.draw();
+  };
+
+  Chart.prototype.handlePointerMove = function (event) {
+    this.pointer = this.pointerFromEvent(event);
+    if (this.dragState) {
+      this.moveSelectedDrawing(this.pointer);
+      this.draw();
+      return;
+    }
+    var hit = this.hitTestDrawing(this.pointer);
+    this.hoverDrawingId = hit ? hit.drawing.id : null;
+    this.canvas.style.cursor = hit ? 'move' : 'crosshair';
+    this.draw();
+  };
+
+  Chart.prototype.handlePointerUp = function () {
+    if (!this.dragState) return;
+    var drawingId = this.dragState.drawingId;
+    this.dragState = null;
+    this.canvas.style.cursor = 'crosshair';
+    this.emitChange('drawing:move', { drawingId: drawingId });
+  };
+
+  Chart.prototype.moveSelectedDrawing = function (pointer) {
+    var state = this.dragState;
+    if (!state) return;
+    var current = this.valueFromPoint(pointer, state.paneId);
+    if (!current || !state.startValue) return;
+    var deltaTime = current.time - state.startValue.time;
+    var deltaValue = current.value - state.startValue.value;
+    var drawing = this.getDrawingById(state.drawingId);
+    if (!drawing || drawing.locked) return;
+    drawing.points = state.originalPoints.map(function (point) {
+      return {
+        time: Math.round(point.time + deltaTime),
+        value: point.value + deltaValue
+      };
+    });
   };
 
   Chart.prototype.setTheme = function (themeName) {
@@ -1035,9 +1194,14 @@
 
   Chart.prototype.valueFromEvent = function (event) {
     var point = this.pointerFromEvent(event);
+    return this.valueFromPoint(point);
+  };
+
+  Chart.prototype.valueFromPoint = function (point, forcedPaneId) {
     for (var i = 0; i < this.paneRects.length; i += 1) {
       var rect = this.paneRects[i];
-      if (point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height) {
+      var inPane = point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
+      if ((forcedPaneId && rect.paneId === forcedPaneId) || inPane) {
         var range = this.paneRange(rect.paneId);
         return {
           paneId: rect.paneId,
@@ -1047,6 +1211,101 @@
       }
     }
     return null;
+  };
+
+  Chart.prototype.getDrawingById = function (drawingId) {
+    return this.document.drawings.filter(function (drawing) {
+      return drawing.id === drawingId;
+    })[0] || null;
+  };
+
+  Chart.prototype.getPaneRect = function (paneId) {
+    return this.paneRects.filter(function (rect) {
+      return rect.paneId === paneId;
+    })[0] || null;
+  };
+
+  Chart.prototype.drawingScreenPoints = function (drawing) {
+    var rect = this.getPaneRect(drawing.paneId);
+    if (!rect) return [];
+    var range = this.paneRange(drawing.paneId);
+    return (drawing.points || []).map(function (point) {
+      return {
+        x: this.xForTime(point.time, rect),
+        y: this.yForValue(point.value, rect, range),
+        time: point.time,
+        value: point.value
+      };
+    }, this);
+  };
+
+  Chart.prototype.hitTestDrawingDelete = function (pointer) {
+    if (!this.selectedDrawingId) return null;
+    var drawing = this.getDrawingById(this.selectedDrawingId);
+    var zone = drawing ? this.drawingDeleteZone(drawing) : null;
+    if (!zone) return null;
+    if (pointer.x >= zone.x && pointer.x <= zone.x + zone.size && pointer.y >= zone.y && pointer.y <= zone.y + zone.size) {
+      return drawing;
+    }
+    return null;
+  };
+
+  Chart.prototype.hitTestDrawing = function (pointer) {
+    var sorted = this.document.drawings.slice().sort(function (a, b) {
+      return (b.zIndex || 0) - (a.zIndex || 0);
+    });
+    for (var i = 0; i < sorted.length; i += 1) {
+      var drawing = sorted[i];
+      if (drawing.visible === false) continue;
+      var rect = this.getPaneRect(drawing.paneId);
+      if (!rect || pointer.x < rect.x || pointer.x > rect.x + rect.width || pointer.y < rect.y || pointer.y > rect.y + rect.height) continue;
+      if (this.isPointOnDrawing(pointer, drawing)) return { drawing: drawing };
+    }
+    return null;
+  };
+
+  Chart.prototype.isPointOnDrawing = function (pointer, drawing) {
+    var points = this.drawingScreenPoints(drawing);
+    var tolerance = 8;
+    if (!points.length) return false;
+
+    for (var i = 0; i < points.length; i += 1) {
+      if (distance(pointer, points[i]) <= tolerance) return true;
+    }
+
+    if ((drawing.type === 'trendline' || drawing.type === 'arrow') && points[0] && points[1]) {
+      return distanceToSegment(pointer, points[0], points[1]) <= tolerance;
+    }
+    if (drawing.type === 'rectangle' && points[0] && points[1]) {
+      var minX = Math.min(points[0].x, points[1].x);
+      var maxX = Math.max(points[0].x, points[1].x);
+      var minY = Math.min(points[0].y, points[1].y);
+      var maxY = Math.max(points[0].y, points[1].y);
+      var nearEdge = Math.abs(pointer.x - minX) <= tolerance || Math.abs(pointer.x - maxX) <= tolerance || Math.abs(pointer.y - minY) <= tolerance || Math.abs(pointer.y - maxY) <= tolerance;
+      return pointer.x >= minX - tolerance && pointer.x <= maxX + tolerance && pointer.y >= minY - tolerance && pointer.y <= maxY + tolerance && nearEdge;
+    }
+    if (drawing.type === 'hline' && points[0]) {
+      return Math.abs(pointer.y - points[0].y) <= tolerance;
+    }
+    if (drawing.type === 'vline' && points[0]) {
+      return Math.abs(pointer.x - points[0].x) <= tolerance;
+    }
+    if (drawing.type === 'text' && points[0]) {
+      return pointer.x >= points[0].x - tolerance && pointer.x <= points[0].x + 110 && pointer.y >= points[0].y - 20 && pointer.y <= points[0].y + 8;
+    }
+    return false;
+  };
+
+  Chart.prototype.drawingDeleteZone = function (drawing) {
+    var points = this.drawingScreenPoints(drawing);
+    if (!points.length) return null;
+    var minX = points[0].x;
+    var minY = points[0].y;
+    points.forEach(function (point) {
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+    });
+    return { x: minX - 9, y: minY - 23, size: 16 };
   };
 
   Chart.prototype.clear = function (theme) {
@@ -1082,15 +1341,92 @@
     this.drawIndicators(rect, range, theme);
     this.drawDrawings(rect, range, theme);
     this.drawScale(rect, range, theme);
-    ctx.fillStyle = theme.mutedText;
-    ctx.font = '12px sans-serif';
-    ctx.fillText(rect.title || (paneIndex === 0 ? 'Price' : 'Indicator'), rect.x + 10, rect.y + 18);
+    this.drawPaneLegend(rect, range, theme, paneIndex);
     ctx.strokeStyle = theme.border;
     ctx.beginPath();
     ctx.moveTo(rect.x, rect.y + rect.height - 0.5);
     ctx.lineTo(rect.x + rect.width + rect.scaleWidth, rect.y + rect.height - 0.5);
     ctx.stroke();
     ctx.restore();
+  };
+
+  Chart.prototype.drawPaneLegend = function (rect, range, theme, paneIndex) {
+    var ctx = this.ctx;
+    var x = rect.x + 10;
+    var y = rect.y + 18;
+    var legendTime = this.legendTimeForPane(rect);
+    ctx.save();
+    ctx.font = '12px sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = theme.mutedText;
+    var paneTitle = rect.title || (paneIndex === 0 ? 'Price' : 'Indicator');
+    ctx.fillText(paneTitle, x, y);
+    x += approximateTextWidth(paneTitle) + 14;
+
+    if (rect.paneId === 'price') {
+      var bar = this.barNearTime(legendTime);
+      if (bar) {
+        var priceLabel = 'O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close);
+        ctx.fillStyle = bar.close >= bar.open ? theme.up : theme.down;
+        ctx.fillText(priceLabel, x, y);
+        x += approximateTextWidth(priceLabel) + 14;
+      }
+    }
+
+    this.indicatorLegendItems(rect.paneId, legendTime, theme).forEach(function (item) {
+      if (x > rect.x + rect.width - 80) return;
+      ctx.fillStyle = item.color;
+      ctx.fillRect(x, y - 4, 8, 8);
+      ctx.fillText(item.label, x + 12, y);
+      x += approximateTextWidth(item.label) + 28;
+    });
+    ctx.restore();
+  };
+
+  Chart.prototype.legendTimeForPane = function (rect) {
+    if (this.pointer && this.pointer.x >= rect.x && this.pointer.x <= rect.x + rect.width && this.pointer.y >= rect.y && this.pointer.y <= rect.y + rect.height) {
+      return Math.round(this.timeForX(this.pointer.x, rect));
+    }
+    var visible = this.visibleBars();
+    return visible.length ? visible[visible.length - 1].time : null;
+  };
+
+  Chart.prototype.barNearTime = function (time) {
+    if (time == null || !this.bars.length) return null;
+    var nearest = this.bars[0];
+    var nearestDistance = Math.abs(nearest.time - time);
+    this.bars.forEach(function (bar) {
+      var currentDistance = Math.abs(bar.time - time);
+      if (currentDistance < nearestDistance) {
+        nearest = bar;
+        nearestDistance = currentDistance;
+      }
+    });
+    return nearest;
+  };
+
+  Chart.prototype.indicatorLegendItems = function (paneId, time, theme) {
+    var self = this;
+    var paletteIndex = 0;
+    var items = [];
+    this.document.indicators.forEach(function (indicator) {
+      var result = self.indicatorResults[indicator.id];
+      if (!result) return;
+      result.render.forEach(function (renderItem) {
+        if (indicator.paneId !== paneId || indicator.visible === false || renderItem.type === 'level') return;
+        var data = result.outputs[renderItem.output] || [];
+        var valuePoint = nearestSeriesPoint(data, time);
+        if (!valuePoint) return;
+        var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
+        if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
+        items.push({
+          color: style.color,
+          label: indicatorLegendName(indicator, renderItem.output) + ' ' + formatNumber(valuePoint.value)
+        });
+        paletteIndex += 1;
+      });
+    });
+    return items;
   };
 
   Chart.prototype.drawGrid = function (rect, range, theme) {
@@ -1305,6 +1641,40 @@
       ctx.stroke();
       if (drawing.type === 'arrow') drawArrowHead(ctx, ax, ay, bx, by, style.color);
     }
+    if (drawing.id === this.selectedDrawingId || drawing.id === this.hoverDrawingId) {
+      this.drawDrawingSelection(drawing, theme);
+    }
+    ctx.restore();
+  };
+
+  Chart.prototype.drawDrawingSelection = function (drawing, theme) {
+    var ctx = this.ctx;
+    var points = this.drawingScreenPoints(drawing);
+    if (!points.length) return;
+    ctx.save();
+    ctx.fillStyle = theme.background;
+    ctx.strokeStyle = drawing.id === this.selectedDrawingId ? theme.crosshair : theme.mutedText;
+    ctx.lineWidth = 1;
+    points.forEach(function (point) {
+      ctx.fillRect(point.x - 4, point.y - 4, 8, 8);
+      ctx.strokeRect(point.x - 4, point.y - 4, 8, 8);
+    });
+
+    if (drawing.id === this.selectedDrawingId && !drawing.locked) {
+      var zone = this.drawingDeleteZone(drawing);
+      if (zone) {
+        ctx.fillStyle = theme.panelBackground;
+        ctx.strokeStyle = theme.down;
+        ctx.fillRect(zone.x, zone.y, zone.size, zone.size);
+        ctx.strokeRect(zone.x, zone.y, zone.size, zone.size);
+        ctx.beginPath();
+        ctx.moveTo(zone.x + 4, zone.y + 4);
+        ctx.lineTo(zone.x + zone.size - 4, zone.y + zone.size - 4);
+        ctx.moveTo(zone.x + zone.size - 4, zone.y + 4);
+        ctx.lineTo(zone.x + 4, zone.y + zone.size - 4);
+        ctx.stroke();
+      }
+    }
     ctx.restore();
   };
 
@@ -1369,6 +1739,75 @@
     ctx.closePath();
     ctx.fill();
     ctx.restore();
+  }
+
+  function nearestSeriesPoint(data, time) {
+    if (!data || !data.length) return null;
+    if (time == null) return data[data.length - 1];
+    var nearest = null;
+    var nearestDistance = Infinity;
+    data.forEach(function (point) {
+      if (point.value == null) return;
+      var currentDistance = Math.abs(point.time - time);
+      if (currentDistance < nearestDistance) {
+        nearest = point;
+        nearestDistance = currentDistance;
+      }
+    });
+    return nearest;
+  }
+
+  function indicatorLegendName(indicator, output) {
+    var definition = Indicators[indicator.type];
+    var inputs = indicator.inputs || {};
+    var name = definition ? definition.id : indicator.type;
+    if (inputs.length) name += ' ' + inputs.length;
+    if (indicator.type === 'MACD') {
+      if (output === 'signal') return 'MACD Signal';
+      if (output === 'histogram') return 'MACD Hist';
+      return 'MACD';
+    }
+    if (indicator.type === 'BBANDS') {
+      if (output === 'basis') return 'BB Basis';
+      return output === 'upper' ? 'BB Upper' : 'BB Lower';
+    }
+    if (indicator.type === 'STOCH') return output === 'k' ? 'Stoch K' : 'Stoch D';
+    return name;
+  }
+
+  function normalizeDrawingType(type) {
+    var map = {
+      arrow: 'arrow',
+      anchored_text: 'text',
+      horizontal_line: 'hline',
+      hline: 'hline',
+      icon: 'text',
+      note: 'text',
+      rectangle: 'rectangle',
+      text: 'text',
+      trend_line: 'trendline',
+      trendline: 'trendline',
+      vertical_line: 'vline',
+      vline: 'vline'
+    };
+    return map[type] || type || 'text';
+  }
+
+  function approximateTextWidth(text) {
+    return String(text || '').length * 7;
+  }
+
+  function distance(a, b) {
+    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+  }
+
+  function distanceToSegment(point, a, b) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    if (dx === 0 && dy === 0) return distance(point, a);
+    var t = ((point.x - a.x) * dx + (point.y - a.y) * dy) / (dx * dx + dy * dy);
+    t = clamp(t, 0, 1);
+    return distance(point, { x: a.x + t * dx, y: a.y + t * dy });
   }
 
   function formatNumber(value) {

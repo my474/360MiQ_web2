@@ -218,6 +218,7 @@
           <button type="button" id="addRectangle">Rectangle</button>
           <button type="button" id="addPriceNote">Price Note</button>
           <button type="button" id="addPaneNote">Pane Note</button>
+          <button type="button" id="removeShapes">Remove All</button>
         </div>
       </div>
 
@@ -409,6 +410,11 @@
           text: 'Pane annotation',
           style: { color: '#0891b2' }
         });
+        renderState();
+      });
+
+      document.getElementById('removeShapes').addEventListener('click', function () {
+        chart.removeAllShapes();
         renderState();
       });
 
