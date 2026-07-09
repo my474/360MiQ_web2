@@ -485,7 +485,12 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     justify-content: center;
     gap: 8px;
     margin-top: 8px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
+}
+
+#searchresult .screener-share-actions:last-child {
+    padding-bottom: 2px;
 }
 
 .screener-share-actions .btn {
