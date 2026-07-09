@@ -52,7 +52,10 @@
                 return;
 
             value.textContent = percent;
-            value.style.color = percent.charAt(0) === '-' ? 'red' : (percent.charAt(0) === '+' ? 'green' : 'grey');
+            value.classList.remove('screener-change-up', 'screener-change-down', 'screener-change-flat');
+            value.classList.add(percent.charAt(0) === '-' ? 'screener-change-down' : (percent.charAt(0) === '+' ? 'screener-change-up' : 'screener-change-flat'));
+            value.style.color = '';
+            value.style.fontWeight = '';
             cell.dataset.pricePolicyApplied = '1';
         });
     }

@@ -45,6 +45,33 @@ table#screener_grid.dataTable tbody tr:hover > .sorting_1 {
   background-color: #33335a !important;
 }
 
+#screener_grid .screener-change-up {
+  color: green;
+  font-weight: 550;
+}
+
+#screener_grid .screener-change-down {
+  color: red;
+  font-weight: 550;
+}
+
+#screener_grid .screener-change-flat {
+  color: darkgrey;
+  font-weight: 550;
+}
+
+[data-theme="dark"] #screener_grid .screener-change-up {
+  color: #44ff44 !important;
+}
+
+[data-theme="dark"] #screener_grid .screener-change-down {
+  color: #ff4444 !important;
+}
+
+[data-theme="dark"] #screener_grid .screener-change-flat {
+  color: darkgrey !important;
+}
+
 </style>
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">-->
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.4/css/responsive.bootstrap4.min.css">
@@ -1883,7 +1910,7 @@ window.__SCREENER_PAGE_CONFIG = {
 </script>
 <script src="assets/js/pages/screener-main.js?v=20260709.3"></script>
 <script src="assets/js/pages/screener-share.js?v=20260709.1"></script>
-<script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
+<script src="assets/js/price-display-page-hooks.js?v=20260709.1"></script>
 
             <div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
                        
