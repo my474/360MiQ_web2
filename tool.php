@@ -866,7 +866,7 @@ window.__TOOL_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
-<script src="assets/js/pages/tool-share.js?v=20260709.1"></script>
+<script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
     
 <?php include "./footer.php" ?>

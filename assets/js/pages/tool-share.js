@@ -44,13 +44,30 @@
   }
 
   function fallbackCopy(url, button) {
+    var selection = window.getSelection ? window.getSelection() : null;
+    var ranges = [];
+    if (selection) {
+      for (var i = 0; i < selection.rangeCount; i += 1) {
+        ranges.push(selection.getRangeAt(i));
+      }
+      selection.removeAllRanges();
+    }
+
+    var activeElement = document.activeElement;
     var textarea = document.createElement("textarea");
-    textarea.value = url;
+    textarea.value = String(url);
     textarea.setAttribute("readonly", "");
+    textarea.setAttribute("aria-hidden", "true");
     textarea.style.position = "fixed";
-    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    textarea.style.left = "0";
+    textarea.style.width = "1px";
+    textarea.style.height = "1px";
+    textarea.style.opacity = "0";
     document.body.appendChild(textarea);
+    textarea.focus({ preventScroll: true });
     textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
 
     var copied = false;
     try {
@@ -61,15 +78,26 @@
 
     document.body.removeChild(textarea);
 
+    if (selection) {
+      selection.removeAllRanges();
+      ranges.forEach(function (range) {
+        selection.addRange(range);
+      });
+    }
+    if (activeElement && typeof activeElement.focus === "function") {
+      activeElement.focus({ preventScroll: true });
+    }
+
     if (copied) {
       notify("Link copied", button);
     } else {
-      notify("Unable to copy link", button);
+      window.prompt("Copy this chart link:", url);
+      notify("Copy link shown", button);
     }
   }
 
   function copyUrl(url, button) {
-    if (navigator.clipboard && window.isSecureContext) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
       navigator.clipboard.writeText(url).then(function () {
         notify("Link copied", button);
       }).catch(function () {
