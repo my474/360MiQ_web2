@@ -187,6 +187,20 @@ assert.ok(chart.scaleHitZones.some((zone) => zone.paneId === 'price'));
 assert.strictEqual(chart.togglePaneScaleMode('price'), 'linear');
 assert.strictEqual(chart.paneScaleMode('price'), 'linear');
 
+const macdLogId = chart.addIndicator('MACD', { placement: 'new' });
+const macdLogIndicator = chart.document.indicators.find((indicator) => indicator.id === macdLogId);
+chart.setPaneScaleMode(macdLogIndicator.paneId, 'log');
+const macdRect = chart.getPaneRect(macdLogIndicator.paneId);
+const signedLogRange = { min: -5, max: 5 };
+const negativeLogY = chart.yForValue(-1, macdRect, signedLogRange);
+const zeroLogY = chart.yForValue(0, macdRect, signedLogRange);
+const positiveLogY = chart.yForValue(1, macdRect, signedLogRange);
+assert.ok(Number.isFinite(negativeLogY));
+assert.ok(Number.isFinite(zeroLogY));
+assert.ok(Number.isFinite(positiveLogY));
+assert.ok(Math.abs(chart.valueForY(zeroLogY, macdRect, signedLogRange)) < 0.0000001);
+chart.draw();
+
 assert.strictEqual(chart.setChartType('bar'), 'bar');
 assert.strictEqual(chart.document.settings.chartType, 'bar');
 assert.strictEqual(chart.setChartType('line'), 'line');

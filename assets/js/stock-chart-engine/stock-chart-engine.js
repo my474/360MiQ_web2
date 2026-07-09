@@ -2116,10 +2116,6 @@
       });
     });
     if (!values.length) return { min: 0, max: 1 };
-    if (this.paneScaleMode(paneId) === 'log') {
-      values = values.filter(function (value) { return value > 0; });
-      if (!values.length) return { min: 1, max: 10 };
-    }
     var min = Math.min.apply(null, values);
     var max = Math.max.apply(null, values);
     if (min === max) {
@@ -2127,7 +2123,12 @@
       max += Math.abs(max || 1) * 0.05;
     }
     var pad = (max - min) * 0.08;
-    return { min: min - pad, max: max + pad };
+    var paddedMin = min - pad;
+    var paddedMax = max + pad;
+    if (this.paneScaleMode(paneId) === 'log' && min > 0 && paddedMin <= 0) {
+      paddedMin = Math.max(min * 0.92, 0.0000001);
+    }
+    return { min: paddedMin, max: paddedMax };
   };
 
   Chart.prototype.xForTime = function (time, rect) {
@@ -2141,10 +2142,11 @@
 
   Chart.prototype.yForValue = function (value, rect, range) {
     if (this.paneScaleMode(rect.paneId) === 'log') {
-      if (value == null || value <= 0) return null;
-      var logMin = Math.log10(Math.max(range.min, 0.0000001));
-      var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
-      var logValue = Math.log10(Math.max(value, 0.0000001));
+      var logTransform = logScaleTransform(range);
+      var logMin = logTransform.value(range.min);
+      var logMax = logTransform.value(range.max);
+      var logValue = logTransform.value(value);
+      if (logMin == null || logMax == null || logValue == null) return null;
       return rect.y + ((logMax - logValue) / (logMax - logMin || 1)) * rect.height;
     }
     return rect.y + ((range.max - value) / (range.max - range.min)) * rect.height;
@@ -2160,10 +2162,12 @@
 
   Chart.prototype.valueForY = function (y, rect, range) {
     if (this.paneScaleMode(rect.paneId) === 'log') {
-      var logMin = Math.log10(Math.max(range.min, 0.0000001));
-      var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
+      var logTransform = logScaleTransform(range);
+      var logMin = logTransform.value(range.min);
+      var logMax = logTransform.value(range.max);
+      if (logMin == null || logMax == null) return range.min;
       var logValue = logMax - ((y - rect.y) / rect.height) * (logMax - logMin);
-      return Math.pow(10, logValue);
+      return logTransform.inverse(logValue);
     }
     return range.max - ((y - rect.y) / rect.height) * (range.max - range.min);
   };
@@ -2506,9 +2510,12 @@
     for (var i = 0; i <= 4; i += 1) {
       var value = range.max - ((range.max - range.min) / 4) * i;
       if (this.paneScaleMode(rect.paneId) === 'log') {
-        var logMin = Math.log10(Math.max(range.min, 0.0000001));
-        var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
-        value = Math.pow(10, logMax - ((logMax - logMin) / 4) * i);
+        var logTransform = logScaleTransform(range);
+        var logMin = logTransform.value(range.min);
+        var logMax = logTransform.value(range.max);
+        if (logMin != null && logMax != null) {
+          value = logTransform.inverse(logMax - ((logMax - logMin) / 4) * i);
+        }
       }
       var y = rect.y + (rect.height / 4) * i;
       ctx.fillText(formatNumber(value), rect.scaleX + 6, y);
@@ -3441,6 +3448,33 @@
     var t = ((point.x - a.x) * dx + (point.y - a.y) * dy) / (dx * dx + dy * dy);
     t = clamp(t, 0, 1);
     return distance(point, { x: a.x + t * dx, y: a.y + t * dy });
+  }
+
+  function signedLogValue(value) {
+    if (!Number.isFinite(value)) return null;
+    if (value === 0) return 0;
+    return (value < 0 ? -1 : 1) * Math.log10(1 + Math.abs(value));
+  }
+
+  function signedLogInverse(value) {
+    if (!Number.isFinite(value)) return 0;
+    if (value === 0) return 0;
+    return (value < 0 ? -1 : 1) * (Math.pow(10, Math.abs(value)) - 1);
+  }
+
+  function logScaleTransform(range) {
+    var useSignedLog = !range || range.min <= 0;
+    return {
+      value: function (value) {
+        value = Number(value);
+        if (!Number.isFinite(value)) return null;
+        if (useSignedLog) return signedLogValue(value);
+        return value > 0 ? Math.log10(value) : null;
+      },
+      inverse: function (value) {
+        return useSignedLog ? signedLogInverse(value) : Math.pow(10, value);
+      }
+    };
   }
 
   function escapeHtml(value) {
