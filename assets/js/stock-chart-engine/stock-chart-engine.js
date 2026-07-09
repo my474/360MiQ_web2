@@ -1095,6 +1095,7 @@
     this.indicatorResults = {};
     this.paneRects = [];
     this.legendHitZones = [];
+    this.scaleHitZones = [];
     this.pointer = null;
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
@@ -1486,6 +1487,16 @@
     return null;
   };
 
+  Chart.prototype.hitTestScaleMode = function (pointer) {
+    for (var i = this.scaleHitZones.length - 1; i >= 0; i -= 1) {
+      var zone = this.scaleHitZones[i];
+      if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) {
+        return zone;
+      }
+    }
+    return null;
+  };
+
   Chart.prototype.openIndicatorSettingsPopup = function (legendHit, pointer) {
     var indicator = this.document.indicators.filter(function (item) {
       return item.id === legendHit.indicatorId;
@@ -1506,7 +1517,13 @@
       '</div>',
       '<label>Period<input type="number" min="1" max="1000" data-sce-popup-field="length" value="', escapeHtml(length), '"></label>',
       '<label>Output<input type="text" readonly data-sce-popup-field="output" value="', escapeHtml(output), '"></label>',
-      '<label>Color<input type="color" data-sce-popup-field="color" value="', escapeHtml(style.color || '#2563eb'), '"></label>',
+      '<label>Color<div class="sce-color-control">',
+      '<button type="button" class="sce-color-swatch" data-sce-popup-action="toggle-color" style="background:', escapeHtml(style.color || '#2563eb'), '" aria-label="Choose color"></button>',
+      '<input type="text" data-sce-popup-field="color" value="', escapeHtml(style.color || '#2563eb'), '">',
+      '<div class="sce-color-palette" hidden>',
+      colorPaletteHtml(style.color || '#2563eb'),
+      '</div>',
+      '</div></label>',
       '<label>Thickness<input type="number" min="1" max="8" data-sce-popup-field="lineWidth" value="', escapeHtml(style.lineWidth || 2), '"></label>',
       '<label>Style<select data-sce-popup-field="lineStyle">',
       '<option value="solid"', normalizeLineStyle(style.lineStyle) === 'solid' ? ' selected' : '', '>Solid</option>',
@@ -1529,12 +1546,17 @@
     this.settingsPopup.onclick = function (event) {
       var action = event.target && event.target.getAttribute('data-sce-popup-action');
       if (!action) return;
+      if (action === 'toggle-color') self.togglePopupColorPalette();
+      if (action === 'pick-color') self.pickPopupColor(event.target.getAttribute('data-sce-color'));
       if (action === 'close') self.closeIndicatorSettingsPopup();
       if (action === 'remove') {
         self.removeIndicator(self.settingsPopup.dataset.indicatorId);
         self.closeIndicatorSettingsPopup();
       }
       if (action === 'apply') self.applyIndicatorSettingsPopup();
+    };
+    this.settingsPopup.onfocusin = function (event) {
+      if (!closest(event.target, 'sce-color-control')) self.closePopupColorPalette();
     };
   };
 
@@ -1560,6 +1582,27 @@
       styles: style
     });
     this.closeIndicatorSettingsPopup();
+  };
+
+  Chart.prototype.togglePopupColorPalette = function () {
+    var palette = this.settingsPopup.querySelector('.sce-color-palette');
+    if (!palette) return;
+    if (palette.hasAttribute('hidden')) palette.removeAttribute('hidden');
+    else palette.setAttribute('hidden', 'hidden');
+  };
+
+  Chart.prototype.closePopupColorPalette = function () {
+    var palette = this.settingsPopup.querySelector('.sce-color-palette');
+    if (palette) palette.setAttribute('hidden', 'hidden');
+  };
+
+  Chart.prototype.pickPopupColor = function (color) {
+    if (!color) return;
+    var field = this.settingsPopup.querySelector('[data-sce-popup-field="color"]');
+    var swatch = this.settingsPopup.querySelector('.sce-color-swatch');
+    if (field) field.value = color;
+    if (swatch) swatch.style.background = color;
+    this.closePopupColorPalette();
   };
 
   Chart.prototype.moveIndicatorToPane = function (indicatorId, paneId) {
@@ -1662,6 +1705,11 @@
 
   Chart.prototype.handleCanvasClick = function (event) {
     var pointer = this.pointerFromEvent(event);
+    var scaleHit = this.hitTestScaleMode(pointer);
+    if (scaleHit) {
+      this.togglePaneScaleMode(scaleHit.paneId);
+      return;
+    }
     var legendHit = this.hitTestLegend(pointer);
     if (legendHit) {
       this.openIndicatorSettingsPopup(legendHit, pointer);
@@ -1905,9 +1953,10 @@
 
   Chart.prototype.yForValue = function (value, rect, range) {
     if (this.paneScaleMode(rect.paneId) === 'log') {
+      if (value == null || value <= 0) return null;
       var logMin = Math.log10(Math.max(range.min, 0.0000001));
       var logMax = Math.log10(Math.max(range.max, range.min * 1.0001));
-      var logValue = Math.log10(Math.max(value, range.min, 0.0000001));
+      var logValue = Math.log10(Math.max(value, 0.0000001));
       return rect.y + ((logMax - logValue) / (logMax - logMin || 1)) * rect.height;
     }
     return rect.y + ((range.max - value) / (range.max - range.min)) * rect.height;
@@ -2014,6 +2063,7 @@
     var points = this.drawingScreenPoints(drawing);
     var tolerance = 8;
     for (var i = points.length - 1; i >= 0; i -= 1) {
+      if (points[i].y == null) continue;
       if (distance(pointer, points[i]) <= tolerance) return i;
     }
     return null;
@@ -2022,6 +2072,8 @@
   Chart.prototype.isPointOnDrawing = function (pointer, drawing) {
     var points = this.drawingScreenPoints(drawing);
     var tolerance = 8;
+    if (!points.length) return false;
+    points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return false;
 
     if ((drawing.type === 'trendline' || drawing.type === 'arrow') && points[0] && points[1]) {
@@ -2049,6 +2101,7 @@
 
   Chart.prototype.drawingDeleteZone = function (drawing) {
     var points = this.drawingScreenPoints(drawing);
+    points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return null;
     var minX = points[0].x;
     var minY = points[0].y;
@@ -2075,6 +2128,7 @@
     this.clear(theme);
     this.layoutPanes();
     this.legendHitZones = [];
+    this.scaleHitZones = [];
     for (var i = 0; i < this.paneRects.length; i += 1) {
       this.drawPane(this.paneRects[i], theme, i);
     }
@@ -2230,7 +2284,15 @@
     ctx.font = '11px sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(this.paneScaleMode(rect.paneId).toUpperCase(), rect.scaleX + 6, rect.y + 12);
+    var scaleModeLabel = this.paneScaleMode(rect.paneId).toUpperCase();
+    this.scaleHitZones.push({
+      x: rect.scaleX + 4,
+      y: rect.y + 2,
+      width: Math.max(42, approximateTextWidth(scaleModeLabel) + 8),
+      height: 20,
+      paneId: rect.paneId
+    });
+    ctx.fillText(scaleModeLabel, rect.scaleX + 6, rect.y + 12);
     for (var i = 0; i <= 4; i += 1) {
       var value = range.max - ((range.max - range.min) / 4) * i;
       if (this.paneScaleMode(rect.paneId) === 'log') {
@@ -2270,6 +2332,7 @@
       var close = this.yForValue(bar.close, rect, range);
       var high = this.yForValue(bar.high, rect, range);
       var low = this.yForValue(bar.low, rect, range);
+      if (open == null || close == null || high == null || low == null) return;
       var up = bar.close >= bar.open;
       ctx.strokeStyle = up ? theme.up : theme.down;
       ctx.fillStyle = up ? theme.up : theme.down;
@@ -2298,6 +2361,7 @@
       var close = this.yForValue(bar.close, rect, range);
       var high = this.yForValue(bar.high, rect, range);
       var low = this.yForValue(bar.low, rect, range);
+      if (open == null || close == null || high == null || low == null) return;
       ctx.strokeStyle = bar.close >= bar.open ? theme.up : theme.down;
       ctx.beginPath();
       ctx.moveTo(x, high);
@@ -2360,6 +2424,10 @@
       if (point.time < first || point.time > last || point.value == null) return;
       var x = this.xForTime(point.time, rect);
       var y = this.yForValue(point.value, rect, range);
+      if (y == null) {
+        started = false;
+        return;
+      }
       if (!started) {
         ctx.moveTo(x, y);
         started = true;
@@ -2385,6 +2453,7 @@
       if (point.time < first || point.time > last || point.value == null) return;
       var x = this.xForTime(point.time, rect);
       var y = this.yForValue(point.value, rect, range);
+      if (y == null) return;
       if (useVolumeColor) ctx.fillStyle = point.close >= point.open ? theme.volumeUp : theme.volumeDown;
       else ctx.fillStyle = point.value >= 0 ? theme.volumeUp : theme.volumeDown;
       if (style.color) ctx.fillStyle = style.color;
@@ -2430,6 +2499,10 @@
     ctx.font = style.font || '12px sans-serif';
     if (drawing.type === 'hline' && points[0]) {
       var y = this.yForValue(points[0].value, rect, range);
+      if (y == null) {
+        ctx.restore();
+        return;
+      }
       ctx.beginPath();
       ctx.moveTo(rect.x, y);
       ctx.lineTo(rect.x + rect.width, y);
@@ -2445,16 +2518,29 @@
       var y1 = this.yForValue(points[0].value, rect, range);
       var x2 = this.xForTime(points[1].time, rect);
       var y2 = this.yForValue(points[1].value, rect, range);
+      if (y1 == null || y2 == null) {
+        ctx.restore();
+        return;
+      }
       ctx.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
       ctx.strokeRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
     } else if (drawing.type === 'text' && points[0]) {
+      var textY = this.yForValue(points[0].value, rect, range);
+      if (textY == null) {
+        ctx.restore();
+        return;
+      }
       ctx.fillStyle = style.color;
-      ctx.fillText(drawing.text || 'Note', this.xForTime(points[0].time, rect), this.yForValue(points[0].value, rect, range));
+      ctx.fillText(drawing.text || 'Note', this.xForTime(points[0].time, rect), textY);
     } else if ((drawing.type === 'trendline' || drawing.type === 'arrow') && points[0] && points[1]) {
       var ax = this.xForTime(points[0].time, rect);
       var ay = this.yForValue(points[0].value, rect, range);
       var bx = this.xForTime(points[1].time, rect);
       var by = this.yForValue(points[1].value, rect, range);
+      if (ay == null || by == null) {
+        ctx.restore();
+        return;
+      }
       ctx.beginPath();
       ctx.moveTo(ax, ay);
       ctx.lineTo(bx, by);
@@ -2470,6 +2556,7 @@
   Chart.prototype.drawDrawingSelection = function (drawing, theme) {
     var ctx = this.ctx;
     var points = this.drawingScreenPoints(drawing);
+    points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return;
     ctx.save();
     ctx.fillStyle = theme.background;
@@ -2688,6 +2775,21 @@
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
     });
+  }
+
+  function colorPaletteHtml(selectedColor) {
+    var colors = DEFAULT_SERIES_COLOR_ORDER.concat(['#111827', '#f9fafb', '#facc15', '#22c55e', '#ef4444', '#38bdf8']);
+    return colors.map(function (color) {
+      return '<button type="button" data-sce-popup-action="pick-color" data-sce-color="' + escapeHtml(color) + '" style="background:' + escapeHtml(color) + '"' + (color.toLowerCase() === String(selectedColor || '').toLowerCase() ? ' class="is-selected"' : '') + ' aria-label="' + escapeHtml(color) + '"></button>';
+    }).join('');
+  }
+
+  function closest(element, className) {
+    while (element) {
+      if (element.className && String(element.className).split(/\s+/).indexOf(className) !== -1) return element;
+      element = element.parentNode;
+    }
+    return null;
   }
 
   function formatNumber(value) {

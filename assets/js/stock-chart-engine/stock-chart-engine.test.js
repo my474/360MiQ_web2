@@ -180,6 +180,9 @@ assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 assert.strictEqual(chart.setPaneScaleMode('price', 'log'), 'log');
 assert.strictEqual(chart.paneScaleMode('price'), 'log');
+assert.strictEqual(chart.yForValue(0, chart.getPaneRect('price'), chart.paneRange('price')), null);
+assert.strictEqual(chart.yForValue(-1, chart.getPaneRect('price'), chart.paneRange('price')), null);
+assert.ok(chart.scaleHitZones.some((zone) => zone.paneId === 'price'));
 assert.strictEqual(chart.togglePaneScaleMode('price'), 'linear');
 assert.strictEqual(chart.paneScaleMode('price'), 'linear');
 

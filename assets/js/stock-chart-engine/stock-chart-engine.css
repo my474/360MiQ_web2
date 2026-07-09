@@ -12,6 +12,7 @@
   min-height: 420px;
   overflow: hidden;
   width: 100%;
+  color-scheme: light;
 }
 
 .sce-root[data-sce-theme="dark"] {
@@ -19,6 +20,7 @@
   --sce-panel: #172033;
   --sce-text: #f9fafb;
   --sce-muted: #cbd5e1;
+  color-scheme: dark;
 }
 
 .sce-toolbar {
@@ -105,6 +107,11 @@
   padding: 10px;
   position: absolute;
   z-index: 4;
+  color-scheme: light;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-settings-popup {
+  color-scheme: dark;
 }
 
 .sce-settings-popup[hidden] {
@@ -136,13 +143,75 @@
 
 .sce-settings-popup input,
 .sce-settings-popup select {
-  background: transparent;
+  background: var(--sce-panel);
   border: 1px solid var(--sce-border);
   border-radius: 4px;
   box-sizing: border-box;
   color: var(--sce-text);
   height: 28px;
   padding: 0 7px;
+}
+
+.sce-settings-popup input:focus,
+.sce-settings-popup select:focus,
+.sce-settings-title button:focus,
+.sce-settings-actions button:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-settings-popup input:focus,
+.sce-root[data-sce-theme="dark"] .sce-settings-popup select:focus,
+.sce-root[data-sce-theme="dark"] .sce-settings-title button:focus,
+.sce-root[data-sce-theme="dark"] .sce-settings-actions button:focus {
+  border-color: #60a5fa;
+}
+
+.sce-settings-popup option {
+  background: var(--sce-panel);
+  color: var(--sce-text);
+}
+
+.sce-color-control {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  position: relative;
+}
+
+.sce-color-swatch {
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  cursor: pointer;
+  height: 28px;
+}
+
+.sce-color-palette {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+  display: grid;
+  gap: 5px;
+  grid-column: 1 / 3;
+  grid-template-columns: repeat(6, 24px);
+  padding: 8px;
+}
+
+.sce-color-palette[hidden] {
+  display: none;
+}
+
+.sce-color-palette button {
+  border: 1px solid var(--sce-border);
+  border-radius: 50%;
+  cursor: pointer;
+  height: 24px;
+  padding: 0;
+  width: 24px;
+}
+
+.sce-color-palette button.is-selected {
+  box-shadow: 0 0 0 2px var(--sce-text);
 }
 
 .sce-settings-actions {
