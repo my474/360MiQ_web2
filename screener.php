@@ -479,6 +479,62 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     color: #e8e8e8;
     border: 1px solid #3a3a4e;
 }
+
+.screener-share-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.screener-share-actions .btn {
+    min-width: 104px;
+    border-width: 1px;
+    box-shadow: none;
+    outline: 0;
+}
+
+.screener-share-actions .btn:focus,
+.screener-share-actions .btn.focus,
+.screener-share-actions .btn:active,
+.screener-share-actions .btn:not(:disabled):not(.disabled):active {
+    border-color: #007bff;
+    border-width: 1px;
+    box-shadow: none;
+    outline: 2px solid rgba(0, 123, 255, 0.35);
+    outline-offset: 2px;
+}
+
+.screener-share-actions .btn:not(:disabled):not(.disabled):active {
+    background-color: #fff;
+    color: #007bff;
+}
+
+[data-theme="dark"] .screener-share-actions .btn:not(:disabled):not(.disabled):active {
+    background-color: transparent;
+    color: #8ec8ff;
+}
+
+.screener-share-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #444;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    font-family: sans-serif;
+    z-index: 10000;
+}
+
+.screener-share-notification.show {
+    opacity: 1;
+}
 </style>
 <div id="screenerrule" class="card clean-card text-center container" style="padding: 0;">
             <!--<div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
@@ -1777,6 +1833,7 @@ window.__SCREENER_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/screener-main.js?v=20260619.2"></script>
+<script src="assets/js/pages/screener-share.js?v=20260709.1"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 
             <div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
