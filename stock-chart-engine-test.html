@@ -241,6 +241,29 @@
         <div class="button-grid">
           <button type="button" id="addRsiStack">RSI + SMA</button>
           <button type="button" id="addMacdStack">MACD + EMA</button>
+          <button type="button" id="addMa20">MA20</button>
+          <button type="button" id="addMa200">MA200</button>
+        </div>
+      </div>
+
+      <div class="test-group">
+        <span class="test-label">Indicator Settings</span>
+        <select id="indicatorSettingsTarget"></select>
+        <div class="field-row">
+          <input id="indicatorPeriod" type="number" min="1" max="500" value="20" aria-label="Indicator period">
+          <select id="indicatorOutput" aria-label="Indicator output"></select>
+        </div>
+        <div class="field-row">
+          <input id="indicatorColor" type="color" value="#2563eb" aria-label="Series color">
+          <input id="indicatorWidth" type="number" min="1" max="8" value="2" aria-label="Line thickness">
+        </div>
+        <div class="field-row">
+          <select id="indicatorLineStyle" aria-label="Line style">
+            <option value="solid">Solid</option>
+            <option value="dash">Dash</option>
+            <option value="dot">Dot</option>
+          </select>
+          <button type="button" id="applyIndicatorSettings">Apply</button>
         </div>
       </div>
 
@@ -328,6 +351,7 @@
       function renderState() {
         var doc = chart.serialize();
         renderPaneScaleOptions(doc);
+        renderIndicatorSettingsOptions(doc);
         var summary = {
           theme: doc.theme,
           symbol: doc.symbol,
@@ -341,7 +365,9 @@
               id: indicator.id,
               type: indicator.type,
               paneId: indicator.paneId,
-              source: indicator.source
+              source: indicator.source,
+              inputs: indicator.inputs,
+              styles: indicator.styles
             };
           }),
           drawings: doc.drawings.map(function (drawing) {
@@ -364,6 +390,57 @@
         if (previous && doc.panes.some(function (pane) { return pane.id === previous; })) {
           select.value = previous;
         }
+      }
+
+      function renderIndicatorSettingsOptions(doc) {
+        var target = document.getElementById('indicatorSettingsTarget');
+        var previousTarget = target.value;
+        target.innerHTML = '';
+        doc.indicators.forEach(function (indicator) {
+          var option = document.createElement('option');
+          option.value = indicator.id;
+          option.textContent = indicator.type + ' - ' + indicator.id;
+          target.appendChild(option);
+        });
+        if (previousTarget && doc.indicators.some(function (indicator) { return indicator.id === previousTarget; })) {
+          target.value = previousTarget;
+        }
+        syncIndicatorSettingsFields();
+      }
+
+      function selectedIndicator() {
+        var id = document.getElementById('indicatorSettingsTarget').value;
+        return chart.document.indicators.filter(function (indicator) {
+          return indicator.id === id;
+        })[0] || null;
+      }
+
+      function syncIndicatorSettingsFields() {
+        var indicator = selectedIndicator();
+        var outputSelect = document.getElementById('indicatorOutput');
+        outputSelect.innerHTML = '';
+        if (!indicator) return;
+
+        Object.keys(indicator.styles || { value: {} }).forEach(function (outputName) {
+          var option = document.createElement('option');
+          option.value = outputName;
+          option.textContent = outputName;
+          outputSelect.appendChild(option);
+        });
+
+        var length = indicator.inputs && indicator.inputs.length;
+        document.getElementById('indicatorPeriod').value = length || 20;
+        syncIndicatorOutputFields();
+      }
+
+      function syncIndicatorOutputFields() {
+        var indicator = selectedIndicator();
+        if (!indicator) return;
+        var outputName = document.getElementById('indicatorOutput').value || Object.keys(indicator.styles || { value: {} })[0];
+        var style = indicator.styles && indicator.styles[outputName] || {};
+        document.getElementById('indicatorColor').value = style.color || '#2563eb';
+        document.getElementById('indicatorWidth').value = style.lineWidth || 2;
+        document.getElementById('indicatorLineStyle').value = style.lineStyle || 'solid';
       }
 
       document.getElementById('toggleTheme').addEventListener('click', function () {
@@ -429,6 +506,36 @@
         chart.addIndicator('SMA', {
           source: { kind: 'indicator', indicatorId: trackedRsiId, output: 'value' },
           inputs: { length: 9 }
+        });
+        renderState();
+      });
+
+      document.getElementById('addMa20').addEventListener('click', function () {
+        chart.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
+        renderState();
+      });
+
+      document.getElementById('addMa200').addEventListener('click', function () {
+        chart.addIndicator('SMA', { placement: 'source', inputs: { length: 200 } });
+        renderState();
+      });
+
+      document.getElementById('indicatorSettingsTarget').addEventListener('change', syncIndicatorSettingsFields);
+      document.getElementById('indicatorOutput').addEventListener('change', syncIndicatorOutputFields);
+      document.getElementById('applyIndicatorSettings').addEventListener('click', function () {
+        var indicator = selectedIndicator();
+        if (!indicator) return;
+        var outputName = document.getElementById('indicatorOutput').value || 'value';
+        var period = Number(document.getElementById('indicatorPeriod').value);
+        var style = {};
+        style[outputName] = {
+          color: document.getElementById('indicatorColor').value,
+          lineWidth: Number(document.getElementById('indicatorWidth').value),
+          lineStyle: document.getElementById('indicatorLineStyle').value
+        };
+        chart.updateIndicatorSettings(indicator.id, {
+          inputs: Number.isFinite(period) && period > 0 ? { length: period } : {},
+          styles: style
         });
         renderState();
       });

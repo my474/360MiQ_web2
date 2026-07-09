@@ -190,6 +190,25 @@ assert.strictEqual(chart.document.settings.chartType, 'line');
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 
+chart.setSeriesColorOrder(['#111111', '#222222', '#333333']);
+const ma20Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
+const ma200Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 200 } });
+assert.strictEqual(chart.document.indicators.find((indicator) => indicator.id === ma20Id).styles.value.color, '#111111');
+assert.strictEqual(chart.document.indicators.find((indicator) => indicator.id === ma200Id).styles.value.color, '#222222');
+assert.notStrictEqual(
+  chart.document.indicators.find((indicator) => indicator.id === ma20Id).styles.value.color,
+  chart.document.indicators.find((indicator) => indicator.id === ma200Id).styles.value.color
+);
+assert.strictEqual(chart.updateIndicatorSettings(ma20Id, {
+  inputs: { length: 50 },
+  styles: { value: { color: '#abcdef', lineWidth: 4, lineStyle: 'dash' } }
+}), true);
+const updatedMa = chart.document.indicators.find((indicator) => indicator.id === ma20Id);
+assert.strictEqual(updatedMa.inputs.length, 50);
+assert.strictEqual(updatedMa.styles.value.color, '#abcdef');
+assert.strictEqual(updatedMa.styles.value.lineWidth, 4);
+assert.strictEqual(updatedMa.styles.value.lineStyle, 'dash');
+
 chart.setTheme('dark');
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 

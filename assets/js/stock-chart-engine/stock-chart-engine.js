@@ -15,6 +15,11 @@
   var VERSION = '0.1.0';
   var SCHEMA_VERSION = 1;
   var DEFAULT_STORE_PREFIX = '360miq-stock-chart';
+  var DEFAULT_SERIES_COLOR_ORDER = [
+    '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#059669',
+    '#dc2626', '#4f46e5', '#65a30d', '#ea580c', '#0f766e', '#9333ea',
+    '#be123c', '#0369a1', '#ca8a04', '#16a34a', '#c2410c', '#7f1d1d'
+  ];
 
   var DEFAULT_LIGHT_THEME = {
     name: 'light',
@@ -961,6 +966,8 @@
       settings: {
         chartType: normalizeChartType(options.chartType || 'candlestick'),
         priceField: 'close',
+        seriesColorIndex: 0,
+        seriesColorOrder: DEFAULT_SERIES_COLOR_ORDER.slice(),
         autosave: options.autosave !== false
       },
       panes: [
@@ -983,6 +990,8 @@
     migrated.drawings = migrated.drawings || [];
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
+    migrated.settings.seriesColorOrder = Array.isArray(migrated.settings.seriesColorOrder) && migrated.settings.seriesColorOrder.length ? migrated.settings.seriesColorOrder : DEFAULT_SERIES_COLOR_ORDER.slice();
+    migrated.settings.seriesColorIndex = Math.max(0, toNumber(migrated.settings.seriesColorIndex, 0));
     return migrated;
   }
 
@@ -1063,7 +1072,8 @@
   function defaultStyleForIndicator(theme, index) {
     return {
       color: theme.indicatorPalette[index % theme.indicatorPalette.length],
-      lineWidth: 2
+      lineWidth: 2,
+      lineStyle: 'solid'
     };
   }
 
@@ -1357,13 +1367,15 @@
     if (!Indicators[type]) throw new Error('Unknown indicator: ' + type);
     var id = options.id || uid(type.toLowerCase());
     var paneId = this.resolvePaneForIndicator(type, options);
+    var styles = merge({}, Indicators[type].defaultStyles || {}, options.styles || {});
+    this.assignIndicatorSeriesStyles(styles);
     var indicator = {
       id: id,
       type: type,
       paneId: paneId,
       source: options.source || { kind: 'price', field: options.field || 'close' },
       inputs: merge({}, Indicators[type].defaultInputs || {}, options.inputs || {}),
-      styles: merge({}, Indicators[type].defaultStyles || {}, options.styles || {}),
+      styles: styles,
       visible: options.visible !== false,
       zIndex: options.zIndex || this.document.indicators.length + 1
     };
@@ -1372,6 +1384,34 @@
     this.draw();
     this.emitChange('indicator:add', indicator);
     return id;
+  };
+
+  Chart.prototype.nextSeriesColor = function () {
+    var order = this.document.settings.seriesColorOrder || DEFAULT_SERIES_COLOR_ORDER;
+    var index = this.document.settings.seriesColorIndex || 0;
+    var color = order[index % order.length];
+    this.document.settings.seriesColorIndex = index + 1;
+    return color;
+  };
+
+  Chart.prototype.assignIndicatorSeriesStyles = function (styles) {
+    var self = this;
+    Object.keys(styles || {}).forEach(function (outputName) {
+      var style = styles[outputName] || {};
+      if (!style.color) style.color = self.nextSeriesColor();
+      if (!style.lineWidth) style.lineWidth = 2;
+      if (!style.lineStyle) style.lineStyle = 'solid';
+      styles[outputName] = style;
+    });
+    return styles;
+  };
+
+  Chart.prototype.setSeriesColorOrder = function (colors) {
+    if (!Array.isArray(colors) || !colors.length) return this.document.settings.seriesColorOrder;
+    this.document.settings.seriesColorOrder = colors.slice();
+    this.document.settings.seriesColorIndex = 0;
+    this.emitChange('settings:seriesColors', { seriesColorOrder: this.document.settings.seriesColorOrder });
+    return this.document.settings.seriesColorOrder;
   };
 
   Chart.prototype.removeIndicator = function (indicatorId) {
@@ -1400,6 +1440,35 @@
     this.draw();
     this.emitChange('indicator:update', indicator);
     return true;
+  };
+
+  Chart.prototype.updateIndicatorSettings = function (indicatorId, settings) {
+    var indicator = this.document.indicators.filter(function (item) { return item.id === indicatorId; })[0];
+    if (!indicator) return false;
+    settings = settings || {};
+    if (settings.inputs) {
+      indicator.inputs = merge({}, indicator.inputs || {}, sanitizeIndicatorInputs(settings.inputs));
+    }
+    if (settings.styles) {
+      indicator.styles = merge({}, indicator.styles || {}, sanitizeIndicatorStyles(settings.styles));
+    }
+    this.assignIndicatorSeriesStyles(indicator.styles);
+    this.compute();
+    this.draw();
+    this.emitChange('indicator:settings', indicator);
+    return true;
+  };
+
+  Chart.prototype.setIndicatorInput = function (indicatorId, inputName, value) {
+    var inputs = {};
+    inputs[inputName] = value;
+    return this.updateIndicatorSettings(indicatorId, { inputs: inputs });
+  };
+
+  Chart.prototype.setIndicatorStyle = function (indicatorId, outputName, style) {
+    var styles = {};
+    styles[outputName || 'value'] = style || {};
+    return this.updateIndicatorSettings(indicatorId, { styles: styles });
   };
 
   Chart.prototype.moveIndicatorToPane = function (indicatorId, paneId) {
@@ -2175,6 +2244,7 @@
     ctx.save();
     ctx.strokeStyle = style.color;
     ctx.lineWidth = style.lineWidth || 2;
+    ctx.setLineDash(lineDashForStyle(style.lineStyle));
     ctx.beginPath();
     var started = false;
     data.forEach(function (point) {
@@ -2451,6 +2521,41 @@
 
   function normalizeScaleMode(mode) {
     return String(mode || 'linear').toLowerCase() === 'log' ? 'log' : 'linear';
+  }
+
+  function normalizeLineStyle(style) {
+    var normalized = String(style || 'solid').toLowerCase();
+    if (normalized === 'dash' || normalized === 'dashed') return 'dash';
+    if (normalized === 'dot' || normalized === 'dotted') return 'dot';
+    return 'solid';
+  }
+
+  function lineDashForStyle(style) {
+    var normalized = normalizeLineStyle(style);
+    if (normalized === 'dash') return [8, 5];
+    if (normalized === 'dot') return [2, 5];
+    return [];
+  }
+
+  function sanitizeIndicatorInputs(inputs) {
+    var output = {};
+    Object.keys(inputs || {}).forEach(function (key) {
+      var value = inputs[key];
+      var numeric = Number(value);
+      output[key] = Number.isFinite(numeric) ? numeric : value;
+    });
+    return output;
+  }
+
+  function sanitizeIndicatorStyles(styles) {
+    var output = {};
+    Object.keys(styles || {}).forEach(function (outputName) {
+      var style = merge({}, styles[outputName] || {});
+      if (style.lineWidth != null) style.lineWidth = clamp(Number(style.lineWidth) || 1, 1, 8);
+      if (style.lineStyle != null) style.lineStyle = normalizeLineStyle(style.lineStyle);
+      output[outputName] = style;
+    });
+    return output;
   }
 
   function approximateTextWidth(text) {
