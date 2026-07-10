@@ -3039,7 +3039,7 @@
     this.drawDrawings(rect, range, theme);
     this.drawPendingDrawing(rect, range, theme);
     this.drawScale(rect, range, theme);
-    this.drawPaneLegend(rect, range, theme, paneIndex);
+    this.drawPaneLegend(rect, range, theme);
     this.drawPaneControls(rect, theme);
     ctx.strokeStyle = theme.border;
     ctx.beginPath();
@@ -3049,7 +3049,7 @@
     ctx.restore();
   };
 
-  Chart.prototype.drawPaneLegend = function (rect, range, theme, paneIndex) {
+  Chart.prototype.drawPaneLegend = function (rect, range, theme) {
     var ctx = this.ctx;
     var x = rect.x + 10;
     var y = rect.y + 18;
@@ -3057,10 +3057,6 @@
     ctx.save();
     ctx.font = '12px sans-serif';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = theme.mutedText;
-    var paneTitle = rect.title || (paneIndex === 0 ? 'Price' : 'Indicator');
-    ctx.fillText(paneTitle, x, y);
-    x += approximateTextWidth(paneTitle) + 14;
 
     if (rect.paneId === 'price') {
       var bar = this.barNearTime(legendTime);

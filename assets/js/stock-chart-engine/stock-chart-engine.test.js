@@ -106,9 +106,11 @@ class FakeElement {
 class FakeCanvas extends FakeElement {
   constructor() {
     super('canvas');
+    this.commands = [];
   }
 
   getContext() {
+    const canvas = this;
     const noop = () => {};
     return {
       beginPath: noop,
@@ -116,7 +118,9 @@ class FakeCanvas extends FakeElement {
       closePath: noop,
       fill: noop,
       fillRect: noop,
-      fillText: noop,
+      fillText(text, x, y) {
+        canvas.commands.push({ type: 'fillText', text: String(text), x, y });
+      },
       lineTo: noop,
       moveTo: noop,
       quadraticCurveTo: noop,
@@ -330,6 +334,18 @@ additionalIndicators.forEach((type) => {
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
+chart.addIndicator('VOLUME', { placement: 'new' });
+chart.canvas.commands = [];
+chart.draw();
+const paneLegendTexts = chart.canvas.commands
+  .filter((command) => command.type === 'fillText')
+  .map((command) => command.text);
+assert.ok(paneLegendTexts.some((text) => text.indexOf('O ') === 0));
+assert.ok(paneLegendTexts.some((text) => text.indexOf('RSI ') === 0));
+assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
+assert.ok(!paneLegendTexts.includes('Price'));
+assert.ok(!paneLegendTexts.includes('Volume'));
+assert.ok(!paneLegendTexts.includes('Relative Strength Index'));
 const rsiPaneId = chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId;
 assert.ok(chart.paneControlHitZones.some((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize'));
 assert.ok(chart.paneControlsLayer.children.some((button) => button.innerHTML.indexOf('<svg') === 0));
