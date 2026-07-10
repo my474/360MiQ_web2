@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>360MiQ Stock Chart Engine Test</title>
   <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('360miq-stock-chart:stock-chart-engine-manual-test');
+        var theme = saved && JSON.parse(saved).theme;
+        if (theme === 'dark' || theme === 'light') document.documentElement.setAttribute('data-theme', theme);
+      } catch (error) {}
+    }());
+  </script>
   <style>
     :root {
       --page-bg: #f3f5f8;
@@ -262,7 +271,7 @@
     .drawing-tool-palette {
       align-content: start;
       display: flex;
-      flex: 1 1 auto;
+      flex: 0 0 auto;
       flex-direction: column;
       gap: 4px;
       min-height: 0;
@@ -728,6 +737,7 @@
           layoutId: layoutId,
           load: loadSaved !== false
         });
+        if (chart.document.theme) setTheme(chart.document.theme);
         if (!chart.document.indicators.length) {
           chart.addIndicator('VOLUME', { placement: 'new' });
           trackedRsiId = chart.addIndicator('RSI', { placement: 'new' });
@@ -1148,6 +1158,8 @@
       });
 
       document.getElementById('removeShapes').addEventListener('click', function () {
+        if (!chart.getAllShapes().length) return;
+        if (!window.confirm('Clear all drawings from this chart?')) return;
         chart.removeAllShapes();
         renderState();
       });
@@ -1170,7 +1182,7 @@
       });
 
       renderDrawingToolOptions();
-      seedChart('light', true);
+      seedChart(document.documentElement.getAttribute('data-theme') || 'light', true);
     }());
   </script>
 </body>
