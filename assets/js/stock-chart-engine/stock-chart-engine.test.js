@@ -283,6 +283,17 @@ assert.ok(chart.visibleIndexRange().from >= panStart.from);
 chart.fitContent();
 chart.draw();
 
+const panesBeforeVolumeOverlay = chart.document.panes.length;
+const priceRangeBeforeVolumeOverlay = chart.paneRange('price');
+const volumeOverlayId = chart.addIndicator('VOLUME');
+const volumeOverlay = chart.document.indicators.find((indicator) => indicator.id === volumeOverlayId);
+assert.strictEqual(volumeOverlay.paneId, 'price');
+assert.strictEqual(chart.document.panes.length, panesBeforeVolumeOverlay);
+const priceRangeAfterVolumeOverlay = chart.paneRange('price');
+assert.strictEqual(priceRangeAfterVolumeOverlay.max, priceRangeBeforeVolumeOverlay.max);
+assert.strictEqual(priceRangeAfterVolumeOverlay.min, priceRangeBeforeVolumeOverlay.min);
+chart.removeIndicator(volumeOverlayId);
+
 chart.setSeriesColorOrder(['#111111', '#222222', '#333333']);
 const ma20Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
 const ma200Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 200 } });
@@ -334,6 +345,8 @@ additionalIndicators.forEach((type) => {
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
+chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
+assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 286 - 8);
 chart.addIndicator('VOLUME', { placement: 'new' });
 chart.canvas.commands = [];
 chart.draw();

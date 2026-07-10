@@ -727,9 +727,9 @@
       id: 'VOLUME',
       name: 'Volume',
       category: 'Volume',
-      defaultPanePolicy: 'new',
+      defaultPanePolicy: 'source',
       defaultInputs: {},
-      defaultStyles: { value: { color: null } },
+      defaultStyles: { value: { color: null, opacity: 0.55 } },
       compute: function (context, indicator) {
         var value = context.bars.map(function (bar) {
           return { time: bar.time, value: bar.volume, open: bar.open, close: bar.close };
@@ -1950,10 +1950,6 @@
     var output = legendHit.output || Object.keys(indicator.styles || { value: {} })[0];
     var style = indicator.styles && indicator.styles[output] || {};
     var length = indicator.inputs && indicator.inputs.length != null ? indicator.inputs.length : '';
-    var left = clamp(pointer.x + 12, 8, Math.max(8, this.canvas.clientWidth - 286));
-    var top = clamp(pointer.y + 12, 8, Math.max(8, this.canvas.clientHeight - 218));
-    this.settingsPopup.style.left = left + 'px';
-    this.settingsPopup.style.top = top + 'px';
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title">',
       '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
@@ -1985,6 +1981,7 @@
     this.settingsPopup.dataset.output = output;
     delete this.settingsPopup.dataset.drawingId;
     this.bindSettingsPopup();
+    this.positionSettingsPopup(pointer, 286, 286);
   };
 
   Chart.prototype.bindSettingsPopup = function () {
@@ -2062,13 +2059,9 @@
     var width = style.width || 2;
     var lineStyle = normalizeLineStyle(style.lineStyle);
     pointer = pointer || this.drawingTextPopupPoint(drawing);
-    var left = clamp((pointer && pointer.x || 20) + 12, 8, Math.max(8, this.canvas.clientWidth - 306));
-    var top = clamp((pointer && pointer.y || 20) + 12, 8, Math.max(8, this.canvas.clientHeight - (canEditText ? 318 : 250)));
     var textControls = canEditText
       ? ['<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>'].join('')
       : '';
-    this.settingsPopup.style.left = left + 'px';
-    this.settingsPopup.style.top = top + 'px';
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title">',
       '<strong>', escapeHtml(tool.name || 'Drawing'), '</strong>',
@@ -2099,12 +2092,33 @@
     delete this.settingsPopup.dataset.indicatorId;
     delete this.settingsPopup.dataset.output;
     this.bindDrawingSettingsPopup();
+    this.positionSettingsPopup(pointer, 306, canEditText ? 338 : 266);
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
     if (field && field.focus) {
       field.focus();
       if (field.select) field.select();
     }
     return true;
+  };
+
+  Chart.prototype.positionSettingsPopup = function (pointer, fallbackWidth, fallbackHeight) {
+    pointer = pointer || { x: 20, y: 20 };
+    var margin = 8;
+    var gap = 12;
+    var width = this.settingsPopup.offsetWidth || fallbackWidth || 286;
+    var height = this.settingsPopup.offsetHeight || fallbackHeight || 260;
+    var canvasWidth = this.canvas.clientWidth || width + margin * 2;
+    var canvasHeight = this.canvas.clientHeight || height + margin * 2;
+    var left = pointer.x + gap;
+    if (left + width > canvasWidth - margin) left = pointer.x - width - gap;
+    left = clamp(left, margin, Math.max(margin, canvasWidth - width - margin));
+    var top = pointer.y + gap;
+    if (top + height > canvasHeight - margin && pointer.y - height - gap >= margin) {
+      top = pointer.y - height - gap;
+    }
+    top = clamp(top, margin, Math.max(margin, canvasHeight - height - margin));
+    this.settingsPopup.style.left = left + 'px';
+    this.settingsPopup.style.top = top + 'px';
   };
 
   Chart.prototype.openDrawingTextPopup = function (drawing, pointer) {
@@ -2772,6 +2786,7 @@
     var self = this;
     this.document.indicators.forEach(function (indicator) {
       if (indicator.paneId !== paneId || indicator.visible === false) return;
+      if (paneId === 'price' && indicator.type === 'VOLUME') return;
       var result = self.indicatorResults[indicator.id];
       if (!result) return;
       Object.keys(result.outputs).forEach(function (key) {
@@ -3034,6 +3049,7 @@
     ctx.fillStyle = theme.paneBackground;
     ctx.fillRect(rect.x, rect.y, rect.width + rect.scaleWidth, rect.height);
     this.drawGrid(rect, range, theme);
+    if (rect.paneId === 'price') this.drawPriceVolumeOverlays(rect, theme);
     if (rect.paneId === 'price') this.drawPriceSeries(rect, range, theme);
     this.drawIndicators(rect, range, theme);
     this.drawDrawings(rect, range, theme);
@@ -3367,6 +3383,7 @@
     var paletteIndex = 0;
     this.document.indicators.forEach(function (indicator) {
       if (indicator.paneId !== rect.paneId || indicator.visible === false) return;
+      if (rect.paneId === 'price' && indicator.type === 'VOLUME') return;
       var result = self.indicatorResults[indicator.id];
       if (!result) return;
       result.render.forEach(function (renderItem) {
@@ -3381,6 +3398,21 @@
         else if (renderItem.type === 'volume') self.drawHistogram(rect, range, theme, data, style, true);
         else self.drawLineSeries(rect, range, theme, data, style);
         paletteIndex += 1;
+      });
+    });
+  };
+
+  Chart.prototype.drawPriceVolumeOverlays = function (rect, theme) {
+    var self = this;
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.paneId !== 'price' || indicator.type !== 'VOLUME' || indicator.visible === false) return;
+      var result = self.indicatorResults[indicator.id];
+      if (!result) return;
+      result.render.forEach(function (renderItem) {
+        if (renderItem.type !== 'volume') return;
+        var data = result.outputs[renderItem.output] || [];
+        var style = merge({ opacity: 0.55 }, indicator.styles && indicator.styles[renderItem.output] || {});
+        self.drawVolumeOverlay(rect, theme, data, style);
       });
     });
   };
@@ -3435,6 +3467,35 @@
       else ctx.fillStyle = point.value >= 0 ? theme.volumeUp : theme.volumeDown;
       if (style.color) ctx.fillStyle = style.color;
       ctx.fillRect(x - barWidth / 2, Math.min(y, zeroY), barWidth, Math.max(1, Math.abs(zeroY - y)));
+    }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawVolumeOverlay = function (rect, theme, data, style) {
+    var ctx = this.ctx;
+    var visible = this.visibleBars();
+    if (!visible.length || !data.length) return;
+    var first = visible[0].time;
+    var last = visible[visible.length - 1].time;
+    var maxVolume = 0;
+    data.forEach(function (point) {
+      if (point.time < first || point.time > last || point.value == null) return;
+      maxVolume = Math.max(maxVolume, point.value);
+    });
+    if (!maxVolume) return;
+    var spacing = rect.width / Math.max(1, visible.length);
+    var barWidth = clamp(spacing * 0.7, 1, 14);
+    var overlayHeight = Math.max(36, Math.min(rect.height * 0.28, 130));
+    var baseline = rect.y + rect.height - 2;
+    var opacity = clamp(Number(style.opacity == null ? 0.55 : style.opacity) || 0.55, 0.1, 1);
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    data.forEach(function (point) {
+      if (point.time < first || point.time > last || point.value == null) return;
+      var x = this.xForTime(point.time, rect);
+      var height = Math.max(1, (point.value / maxVolume) * overlayHeight);
+      ctx.fillStyle = style.color || (point.close >= point.open ? theme.volumeUp : theme.volumeDown);
+      ctx.fillRect(x - barWidth / 2, baseline - height, barWidth, height);
     }, this);
     ctx.restore();
   };

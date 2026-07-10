@@ -858,8 +858,9 @@
           load: loadSaved !== false
         });
         if (chart.document.theme) setTheme(chart.document.theme);
+        normalizeVolumePlacement();
         if (!chart.document.indicators.length) {
-          chart.addIndicator('VOLUME', { placement: 'new' });
+          chart.addIndicator('VOLUME', { placement: 'source' });
           trackedRsiId = chart.addIndicator('RSI', { placement: 'new' });
         } else {
           trackedRsiId = findFirstIndicator('RSI');
@@ -875,6 +876,21 @@
         document.getElementById('chartType').value = chart.document.settings.chartType;
         document.getElementById('chartPeriod').value = chart.document.settings.period || 'daily';
         renderState();
+      }
+
+      function normalizeVolumePlacement() {
+        var volumePaneIds = [];
+        chart.document.indicators.forEach(function (indicator) {
+          if (indicator.type !== 'VOLUME' || indicator.paneId === 'price') return;
+          volumePaneIds.push(indicator.paneId);
+          chart.updateIndicator(indicator.id, { paneId: 'price' });
+        });
+        volumePaneIds.forEach(function (paneId) {
+          var paneStillUsed = chart.document.indicators.some(function (indicator) {
+            return indicator.paneId === paneId;
+          });
+          if (!paneStillUsed) chart.removePane(paneId);
+        });
       }
 
       function findFirstIndicator(type) {
