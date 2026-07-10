@@ -1390,6 +1390,7 @@
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
     this.resizeListener = this.resize.bind(this);
+    this.keydownListener = this.handleDocumentKeyDown.bind(this);
     this.initDom();
     this.bindDom();
     this.compute();
@@ -1528,14 +1529,29 @@
     });
     window.addEventListener('resize', this.resizeListener);
     document.documentElement.addEventListener('themechange', this.themeListener);
+    if (document.addEventListener) document.addEventListener('keydown', this.keydownListener);
   };
 
   Chart.prototype.destroy = function () {
     this.destroyed = true;
     window.removeEventListener('resize', this.resizeListener);
     document.documentElement.removeEventListener('themechange', this.themeListener);
+    if (document.removeEventListener) document.removeEventListener('keydown', this.keydownListener);
     clearTimeout(this.autosaveTimer);
     this.container.innerHTML = '';
+  };
+
+  Chart.prototype.handleDocumentKeyDown = function (event) {
+    if (event.key !== 'Escape') return;
+    if (this.settingsPopup && !this.settingsPopup.hasAttribute('hidden')) {
+      event.preventDefault();
+      this.closeIndicatorSettingsPopup();
+      return;
+    }
+    if (this.pendingDrawing) {
+      event.preventDefault();
+      this.cancelDrawing();
+    }
   };
 
   Chart.prototype.on = function (eventName, handler) {
@@ -2045,7 +2061,12 @@
     this.settingsPopup.onfocusin = function (event) {
       if (!closest(event.target, 'sce-color-control')) self.closePopupColorPalette();
     };
-    this.settingsPopup.onkeydown = null;
+    this.settingsPopup.onkeydown = function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        self.closeIndicatorSettingsPopup();
+      }
+    };
   };
 
   Chart.prototype.closeIndicatorSettingsPopup = function () {
@@ -2421,7 +2442,7 @@
       this.canvas.classList.remove('sce-crosshair-drawing');
       this.draw();
       var createdDrawing = this.getDrawingById(drawingId);
-      if (isEditableTextDrawing(createdDrawing)) this.openDrawingTextPopup(createdDrawing, pointer);
+      if (createdDrawing) this.openDrawingSettingsPopup(createdDrawing, pointer);
     } else {
       this.draw();
     }
