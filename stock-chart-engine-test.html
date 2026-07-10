@@ -994,6 +994,39 @@
         }
       }
 
+      function closeControlMenus(exceptMenu) {
+        Array.prototype.forEach.call(document.querySelectorAll('.control-menu[open]'), function (menu) {
+          if (menu !== exceptMenu) menu.removeAttribute('open');
+        });
+      }
+
+      function initControlMenus() {
+        Array.prototype.forEach.call(document.querySelectorAll('.control-menu'), function (menu) {
+          menu.addEventListener('toggle', function () {
+            if (menu.open) closeControlMenus(menu);
+          });
+          menu.addEventListener('focusout', function () {
+            window.setTimeout(function () {
+              if (!menu.contains(document.activeElement)) menu.removeAttribute('open');
+            }, 0);
+          });
+          menu.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape') return;
+            menu.removeAttribute('open');
+            var summary = menu.querySelector('summary');
+            if (summary && summary.focus) summary.focus();
+          });
+        });
+        document.addEventListener('click', function (event) {
+          if (event.target.closest && event.target.closest('.control-menu')) return;
+          closeControlMenus();
+        });
+        document.addEventListener('focusin', function (event) {
+          if (event.target.closest && event.target.closest('.control-menu')) return;
+          closeControlMenus();
+        });
+      }
+
       function indicatorLabel(type, fallbackText) {
         var definition = StockChartEngine.Indicators[type] || {};
         var name = definition.name || fallbackText || type;
@@ -1545,6 +1578,7 @@
         renderState();
       });
 
+      initControlMenus();
       initIndicatorSearch();
       renderDrawingToolOptions();
       seedChart(document.documentElement.getAttribute('data-theme') || 'light', true);
