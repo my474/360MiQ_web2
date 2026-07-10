@@ -1865,16 +1865,58 @@
   };
 
   Chart.prototype.removeIndicator = function (indicatorId) {
-    var before = this.document.indicators.length;
+    var removedIds = {};
+    var affectedPaneIds = {};
+    var changed = true;
+    while (changed) {
+      changed = false;
+      this.document.indicators.forEach(function (indicator) {
+        var source = indicator.source || {};
+        var shouldRemove = indicator.id === indicatorId || (source.kind === 'indicator' && removedIds[source.indicatorId]);
+        if (shouldRemove && !removedIds[indicator.id]) {
+          removedIds[indicator.id] = true;
+          affectedPaneIds[indicator.paneId] = true;
+          changed = true;
+        }
+      });
+    }
+    var removedCount = Object.keys(removedIds).length;
+    if (!removedCount) return false;
     this.document.indicators = this.document.indicators.filter(function (indicator) {
-      return indicator.id !== indicatorId && !(indicator.source && indicator.source.kind === 'indicator' && indicator.source.indicatorId === indicatorId);
+      return !removedIds[indicator.id];
+    });
+    var removedPaneIds = Object.keys(affectedPaneIds).filter(function (paneId) {
+      if (paneId === 'price') return false;
+      return !this.document.indicators.some(function (indicator) {
+        return indicator.paneId === paneId;
+      });
+    }, this);
+    var removedPaneMap = {};
+    removedPaneIds.forEach(function (paneId) {
+      removedPaneMap[paneId] = true;
     });
     this.document.drawings = this.document.drawings.filter(function (drawing) {
-      return drawing.ownerStudyId !== indicatorId;
+      return !removedIds[drawing.ownerStudyId] && !removedPaneMap[drawing.paneId];
     });
+    if (removedPaneIds.length) {
+      this.document.panes = this.document.panes.filter(function (pane) {
+        return !removedPaneMap[pane.id];
+      });
+      if (removedPaneMap[this.document.settings.maximizedPaneId]) {
+        this.document.settings.maximizedPaneId = null;
+      }
+      this.paneResizeState = null;
+      this.panState = null;
+    }
     this.compute();
-    this.draw();
-    this.emitChange('indicator:remove', { indicatorId: indicatorId, removed: before - this.document.indicators.length });
+    this.resize();
+    this.emitChange('indicator:remove', {
+      indicatorId: indicatorId,
+      removed: removedCount,
+      removedIndicatorIds: Object.keys(removedIds),
+      removedPaneIds: removedPaneIds
+    });
+    return true;
   };
 
   Chart.prototype.updateIndicator = function (indicatorId, patch) {

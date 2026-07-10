@@ -347,7 +347,7 @@ const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 286 - 8);
-chart.addIndicator('VOLUME', { placement: 'new' });
+const volumePaneIndicatorId = chart.addIndicator('VOLUME', { placement: 'new' });
 chart.canvas.commands = [];
 chart.draw();
 const paneLegendTexts = chart.canvas.commands
@@ -359,6 +359,10 @@ assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
 assert.ok(!paneLegendTexts.includes('Volume'));
 assert.ok(!paneLegendTexts.includes('Relative Strength Index'));
+const volumePaneId = chart.document.indicators.find((indicator) => indicator.id === volumePaneIndicatorId).paneId;
+assert.notStrictEqual(volumePaneId, 'price');
+assert.strictEqual(chart.removeIndicator(volumePaneIndicatorId), true);
+assert.ok(!chart.document.panes.some((pane) => pane.id === volumePaneId));
 const rsiPaneId = chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId;
 assert.ok(chart.paneControlHitZones.some((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize'));
 assert.ok(chart.paneControlsLayer.children.some((button) => button.innerHTML.indexOf('<svg') === 0));
@@ -397,6 +401,18 @@ assert.ok(closeButton);
 assert.ok(closeButton.innerHTML.indexOf('<svg') === 0);
 chart.paneControlsLayer.dispatchEvent({ type: 'click', target: closeButton });
 assert.ok(!chart.document.panes.some((pane) => pane.id === temporaryPaneId));
+
+const disposableRsiId = chart.addIndicator('RSI', { placement: 'new' });
+const disposableSmaId = chart.addIndicator('SMA', {
+  source: { kind: 'indicator', indicatorId: disposableRsiId, output: 'value' },
+  inputs: { length: 5 }
+});
+const disposablePaneId = chart.document.indicators.find((indicator) => indicator.id === disposableRsiId).paneId;
+assert.strictEqual(chart.document.indicators.find((indicator) => indicator.id === disposableSmaId).paneId, disposablePaneId);
+assert.strictEqual(chart.removeIndicator(disposableRsiId), true);
+assert.ok(!chart.document.indicators.some((indicator) => indicator.id === disposableRsiId));
+assert.ok(!chart.document.indicators.some((indicator) => indicator.id === disposableSmaId));
+assert.ok(!chart.document.panes.some((pane) => pane.id === disposablePaneId));
 
 const smaOnRsiId = chart.addIndicator('SMA', {
   source: { kind: 'indicator', indicatorId: rsiId, output: 'value' },
