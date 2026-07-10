@@ -612,6 +612,15 @@
           </div>
 
           <div class="test-group">
+            <span class="test-label">Range</span>
+            <div class="button-grid">
+              <button type="button" id="zoomInChart">Zoom In</button>
+              <button type="button" id="zoomOutChart">Zoom Out</button>
+              <button type="button" id="fitChartRange">Fit</button>
+            </div>
+          </div>
+
+          <div class="test-group">
             <span class="test-label">Indicator Settings</span>
             <select id="indicatorSettingsTarget"></select>
             <div class="field-row">
@@ -772,6 +781,8 @@
           period: doc.settings.period,
           renderedBars: chart.bars.length,
           sourceBars: chart.sourceBars.length,
+          visibleRange: doc.visibleRange,
+          visibleBars: chart.visibleBars().length,
           panes: doc.panes.map(function (pane) {
             return { id: pane.id, title: pane.title, height: pane.height, scaleMode: pane.scaleMode };
           }),
@@ -1074,6 +1085,22 @@
 
       document.getElementById('togglePaneScale').addEventListener('click', function () {
         chart.togglePaneScaleMode(document.getElementById('paneScalePane').value || 'price');
+        renderState();
+      });
+
+      document.getElementById('zoomInChart').addEventListener('click', function () {
+        chart.zoomIn(0.5);
+        renderState();
+      });
+
+      document.getElementById('zoomOutChart').addEventListener('click', function () {
+        chart.zoomOut(0.5);
+        renderState();
+      });
+
+      document.getElementById('fitChartRange').addEventListener('click', function () {
+        chart.fitContent();
+        chart.draw();
         renderState();
       });
 

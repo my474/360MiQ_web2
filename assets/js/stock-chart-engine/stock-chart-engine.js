@@ -1385,6 +1385,7 @@
     this.pendingDrawing = null;
     this.dragState = null;
     this.paneResizeState = null;
+    this.panState = null;
     this.autosaveTimer = null;
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
@@ -1420,6 +1421,9 @@
       '<button type="button" data-sce-action="macd">MACD</button>',
       '<button type="button" data-sce-action="line">Line</button>',
       '<button type="button" data-sce-action="clear-drawings">Clear Drawings</button>',
+      '<button type="button" data-sce-action="zoom-in">Zoom +</button>',
+      '<button type="button" data-sce-action="zoom-out">Zoom -</button>',
+      '<button type="button" data-sce-action="fit">Fit</button>',
       '<button type="button" data-sce-action="log">Log</button>',
       '<button type="button" data-sce-action="theme">Dark</button>',
       '<button type="button" data-sce-action="save">Save</button>'
@@ -1456,6 +1460,13 @@
       if (action === 'macd') self.addIndicator('MACD', { placement: 'new' });
       if (action === 'line') self.startDrawing('trendline');
       if (action === 'clear-drawings') self.removeAllShapes();
+      if (action === 'zoom-in') self.zoomIn(0.5);
+      if (action === 'zoom-out') self.zoomOut(0.5);
+      if (action === 'fit') {
+        self.fitContent();
+        self.draw();
+        self.emitChange('range:fit', { visibleRange: clone(self.document.visibleRange) });
+      }
       if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
       if (action === 'theme') self.toggleTheme();
       if (action === 'save') self.save();
@@ -1489,6 +1500,9 @@
     this.canvas.addEventListener('mouseup', function () {
       self.handlePointerUp();
     });
+    this.canvas.addEventListener('wheel', function (event) {
+      self.handleWheel(event);
+    }, { passive: false });
     this.canvas.addEventListener('mouseleave', function () {
       self.handlePointerUp();
       self.pointer = null;
@@ -1609,6 +1623,42 @@
       sourceBarCount: this.sourceBars.length
     });
     return nextPeriod;
+  };
+
+  Chart.prototype.zoom = function (factor, anchorRatio) {
+    if (!this.bars.length) return false;
+    factor = Math.max(0.1, toNumber(factor, 1));
+    anchorRatio = clamp(toNumber(anchorRatio, 0.5), 0, 1);
+    var range = this.visibleIndexRange();
+    var currentCount = range.to - range.from + 1;
+    var minVisible = Math.min(this.bars.length, Math.max(2, this.options.minVisibleBars || 8));
+    var nextCount = clamp(Math.round(currentCount * factor), minVisible, this.bars.length);
+    if (nextCount === currentCount) nextCount = factor < 1 ? Math.max(minVisible, currentCount - 1) : Math.min(this.bars.length, currentCount + 1);
+    var anchorIndex = range.from + anchorRatio * Math.max(1, currentCount - 1);
+    var nextFrom = Math.round(anchorIndex - anchorRatio * Math.max(1, nextCount - 1));
+    this.setVisibleIndexRange(nextFrom, nextFrom + nextCount - 1);
+    this.draw();
+    this.emitChange('range:zoom', { factor: factor, anchorRatio: anchorRatio, visibleRange: clone(this.document.visibleRange) });
+    return true;
+  };
+
+  Chart.prototype.zoomIn = function (anchorRatio) {
+    return this.zoom(0.78, anchorRatio);
+  };
+
+  Chart.prototype.zoomOut = function (anchorRatio) {
+    return this.zoom(1.28, anchorRatio);
+  };
+
+  Chart.prototype.scroll = function (barDelta) {
+    if (!this.bars.length) return false;
+    barDelta = Math.round(toNumber(barDelta, 0));
+    if (!barDelta) return false;
+    var range = this.visibleIndexRange();
+    this.setVisibleIndexRange(range.from + barDelta, range.to + barDelta);
+    this.draw();
+    this.emitChange('range:scroll', { barDelta: barDelta, visibleRange: clone(this.document.visibleRange) });
+    return true;
   };
 
   Chart.prototype.setPaneScaleMode = function (paneId, scaleMode) {
@@ -2179,6 +2229,16 @@
     if (!hit) {
       this.selectedDrawingId = null;
       this.hoverDrawingId = null;
+      var paneHit = this.valueFromPoint(this.pointer);
+      if (paneHit) {
+        this.panState = {
+          startPointer: this.pointer,
+          startRange: this.visibleIndexRange(),
+          startIndex: this.barIndexAtPoint(this.pointer),
+          moved: false
+        };
+        this.canvas.style.cursor = 'grabbing';
+      }
       this.draw();
       return;
     }
@@ -2211,6 +2271,11 @@
       this.draw();
       return;
     }
+    if (this.panState) {
+      this.panVisibleRange(this.pointer);
+      this.draw();
+      return;
+    }
     if (this.dragState) {
       this.moveSelectedDrawing(this.pointer);
       this.draw();
@@ -2235,11 +2300,51 @@
       this.emitChange('pane:resize', resized);
       return;
     }
+    if (this.panState) {
+      var panned = this.panState.moved;
+      this.panState = null;
+      this.canvas.style.cursor = 'crosshair';
+      if (panned) this.emitChange('range:pan', { visibleRange: clone(this.document.visibleRange) });
+      return;
+    }
     if (!this.dragState) return;
     var drawingId = this.dragState.drawingId;
     this.dragState = null;
     this.canvas.style.cursor = 'crosshair';
     this.emitChange('drawing:move', { drawingId: drawingId });
+  };
+
+  Chart.prototype.handleWheel = function (event) {
+    if (!this.bars.length || this.pendingDrawing) return;
+    if (event.preventDefault) event.preventDefault();
+    this.pointer = this.pointerFromEvent(event);
+    var rect = this.getPaneRect(this.activePaneId()) || this.paneRects[0];
+    var anchorRatio = rect ? clamp((this.pointer.x - rect.x) / Math.max(1, rect.width), 0, 1) : 0.5;
+    var deltaX = toNumber(event.deltaX, 0);
+    var deltaY = toNumber(event.deltaY, 0);
+    var scrollIntent = event.shiftKey || Math.abs(deltaX) > Math.abs(deltaY);
+    if (scrollIntent) {
+      var range = this.visibleIndexRange();
+      var count = Math.max(1, range.to - range.from + 1);
+      var bars = deltaX || deltaY;
+      var barDelta = Math.round((bars / 100) * Math.max(1, count / 8));
+      if (!barDelta && bars) barDelta = bars > 0 ? 1 : -1;
+      this.scroll(barDelta);
+      return;
+    }
+    if (deltaY < 0) this.zoomIn(anchorRatio);
+    else if (deltaY > 0) this.zoomOut(anchorRatio);
+  };
+
+  Chart.prototype.panVisibleRange = function (pointer) {
+    var state = this.panState;
+    if (!state || !this.bars.length) return;
+    var rect = this.getPaneRect(this.activePaneId()) || this.paneRects[0] || { width: this.canvas.clientWidth || 1 };
+    var rangeCount = Math.max(1, state.startRange.to - state.startRange.from + 1);
+    var pixelDelta = pointer.x - state.startPointer.x;
+    var barDelta = Math.round(-(pixelDelta / Math.max(1, rect.width)) * rangeCount);
+    if (Math.abs(pixelDelta) > 2) state.moved = true;
+    this.setVisibleIndexRange(state.startRange.from + barDelta, state.startRange.to + barDelta);
   };
 
   Chart.prototype.hitTestPaneControl = function (pointer) {
@@ -2356,10 +2461,62 @@
   Chart.prototype.fitContent = function () {
     if (!this.bars.length) return;
     var count = Math.min(this.bars.length, this.options.initialBarCount || 140);
+    this.setVisibleIndexRange(this.bars.length - count, this.bars.length - 1);
+  };
+
+  Chart.prototype.visibleIndexRange = function () {
+    if (!this.bars.length) return { from: 0, to: -1 };
+    var range = this.document.visibleRange;
+    if (!range) return { from: 0, to: this.bars.length - 1 };
+    var from = 0;
+    var to = this.bars.length - 1;
+    for (var i = 0; i < this.bars.length; i += 1) {
+      if (this.bars[i].time >= range.from) {
+        from = i;
+        break;
+      }
+    }
+    for (var j = this.bars.length - 1; j >= 0; j -= 1) {
+      if (this.bars[j].time <= range.to) {
+        to = j;
+        break;
+      }
+    }
+    if (to < from) to = from;
+    return { from: from, to: to };
+  };
+
+  Chart.prototype.setVisibleIndexRange = function (fromIndex, toIndex) {
+    if (!this.bars.length) {
+      this.document.visibleRange = null;
+      return null;
+    }
+    fromIndex = Math.round(toNumber(fromIndex, 0));
+    toIndex = Math.round(toNumber(toIndex, this.bars.length - 1));
+    var count = Math.max(1, toIndex - fromIndex + 1);
+    count = Math.min(count, this.bars.length);
+    fromIndex = clamp(fromIndex, 0, this.bars.length - count);
+    toIndex = fromIndex + count - 1;
     this.document.visibleRange = {
-      from: this.bars[this.bars.length - count].time,
-      to: this.bars[this.bars.length - 1].time
+      from: this.bars[fromIndex].time,
+      to: this.bars[toIndex].time
     };
+    return this.document.visibleRange;
+  };
+
+  Chart.prototype.barIndexAtPoint = function (point) {
+    if (!this.bars.length || !point) return 0;
+    var rect = null;
+    for (var i = 0; i < this.paneRects.length; i += 1) {
+      if (point.y >= this.paneRects[i].y && point.y <= this.paneRects[i].y + this.paneRects[i].height) {
+        rect = this.paneRects[i];
+        break;
+      }
+    }
+    rect = rect || this.paneRects[0] || { x: 0, width: this.canvas.clientWidth || 1 };
+    var range = this.visibleIndexRange();
+    var ratio = clamp((point.x - rect.x) / Math.max(1, rect.width), 0, 1);
+    return range.from + ratio * Math.max(1, range.to - range.from);
   };
 
   Chart.prototype.updateToolbar = function () {

@@ -228,6 +228,48 @@ assert.ok(chart.bars.length > 0);
 assert.strictEqual(chart.setPeriod('daily'), 'daily');
 assert.strictEqual(chart.bars.length, chart.sourceBars.length);
 
+const initialVisibleRange = chart.visibleIndexRange();
+const initialVisibleCount = initialVisibleRange.to - initialVisibleRange.from + 1;
+assert.ok(initialVisibleCount > 20);
+assert.strictEqual(chart.zoomIn(0.5), true);
+const zoomedVisibleRange = chart.visibleIndexRange();
+const zoomedVisibleCount = zoomedVisibleRange.to - zoomedVisibleRange.from + 1;
+assert.ok(zoomedVisibleCount < initialVisibleCount);
+assert.strictEqual(chart.zoomOut(0.5), true);
+assert.ok(chart.visibleIndexRange().to - chart.visibleIndexRange().from + 1 > zoomedVisibleCount);
+chart.zoom(0.5, 0.5);
+const scrollStart = chart.visibleIndexRange();
+assert.strictEqual(chart.scroll(3), true);
+assert.strictEqual(chart.visibleIndexRange().from, scrollStart.from + 3);
+chart.handleWheel({
+  clientX: 450,
+  clientY: 180,
+  deltaY: -120,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+assert.ok(chart.visibleIndexRange().to - chart.visibleIndexRange().from + 1 < zoomedVisibleCount);
+const wheelScrollStart = chart.visibleIndexRange();
+chart.handleWheel({
+  clientX: 450,
+  clientY: 180,
+  deltaX: 120,
+  deltaY: 0,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+assert.ok(chart.visibleIndexRange().from >= wheelScrollStart.from);
+const panStart = chart.visibleIndexRange();
+const priceRectForPan = chart.getPaneRect('price');
+chart.handlePointerDown({ clientX: priceRectForPan.x + priceRectForPan.width / 2, clientY: priceRectForPan.y + priceRectForPan.height / 2 });
+chart.handlePointerMove({ clientX: priceRectForPan.x + priceRectForPan.width / 2 - 80, clientY: priceRectForPan.y + priceRectForPan.height / 2 });
+chart.handlePointerUp();
+assert.ok(chart.visibleIndexRange().from >= panStart.from);
+chart.fitContent();
+chart.draw();
+
 chart.setSeriesColorOrder(['#111111', '#222222', '#333333']);
 const ma20Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
 const ma200Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 200 } });
