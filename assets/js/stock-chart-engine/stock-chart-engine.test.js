@@ -279,6 +279,41 @@ additionalIndicators.forEach((type) => {
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
+const rsiPaneId = chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId;
+assert.ok(chart.paneControlHitZones.some((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize'));
+const rsiPaneOriginalIndex = chart.document.panes.findIndex((pane) => pane.id === rsiPaneId);
+assert.ok(chart.movePaneUp(rsiPaneId));
+assert.strictEqual(chart.document.panes.findIndex((pane) => pane.id === rsiPaneId), rsiPaneOriginalIndex - 1);
+assert.ok(chart.movePaneDown(rsiPaneId));
+assert.strictEqual(chart.document.panes.findIndex((pane) => pane.id === rsiPaneId), rsiPaneOriginalIndex);
+
+chart.draw();
+const resizeZone = chart.paneResizeHitZones.find((zone) => zone.upperPaneId === 'price' || zone.lowerPaneId === 'price');
+assert.ok(resizeZone);
+const upperPaneBeforeResize = chart.document.panes.find((pane) => pane.id === resizeZone.upperPaneId).height;
+chart.handlePointerDown({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 5 });
+chart.handlePointerMove({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 45 });
+chart.handlePointerUp();
+assert.notStrictEqual(chart.document.panes.find((pane) => pane.id === resizeZone.upperPaneId).height, upperPaneBeforeResize);
+
+chart.draw();
+const maximizeZone = chart.paneControlHitZones.find((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize');
+chart.handleCanvasClick({ clientX: maximizeZone.x + 2, clientY: maximizeZone.y + 2 });
+assert.strictEqual(chart.document.settings.maximizedPaneId, rsiPaneId);
+assert.strictEqual(chart.paneRects.length, 1);
+assert.strictEqual(chart.paneRects[0].paneId, rsiPaneId);
+const restoreZone = chart.paneControlHitZones.find((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize');
+chart.handleCanvasClick({ clientX: restoreZone.x + 2, clientY: restoreZone.y + 2 });
+assert.strictEqual(chart.document.settings.maximizedPaneId, null);
+assert.ok(chart.paneRects.length > 1);
+
+const temporaryPaneId = chart.addPane({ title: 'Temporary pane' });
+chart.draw();
+const closeZone = chart.paneControlHitZones.find((zone) => zone.paneId === temporaryPaneId && zone.action === 'close');
+assert.ok(closeZone);
+chart.handleCanvasClick({ clientX: closeZone.x + 2, clientY: closeZone.y + 2 });
+assert.ok(!chart.document.panes.some((pane) => pane.id === temporaryPaneId));
+
 const smaOnRsiId = chart.addIndicator('SMA', {
   source: { kind: 'indicator', indicatorId: rsiId, output: 'value' },
   inputs: { length: 9 }
@@ -388,7 +423,10 @@ assert.strictEqual(chart.getAllShapes().length, 0);
 chart.addDrawing('text', [{ time: last.time, value: last.close }], { paneId: 'price', text: 'Saved annotation' });
 
 assert.strictEqual(chart.save(), true);
-assert.ok(chart.storage.load('default').drawings.length > 0);
+const savedLayout = chart.storage.load('default');
+assert.ok(savedLayout.drawings.length > 0);
+assert.deepStrictEqual(savedLayout.panes.map((pane) => pane.id), chart.document.panes.map((pane) => pane.id));
+assert.deepStrictEqual(savedLayout.panes.map((pane) => pane.height), chart.document.panes.map((pane) => pane.height));
 
 chart.destroy();
 

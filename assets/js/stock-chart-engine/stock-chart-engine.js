@@ -1238,6 +1238,7 @@
         chartType: normalizeChartType(options.chartType || 'candlestick'),
         period: normalizePeriod(options.period || options.interval || 'daily'),
         priceField: 'close',
+        maximizedPaneId: null,
         seriesColorIndex: 0,
         seriesColorOrder: DEFAULT_SERIES_COLOR_ORDER.slice(),
         autosave: options.autosave !== false
@@ -1258,6 +1259,7 @@
     migrated.panes = migrated.panes && migrated.panes.length ? migrated.panes : createDefaultDocument().panes;
     migrated.panes.forEach(function (pane) {
       pane.scaleMode = normalizeScaleMode(pane.scaleMode);
+      pane.height = Math.max(80, toNumber(pane.height, pane.type === 'price' ? 420 : 180));
     });
     migrated.indicators = migrated.indicators || [];
     migrated.drawings = migrated.drawings || [];
@@ -1267,6 +1269,9 @@
     migrated.interval = periodInterval(migrated.settings.period);
     migrated.settings.seriesColorOrder = Array.isArray(migrated.settings.seriesColorOrder) && migrated.settings.seriesColorOrder.length ? migrated.settings.seriesColorOrder : DEFAULT_SERIES_COLOR_ORDER.slice();
     migrated.settings.seriesColorIndex = Math.max(0, toNumber(migrated.settings.seriesColorIndex, 0));
+    if (migrated.settings.maximizedPaneId && !migrated.panes.some(function (pane) { return pane.id === migrated.settings.maximizedPaneId; })) {
+      migrated.settings.maximizedPaneId = null;
+    }
     return migrated;
   }
 
@@ -1372,11 +1377,14 @@
     this.paneRects = [];
     this.legendHitZones = [];
     this.scaleHitZones = [];
+    this.paneControlHitZones = [];
+    this.paneResizeHitZones = [];
     this.pointer = null;
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
     this.pendingDrawing = null;
     this.dragState = null;
+    this.paneResizeState = null;
     this.autosaveTimer = null;
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
@@ -1648,8 +1656,62 @@
     return created.id;
   };
 
+  Chart.prototype.movePane = function (paneId, direction) {
+    var panes = this.document.panes;
+    var index = panes.findIndex(function (pane) { return pane.id === paneId; });
+    if (index < 0) return false;
+    var delta = direction === 'down' ? 1 : -1;
+    var nextIndex = index + delta;
+    if (nextIndex < 0 || nextIndex >= panes.length) return false;
+    var pane = panes.splice(index, 1)[0];
+    panes.splice(nextIndex, 0, pane);
+    this.resize();
+    this.emitChange('pane:move', { paneId: paneId, from: index, to: nextIndex });
+    return true;
+  };
+
+  Chart.prototype.movePaneUp = function (paneId) {
+    return this.movePane(paneId, 'up');
+  };
+
+  Chart.prototype.movePaneDown = function (paneId) {
+    return this.movePane(paneId, 'down');
+  };
+
+  Chart.prototype.setPaneHeight = function (paneId, height) {
+    var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
+    if (!pane) return false;
+    pane.height = Math.max(80, toNumber(height, pane.height || 180));
+    this.resize();
+    this.emitChange('pane:height', { paneId: paneId, height: pane.height });
+    return pane.height;
+  };
+
+  Chart.prototype.maximizePane = function (paneId) {
+    if (!this.document.panes.some(function (pane) { return pane.id === paneId; })) return false;
+    this.document.settings.maximizedPaneId = paneId;
+    this.resize();
+    this.emitChange('pane:maximize', { paneId: paneId });
+    return true;
+  };
+
+  Chart.prototype.restorePanes = function () {
+    if (!this.document.settings.maximizedPaneId) return false;
+    var paneId = this.document.settings.maximizedPaneId;
+    this.document.settings.maximizedPaneId = null;
+    this.resize();
+    this.emitChange('pane:restore', { paneId: paneId });
+    return true;
+  };
+
+  Chart.prototype.togglePaneMaximize = function (paneId) {
+    if (this.document.settings.maximizedPaneId === paneId) return this.restorePanes();
+    return this.maximizePane(paneId);
+  };
+
   Chart.prototype.removePane = function (paneId) {
     if (paneId === 'price') return false;
+    if (this.document.settings.maximizedPaneId === paneId) this.document.settings.maximizedPaneId = null;
     this.document.indicators = this.document.indicators.filter(function (indicator) {
       return indicator.paneId !== paneId;
     });
@@ -2044,6 +2106,11 @@
   Chart.prototype.handleCanvasClick = function (event) {
     var pointer = this.pointerFromEvent(event);
     if (!this.pendingDrawing) {
+      var paneControlHit = this.hitTestPaneControl(pointer);
+      if (paneControlHit) {
+        this.handlePaneControl(paneControlHit);
+        return;
+      }
       var scaleHit = this.hitTestScaleMode(pointer);
       if (scaleHit) {
         this.togglePaneScaleMode(scaleHit.paneId);
@@ -2081,6 +2148,12 @@
     this.canvas.focus();
     if (this.pendingDrawing) return;
     this.pointer = this.pointerFromEvent(event);
+    if (this.hitTestPaneControl(this.pointer)) return;
+    var paneResizeHit = this.hitTestPaneResize(this.pointer);
+    if (paneResizeHit) {
+      this.beginPaneResize(paneResizeHit, this.pointer);
+      return;
+    }
     var deleteHit = this.hitTestDrawingDelete(this.pointer);
     if (deleteHit) {
       this.removeDrawing(deleteHit.id);
@@ -2118,6 +2191,11 @@
       this.draw();
       return;
     }
+    if (this.paneResizeState) {
+      this.resizePaneBoundary(this.pointer);
+      this.draw();
+      return;
+    }
     if (this.dragState) {
       this.moveSelectedDrawing(this.pointer);
       this.draw();
@@ -2125,16 +2203,91 @@
     }
     var hit = this.hitTestDrawing(this.pointer);
     this.hoverDrawingId = hit ? hit.drawing.id : null;
-    this.canvas.style.cursor = hit ? 'move' : 'crosshair';
+    if (this.hitTestPaneResize(this.pointer)) this.canvas.style.cursor = 'ns-resize';
+    else if (this.hitTestPaneControl(this.pointer)) this.canvas.style.cursor = 'pointer';
+    else this.canvas.style.cursor = hit ? 'move' : 'crosshair';
     this.draw();
   };
 
   Chart.prototype.handlePointerUp = function () {
+    if (this.paneResizeState) {
+      var resized = {
+        upperPaneId: this.paneResizeState.upperPaneId,
+        lowerPaneId: this.paneResizeState.lowerPaneId
+      };
+      this.paneResizeState = null;
+      this.canvas.style.cursor = 'crosshair';
+      this.emitChange('pane:resize', resized);
+      return;
+    }
     if (!this.dragState) return;
     var drawingId = this.dragState.drawingId;
     this.dragState = null;
     this.canvas.style.cursor = 'crosshair';
     this.emitChange('drawing:move', { drawingId: drawingId });
+  };
+
+  Chart.prototype.hitTestPaneControl = function (pointer) {
+    for (var i = 0; i < this.paneControlHitZones.length; i += 1) {
+      var zone = this.paneControlHitZones[i];
+      if (zone.disabled) continue;
+      if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) {
+        return zone;
+      }
+    }
+    return null;
+  };
+
+  Chart.prototype.handlePaneControl = function (zone) {
+    if (!zone || zone.disabled) return false;
+    if (zone.action === 'move-up') return this.movePaneUp(zone.paneId);
+    if (zone.action === 'move-down') return this.movePaneDown(zone.paneId);
+    if (zone.action === 'maximize') return this.togglePaneMaximize(zone.paneId);
+    if (zone.action === 'close') return this.removePane(zone.paneId);
+    return false;
+  };
+
+  Chart.prototype.hitTestPaneResize = function (pointer) {
+    if (this.document.settings.maximizedPaneId) return null;
+    for (var i = 0; i < this.paneResizeHitZones.length; i += 1) {
+      var zone = this.paneResizeHitZones[i];
+      if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) {
+        return zone;
+      }
+    }
+    return null;
+  };
+
+  Chart.prototype.beginPaneResize = function (zone, pointer) {
+    var upperPane = this.document.panes.filter(function (pane) { return pane.id === zone.upperPaneId; })[0];
+    var lowerPane = this.document.panes.filter(function (pane) { return pane.id === zone.lowerPaneId; })[0];
+    if (!upperPane || !lowerPane) return false;
+    var totalDocHeight = (upperPane.height || 180) + (lowerPane.height || 180);
+    var totalScreenHeight = Math.max(1, zone.upperHeight + zone.lowerHeight);
+    this.paneResizeState = {
+      upperPaneId: upperPane.id,
+      lowerPaneId: lowerPane.id,
+      startY: pointer.y,
+      upperHeight: upperPane.height || 180,
+      lowerHeight: lowerPane.height || 180,
+      docPerPixel: totalDocHeight / totalScreenHeight
+    };
+    this.canvas.style.cursor = 'ns-resize';
+    return true;
+  };
+
+  Chart.prototype.resizePaneBoundary = function (pointer) {
+    var state = this.paneResizeState;
+    if (!state) return;
+    var upperPane = this.document.panes.filter(function (pane) { return pane.id === state.upperPaneId; })[0];
+    var lowerPane = this.document.panes.filter(function (pane) { return pane.id === state.lowerPaneId; })[0];
+    if (!upperPane || !lowerPane) return;
+    var total = state.upperHeight + state.lowerHeight;
+    var minHeight = Math.min(80, total / 2);
+    var delta = (pointer.y - state.startY) * state.docPerPixel;
+    var nextUpper = clamp(state.upperHeight + delta, minHeight, total - minHeight);
+    upperPane.height = Math.round(nextUpper);
+    lowerPane.height = Math.round(total - nextUpper);
   };
 
   Chart.prototype.moveSelectedDrawing = function (pointer) {
@@ -2236,15 +2389,26 @@
     var top = 0;
     var scaleWidth = 68;
     var timeAxisHeight = 28;
-    var totalRequested = this.document.panes.reduce(function (sum, pane) { return sum + (pane.height || 180); }, 0);
+    var layoutPanes = this.document.panes;
+    var maximizedPaneId = this.document.settings.maximizedPaneId;
+    if (maximizedPaneId) {
+      layoutPanes = this.document.panes.filter(function (pane) { return pane.id === maximizedPaneId; });
+      if (!layoutPanes.length) {
+        this.document.settings.maximizedPaneId = null;
+        layoutPanes = this.document.panes;
+      }
+    }
+    var totalRequested = layoutPanes.reduce(function (sum, pane) { return sum + (pane.height || 180); }, 0);
     var available = Math.max(100, height - timeAxisHeight);
+    var minPaneHeight = layoutPanes.length > 1 ? Math.max(42, Math.min(86, Math.floor(available / layoutPanes.length))) : available;
     var self = this;
-    this.paneRects = this.document.panes.map(function (pane, index) {
-      var paneHeight = Math.max(86, Math.round(available * ((pane.height || 180) / totalRequested)));
-      if (index === self.document.panes.length - 1) paneHeight = available - top;
+    this.paneRects = layoutPanes.map(function (pane, index) {
+      var paneHeight = Math.max(minPaneHeight, Math.round(available * ((pane.height || 180) / totalRequested)));
+      if (index === layoutPanes.length - 1) paneHeight = available - top;
       var rect = {
         paneId: pane.id,
         title: pane.title,
+        paneIndex: self.document.panes.indexOf(pane),
         x: 0,
         y: top,
         width: width - scaleWidth,
@@ -2514,9 +2678,12 @@
     this.layoutPanes();
     this.legendHitZones = [];
     this.scaleHitZones = [];
+    this.paneControlHitZones = [];
+    this.paneResizeHitZones = [];
     for (var i = 0; i < this.paneRects.length; i += 1) {
       this.drawPane(this.paneRects[i], theme, i);
     }
+    this.drawPaneResizeHandles(theme);
     this.drawTimeAxis(theme);
     this.drawCrosshair(theme);
   };
@@ -2534,6 +2701,7 @@
     this.drawPendingDrawing(rect, range, theme);
     this.drawScale(rect, range, theme);
     this.drawPaneLegend(rect, range, theme, paneIndex);
+    this.drawPaneControls(rect, theme);
     ctx.strokeStyle = theme.border;
     ctx.beginPath();
     ctx.moveTo(rect.x, rect.y + rect.height - 0.5);
@@ -2581,6 +2749,80 @@
       ctx.fillText(item.label, x + 12, y);
       x += itemWidth + 4;
     }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawPaneControls = function (rect, theme) {
+    var ctx = this.ctx;
+    var panes = this.document.panes;
+    var index = rect.paneIndex;
+    var maximized = this.document.settings.maximizedPaneId === rect.paneId;
+    var size = 20;
+    var gap = 4;
+    var y = rect.y + 5;
+    var actions = [
+      { action: 'move-up', label: '^', disabled: index <= 0 || !!this.document.settings.maximizedPaneId },
+      { action: 'move-down', label: 'v', disabled: index >= panes.length - 1 || !!this.document.settings.maximizedPaneId },
+      { action: 'maximize', label: maximized ? '=' : '[]', disabled: false },
+      { action: 'close', label: 'x', disabled: rect.paneId === 'price' }
+    ];
+    var totalWidth = actions.length * size + (actions.length - 1) * gap;
+    var x = Math.max(rect.x + 120, rect.x + rect.width - totalWidth - 10);
+
+    ctx.save();
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    actions.forEach(function (item) {
+      var zone = {
+        x: x,
+        y: y,
+        width: size,
+        height: size,
+        paneId: rect.paneId,
+        action: item.action,
+        disabled: item.disabled
+      };
+      this.paneControlHitZones.push(zone);
+      ctx.globalAlpha = item.disabled ? 0.35 : 1;
+      ctx.fillStyle = theme.panelBackground;
+      ctx.fillRect(x, y, size, size);
+      ctx.strokeStyle = theme.border;
+      ctx.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
+      ctx.fillStyle = theme.text;
+      ctx.fillText(item.label, x + size / 2, y + size / 2 + 0.5);
+      x += size + gap;
+    }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawPaneResizeHandles = function (theme) {
+    if (this.document.settings.maximizedPaneId || this.paneRects.length < 2) return;
+    var ctx = this.ctx;
+    ctx.save();
+    for (var i = 0; i < this.paneRects.length - 1; i += 1) {
+      var upper = this.paneRects[i];
+      var lower = this.paneRects[i + 1];
+      var y = upper.y + upper.height;
+      this.paneResizeHitZones.push({
+        x: upper.x,
+        y: y - 5,
+        width: upper.width + upper.scaleWidth,
+        height: 10,
+        upperPaneId: upper.paneId,
+        lowerPaneId: lower.paneId,
+        upperHeight: upper.height,
+        lowerHeight: lower.height
+      });
+      ctx.strokeStyle = theme.border;
+      ctx.beginPath();
+      ctx.moveTo(upper.x, Math.round(y) + 0.5);
+      ctx.lineTo(upper.x + upper.width + upper.scaleWidth, Math.round(y) + 0.5);
+      ctx.stroke();
+      ctx.fillStyle = theme.mutedText;
+      ctx.globalAlpha = 0.55;
+      ctx.fillRect(upper.x + upper.width / 2 - 14, y - 1, 28, 2);
+    }
     ctx.restore();
   };
 
