@@ -671,12 +671,110 @@
         width: 32px;
       }
 
+      .menu-panel::before,
+      .drawing-group-flyout::before,
+      .confirm-dialog__panel::before {
+        background: var(--border-strong);
+        border-radius: 999px;
+        content: "";
+        height: 4px;
+        justify-self: center;
+        opacity: 0.7;
+        width: 42px;
+      }
+
       .menu-panel,
       .menu-panel.wide {
-        left: auto;
-        max-width: calc(100vw - 18px);
-        min-width: 280px;
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        bottom: 0;
+        box-shadow: 0 -18px 45px rgba(15, 23, 42, 0.22);
+        left: 0;
+        max-height: min(78vh, 620px);
+        max-width: none;
+        min-width: 0;
+        overflow: auto;
+        padding: 14px;
+        position: fixed;
         right: 0;
+        top: auto;
+        width: auto;
+        z-index: 40;
+      }
+
+      html[data-theme="dark"] .menu-panel,
+      html[data-theme="dark"] .menu-panel.wide,
+      html[data-theme="dark"] .drawing-group-flyout,
+      html[data-theme="dark"] .confirm-dialog__panel {
+        box-shadow: 0 -18px 45px rgba(0, 0, 0, 0.46);
+      }
+
+      .field-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .field-row button {
+        width: 100%;
+      }
+
+      .button-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .indicator-suggestions {
+        max-height: min(46vh, 320px);
+      }
+
+      .drawing-group-flyout {
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        bottom: 0;
+        box-shadow: 0 -18px 45px rgba(15, 23, 42, 0.22);
+        left: 0;
+        max-height: min(72vh, 520px);
+        min-width: 0;
+        padding: 12px;
+        position: fixed;
+        right: 0;
+        top: auto;
+        z-index: 42;
+      }
+
+      .drawing-group-grid {
+        gap: 6px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .drawing-tool-flyout-button {
+        height: 40px;
+      }
+
+      .confirm-dialog {
+        align-items: end;
+        justify-items: stretch;
+        padding: 0;
+      }
+
+      .confirm-dialog__panel {
+        border-bottom: 0;
+        border-left: 0;
+        border-radius: 8px 8px 0 0;
+        border-right: 0;
+        box-shadow: 0 -18px 45px rgba(15, 23, 42, 0.22);
+        max-height: min(72vh, 520px);
+        max-width: none;
+        overflow: auto;
+        padding: 14px;
+        width: 100%;
+      }
+
+      .confirm-dialog__actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .confirm-dialog__actions button {
+        width: 100%;
       }
     }
   </style>
