@@ -276,7 +276,7 @@
     }
 
     .drawing-group-button,
-    .drawing-tool-button,
+    .drawing-action-button,
     .drawing-tool-flyout-button {
       align-items: center;
       background: transparent;
@@ -288,13 +288,13 @@
     }
 
     .drawing-group-button,
-    .drawing-tool-button {
+    .drawing-action-button {
       height: 34px;
       width: 34px;
     }
 
     .drawing-group-button svg,
-    .drawing-tool-button svg,
+    .drawing-action-button svg,
     .drawing-tool-flyout-button svg {
       height: 20px;
       pointer-events: none;
@@ -324,7 +324,7 @@
     .drawing-group-button.is-open,
     .drawing-group-button.is-selected,
     .drawing-tool-flyout-button.is-selected,
-    .drawing-tool-button.is-selected {
+    .drawing-action-button.is-selected {
       background: rgba(96, 165, 250, 0.16);
       border-color: var(--accent);
       color: var(--accent);
@@ -395,6 +395,11 @@
       justify-content: center;
       padding: 0;
       width: 34px;
+    }
+
+    .drawing-action-button.danger:hover,
+    .drawing-action-button.danger:focus {
+      color: #ef4444;
     }
 
     .drawing-rail > button:hover,
@@ -506,7 +511,7 @@
         padding: 6px 4px;
       }
 
-      .drawing-tool-button {
+      .drawing-action-button {
         height: 32px;
         width: 32px;
       }
@@ -668,15 +673,17 @@
     <section class="workbench">
       <aside class="drawing-rail" aria-label="Drawing tools">
         <select id="drawingTool" aria-label="Drawing tool"></select>
-        <button type="button" id="addDrawingTool" title="Place sample drawing" aria-label="Place sample drawing">+</button>
-        <div class="rail-divider"></div>
         <div id="drawingToolPalette" class="drawing-tool-palette" role="toolbar" aria-label="Drawing tools"></div>
         <div class="rail-divider"></div>
-        <button type="button" id="addTrendline" title="Sample trendline" aria-label="Sample trendline">TL</button>
-        <button type="button" id="addRectangle" title="Sample rectangle" aria-label="Sample rectangle">[]</button>
-        <button type="button" id="addPriceNote" title="Price note" aria-label="Price note">T</button>
-        <button type="button" id="addPaneNote" title="Pane note" aria-label="Pane note">N</button>
-        <button type="button" id="removeShapes" title="Clear drawings" aria-label="Clear drawings">X</button>
+        <button type="button" id="removeShapes" class="drawing-action-button danger" title="Clear drawings" aria-label="Clear drawings">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M8 6V4h8v2"></path>
+            <path d="M19 6l-1 14H6L5 6"></path>
+            <path d="M10 11v5"></path>
+            <path d="M14 11v5"></path>
+          </svg>
+        </button>
       </aside>
 
       <section class="chart-stage">
@@ -745,28 +752,6 @@
           return indicator.type === type;
         })[0];
         return found ? found.id : null;
-      }
-
-      function samplePoint(offset) {
-        var index = Math.max(0, data.length - offset);
-        return { time: data[index].time, value: data[index].close };
-      }
-
-      function sampleDrawingPoints(toolId) {
-        var tool = StockChartEngine.drawingTools[toolId] || StockChartEngine.drawingTools.text;
-        var count = Math.max(1, tool.points || 1);
-        var points = [];
-        for (var i = 0; i < count; i += 1) {
-          points.push(samplePoint(110 - i * 14));
-        }
-        return points;
-      }
-
-      function indicatorPaneId(type) {
-        var found = chart.document.indicators.filter(function (indicator) {
-          return indicator.type === type;
-        })[0];
-        return found ? found.paneId : 'price';
       }
 
       function renderState() {
@@ -1158,51 +1143,6 @@
         chart.addIndicator('EMA', {
           source: { kind: 'indicator', indicatorId: trackedMacdId, output: 'macd' },
           inputs: { length: 5 }
-        });
-        renderState();
-      });
-
-      document.getElementById('addDrawingTool').addEventListener('click', function () {
-        var toolId = document.getElementById('drawingTool').value || 'trendline';
-        var tool = StockChartEngine.drawingTools[toolId] || StockChartEngine.drawingTools.trendline;
-        chart.addDrawing(toolId, sampleDrawingPoints(toolId), {
-          paneId: 'price',
-          text: tool.name,
-          style: { color: '#2563eb', width: tool.category === 'geometric' ? 2 : 1.8 }
-        });
-        renderState();
-      });
-
-      document.getElementById('addTrendline').addEventListener('click', function () {
-        chart.addDrawing('trendline', [samplePoint(90), samplePoint(20)], {
-          paneId: 'price',
-          style: { color: '#2563eb', width: 2 }
-        });
-        renderState();
-      });
-
-      document.getElementById('addRectangle').addEventListener('click', function () {
-        chart.addDrawing('rectangle', [samplePoint(70), samplePoint(35)], {
-          paneId: 'price',
-          style: { color: '#7c3aed', fill: 'rgba(124, 58, 237, 0.14)' }
-        });
-        renderState();
-      });
-
-      document.getElementById('addPriceNote').addEventListener('click', function () {
-        chart.addDrawing('text', [samplePoint(8)], {
-          paneId: 'price',
-          text: 'Price annotation',
-          style: { color: '#d97706' }
-        });
-        renderState();
-      });
-
-      document.getElementById('addPaneNote').addEventListener('click', function () {
-        chart.addDrawing('text', [{ time: samplePoint(12).time, value: 55 }], {
-          paneId: indicatorPaneId('RSI'),
-          text: 'Pane annotation',
-          style: { color: '#0891b2' }
         });
         renderState();
       });
