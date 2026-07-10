@@ -252,8 +252,7 @@
       min-width: 0;
     }
 
-    .indicator-picker input,
-    .indicator-picker select {
+    .indicator-picker input {
       width: 100%;
     }
 
@@ -676,7 +675,7 @@
               <div class="indicator-picker">
                 <input id="indicatorSearch" type="search" list="indicatorSuggestions" placeholder="Search indicators..." autocomplete="off" aria-label="Search indicators">
                 <datalist id="indicatorSuggestions"></datalist>
-                <select id="indicatorType" aria-label="Indicator type">
+                <select id="indicatorType" aria-label="Indicator type" hidden>
                   <option value="SMA">SMA</option>
                   <option value="EMA">EMA</option>
                   <option value="RSI">RSI</option>
