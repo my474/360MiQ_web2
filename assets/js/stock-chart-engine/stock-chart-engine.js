@@ -1384,6 +1384,7 @@
     this.selectedDrawingId = null;
     this.pendingDrawing = null;
     this.dragState = null;
+    this.tapState = null;
     this.paneResizeState = null;
     this.panState = null;
     this.autosaveTimer = null;
@@ -1498,9 +1499,21 @@
     this.canvas.addEventListener('mousemove', function (event) {
       self.handlePointerMove(event);
     });
-    this.canvas.addEventListener('mouseup', function () {
-      self.handlePointerUp();
+    this.canvas.addEventListener('mouseup', function (event) {
+      self.handlePointerUp(event);
     });
+    this.canvas.addEventListener('touchstart', function (event) {
+      self.handleTouchStart(event);
+    }, { passive: false });
+    this.canvas.addEventListener('touchmove', function (event) {
+      self.handleTouchMove(event);
+    }, { passive: false });
+    this.canvas.addEventListener('touchend', function (event) {
+      self.handleTouchEnd(event);
+    }, { passive: false });
+    this.canvas.addEventListener('touchcancel', function (event) {
+      self.handleTouchCancel(event);
+    }, { passive: false });
     this.canvas.addEventListener('wheel', function (event) {
       self.handleWheel(event);
     }, { passive: false });
@@ -2464,20 +2477,29 @@
     this.canvas.focus();
     if (this.pendingDrawing) return;
     this.pointer = this.pointerFromEvent(event);
+    this.tapState = {
+      startPointer: this.pointer,
+      pointer: this.pointer,
+      moved: false,
+      openSettingsOnTap: false
+    };
     if (this.hitTestPaneControl(this.pointer)) return;
     var paneResizeHit = this.hitTestPaneResize(this.pointer);
     if (paneResizeHit) {
+      this.tapState = null;
       this.beginPaneResize(paneResizeHit, this.pointer);
       return;
     }
     var deleteHit = this.hitTestDrawingDelete(this.pointer);
     if (deleteHit) {
+      this.tapState = null;
       this.removeDrawing(deleteHit.id);
       return;
     }
 
     var hit = this.hitTestDrawing(this.pointer);
     if (!hit) {
+      this.tapState = null;
       this.selectedDrawingId = null;
       this.hoverDrawingId = null;
       var paneHit = this.valueFromPoint(this.pointer);
@@ -2494,8 +2516,10 @@
       return;
     }
 
+    var wasSelected = this.selectedDrawingId === hit.drawing.id;
     this.selectedDrawingId = hit.drawing.id;
     this.hoverDrawingId = hit.drawing.id;
+    this.tapState.openSettingsOnTap = wasSelected && hit.pointIndex == null;
     if (!hit.drawing.locked) {
       this.dragState = {
         drawingId: hit.drawing.id,
@@ -2503,7 +2527,9 @@
         paneId: hit.drawing.paneId,
         startPointer: this.pointer,
         startValue: this.valueFromPoint(this.pointer, hit.drawing.paneId),
-        originalPoints: clone(hit.drawing.points || [])
+        originalPoints: clone(hit.drawing.points || []),
+        moved: false,
+        openSettingsOnTap: this.tapState.openSettingsOnTap
       };
     }
     this.draw();
@@ -2511,6 +2537,7 @@
 
   Chart.prototype.handlePointerMove = function (event) {
     this.pointer = this.pointerFromEvent(event);
+    if (this.tapState && distance(this.pointer, this.tapState.startPointer) > 5) this.tapState.moved = true;
     if (this.pendingDrawing) {
       this.hoverDrawingId = null;
       this.canvas.style.cursor = 'crosshair';
@@ -2528,6 +2555,7 @@
       return;
     }
     if (this.dragState) {
+      if (distance(this.pointer, this.dragState.startPointer) > 3) this.dragState.moved = true;
       this.moveSelectedDrawing(this.pointer);
       this.draw();
       return;
@@ -2540,13 +2568,15 @@
     this.draw();
   };
 
-  Chart.prototype.handlePointerUp = function () {
+  Chart.prototype.handlePointerUp = function (event) {
+    var pointer = event ? this.pointerFromEvent(event) : this.pointer;
     if (this.paneResizeState) {
       var resized = {
         upperPaneId: this.paneResizeState.upperPaneId,
         lowerPaneId: this.paneResizeState.lowerPaneId
       };
       this.paneResizeState = null;
+      this.tapState = null;
       this.canvas.style.cursor = 'crosshair';
       this.emitChange('pane:resize', resized);
       return;
@@ -2554,15 +2584,54 @@
     if (this.panState) {
       var panned = this.panState.moved;
       this.panState = null;
+      this.tapState = null;
       this.canvas.style.cursor = 'crosshair';
       if (panned) this.emitChange('range:pan', { visibleRange: clone(this.document.visibleRange) });
       return;
     }
-    if (!this.dragState) return;
-    var drawingId = this.dragState.drawingId;
+    if (!this.dragState) {
+      this.tapState = null;
+      return;
+    }
+    var state = this.dragState;
+    var drawingId = state.drawingId;
+    var shouldOpenSettings = state.openSettingsOnTap && !state.moved && !(this.tapState && this.tapState.moved);
     this.dragState = null;
+    this.tapState = null;
     this.canvas.style.cursor = 'crosshair';
-    this.emitChange('drawing:move', { drawingId: drawingId });
+    if (state.moved) this.emitChange('drawing:move', { drawingId: drawingId });
+    if (shouldOpenSettings) {
+      var drawing = this.getDrawingById(drawingId);
+      if (drawing) this.openDrawingSettingsPopup(drawing, pointer || state.startPointer);
+    }
+  };
+
+  Chart.prototype.handleTouchStart = function (event) {
+    if (event.preventDefault) event.preventDefault();
+    this.handlePointerDown(event);
+  };
+
+  Chart.prototype.handleTouchMove = function (event) {
+    if (event.preventDefault) event.preventDefault();
+    this.handlePointerMove(event);
+  };
+
+  Chart.prototype.handleTouchEnd = function (event) {
+    if (event.preventDefault) event.preventDefault();
+    var wasPending = !!this.pendingDrawing;
+    var moved = this.tapState && this.tapState.moved;
+    if (wasPending && !moved) this.handleCanvasClick(event);
+    this.handlePointerUp(event);
+  };
+
+  Chart.prototype.handleTouchCancel = function (event) {
+    if (event && event.preventDefault) event.preventDefault();
+    this.tapState = null;
+    this.dragState = null;
+    this.paneResizeState = null;
+    this.panState = null;
+    this.canvas.style.cursor = 'crosshair';
+    this.draw();
   };
 
   Chart.prototype.handleWheel = function (event) {
@@ -2933,7 +3002,15 @@
 
   Chart.prototype.pointerFromEvent = function (event) {
     var bounds = this.canvas.getBoundingClientRect();
-    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    var source = event;
+    if (event && event.touches && event.touches.length) source = event.touches[0];
+    else if (event && event.changedTouches && event.changedTouches.length) source = event.changedTouches[0];
+    source = source || { clientX: 0, clientY: 0 };
+    return {
+      x: source.clientX - bounds.left,
+      y: source.clientY - bounds.top,
+      pointerType: event && (event.pointerType || (event.touches || event.changedTouches ? 'touch' : 'mouse'))
+    };
   };
 
   Chart.prototype.valueFromEvent = function (event) {
@@ -3012,7 +3089,7 @@
 
   Chart.prototype.hitTestDrawingPoint = function (pointer, drawing) {
     var points = this.drawingScreenPoints(drawing);
-    var tolerance = 8;
+    var tolerance = pointer && pointer.pointerType === 'touch' ? 18 : 8;
     for (var i = points.length - 1; i >= 0; i -= 1) {
       if (points[i].y == null) continue;
       if (distance(pointer, points[i]) <= tolerance) return i;
@@ -3022,7 +3099,7 @@
 
   Chart.prototype.isPointOnDrawing = function (pointer, drawing) {
     var points = this.drawingScreenPoints(drawing);
-    var tolerance = 8;
+    var tolerance = pointer && pointer.pointerType === 'touch' ? 18 : 8;
     if (!points.length) return false;
     points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return false;
