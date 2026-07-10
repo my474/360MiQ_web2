@@ -1316,6 +1316,7 @@
       '<button type="button" data-sce-action="rsi">RSI</button>',
       '<button type="button" data-sce-action="macd">MACD</button>',
       '<button type="button" data-sce-action="line">Line</button>',
+      '<button type="button" data-sce-action="clear-drawings">Clear Drawings</button>',
       '<button type="button" data-sce-action="log">Log</button>',
       '<button type="button" data-sce-action="theme">Dark</button>',
       '<button type="button" data-sce-action="save">Save</button>'
@@ -1347,6 +1348,7 @@
       if (action === 'rsi') self.addIndicator('RSI', { placement: 'new' });
       if (action === 'macd') self.addIndicator('MACD', { placement: 'new' });
       if (action === 'line') self.startDrawing('trendline');
+      if (action === 'clear-drawings') self.removeAllShapes();
       if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
       if (action === 'theme') self.toggleTheme();
       if (action === 'save') self.save();

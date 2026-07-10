@@ -321,7 +321,7 @@
           <button type="button" id="addRectangle">Rectangle</button>
           <button type="button" id="addPriceNote">Price Note</button>
           <button type="button" id="addPaneNote">Pane Note</button>
-          <button type="button" id="removeShapes">Remove All</button>
+          <button type="button" id="removeShapes">Clear Drawings</button>
         </div>
       </div>
 
@@ -374,6 +374,7 @@
           renderState();
           if (event.type === 'drawing:add') setDrawingToolStatus('Drawing created. Select another icon to draw again.');
           if (event.type === 'drawing:cancel') setDrawingToolStatus('Drawing canceled.');
+          if (event.type === 'drawing:removeAll') setDrawingToolStatus('All drawings cleared.');
         });
         chart.on('save', renderState);
         document.getElementById('chartType').value = chart.document.settings.chartType;

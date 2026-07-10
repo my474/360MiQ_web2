@@ -355,6 +355,18 @@ Object.keys(StockChartEngine.drawingTools).forEach((toolId, toolIndex) => {
   assert.strictEqual(chart.getDrawingById(id).type, toolId);
 });
 
+assert.ok(chart.getAllShapes().length > 0);
+chart.toolbar.dispatchEvent({
+  type: 'click',
+  target: {
+    getAttribute(name) {
+      return name === 'data-sce-action' ? 'clear-drawings' : null;
+    }
+  }
+});
+assert.strictEqual(chart.getAllShapes().length, 0);
+chart.addDrawing('text', [{ time: last.time, value: last.close }], { paneId: 'price', text: 'Saved annotation' });
+
 assert.strictEqual(chart.save(), true);
 assert.ok(chart.storage.load('default').drawings.length > 0);
 
