@@ -1980,8 +1980,10 @@
       '</div>'
     ].join('');
     this.settingsPopup.removeAttribute('hidden');
+    this.settingsPopup.dataset.mode = 'indicator';
     this.settingsPopup.dataset.indicatorId = indicator.id;
     this.settingsPopup.dataset.output = output;
+    delete this.settingsPopup.dataset.drawingId;
     this.bindSettingsPopup();
   };
 
@@ -2043,36 +2045,60 @@
 
   Chart.prototype.pickPopupColor = function (color) {
     if (!color) return;
-    var field = this.settingsPopup.querySelector('[data-sce-popup-field="color"]');
+    var field = this.settingsPopup.querySelector('[data-sce-popup-field="color"]') ||
+      this.settingsPopup.querySelector('[data-sce-popup-field="drawingColor"]');
     var swatch = this.settingsPopup.querySelector('.sce-color-swatch');
     if (field) field.value = color;
     if (swatch) swatch.style.background = color;
     this.closePopupColorPalette();
   };
 
-  Chart.prototype.openDrawingTextPopup = function (drawing, pointer) {
-    if (!drawing || !isEditableTextDrawing(drawing)) return false;
+  Chart.prototype.openDrawingSettingsPopup = function (drawing, pointer) {
+    if (!drawing) return false;
     var tool = drawingToolDefinition(drawing.type);
+    var canEditText = isEditableTextDrawing(drawing);
+    var style = sanitizeDrawingStyle(drawing.style || {});
+    var color = style.color || this.theme().drawing;
+    var width = style.width || 2;
+    var lineStyle = normalizeLineStyle(style.lineStyle);
     pointer = pointer || this.drawingTextPopupPoint(drawing);
     var left = clamp((pointer && pointer.x || 20) + 12, 8, Math.max(8, this.canvas.clientWidth - 306));
-    var top = clamp((pointer && pointer.y || 20) + 12, 8, Math.max(8, this.canvas.clientHeight - 190));
+    var top = clamp((pointer && pointer.y || 20) + 12, 8, Math.max(8, this.canvas.clientHeight - (canEditText ? 318 : 250)));
+    var textControls = canEditText
+      ? ['<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>'].join('')
+      : '';
     this.settingsPopup.style.left = left + 'px';
     this.settingsPopup.style.top = top + 'px';
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title">',
-      '<strong>', escapeHtml(tool.name || 'Text'), '</strong>',
+      '<strong>', escapeHtml(tool.name || 'Drawing'), '</strong>',
       '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
       '</div>',
-      '<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>',
+      textControls,
+      '<label>Color<div class="sce-color-control">',
+      '<button type="button" class="sce-color-swatch" data-sce-popup-action="toggle-color" style="background:', escapeHtml(color), '" aria-label="Choose color"></button>',
+      '<input type="text" data-sce-popup-field="drawingColor" value="', escapeHtml(color), '">',
+      '<div class="sce-color-palette" hidden>',
+      colorPaletteHtml(color),
+      '</div>',
+      '</div></label>',
+      '<label>Thickness<input type="number" min="1" max="16" data-sce-popup-field="drawingWidth" value="', escapeHtml(width), '"></label>',
+      '<label>Style<select data-sce-popup-field="drawingLineStyle">',
+      '<option value="solid"', lineStyle === 'solid' ? ' selected' : '', '>Solid</option>',
+      '<option value="dash"', lineStyle === 'dash' ? ' selected' : '', '>Dash</option>',
+      '<option value="dot"', lineStyle === 'dot' ? ' selected' : '', '>Dot</option>',
+      '</select></label>',
       '<div class="sce-settings-actions">',
       '<button type="button" data-sce-popup-action="remove">Remove</button>',
       '<button type="button" data-sce-popup-action="apply">Apply</button>',
       '</div>'
     ].join('');
     this.settingsPopup.removeAttribute('hidden');
-    this.settingsPopup.dataset.mode = 'drawing-text';
+    this.settingsPopup.dataset.mode = canEditText ? 'drawing-text' : 'drawing-style';
     this.settingsPopup.dataset.drawingId = drawing.id;
-    this.bindDrawingTextPopup();
+    delete this.settingsPopup.dataset.indicatorId;
+    delete this.settingsPopup.dataset.output;
+    this.bindDrawingSettingsPopup();
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
     if (field && field.focus) {
       field.focus();
@@ -2081,35 +2107,52 @@
     return true;
   };
 
-  Chart.prototype.bindDrawingTextPopup = function () {
+  Chart.prototype.openDrawingTextPopup = function (drawing, pointer) {
+    if (!drawing || !isEditableTextDrawing(drawing)) return false;
+    return this.openDrawingSettingsPopup(drawing, pointer);
+  };
+
+  Chart.prototype.bindDrawingSettingsPopup = function () {
     var self = this;
     this.settingsPopup.onclick = function (event) {
       var action = event.target && event.target.getAttribute('data-sce-popup-action');
       if (!action) return;
+      if (action === 'toggle-color') self.togglePopupColorPalette();
+      if (action === 'pick-color') self.pickPopupColor(event.target.getAttribute('data-sce-color'));
       if (action === 'close') self.closeIndicatorSettingsPopup();
       if (action === 'remove') {
         self.removeDrawing(self.settingsPopup.dataset.drawingId);
         self.closeIndicatorSettingsPopup();
       }
-      if (action === 'apply') self.applyDrawingTextPopup();
+      if (action === 'apply') self.applyDrawingSettingsPopup();
     };
     this.settingsPopup.onkeydown = function (event) {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
         event.preventDefault();
-        self.applyDrawingTextPopup();
+        self.applyDrawingSettingsPopup();
       }
       if (event.key === 'Escape') {
         event.preventDefault();
         self.closeIndicatorSettingsPopup();
       }
     };
-    this.settingsPopup.onfocusin = null;
+    this.settingsPopup.onfocusin = function (event) {
+      if (!closest(event.target, 'sce-color-control')) self.closePopupColorPalette();
+    };
   };
 
-  Chart.prototype.applyDrawingTextPopup = function () {
+  Chart.prototype.applyDrawingSettingsPopup = function () {
     var drawingId = this.settingsPopup.dataset.drawingId;
-    var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
-    this.updateDrawingText(drawingId, field ? field.value : '');
+    var textField = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
+    var color = this.settingsPopup.querySelector('[data-sce-popup-field="drawingColor"]');
+    var width = this.settingsPopup.querySelector('[data-sce-popup-field="drawingWidth"]');
+    var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="drawingLineStyle"]');
+    if (textField) this.updateDrawingText(drawingId, textField.value);
+    this.updateDrawingStyle(drawingId, {
+      color: color ? color.value : null,
+      width: width ? Number(width.value) : 2,
+      lineStyle: lineStyle ? lineStyle.value : 'solid'
+    });
     this.closeIndicatorSettingsPopup();
   };
 
@@ -2128,6 +2171,10 @@
     var ownerStudy = options.ownerStudyId ? this.document.indicators.filter(function (indicator) {
       return indicator.id === options.ownerStudyId;
     })[0] : null;
+    var baseStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {});
+    if (baseStyle.color && !(options.style && options.style.fill)) {
+      baseStyle.fill = colorWithAlpha(baseStyle.color, 0.14) || baseStyle.fill;
+    }
     var drawing = {
       id: options.id || uid('drawing'),
       type: type,
@@ -2135,7 +2182,7 @@
       ownerStudyId: options.ownerStudyId || null,
       points: clone(points || []),
       text: options.text || '',
-      style: merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {}),
+      style: sanitizeDrawingStyle(baseStyle),
       locked: !!options.locked,
       visible: options.visible !== false,
       zIndex: options.zIndex || this.document.drawings.length + 1
@@ -2163,6 +2210,19 @@
     return true;
   };
 
+  Chart.prototype.updateDrawingStyle = function (drawingId, patch) {
+    var drawing = this.getDrawingById(drawingId);
+    if (!drawing) return false;
+    var stylePatch = merge({}, patch || {});
+    if (stylePatch.color && stylePatch.fill == null) {
+      stylePatch.fill = colorWithAlpha(stylePatch.color, 0.14) || (drawing.style && drawing.style.fill);
+    }
+    drawing.style = sanitizeDrawingStyle(merge({}, drawing.style || {}, stylePatch));
+    this.draw();
+    this.emitChange('drawing:style', drawing);
+    return true;
+  };
+
   Chart.prototype.getAllShapes = function () {
     return clone(this.document.drawings);
   };
@@ -2178,6 +2238,7 @@
       },
       setProperties: function (patch) {
         merge(drawing, patch || {});
+        if (patch && patch.style) drawing.style = sanitizeDrawingStyle(drawing.style || {});
         self.draw();
         self.emitChange('drawing:update', drawing);
       },
@@ -2191,6 +2252,9 @@
       },
       setText: function (text) {
         return self.updateDrawingText(drawing.id, text);
+      },
+      setStyle: function (style) {
+        return self.updateDrawingStyle(drawing.id, style);
       }
     };
   };
@@ -2227,13 +2291,17 @@
     options = options || {};
     type = normalizeDrawingType(type);
     var tool = drawingToolDefinition(type);
+    var pendingStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {});
+    if (pendingStyle.color && !(options.style && options.style.fill)) {
+      pendingStyle.fill = colorWithAlpha(pendingStyle.color, 0.14) || pendingStyle.fill;
+    }
     this.pendingDrawing = {
       type: type,
       points: [],
       paneId: options.paneId || null,
       requiredPoints: drawingRequiredPointCount(type),
       text: options.text || tool.name,
-      style: merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {})
+      style: sanitizeDrawingStyle(pendingStyle)
     };
     this.selectedDrawingId = null;
     this.canvas.classList.add('sce-crosshair-drawing');
@@ -2299,11 +2367,11 @@
     if (this.pendingDrawing) return;
     var pointer = this.pointerFromEvent(event);
     var hit = this.hitTestDrawing(pointer);
-    if (!hit || !isEditableTextDrawing(hit.drawing)) return;
+    if (!hit) return;
     if (event.preventDefault) event.preventDefault();
     this.selectedDrawingId = hit.drawing.id;
     this.hoverDrawingId = hit.drawing.id;
-    this.openDrawingTextPopup(hit.drawing, pointer);
+    this.openDrawingSettingsPopup(hit.drawing, pointer);
     this.draw();
   };
 
@@ -4160,6 +4228,29 @@
       output[outputName] = style;
     });
     return output;
+  }
+
+  function sanitizeDrawingStyle(style) {
+    var output = merge({}, style || {});
+    if (output.lineWidth != null) output.width = output.lineWidth;
+    if (output.width != null) output.width = clamp(Number(output.width) || 1, 1, 16);
+    if (output.lineStyle != null) output.lineStyle = normalizeLineStyle(output.lineStyle);
+    delete output.lineWidth;
+    return output;
+  }
+
+  function colorWithAlpha(color, alpha) {
+    var hex = String(color || '').trim();
+    if (/^#[0-9a-f]{3}$/i.test(hex)) {
+      hex = '#' + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2) + hex.charAt(3) + hex.charAt(3);
+    }
+    if (/^#[0-9a-f]{6}$/i.test(hex)) {
+      var r = parseInt(hex.slice(1, 3), 16);
+      var g = parseInt(hex.slice(3, 5), 16);
+      var b = parseInt(hex.slice(5, 7), 16);
+      return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+    }
+    return null;
   }
 
   function approximateTextWidth(text) {

@@ -407,6 +407,31 @@ chart.handlePointerUp();
 assert.notDeepStrictEqual(chart.getDrawingById(drawingId).points.map((point) => point.value), bodyDragPointsBefore);
 assert.ok(chart.indicatorLegendItems(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId, last.time, chart.theme()).length > 0);
 
+let drawingStylePopupOpened = false;
+chart.handleCanvasDoubleClick({
+  clientX: bodyMidpoint.x,
+  clientY: bodyMidpoint.y,
+  preventDefault() {
+    drawingStylePopupOpened = true;
+  }
+});
+assert.strictEqual(drawingStylePopupOpened, true);
+assert.strictEqual(chart.settingsPopup.getAttribute('hidden'), null);
+assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-style');
+assert.strictEqual(chart.settingsPopup.dataset.drawingId, drawingId);
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingColor"') !== -1);
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingWidth"') !== -1);
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingLineStyle"') !== -1);
+assert.strictEqual(chart.updateDrawingStyle(drawingId, { color: '#ef4444', lineWidth: 5, lineStyle: 'dotted' }), true);
+assert.strictEqual(chart.getDrawingById(drawingId).style.color, '#ef4444');
+assert.strictEqual(chart.getDrawingById(drawingId).style.width, 5);
+assert.strictEqual(chart.getDrawingById(drawingId).style.lineStyle, 'dot');
+assert.strictEqual(chart.getDrawingById(drawingId).style.fill, 'rgba(239, 68, 68, 0.14)');
+assert.strictEqual(chart.getShapeById(drawingId).setStyle({ color: '#22c55e', width: 3, lineStyle: 'dash' }), true);
+assert.strictEqual(chart.getDrawingById(drawingId).style.color, '#22c55e');
+assert.strictEqual(chart.getDrawingById(drawingId).style.width, 3);
+assert.strictEqual(chart.getDrawingById(drawingId).style.lineStyle, 'dash');
+
 const textDrawingId = chart.addDrawing('text', [
   { time: data[data.length - 10].time, value: data[data.length - 10].close }
 ], { paneId: 'price', text: 'Original text' });
