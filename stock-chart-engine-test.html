@@ -478,11 +478,16 @@
       display: grid;
       grid-template-rows: minmax(0, 1fr);
       min-height: 0;
+      min-width: 0;
+      overflow: hidden;
       padding: 8px 8px 0 8px;
     }
 
     .test-chart {
       min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+      width: 100%;
     }
 
     .test-chart .sce-toolbar {
@@ -661,6 +666,12 @@
       .workbench {
         grid-column: 1 / 3;
         grid-template-columns: 44px minmax(0, 1fr);
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .chart-stage {
+        padding: 8px 0 0 8px;
       }
 
       .drawing-rail {

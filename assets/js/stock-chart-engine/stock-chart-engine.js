@@ -2855,7 +2855,8 @@
   Chart.prototype.resize = function () {
     var rect = this.canvasWrap.getBoundingClientRect();
     var dpr = window.devicePixelRatio || 1;
-    var width = Math.max(320, Math.floor(rect.width || this.options.width || 900));
+    var measuredWidth = rect.width || this.options.width || 900;
+    var width = Math.max(1, Math.floor(measuredWidth));
     var height = Math.max(280, Math.floor(rect.height || this.options.height || 560));
     this.canvas.width = Math.floor(width * dpr);
     this.canvas.height = Math.floor(height * dpr);
