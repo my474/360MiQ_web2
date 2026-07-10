@@ -281,6 +281,7 @@ const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
 const rsiPaneId = chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId;
 assert.ok(chart.paneControlHitZones.some((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize'));
+assert.ok(chart.paneControlsLayer.children.some((button) => button.innerHTML.indexOf('<svg') === 0));
 const rsiPaneOriginalIndex = chart.document.panes.findIndex((pane) => pane.id === rsiPaneId);
 assert.ok(chart.movePaneUp(rsiPaneId));
 assert.strictEqual(chart.document.panes.findIndex((pane) => pane.id === rsiPaneId), rsiPaneOriginalIndex - 1);
@@ -309,9 +310,12 @@ assert.ok(chart.paneRects.length > 1);
 
 const temporaryPaneId = chart.addPane({ title: 'Temporary pane' });
 chart.draw();
-const closeZone = chart.paneControlHitZones.find((zone) => zone.paneId === temporaryPaneId && zone.action === 'close');
-assert.ok(closeZone);
-chart.handleCanvasClick({ clientX: closeZone.x + 2, clientY: closeZone.y + 2 });
+const closeButton = chart.paneControlsLayer.children.find((button) => {
+  return button.getAttribute('data-sce-pane-id') === temporaryPaneId && button.getAttribute('data-sce-pane-action') === 'close';
+});
+assert.ok(closeButton);
+assert.ok(closeButton.innerHTML.indexOf('<svg') === 0);
+chart.paneControlsLayer.dispatchEvent({ type: 'click', target: closeButton });
 assert.ok(!chart.document.panes.some((pane) => pane.id === temporaryPaneId));
 
 const smaOnRsiId = chart.addIndicator('SMA', {

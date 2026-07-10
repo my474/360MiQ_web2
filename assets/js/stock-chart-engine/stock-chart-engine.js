@@ -1432,8 +1432,12 @@
     this.settingsPopup = document.createElement('div');
     this.settingsPopup.className = 'sce-settings-popup';
     this.settingsPopup.setAttribute('hidden', 'hidden');
+    this.paneControlsLayer = document.createElement('div');
+    this.paneControlsLayer.className = 'sce-pane-controls-layer';
+    this.paneControlsLayer.setAttribute('aria-hidden', 'false');
     this.canvasWrap.appendChild(this.canvas);
     this.canvasWrap.appendChild(this.settingsPopup);
+    this.canvasWrap.appendChild(this.paneControlsLayer);
     this.root.appendChild(this.toolbar);
     this.root.appendChild(this.canvasWrap);
     this.container.innerHTML = '';
@@ -1463,6 +1467,17 @@
       if (event.target && event.target.getAttribute('data-sce-chart-period') != null) {
         self.setPeriod(event.target.value);
       }
+    });
+    this.paneControlsLayer.addEventListener('click', function (event) {
+      var button = closestAttribute(event.target, 'data-sce-pane-action');
+      if (!button) return;
+      if (event.preventDefault) event.preventDefault();
+      if (event.stopPropagation) event.stopPropagation();
+      self.handlePaneControl({
+        paneId: button.getAttribute('data-sce-pane-id'),
+        action: button.getAttribute('data-sce-pane-action'),
+        disabled: button.getAttribute('aria-disabled') === 'true'
+      });
     });
 
     this.canvas.addEventListener('mousedown', function (event) {
@@ -2684,6 +2699,7 @@
       this.drawPane(this.paneRects[i], theme, i);
     }
     this.drawPaneResizeHandles(theme);
+    this.renderPaneControlOverlays();
     this.drawTimeAxis(theme);
     this.drawCrosshair(theme);
   };
@@ -2753,26 +2769,21 @@
   };
 
   Chart.prototype.drawPaneControls = function (rect, theme) {
-    var ctx = this.ctx;
     var panes = this.document.panes;
     var index = rect.paneIndex;
     var maximized = this.document.settings.maximizedPaneId === rect.paneId;
-    var size = 20;
+    var size = 24;
     var gap = 4;
-    var y = rect.y + 5;
+    var y = rect.y + 4;
     var actions = [
-      { action: 'move-up', label: '^', disabled: index <= 0 || !!this.document.settings.maximizedPaneId },
-      { action: 'move-down', label: 'v', disabled: index >= panes.length - 1 || !!this.document.settings.maximizedPaneId },
-      { action: 'maximize', label: maximized ? '=' : '[]', disabled: false },
-      { action: 'close', label: 'x', disabled: rect.paneId === 'price' }
+      { action: 'move-up', icon: 'chevron-up', label: 'Move pane up', disabled: index <= 0 || !!this.document.settings.maximizedPaneId },
+      { action: 'move-down', icon: 'chevron-down', label: 'Move pane down', disabled: index >= panes.length - 1 || !!this.document.settings.maximizedPaneId },
+      { action: 'maximize', icon: maximized ? 'minimize' : 'maximize', label: maximized ? 'Restore pane' : 'Maximize pane', disabled: false },
+      { action: 'close', icon: 'close', label: 'Close pane', disabled: rect.paneId === 'price' }
     ];
     var totalWidth = actions.length * size + (actions.length - 1) * gap;
     var x = Math.max(rect.x + 120, rect.x + rect.width - totalWidth - 10);
 
-    ctx.save();
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
     actions.forEach(function (item) {
       var zone = {
         x: x,
@@ -2781,19 +2792,35 @@
         height: size,
         paneId: rect.paneId,
         action: item.action,
+        icon: item.icon,
+        label: item.label,
         disabled: item.disabled
       };
       this.paneControlHitZones.push(zone);
-      ctx.globalAlpha = item.disabled ? 0.35 : 1;
-      ctx.fillStyle = theme.panelBackground;
-      ctx.fillRect(x, y, size, size);
-      ctx.strokeStyle = theme.border;
-      ctx.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
-      ctx.fillStyle = theme.text;
-      ctx.fillText(item.label, x + size / 2, y + size / 2 + 0.5);
       x += size + gap;
     }, this);
-    ctx.restore();
+  };
+
+  Chart.prototype.renderPaneControlOverlays = function () {
+    if (!this.paneControlsLayer) return;
+    this.paneControlsLayer.innerHTML = '';
+    this.paneControlHitZones.forEach(function (zone) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'sce-pane-control-button';
+      button.setAttribute('data-sce-pane-id', zone.paneId);
+      button.setAttribute('data-sce-pane-action', zone.action);
+      button.setAttribute('aria-label', zone.label);
+      button.setAttribute('title', zone.label);
+      button.setAttribute('aria-disabled', zone.disabled ? 'true' : 'false');
+      if (zone.disabled) button.setAttribute('disabled', 'disabled');
+      button.style.left = zone.x + 'px';
+      button.style.top = zone.y + 'px';
+      button.style.width = zone.width + 'px';
+      button.style.height = zone.height + 'px';
+      button.innerHTML = paneControlIconSvg(zone.icon);
+      this.paneControlsLayer.appendChild(button);
+    }, this);
   };
 
   Chart.prototype.drawPaneResizeHandles = function (theme) {
@@ -3937,6 +3964,26 @@
       element = element.parentNode;
     }
     return null;
+  }
+
+  function closestAttribute(element, attributeName) {
+    while (element) {
+      if (element.getAttribute && element.getAttribute(attributeName) != null) return element;
+      element = element.parentNode;
+    }
+    return null;
+  }
+
+  function paneControlIconSvg(icon) {
+    var common = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+    var paths = {
+      'chevron-up': '<path d="m7 14 5-5 5 5"/>',
+      'chevron-down': '<path d="m7 10 5 5 5-5"/>',
+      maximize: '<path d="M8 4H4v4"/><path d="M16 4h4v4"/><path d="M20 16v4h-4"/><path d="M8 20H4v-4"/><path d="M4 4l6 6"/><path d="m20 4-6 6"/><path d="m20 20-6-6"/><path d="m4 20 6-6"/>',
+      minimize: '<path d="M10 4v6H4"/><path d="M14 4v6h6"/><path d="M14 20v-6h6"/><path d="M10 20v-6H4"/>',
+      close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>'
+    };
+    return common + (paths[icon] || paths.maximize) + '</svg>';
   }
 
   function formatNumber(value) {
