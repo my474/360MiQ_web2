@@ -243,6 +243,7 @@
       grid-row: 2;
       grid-template-columns: 54px minmax(0, 1fr);
       min-height: 0;
+      overflow: visible;
     }
 
     .drawing-rail {
@@ -254,6 +255,8 @@
       gap: 6px;
       min-height: 0;
       padding: 8px 6px;
+      position: relative;
+      z-index: 6;
     }
 
     .drawing-tool-palette {
@@ -263,33 +266,117 @@
       flex-direction: column;
       gap: 4px;
       min-height: 0;
-      overflow: auto;
+      overflow: visible;
       padding: 0 2px;
       width: 100%;
     }
 
-    .drawing-tool-button {
+    .drawing-tool-group {
+      position: relative;
+    }
+
+    .drawing-group-button,
+    .drawing-tool-button,
+    .drawing-tool-flyout-button {
       align-items: center;
       background: transparent;
       border-color: transparent;
       color: var(--muted);
       display: flex;
-      height: 34px;
       justify-content: center;
       padding: 0;
+    }
+
+    .drawing-group-button,
+    .drawing-tool-button {
+      height: 34px;
       width: 34px;
     }
 
-    .drawing-tool-button svg {
+    .drawing-group-button svg,
+    .drawing-tool-button svg,
+    .drawing-tool-flyout-button svg {
       height: 20px;
       pointer-events: none;
       width: 20px;
     }
 
+    .drawing-group-button::after {
+      border-bottom: 3px solid transparent;
+      border-left: 3px solid currentColor;
+      border-top: 3px solid transparent;
+      content: "";
+      opacity: 0.65;
+      position: absolute;
+      right: 1px;
+      top: 14px;
+    }
+
+    .drawing-group-button:hover,
+    .drawing-group-button:focus,
+    .drawing-tool-flyout-button:hover,
+    .drawing-tool-flyout-button:focus {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--accent);
+      outline: none;
+    }
+
+    .drawing-group-button.is-open,
+    .drawing-group-button.is-selected,
+    .drawing-tool-flyout-button.is-selected,
     .drawing-tool-button.is-selected {
       background: rgba(96, 165, 250, 0.16);
       border-color: var(--accent);
       color: var(--accent);
+    }
+
+    .drawing-group-flyout {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: none;
+      left: 42px;
+      max-height: calc(100vh - 140px);
+      min-width: 248px;
+      overflow: auto;
+      padding: 8px;
+      position: absolute;
+      top: -4px;
+      z-index: 12;
+    }
+
+    .drawing-group-flyout.is-open {
+      display: block;
+    }
+
+    .drawing-group-title {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+    }
+
+    .drawing-group-grid {
+      display: grid;
+      gap: 4px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .drawing-tool-flyout-button {
+      gap: 8px;
+      height: 30px;
+      justify-content: flex-start;
+      min-width: 0;
+      padding: 0 8px;
+      width: 100%;
+    }
+
+    .drawing-tool-flyout-button span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .drawing-rail select {
@@ -724,50 +811,148 @@
         var select = document.getElementById('drawingTool');
         var palette = document.getElementById('drawingToolPalette');
         var grouped = {};
+        var categoryOrder = ['trend', 'fibonacci', 'geometric', 'annotation', 'pattern', 'measurement', 'marks'];
+        var categoryMeta = {
+          trend: { label: 'Trend Lines', primary: 'trendline' },
+          fibonacci: { label: 'Fib & Gann', primary: 'fib_retracement' },
+          geometric: { label: 'Shapes', primary: 'rectangle' },
+          annotation: { label: 'Text & Notes', primary: 'text' },
+          pattern: { label: 'Patterns', primary: 'xabcd_pattern' },
+          measurement: { label: 'Measure & Forecast', primary: 'date_and_price_range' },
+          marks: { label: 'Icons & Marks', primary: 'arrow_marker' }
+        };
+
+        function groupedCategory(tool) {
+          if (tool.category === 'icon' || tool.category === 'sticker' || tool.category === 'emoji') return 'marks';
+          return tool.category;
+        }
+
         select.innerHTML = '';
         palette.innerHTML = '';
         Object.keys(StockChartEngine.drawingTools).forEach(function (id) {
           var tool = StockChartEngine.drawingTools[id];
-          if (!grouped[tool.category]) grouped[tool.category] = [];
-          grouped[tool.category].push(tool);
+          var category = groupedCategory(tool);
+          if (!grouped[category]) grouped[category] = [];
+          grouped[category].push(tool);
         });
-        Object.keys(grouped).forEach(function (category) {
+        categoryOrder.concat(Object.keys(grouped).filter(function (category) {
+          return categoryOrder.indexOf(category) === -1;
+        })).forEach(function (category) {
+          if (!grouped[category]) return;
+          var meta = categoryMeta[category] || { label: category, primary: grouped[category][0].id };
           var group = document.createElement('optgroup');
-          group.label = category;
+          var railGroup = document.createElement('div');
+          var groupButton = document.createElement('button');
+          var flyout = document.createElement('div');
+          var flyoutTitle = document.createElement('div');
+          var flyoutGrid = document.createElement('div');
+          var primaryTool = StockChartEngine.drawingTools[meta.primary] || grouped[category][0];
+
+          group.label = meta.label;
+          railGroup.className = 'drawing-tool-group';
+          groupButton.type = 'button';
+          groupButton.className = 'drawing-group-button';
+          groupButton.dataset.category = category;
+          groupButton.dataset.primaryToolId = primaryTool.id;
+          groupButton.title = meta.label;
+          groupButton.setAttribute('aria-label', meta.label);
+          groupButton.setAttribute('aria-expanded', 'false');
+          groupButton.innerHTML = primaryTool.icon || StockChartEngine.drawingToolIconSvg(primaryTool.id);
+          flyout.className = 'drawing-group-flyout';
+          flyout.dataset.category = category;
+          flyout.setAttribute('role', 'menu');
+          flyout.setAttribute('aria-label', meta.label);
+          flyoutTitle.className = 'drawing-group-title';
+          flyoutTitle.textContent = meta.label;
+          flyoutGrid.className = 'drawing-group-grid';
+
+          groupButton.addEventListener('click', function () {
+            toggleDrawingToolGroup(category);
+          });
+
           grouped[category].forEach(function (tool) {
             var option = document.createElement('option');
+            var button = document.createElement('button');
             option.value = tool.id;
             option.textContent = tool.name;
             group.appendChild(option);
 
-            var button = document.createElement('button');
             button.type = 'button';
-            button.className = 'drawing-tool-button';
+            button.className = 'drawing-tool-flyout-button';
             button.dataset.toolId = tool.id;
+            button.dataset.category = category;
             button.title = tool.name;
             button.setAttribute('aria-label', tool.name);
+            button.setAttribute('role', 'menuitem');
             button.innerHTML = tool.icon || StockChartEngine.drawingToolIconSvg(tool.id);
+            button.insertAdjacentHTML('beforeend', '<span>' + escapeHtml(tool.name) + '</span>');
             button.addEventListener('click', function () {
               select.value = tool.id;
+              closeDrawingToolGroups();
               syncDrawingToolButtons();
               startSelectedDrawingTool();
             });
-            palette.appendChild(button);
+            flyoutGrid.appendChild(button);
           });
           select.appendChild(group);
+          flyout.appendChild(flyoutTitle);
+          flyout.appendChild(flyoutGrid);
+          railGroup.appendChild(groupButton);
+          railGroup.appendChild(flyout);
+          palette.appendChild(railGroup);
         });
         select.addEventListener('change', function () {
           syncDrawingToolButtons();
           startSelectedDrawingTool();
         });
+        document.addEventListener('click', function (event) {
+          if (!event.target.closest || !event.target.closest('.drawing-tool-palette')) closeDrawingToolGroups();
+        });
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') closeDrawingToolGroups();
+        });
         syncDrawingToolButtons();
         setDrawingToolStatus('');
       }
 
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+        });
+      }
+
+      function closeDrawingToolGroups() {
+        Array.prototype.forEach.call(document.querySelectorAll('.drawing-group-button'), function (button) {
+          button.classList.remove('is-open');
+          button.setAttribute('aria-expanded', 'false');
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.drawing-group-flyout'), function (flyout) {
+          flyout.classList.remove('is-open');
+        });
+      }
+
+      function toggleDrawingToolGroup(category) {
+        var groupButton = document.querySelector('.drawing-group-button[data-category="' + category + '"]');
+        var flyout = document.querySelector('.drawing-group-flyout[data-category="' + category + '"]');
+        var shouldOpen = !(flyout && flyout.classList.contains('is-open'));
+        closeDrawingToolGroups();
+        if (!shouldOpen || !groupButton || !flyout) return;
+        groupButton.classList.add('is-open');
+        groupButton.setAttribute('aria-expanded', 'true');
+        flyout.classList.add('is-open');
+      }
+
       function syncDrawingToolButtons() {
         var selected = document.getElementById('drawingTool').value;
-        Array.prototype.forEach.call(document.querySelectorAll('.drawing-tool-button'), function (button) {
+        var selectedCategory = null;
+        Array.prototype.forEach.call(document.querySelectorAll('.drawing-tool-flyout-button'), function (button) {
           var isSelected = button.dataset.toolId === selected;
+          button.classList.toggle('is-selected', isSelected);
+          button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+          if (isSelected) selectedCategory = button.dataset.category;
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.drawing-group-button'), function (button) {
+          var isSelected = button.dataset.category === selectedCategory;
           button.classList.toggle('is-selected', isSelected);
           button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         });
