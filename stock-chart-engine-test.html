@@ -7,23 +7,33 @@
   <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css">
   <style>
     :root {
-      --page-bg: #eef2f7;
+      --page-bg: #f3f5f8;
+      --chrome-bg: #ffffff;
       --panel-bg: #ffffff;
-      --border: #cbd5e1;
+      --panel-elevated: #ffffff;
+      --border: #d7dde7;
+      --border-strong: #c5cedd;
       --text: #111827;
-      --muted: #64748b;
+      --muted: #667085;
       --accent: #2563eb;
       --accent-text: #ffffff;
+      --danger: #dc2626;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
     }
 
     html[data-theme="dark"] {
-      --page-bg: #0f172a;
-      --panel-bg: #172033;
-      --border: #334155;
-      --text: #f8fafc;
-      --muted: #cbd5e1;
+      --page-bg: #0b111c;
+      --chrome-bg: #0f1724;
+      --panel-bg: #111a29;
+      --panel-elevated: #151f31;
+      --border: #253044;
+      --border-strong: #354258;
+      --text: #eef4ff;
+      --muted: #9aa8bd;
       --accent: #60a5fa;
-      --accent-text: #0f172a;
+      --accent-text: #07111f;
+      --danger: #f87171;
+      --shadow: 0 20px 55px rgba(0, 0, 0, 0.45);
     }
 
     html,
@@ -35,65 +45,142 @@
     body {
       background: var(--page-bg);
       color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     }
 
     .test-shell {
       box-sizing: border-box;
       display: grid;
-      gap: 10px;
-      grid-template-columns: minmax(0, 1fr) 300px;
-      grid-template-rows: auto minmax(0, 1fr);
+      gap: 0;
+      grid-template-columns: 54px minmax(0, 1fr);
+      grid-template-rows: 48px minmax(0, 1fr) auto;
       height: 100%;
-      padding: 10px;
-    }
-
-    .test-toolbar,
-    .test-sidebar {
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
+      overflow: hidden;
     }
 
     .test-toolbar {
       align-items: center;
+      background: var(--chrome-bg);
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
       display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
+      gap: 8px;
       grid-column: 1 / 3;
-      min-height: 44px;
-      padding: 7px;
+      min-width: 0;
+      overflow: visible;
+      padding: 6px 10px;
+      position: relative;
+      z-index: 5;
     }
 
-    .test-chart {
-      min-height: 500px;
-    }
-
-    .test-sidebar {
-      box-sizing: border-box;
+    .brand-lockup {
+      align-items: center;
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-height: 0;
-      overflow: auto;
-      padding: 10px;
+      gap: 9px;
+      min-width: 170px;
+    }
+
+    .brand-mark {
+      align-items: center;
+      background: var(--accent);
+      color: var(--accent-text);
+      display: flex;
+      font-size: 12px;
+      font-weight: 800;
+      height: 26px;
+      justify-content: center;
+      width: 26px;
+    }
+
+    .brand-title {
+      display: grid;
+      gap: 1px;
+    }
+
+    .brand-title strong {
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    .brand-title span {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .toolbar-group {
+      align-items: center;
+      display: flex;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .toolbar-spacer {
+      flex: 1 1 auto;
     }
 
     .test-group {
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
+      display: grid;
+      gap: 9px;
     }
 
-    .test-group:last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
+    .control-menu {
+      position: relative;
+    }
+
+    .control-menu summary {
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      font-size: 12px;
+      font-weight: 700;
+      gap: 6px;
+      height: 32px;
+      list-style: none;
+      padding: 0 10px;
+      white-space: nowrap;
+    }
+
+    .control-menu summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .control-menu[open] summary,
+    .control-menu summary:hover {
+      border-color: var(--accent);
+    }
+
+    .menu-panel {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow);
+      box-sizing: border-box;
+      color: var(--text);
+      display: grid;
+      gap: 12px;
+      min-width: 280px;
+      padding: 12px;
+      position: absolute;
+      right: 0;
+      top: 39px;
+      z-index: 20;
+    }
+
+    .menu-panel.wide {
+      min-width: 430px;
     }
 
     .test-label {
       color: var(--muted);
       display: block;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
       margin-bottom: 6px;
       text-transform: uppercase;
     }
@@ -103,10 +190,10 @@
     input {
       background: var(--panel-bg);
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: 3px;
       box-sizing: border-box;
       color: var(--text);
-      font: inherit;
+      font: 600 12px/1 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       height: 32px;
       max-width: 100%;
       padding: 0 9px;
@@ -121,7 +208,6 @@
       background: var(--accent);
       border-color: var(--accent);
       color: var(--accent-text);
-      font-weight: 700;
     }
 
     button:hover,
@@ -138,32 +224,60 @@
       grid-template-columns: 1fr 1fr;
     }
 
+    .icon-button {
+      align-items: center;
+      display: inline-flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
     .field-row {
       display: grid;
       gap: 6px;
       grid-template-columns: 1fr 84px;
     }
 
-    .drawing-tool-palette {
-      border: 1px solid var(--border);
+    .workbench {
       display: grid;
+      grid-column: 1 / 3;
+      grid-row: 2;
+      grid-template-columns: 54px minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    .drawing-rail {
+      align-items: center;
+      background: var(--chrome-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+      padding: 8px 6px;
+    }
+
+    .drawing-tool-palette {
+      align-content: start;
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
       gap: 4px;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      margin: 8px 0;
-      max-height: 214px;
+      min-height: 0;
       overflow: auto;
-      padding: 6px;
+      padding: 0 2px;
+      width: 100%;
     }
 
     .drawing-tool-button {
       align-items: center;
-      aspect-ratio: 1;
+      background: transparent;
+      border-color: transparent;
       color: var(--muted);
       display: flex;
-      height: auto;
+      height: 34px;
       justify-content: center;
-      min-height: 34px;
       padding: 0;
+      width: 34px;
     }
 
     .drawing-tool-button svg {
@@ -173,40 +287,149 @@
     }
 
     .drawing-tool-button.is-selected {
-      background: var(--accent);
+      background: rgba(96, 165, 250, 0.16);
       border-color: var(--accent);
-      color: var(--accent-text);
+      color: var(--accent);
+    }
+
+    .drawing-rail select {
+      display: none;
+    }
+
+    .drawing-rail > button {
+      align-items: center;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+      display: flex;
+      font-size: 11px;
+      font-weight: 800;
+      height: 34px;
+      justify-content: center;
+      padding: 0;
+      width: 34px;
+    }
+
+    .drawing-rail > button:hover,
+    .drawing-rail > button:focus {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--accent);
+    }
+
+    .rail-divider {
+      background: var(--border);
+      height: 1px;
+      width: 28px;
+    }
+
+    .chart-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+      min-height: 0;
+      padding: 8px 8px 0 8px;
+    }
+
+    .test-chart {
+      min-height: 0;
+    }
+
+    .test-chart .sce-toolbar {
+      display: none;
     }
 
     .drawing-tool-status {
+      align-items: center;
+      background: var(--chrome-bg);
+      border-top: 1px solid var(--border);
       color: var(--muted);
+      display: flex;
       font-size: 12px;
-      line-height: 1.35;
-      min-height: 32px;
+      grid-column: 1 / 3;
+      min-height: 36px;
+      padding: 0 12px;
+    }
+
+    .status-main {
+      color: var(--text);
+      font-weight: 700;
+      margin-right: 10px;
+    }
+
+    .state-drawer {
+      background: var(--chrome-bg);
+      border-top: 1px solid var(--border);
+      grid-column: 1 / 3;
+      max-height: 36vh;
+      overflow: auto;
+    }
+
+    .state-drawer summary {
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+      height: 32px;
+      letter-spacing: 0.06em;
+      line-height: 32px;
+      padding: 0 12px;
+      text-transform: uppercase;
     }
 
     .state-box {
       background: rgba(100, 116, 139, 0.1);
-      border: 1px solid var(--border);
+      border: 0;
+      border-top: 1px solid var(--border);
       color: var(--text);
       font-family: Consolas, Monaco, monospace;
       font-size: 11px;
       margin: 0;
-      min-height: 160px;
+      max-height: 260px;
+      min-height: 120px;
       overflow: auto;
-      padding: 8px;
+      padding: 10px 12px;
       white-space: pre-wrap;
+    }
+
+    .mobile-panel {
+      display: none;
     }
 
     @media (max-width: 880px) {
       .test-shell {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 62vh auto;
+        grid-template-columns: 44px minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
       }
 
-      .test-toolbar,
-      .test-sidebar {
-        grid-column: 1;
+      .test-toolbar {
+        flex-wrap: wrap;
+        grid-column: 1 / 3;
+        min-height: 86px;
+      }
+
+      .brand-lockup {
+        min-width: 140px;
+      }
+
+      .workbench {
+        grid-column: 1 / 3;
+        grid-template-columns: 44px minmax(0, 1fr);
+      }
+
+      .drawing-rail {
+        padding: 6px 4px;
+      }
+
+      .drawing-tool-button {
+        height: 32px;
+        width: 32px;
+      }
+
+      .menu-panel,
+      .menu-panel.wide {
+        left: auto;
+        max-width: calc(100vw - 18px);
+        min-width: 280px;
+        right: 0;
       }
     }
   </style>
@@ -214,134 +437,166 @@
 <body>
   <main class="test-shell">
     <div class="test-toolbar">
-      <button type="button" class="primary" id="toggleTheme">Toggle Theme</button>
-      <button type="button" id="lightTheme">Light Load</button>
-      <button type="button" id="darkTheme">Dark Load</button>
-      <button type="button" id="saveLayout">Save</button>
-      <button type="button" id="loadLayout">Load</button>
-      <button type="button" id="resetLayout">Reset Saved</button>
-      <button type="button" id="newData">New Demo Data</button>
-      <select id="chartType" aria-label="Chart type">
-        <option value="candlestick">Candlestick</option>
-        <option value="bar">Bar</option>
-        <option value="line">Line</option>
-      </select>
-      <select id="chartPeriod" aria-label="Chart period">
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-        <option value="quarterly">Quarterly</option>
-        <option value="yearly">Yearly</option>
-      </select>
+      <div class="brand-lockup">
+        <span class="brand-mark">3M</span>
+        <span class="brand-title">
+          <strong>Stock Chart Lab</strong>
+          <span>DEMO.TEST workspace</span>
+        </span>
+      </div>
+
+      <div class="toolbar-group">
+        <select id="chartType" aria-label="Chart type">
+          <option value="candlestick">Candlestick</option>
+          <option value="bar">Bar</option>
+          <option value="line">Line</option>
+        </select>
+        <select id="chartPeriod" aria-label="Chart period">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+
+      <details class="control-menu">
+        <summary>Indicators</summary>
+        <div class="menu-panel wide">
+          <div class="test-group">
+            <span class="test-label">Add Indicator</span>
+            <div class="field-row">
+              <select id="indicatorType">
+                <option value="SMA">SMA</option>
+                <option value="EMA">EMA</option>
+                <option value="RSI">RSI</option>
+                <option value="MACD">MACD</option>
+                <option value="BBANDS">Bollinger</option>
+                <option value="VOLUME">Volume</option>
+                <option value="ATR">ATR</option>
+                <option value="STOCH">Stochastic</option>
+                <option value="VWAP">VWAP</option>
+                <option value="WMA">WMA</option>
+                <option value="HMA">HMA</option>
+                <option value="DEMA">DEMA</option>
+                <option value="TEMA">TEMA</option>
+                <option value="ROC">ROC</option>
+                <option value="MOM">Momentum</option>
+                <option value="CCI">CCI</option>
+                <option value="MFI">MFI</option>
+                <option value="ADX">ADX</option>
+                <option value="OBV">OBV</option>
+                <option value="ADL">ADL</option>
+                <option value="CMF">CMF</option>
+                <option value="WILLIAMS">Williams %R</option>
+                <option value="DONCHIAN">Donchian</option>
+                <option value="KELTNER">Keltner</option>
+                <option value="ICHIMOKU">Ichimoku</option>
+                <option value="SUPERTREND">SuperTrend</option>
+                <option value="PIVOTS">Pivot Points</option>
+                <option value="PSAR">Parabolic SAR</option>
+                <option value="TRIX">TRIX</option>
+              </select>
+              <button type="button" id="addIndicator">Add</button>
+            </div>
+          </div>
+
+          <div class="test-group">
+            <span class="test-label">Stacks</span>
+            <div class="button-grid">
+              <button type="button" id="addRsiStack">RSI + SMA</button>
+              <button type="button" id="addMacdStack">MACD + EMA</button>
+              <button type="button" id="addMa20">MA20</button>
+              <button type="button" id="addMa200">MA200</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="control-menu">
+        <summary>Style</summary>
+        <div class="menu-panel">
+          <div class="test-group">
+            <span class="test-label">Pane Scale</span>
+            <div class="field-row">
+              <select id="paneScalePane"></select>
+              <button type="button" id="togglePaneScale">Log</button>
+            </div>
+          </div>
+
+          <div class="test-group">
+            <span class="test-label">Indicator Settings</span>
+            <select id="indicatorSettingsTarget"></select>
+            <div class="field-row">
+              <input id="indicatorPeriod" type="number" min="1" max="500" value="20" aria-label="Indicator period">
+              <select id="indicatorOutput" aria-label="Indicator output"></select>
+            </div>
+            <div class="field-row">
+              <input id="indicatorColor" type="color" value="#2563eb" aria-label="Series color">
+              <input id="indicatorWidth" type="number" min="1" max="8" value="2" aria-label="Line thickness">
+            </div>
+            <div class="field-row">
+              <select id="indicatorLineStyle" aria-label="Line style">
+                <option value="solid">Solid</option>
+                <option value="dash">Dash</option>
+                <option value="dot">Dot</option>
+              </select>
+              <button type="button" id="applyIndicatorSettings">Apply</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="control-menu">
+        <summary>Data</summary>
+        <div class="menu-panel">
+          <div class="button-grid">
+            <button type="button" id="newData">New Demo Data</button>
+            <button type="button" id="appendBar">Append Bar</button>
+            <button type="button" id="saveLayout">Save</button>
+            <button type="button" id="loadLayout">Load</button>
+            <button type="button" id="resetLayout">Reset Saved</button>
+          </div>
+        </div>
+      </details>
+
+      <div class="toolbar-spacer"></div>
+
+      <div class="toolbar-group">
+        <button type="button" id="lightTheme">Light</button>
+        <button type="button" id="darkTheme">Dark</button>
+        <button type="button" class="primary" id="toggleTheme">Toggle Theme</button>
+      </div>
     </div>
 
-    <section id="chart" class="test-chart"></section>
-
-    <aside class="test-sidebar">
-      <div class="test-group">
-        <span class="test-label">Indicators</span>
-        <div class="field-row">
-          <select id="indicatorType">
-            <option value="SMA">SMA</option>
-            <option value="EMA">EMA</option>
-            <option value="RSI">RSI</option>
-            <option value="MACD">MACD</option>
-            <option value="BBANDS">Bollinger</option>
-            <option value="VOLUME">Volume</option>
-            <option value="ATR">ATR</option>
-            <option value="STOCH">Stochastic</option>
-            <option value="VWAP">VWAP</option>
-            <option value="WMA">WMA</option>
-            <option value="HMA">HMA</option>
-            <option value="DEMA">DEMA</option>
-            <option value="TEMA">TEMA</option>
-            <option value="ROC">ROC</option>
-            <option value="MOM">Momentum</option>
-            <option value="CCI">CCI</option>
-            <option value="MFI">MFI</option>
-            <option value="ADX">ADX</option>
-            <option value="OBV">OBV</option>
-            <option value="ADL">ADL</option>
-            <option value="CMF">CMF</option>
-            <option value="WILLIAMS">Williams %R</option>
-            <option value="DONCHIAN">Donchian</option>
-            <option value="KELTNER">Keltner</option>
-            <option value="ICHIMOKU">Ichimoku</option>
-            <option value="SUPERTREND">SuperTrend</option>
-            <option value="PIVOTS">Pivot Points</option>
-            <option value="PSAR">Parabolic SAR</option>
-            <option value="TRIX">TRIX</option>
-          </select>
-          <button type="button" id="addIndicator">Add</button>
-        </div>
-      </div>
-
-      <div class="test-group">
-        <span class="test-label">Pane Scale</span>
-        <div class="field-row">
-          <select id="paneScalePane"></select>
-          <button type="button" id="togglePaneScale">Log</button>
-        </div>
-      </div>
-
-      <div class="test-group">
-        <span class="test-label">Indicator on Indicator</span>
-        <div class="button-grid">
-          <button type="button" id="addRsiStack">RSI + SMA</button>
-          <button type="button" id="addMacdStack">MACD + EMA</button>
-          <button type="button" id="addMa20">MA20</button>
-          <button type="button" id="addMa200">MA200</button>
-        </div>
-      </div>
-
-      <div class="test-group">
-        <span class="test-label">Indicator Settings</span>
-        <select id="indicatorSettingsTarget"></select>
-        <div class="field-row">
-          <input id="indicatorPeriod" type="number" min="1" max="500" value="20" aria-label="Indicator period">
-          <select id="indicatorOutput" aria-label="Indicator output"></select>
-        </div>
-        <div class="field-row">
-          <input id="indicatorColor" type="color" value="#2563eb" aria-label="Series color">
-          <input id="indicatorWidth" type="number" min="1" max="8" value="2" aria-label="Line thickness">
-        </div>
-        <div class="field-row">
-          <select id="indicatorLineStyle" aria-label="Line style">
-            <option value="solid">Solid</option>
-            <option value="dash">Dash</option>
-            <option value="dot">Dot</option>
-          </select>
-          <button type="button" id="applyIndicatorSettings">Apply</button>
-        </div>
-      </div>
-
-      <div class="test-group">
-        <span class="test-label">Annotations</span>
-        <div class="field-row">
-          <select id="drawingTool" aria-label="Drawing tool"></select>
-          <button type="button" id="addDrawingTool">Add Tool</button>
-        </div>
+    <section class="workbench">
+      <aside class="drawing-rail" aria-label="Drawing tools">
+        <select id="drawingTool" aria-label="Drawing tool"></select>
+        <button type="button" id="addDrawingTool" title="Place sample drawing" aria-label="Place sample drawing">+</button>
+        <div class="rail-divider"></div>
         <div id="drawingToolPalette" class="drawing-tool-palette" role="toolbar" aria-label="Drawing tools"></div>
-        <div id="drawingToolStatus" class="drawing-tool-status"></div>
-        <div class="button-grid">
-          <button type="button" id="addTrendline">Trendline</button>
-          <button type="button" id="addRectangle">Rectangle</button>
-          <button type="button" id="addPriceNote">Price Note</button>
-          <button type="button" id="addPaneNote">Pane Note</button>
-          <button type="button" id="removeShapes">Clear Drawings</button>
-        </div>
-      </div>
+        <div class="rail-divider"></div>
+        <button type="button" id="addTrendline" title="Sample trendline" aria-label="Sample trendline">TL</button>
+        <button type="button" id="addRectangle" title="Sample rectangle" aria-label="Sample rectangle">[]</button>
+        <button type="button" id="addPriceNote" title="Price note" aria-label="Price note">T</button>
+        <button type="button" id="addPaneNote" title="Pane note" aria-label="Pane note">N</button>
+        <button type="button" id="removeShapes" title="Clear drawings" aria-label="Clear drawings">X</button>
+      </aside>
 
-      <div class="test-group">
-        <span class="test-label">Live Data</span>
-        <button type="button" id="appendBar">Append Bar</button>
-      </div>
+      <section class="chart-stage">
+        <section id="chart" class="test-chart"></section>
+      </section>
+    </section>
 
-      <div class="test-group">
-        <span class="test-label">Serialized Chart Document</span>
-        <pre id="state" class="state-box"></pre>
-      </div>
-    </aside>
+    <div id="drawingToolStatus" class="drawing-tool-status">
+      <span class="status-main">Ready</span>
+      Select an icon, then click on the chart to place its points.
+    </div>
+
+    <details class="state-drawer">
+      <summary>Serialized chart document</summary>
+      <pre id="state" class="state-box"></pre>
+    </details>
   </main>
 
   <script src="assets/js/stock-chart-engine/stock-chart-engine.js"></script>
