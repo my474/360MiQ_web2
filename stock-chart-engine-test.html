@@ -246,6 +246,17 @@
       grid-template-columns: 1fr 84px;
     }
 
+    .indicator-picker {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .indicator-picker input,
+    .indicator-picker select {
+      width: 100%;
+    }
+
     .workbench {
       display: grid;
       grid-column: 1 / 3;
@@ -662,37 +673,41 @@
           <div class="test-group">
             <span class="test-label">Add Indicator</span>
             <div class="field-row">
-              <select id="indicatorType">
-                <option value="SMA">SMA</option>
-                <option value="EMA">EMA</option>
-                <option value="RSI">RSI</option>
-                <option value="MACD">MACD</option>
-                <option value="BBANDS">Bollinger</option>
-                <option value="VOLUME">Volume</option>
-                <option value="ATR">ATR</option>
-                <option value="STOCH">Stochastic</option>
-                <option value="VWAP">VWAP</option>
-                <option value="WMA">WMA</option>
-                <option value="HMA">HMA</option>
-                <option value="DEMA">DEMA</option>
-                <option value="TEMA">TEMA</option>
-                <option value="ROC">ROC</option>
-                <option value="MOM">Momentum</option>
-                <option value="CCI">CCI</option>
-                <option value="MFI">MFI</option>
-                <option value="ADX">ADX</option>
-                <option value="OBV">OBV</option>
-                <option value="ADL">ADL</option>
-                <option value="CMF">CMF</option>
-                <option value="WILLIAMS">Williams %R</option>
-                <option value="DONCHIAN">Donchian</option>
-                <option value="KELTNER">Keltner</option>
-                <option value="ICHIMOKU">Ichimoku</option>
-                <option value="SUPERTREND">SuperTrend</option>
-                <option value="PIVOTS">Pivot Points</option>
-                <option value="PSAR">Parabolic SAR</option>
-                <option value="TRIX">TRIX</option>
-              </select>
+              <div class="indicator-picker">
+                <input id="indicatorSearch" type="search" list="indicatorSuggestions" placeholder="Search indicators..." autocomplete="off" aria-label="Search indicators">
+                <datalist id="indicatorSuggestions"></datalist>
+                <select id="indicatorType" aria-label="Indicator type">
+                  <option value="SMA">SMA</option>
+                  <option value="EMA">EMA</option>
+                  <option value="RSI">RSI</option>
+                  <option value="MACD">MACD</option>
+                  <option value="BBANDS">Bollinger</option>
+                  <option value="VOLUME">Volume</option>
+                  <option value="ATR">ATR</option>
+                  <option value="STOCH">Stochastic</option>
+                  <option value="VWAP">VWAP</option>
+                  <option value="WMA">WMA</option>
+                  <option value="HMA">HMA</option>
+                  <option value="DEMA">DEMA</option>
+                  <option value="TEMA">TEMA</option>
+                  <option value="ROC">ROC</option>
+                  <option value="MOM">Momentum</option>
+                  <option value="CCI">CCI</option>
+                  <option value="MFI">MFI</option>
+                  <option value="ADX">ADX</option>
+                  <option value="OBV">OBV</option>
+                  <option value="ADL">ADL</option>
+                  <option value="CMF">CMF</option>
+                  <option value="WILLIAMS">Williams %R</option>
+                  <option value="DONCHIAN">Donchian</option>
+                  <option value="KELTNER">Keltner</option>
+                  <option value="ICHIMOKU">Ichimoku</option>
+                  <option value="SUPERTREND">SuperTrend</option>
+                  <option value="PIVOTS">Pivot Points</option>
+                  <option value="PSAR">Parabolic SAR</option>
+                  <option value="TRIX">TRIX</option>
+                </select>
+              </div>
               <button type="button" id="addIndicator">Add</button>
             </div>
           </div>
@@ -937,6 +952,77 @@
         if (previous && doc.panes.some(function (pane) { return pane.id === previous; })) {
           select.value = previous;
         }
+      }
+
+      function indicatorLabel(type, fallbackText) {
+        var definition = StockChartEngine.Indicators[type] || {};
+        var name = definition.name || fallbackText || type;
+        return name === type ? type : type + ' - ' + name;
+      }
+
+      function normalizeIndicatorQuery(value) {
+        return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+      }
+
+      function indicatorSearchItems() {
+        return Array.prototype.map.call(document.getElementById('indicatorType').options, function (option) {
+          var type = option.value;
+          var definition = StockChartEngine.Indicators[type] || {};
+          var name = definition.name || option.textContent || type;
+          return {
+            type: type,
+            name: name,
+            label: indicatorLabel(type, option.textContent),
+            query: normalizeIndicatorQuery(type + ' ' + name + ' ' + option.textContent)
+          };
+        });
+      }
+
+      function resolveIndicatorSearchValue() {
+        var input = document.getElementById('indicatorSearch');
+        var query = normalizeIndicatorQuery(input.value);
+        var items = indicatorSearchItems();
+        var exact = null;
+        var prefix = null;
+        var contains = null;
+        if (!query) return document.getElementById('indicatorType').value;
+        items.forEach(function (item) {
+          var typeQuery = normalizeIndicatorQuery(item.type);
+          var nameQuery = normalizeIndicatorQuery(item.name);
+          var labelQuery = normalizeIndicatorQuery(item.label);
+          if (!exact && (query === typeQuery || query === nameQuery || query === labelQuery)) exact = item.type;
+          if (!prefix && (typeQuery.indexOf(query) === 0 || nameQuery.indexOf(query) === 0 || labelQuery.indexOf(query) === 0)) prefix = item.type;
+          if (!contains && item.query.indexOf(query) !== -1) contains = item.type;
+        });
+        return exact || prefix || contains || null;
+      }
+
+      function syncIndicatorSearchFromSelect() {
+        var select = document.getElementById('indicatorType');
+        document.getElementById('indicatorSearch').value = indicatorLabel(select.value, select.options[select.selectedIndex] && select.options[select.selectedIndex].textContent);
+      }
+
+      function initIndicatorSearch() {
+        var input = document.getElementById('indicatorSearch');
+        var select = document.getElementById('indicatorType');
+        var datalist = document.getElementById('indicatorSuggestions');
+        datalist.innerHTML = '';
+        indicatorSearchItems().forEach(function (item) {
+          var option = document.createElement('option');
+          option.value = item.label;
+          datalist.appendChild(option);
+        });
+        input.addEventListener('input', function () {
+          var type = resolveIndicatorSearchValue();
+          if (type) select.value = type;
+        });
+        input.addEventListener('keydown', function (event) {
+          if (event.key !== 'Enter') return;
+          event.preventDefault();
+          document.getElementById('addIndicator').click();
+        });
+        select.addEventListener('change', syncIndicatorSearchFromSelect);
+        syncIndicatorSearchFromSelect();
       }
 
       function renderDrawingToolOptions() {
@@ -1226,7 +1312,9 @@
       });
 
       document.getElementById('addIndicator').addEventListener('click', function () {
-        var type = document.getElementById('indicatorType').value;
+        var type = resolveIndicatorSearchValue() || document.getElementById('indicatorType').value;
+        document.getElementById('indicatorType').value = type;
+        syncIndicatorSearchFromSelect();
         var definition = StockChartEngine.Indicators[type];
         var placement = definition && definition.defaultPanePolicy === 'source' ? 'source' : 'new';
         var id = chart.addIndicator(type, { placement: placement });
@@ -1323,6 +1411,7 @@
         renderState();
       });
 
+      initIndicatorSearch();
       renderDrawingToolOptions();
       seedChart(document.documentElement.getAttribute('data-theme') || 'light', true);
     }());
