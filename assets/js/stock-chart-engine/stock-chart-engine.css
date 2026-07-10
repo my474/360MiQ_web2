@@ -99,6 +99,11 @@
   width: 100%;
 }
 
+.sce-canvas:focus,
+.sce-canvas:focus-visible {
+  outline: none;
+}
+
 .sce-canvas.sce-crosshair-drawing {
   cursor: copy;
 }
