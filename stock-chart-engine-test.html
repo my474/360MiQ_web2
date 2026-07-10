@@ -491,6 +491,101 @@
       white-space: pre-wrap;
     }
 
+    .confirm-dialog[hidden] {
+      display: none;
+    }
+
+    .confirm-dialog {
+      align-items: center;
+      box-sizing: border-box;
+      display: grid;
+      inset: 0;
+      justify-items: center;
+      padding: 18px;
+      position: fixed;
+      z-index: 50;
+    }
+
+    .confirm-dialog__backdrop {
+      background: rgba(2, 8, 23, 0.54);
+      inset: 0;
+      position: absolute;
+    }
+
+    .confirm-dialog__panel {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      box-sizing: border-box;
+      color: var(--text);
+      display: grid;
+      gap: 14px;
+      max-width: calc(100vw - 32px);
+      padding: 16px;
+      position: relative;
+      width: 380px;
+    }
+
+    .confirm-dialog__header {
+      align-items: start;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 38px minmax(0, 1fr);
+    }
+
+    .confirm-dialog__icon {
+      align-items: center;
+      background: color-mix(in srgb, var(--danger) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--danger) 34%, transparent);
+      border-radius: 8px;
+      color: var(--danger);
+      display: flex;
+      height: 38px;
+      justify-content: center;
+      width: 38px;
+    }
+
+    .confirm-dialog__icon svg {
+      height: 20px;
+      width: 20px;
+    }
+
+    .confirm-dialog h2 {
+      font-size: 16px;
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    .confirm-dialog p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 6px 0 0;
+    }
+
+    .confirm-dialog__actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .confirm-dialog__actions button {
+      height: 34px;
+    }
+
+    button.danger-action {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #ffffff;
+    }
+
+    button.danger-action:hover,
+    button.danger-action:focus {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 24%, transparent);
+    }
+
     .mobile-panel {
       display: none;
     }
@@ -709,6 +804,31 @@
       <summary>Serialized chart document</summary>
       <pre id="state" class="state-box"></pre>
     </details>
+
+    <div id="clearDrawingsDialog" class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="clearDrawingsTitle" aria-describedby="clearDrawingsDescription" hidden>
+      <div class="confirm-dialog__backdrop" data-dialog-action="cancel"></div>
+      <section class="confirm-dialog__panel">
+        <div class="confirm-dialog__header">
+          <div class="confirm-dialog__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4h8v2"></path>
+              <path d="M19 6l-1 14H6L5 6"></path>
+              <path d="M10 11v5"></path>
+              <path d="M14 11v5"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 id="clearDrawingsTitle">Clear all drawings?</h2>
+            <p id="clearDrawingsDescription">This removes every drawing and annotation from the current chart. Indicators and price data stay untouched.</p>
+          </div>
+        </div>
+        <div class="confirm-dialog__actions">
+          <button type="button" id="cancelClearDrawings">Cancel</button>
+          <button type="button" id="confirmClearDrawings" class="danger-action">Clear drawings</button>
+        </div>
+      </section>
+    </div>
   </main>
 
   <script src="assets/js/stock-chart-engine/stock-chart-engine.js"></script>
@@ -1157,11 +1277,55 @@
         renderState();
       });
 
-      document.getElementById('removeShapes').addEventListener('click', function () {
+      var clearDrawingsDialog = document.getElementById('clearDrawingsDialog');
+      var clearDrawingsCancel = document.getElementById('cancelClearDrawings');
+      var clearDrawingsConfirm = document.getElementById('confirmClearDrawings');
+      var clearDrawingsPreviousFocus = null;
+
+      function closeClearDrawingsDialog() {
+        clearDrawingsDialog.setAttribute('hidden', 'hidden');
+        if (clearDrawingsPreviousFocus && typeof clearDrawingsPreviousFocus.focus === 'function') {
+          clearDrawingsPreviousFocus.focus();
+        }
+        clearDrawingsPreviousFocus = null;
+      }
+
+      function openClearDrawingsDialog() {
         if (!chart.getAllShapes().length) return;
-        if (!window.confirm('Clear all drawings from this chart?')) return;
+        clearDrawingsPreviousFocus = document.activeElement;
+        clearDrawingsDialog.removeAttribute('hidden');
+        clearDrawingsCancel.focus();
+      }
+
+      document.getElementById('removeShapes').addEventListener('click', openClearDrawingsDialog);
+      clearDrawingsCancel.addEventListener('click', closeClearDrawingsDialog);
+      clearDrawingsConfirm.addEventListener('click', function () {
         chart.removeAllShapes();
         renderState();
+        closeClearDrawingsDialog();
+      });
+      clearDrawingsDialog.addEventListener('click', function (event) {
+        if (event.target && event.target.getAttribute('data-dialog-action') === 'cancel') {
+          closeClearDrawingsDialog();
+        }
+      });
+      clearDrawingsDialog.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeClearDrawingsDialog();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = [clearDrawingsCancel, clearDrawingsConfirm];
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       });
 
       document.getElementById('appendBar').addEventListener('click', function () {
