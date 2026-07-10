@@ -1992,6 +1992,7 @@
     var output = legendHit.output || Object.keys(indicator.styles || { value: {} })[0];
     var style = indicator.styles && indicator.styles[output] || {};
     var length = indicator.inputs && indicator.inputs.length != null ? indicator.inputs.length : '';
+    var opacity = style.opacity == null ? 1 : style.opacity;
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title">',
       '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
@@ -2007,6 +2008,7 @@
       '</div>',
       '</div></label>',
       '<label>Thickness<input type="number" min="1" max="8" data-sce-popup-field="lineWidth" value="', escapeHtml(style.lineWidth || 2), '"></label>',
+      '<label>Opacity<input type="number" min="0.05" max="1" step="0.05" data-sce-popup-field="opacity" value="', escapeHtml(opacity), '"></label>',
       '<label>Style<select data-sce-popup-field="lineStyle">',
       '<option value="solid"', normalizeLineStyle(style.lineStyle) === 'solid' ? ' selected' : '', '>Solid</option>',
       '<option value="dash"', normalizeLineStyle(style.lineStyle) === 'dash' ? ' selected' : '', '>Dash</option>',
@@ -2023,7 +2025,7 @@
     this.settingsPopup.dataset.output = output;
     delete this.settingsPopup.dataset.drawingId;
     this.bindSettingsPopup();
-    this.positionSettingsPopup(pointer, 286, 286);
+    this.positionSettingsPopup(pointer, 286, 324);
   };
 
   Chart.prototype.bindSettingsPopup = function () {
@@ -2057,11 +2059,13 @@
     var color = this.settingsPopup.querySelector('[data-sce-popup-field="color"]');
     var lineWidth = this.settingsPopup.querySelector('[data-sce-popup-field="lineWidth"]');
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="lineStyle"]');
+    var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="opacity"]');
     var style = {};
     style[output] = {
       color: color ? color.value : '#2563eb',
       lineWidth: lineWidth ? Number(lineWidth.value) : 2,
-      lineStyle: lineStyle ? lineStyle.value : 'solid'
+      lineStyle: lineStyle ? lineStyle.value : 'solid',
+      opacity: opacity ? Number(opacity.value) : 1
     };
     this.updateIndicatorSettings(indicatorId, {
       inputs: length && length.value ? { length: Number(length.value) } : {},
@@ -2100,6 +2104,7 @@
     var color = style.color || this.theme().drawing;
     var width = style.width || 2;
     var lineStyle = normalizeLineStyle(style.lineStyle);
+    var opacity = style.opacity == null ? 1 : style.opacity;
     pointer = pointer || this.drawingTextPopupPoint(drawing);
     var textControls = canEditText
       ? ['<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>'].join('')
@@ -2118,6 +2123,7 @@
       '</div>',
       '</div></label>',
       '<label>Thickness<input type="number" min="1" max="16" data-sce-popup-field="drawingWidth" value="', escapeHtml(width), '"></label>',
+      '<label>Opacity<input type="number" min="0.05" max="1" step="0.05" data-sce-popup-field="drawingOpacity" value="', escapeHtml(opacity), '"></label>',
       '<label>Style<select data-sce-popup-field="drawingLineStyle">',
       '<option value="solid"', lineStyle === 'solid' ? ' selected' : '', '>Solid</option>',
       '<option value="dash"', lineStyle === 'dash' ? ' selected' : '', '>Dash</option>',
@@ -2134,7 +2140,7 @@
     delete this.settingsPopup.dataset.indicatorId;
     delete this.settingsPopup.dataset.output;
     this.bindDrawingSettingsPopup();
-    this.positionSettingsPopup(pointer, 306, canEditText ? 338 : 266);
+    this.positionSettingsPopup(pointer, 306, canEditText ? 376 : 304);
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
     if (field && field.focus) {
       field.focus();
@@ -2203,11 +2209,13 @@
     var color = this.settingsPopup.querySelector('[data-sce-popup-field="drawingColor"]');
     var width = this.settingsPopup.querySelector('[data-sce-popup-field="drawingWidth"]');
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="drawingLineStyle"]');
+    var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="drawingOpacity"]');
     if (textField) this.updateDrawingText(drawingId, textField.value);
     this.updateDrawingStyle(drawingId, {
       color: color ? color.value : null,
       width: width ? Number(width.value) : 2,
-      lineStyle: lineStyle ? lineStyle.value : 'solid'
+      lineStyle: lineStyle ? lineStyle.value : 'solid',
+      opacity: opacity ? Number(opacity.value) : 1
     });
     this.closeIndicatorSettingsPopup();
   };
@@ -3466,6 +3474,7 @@
     var first = visible[0].time;
     var last = visible[visible.length - 1].time;
     ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
     ctx.strokeStyle = style.color;
     ctx.lineWidth = style.lineWidth || 2;
     ctx.setLineDash(lineDashForStyle(style.lineStyle));
@@ -3500,6 +3509,7 @@
     var barWidth = clamp(spacing * 0.7, 1, 14);
     var zeroY = this.yForValue(Math.max(0, range.min), rect, range);
     ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
     data.forEach(function (point) {
       if (point.time < first || point.time > last || point.value == null) return;
       var x = this.xForTime(point.time, rect);
@@ -3529,7 +3539,7 @@
     var barWidth = clamp(spacing * 0.7, 1, 14);
     var overlayHeight = Math.max(36, Math.min(rect.height * 0.28, 130));
     var baseline = rect.y + rect.height - 2;
-    var opacity = clamp(Number(style.opacity == null ? 0.55 : style.opacity) || 0.55, 0.1, 1);
+    var opacity = normalizeOpacity(style.opacity, 0.55);
     ctx.save();
     ctx.globalAlpha = opacity;
     data.forEach(function (point) {
@@ -3610,6 +3620,7 @@
     }
 
     ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
     ctx.strokeStyle = style.color;
     ctx.fillStyle = style.fill;
     ctx.lineWidth = style.width || 2;
@@ -3740,6 +3751,7 @@
     }
 
     if (drawing.id === this.selectedDrawingId || drawing.id === this.hoverDrawingId) {
+      ctx.globalAlpha = 1;
       this.drawDrawingSelection(drawing, theme);
     }
     ctx.restore();
@@ -4324,6 +4336,7 @@
       var style = merge({}, styles[outputName] || {});
       if (style.lineWidth != null) style.lineWidth = clamp(Number(style.lineWidth) || 1, 1, 8);
       if (style.lineStyle != null) style.lineStyle = normalizeLineStyle(style.lineStyle);
+      if (style.opacity != null) style.opacity = normalizeOpacity(style.opacity, 1);
       output[outputName] = style;
     });
     return output;
@@ -4334,8 +4347,16 @@
     if (output.lineWidth != null) output.width = output.lineWidth;
     if (output.width != null) output.width = clamp(Number(output.width) || 1, 1, 16);
     if (output.lineStyle != null) output.lineStyle = normalizeLineStyle(output.lineStyle);
+    if (output.opacity != null) output.opacity = normalizeOpacity(output.opacity, 1);
     delete output.lineWidth;
     return output;
+  }
+
+  function normalizeOpacity(value, fallback) {
+    var opacity = Number(value);
+    if (!Number.isFinite(opacity)) opacity = fallback == null ? 1 : Number(fallback);
+    if (!Number.isFinite(opacity)) opacity = 1;
+    return clamp(opacity, 0.05, 1);
   }
 
   function colorWithAlpha(color, alpha) {

@@ -111,26 +111,40 @@ class FakeCanvas extends FakeElement {
 
   getContext() {
     const canvas = this;
-    const noop = () => {};
-    return {
-      beginPath: noop,
-      clearRect: noop,
-      closePath: noop,
-      fill: noop,
-      fillRect: noop,
-      fillText(text, x, y) {
-        canvas.commands.push({ type: 'fillText', text: String(text), x, y });
+    const ctx = {
+      _alphaStack: [],
+      globalAlpha: 1,
+      beginPath() {},
+      clearRect() {},
+      closePath() {},
+      fill() {
+        canvas.commands.push({ type: 'fill', alpha: this.globalAlpha });
       },
-      lineTo: noop,
-      moveTo: noop,
-      quadraticCurveTo: noop,
-      restore: noop,
-      save: noop,
-      setLineDash: noop,
-      setTransform: noop,
-      stroke: noop,
-      strokeRect: noop
+      fillRect(x, y, width, height) {
+        canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha });
+      },
+      fillText(text, x, y) {
+        canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha });
+      },
+      lineTo() {},
+      moveTo() {},
+      quadraticCurveTo() {},
+      restore() {
+        this.globalAlpha = this._alphaStack.length ? this._alphaStack.pop() : 1;
+      },
+      save() {
+        this._alphaStack.push(this.globalAlpha);
+      },
+      setLineDash() {},
+      setTransform() {},
+      stroke() {
+        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha });
+      },
+      strokeRect(x, y, width, height) {
+        canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha });
+      }
     };
+    return ctx;
   }
 }
 
@@ -305,13 +319,17 @@ assert.notStrictEqual(
 );
 assert.strictEqual(chart.updateIndicatorSettings(ma20Id, {
   inputs: { length: 50 },
-  styles: { value: { color: '#abcdef', lineWidth: 4, lineStyle: 'dash' } }
+  styles: { value: { color: '#abcdef', lineWidth: 4, lineStyle: 'dash', opacity: 0.35 } }
 }), true);
 const updatedMa = chart.document.indicators.find((indicator) => indicator.id === ma20Id);
 assert.strictEqual(updatedMa.inputs.length, 50);
 assert.strictEqual(updatedMa.styles.value.color, '#abcdef');
 assert.strictEqual(updatedMa.styles.value.lineWidth, 4);
 assert.strictEqual(updatedMa.styles.value.lineStyle, 'dash');
+assert.strictEqual(updatedMa.styles.value.opacity, 0.35);
+chart.canvas.commands = [];
+chart.draw();
+assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && command.alpha === 0.35));
 
 chart.setTheme('dark');
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
@@ -346,7 +364,8 @@ additionalIndicators.forEach((type) => {
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
-assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 286 - 8);
+assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
 const volumePaneIndicatorId = chart.addIndicator('VOLUME', { placement: 'new' });
 chart.canvas.commands = [];
 chart.draw();
@@ -466,16 +485,22 @@ assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-style');
 assert.strictEqual(chart.settingsPopup.dataset.drawingId, drawingId);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingColor"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingWidth"') !== -1);
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingOpacity"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingLineStyle"') !== -1);
-assert.strictEqual(chart.updateDrawingStyle(drawingId, { color: '#ef4444', lineWidth: 5, lineStyle: 'dotted' }), true);
+assert.strictEqual(chart.updateDrawingStyle(drawingId, { color: '#ef4444', lineWidth: 5, lineStyle: 'dotted', opacity: 0.4 }), true);
 assert.strictEqual(chart.getDrawingById(drawingId).style.color, '#ef4444');
 assert.strictEqual(chart.getDrawingById(drawingId).style.width, 5);
 assert.strictEqual(chart.getDrawingById(drawingId).style.lineStyle, 'dot');
+assert.strictEqual(chart.getDrawingById(drawingId).style.opacity, 0.4);
 assert.strictEqual(chart.getDrawingById(drawingId).style.fill, 'rgba(239, 68, 68, 0.14)');
-assert.strictEqual(chart.getShapeById(drawingId).setStyle({ color: '#22c55e', width: 3, lineStyle: 'dash' }), true);
+chart.canvas.commands = [];
+chart.draw();
+assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && command.alpha === 0.4));
+assert.strictEqual(chart.getShapeById(drawingId).setStyle({ color: '#22c55e', width: 3, lineStyle: 'dash', opacity: 0.6 }), true);
 assert.strictEqual(chart.getDrawingById(drawingId).style.color, '#22c55e');
 assert.strictEqual(chart.getDrawingById(drawingId).style.width, 3);
 assert.strictEqual(chart.getDrawingById(drawingId).style.lineStyle, 'dash');
+assert.strictEqual(chart.getDrawingById(drawingId).style.opacity, 0.6);
 
 const textDrawingId = chart.addDrawing('text', [
   { time: data[data.length - 10].time, value: data[data.length - 10].close }
