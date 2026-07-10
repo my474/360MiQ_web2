@@ -250,10 +250,51 @@
       display: grid;
       gap: 6px;
       min-width: 0;
+      position: relative;
     }
 
     .indicator-picker input {
       width: 100%;
+    }
+
+    .indicator-suggestions {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 2px;
+      left: 0;
+      max-height: 260px;
+      overflow: auto;
+      padding: 6px;
+      position: absolute;
+      right: 0;
+      top: 38px;
+      z-index: 30;
+    }
+
+    .indicator-suggestions[hidden] {
+      display: none;
+    }
+
+    .indicator-suggestion {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text);
+      height: 32px;
+      justify-content: flex-start;
+      overflow: hidden;
+      text-align: left;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .indicator-suggestion:hover,
+    .indicator-suggestion:focus,
+    .indicator-suggestion.is-active {
+      background: rgba(96, 165, 250, 0.14);
+      border-color: var(--accent);
+      outline: none;
     }
 
     .workbench {
@@ -673,8 +714,8 @@
             <span class="test-label">Add Indicator</span>
             <div class="field-row">
               <div class="indicator-picker">
-                <input id="indicatorSearch" type="search" list="indicatorSuggestions" placeholder="Search indicators..." autocomplete="off" aria-label="Search indicators">
-                <datalist id="indicatorSuggestions"></datalist>
+                <input id="indicatorSearch" type="search" placeholder="Search indicators..." autocomplete="off" aria-label="Search indicators" aria-controls="indicatorSuggestions" aria-expanded="false">
+                <div id="indicatorSuggestions" class="indicator-suggestions" role="listbox" hidden></div>
                 <select id="indicatorType" aria-label="Indicator type" hidden>
                   <option value="SMA">SMA</option>
                   <option value="EMA">EMA</option>
@@ -1004,23 +1045,117 @@
       function initIndicatorSearch() {
         var input = document.getElementById('indicatorSearch');
         var select = document.getElementById('indicatorType');
-        var datalist = document.getElementById('indicatorSuggestions');
-        datalist.innerHTML = '';
-        indicatorSearchItems().forEach(function (item) {
-          var option = document.createElement('option');
-          option.value = item.label;
-          datalist.appendChild(option);
-        });
+        var suggestions = document.getElementById('indicatorSuggestions');
+        var activeIndex = -1;
+
+        function filteredItems() {
+          var query = normalizeIndicatorQuery(input.value);
+          var items = indicatorSearchItems();
+          if (!query) return items.slice(0, 12);
+          return items.filter(function (item) {
+            return item.query.indexOf(query) !== -1;
+          }).sort(function (a, b) {
+            var aType = normalizeIndicatorQuery(a.type);
+            var bType = normalizeIndicatorQuery(b.type);
+            var aName = normalizeIndicatorQuery(a.name);
+            var bName = normalizeIndicatorQuery(b.name);
+            var aScore = aType.indexOf(query) === 0 ? 0 : aName.indexOf(query) === 0 ? 1 : 2;
+            var bScore = bType.indexOf(query) === 0 ? 0 : bName.indexOf(query) === 0 ? 1 : 2;
+            return aScore - bScore || a.label.localeCompare(b.label);
+          }).slice(0, 12);
+        }
+
+        function hideSuggestions() {
+          suggestions.setAttribute('hidden', 'hidden');
+          input.setAttribute('aria-expanded', 'false');
+          activeIndex = -1;
+        }
+
+        function setActiveSuggestion(index) {
+          var buttons = Array.prototype.slice.call(suggestions.querySelectorAll('.indicator-suggestion'));
+          activeIndex = buttons.length ? (index + buttons.length) % buttons.length : -1;
+          buttons.forEach(function (button, buttonIndex) {
+            button.classList.toggle('is-active', buttonIndex === activeIndex);
+            button.setAttribute('aria-selected', buttonIndex === activeIndex ? 'true' : 'false');
+          });
+        }
+
+        function chooseSuggestion(type) {
+          if (!type) return;
+          select.value = type;
+          syncIndicatorSearchFromSelect();
+          hideSuggestions();
+        }
+
+        function renderSuggestions() {
+          var items = filteredItems();
+          suggestions.innerHTML = '';
+          if (!items.length) {
+            hideSuggestions();
+            return;
+          }
+          items.forEach(function (item, index) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'indicator-suggestion';
+            button.dataset.indicatorType = item.type;
+            button.id = 'indicator-suggestion-' + index;
+            button.setAttribute('role', 'option');
+            button.setAttribute('aria-selected', 'false');
+            button.textContent = item.label;
+            button.addEventListener('mousedown', function (event) {
+              event.preventDefault();
+            });
+            button.addEventListener('click', function () {
+              chooseSuggestion(item.type);
+            });
+            suggestions.appendChild(button);
+          });
+          suggestions.removeAttribute('hidden');
+          input.setAttribute('aria-expanded', 'true');
+          setActiveSuggestion(0);
+        }
+
         input.addEventListener('input', function () {
           var type = resolveIndicatorSearchValue();
           if (type) select.value = type;
+          renderSuggestions();
+        });
+        input.addEventListener('focus', renderSuggestions);
+        input.addEventListener('blur', function () {
+          window.setTimeout(hideSuggestions, 80);
         });
         input.addEventListener('keydown', function (event) {
-          if (event.key !== 'Enter') return;
-          event.preventDefault();
-          document.getElementById('addIndicator').click();
+          var buttons = Array.prototype.slice.call(suggestions.querySelectorAll('.indicator-suggestion'));
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            if (suggestions.hasAttribute('hidden')) renderSuggestions();
+            else setActiveSuggestion(activeIndex + 1);
+            return;
+          }
+          if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (suggestions.hasAttribute('hidden')) renderSuggestions();
+            else setActiveSuggestion(activeIndex - 1);
+            return;
+          }
+          if (event.key === 'Escape') {
+            hideSuggestions();
+            return;
+          }
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            if (!suggestions.hasAttribute('hidden') && buttons[activeIndex]) {
+              chooseSuggestion(buttons[activeIndex].dataset.indicatorType);
+            } else {
+              document.getElementById('addIndicator').click();
+            }
+          }
         });
         select.addEventListener('change', syncIndicatorSearchFromSelect);
+        document.addEventListener('click', function (event) {
+          if (!event.target.closest || !event.target.closest('.indicator-picker')) hideSuggestions();
+        });
         syncIndicatorSearchFromSelect();
       }
 
