@@ -696,16 +696,6 @@
               <button type="button" id="addIndicator">Add</button>
             </div>
           </div>
-
-          <div class="test-group">
-            <span class="test-label">Stacks</span>
-            <div class="button-grid">
-              <button type="button" id="addRsiStack">RSI + SMA</button>
-              <button type="button" id="addMacdStack">MACD + EMA</button>
-              <button type="button" id="addMa20">MA20</button>
-              <button type="button" id="addMa200">MA200</button>
-            </div>
-          </div>
         </div>
       </details>
 
@@ -1245,25 +1235,6 @@
         renderState();
       });
 
-      document.getElementById('addRsiStack').addEventListener('click', function () {
-        if (!trackedRsiId) trackedRsiId = chart.addIndicator('RSI', { placement: 'new' });
-        chart.addIndicator('SMA', {
-          source: { kind: 'indicator', indicatorId: trackedRsiId, output: 'value' },
-          inputs: { length: 9 }
-        });
-        renderState();
-      });
-
-      document.getElementById('addMa20').addEventListener('click', function () {
-        chart.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
-        renderState();
-      });
-
-      document.getElementById('addMa200').addEventListener('click', function () {
-        chart.addIndicator('SMA', { placement: 'source', inputs: { length: 200 } });
-        renderState();
-      });
-
       document.getElementById('indicatorSettingsTarget').addEventListener('change', syncIndicatorSettingsFields);
       document.getElementById('indicatorOutput').addEventListener('change', syncIndicatorOutputFields);
       document.getElementById('applyIndicatorSettings').addEventListener('click', function () {
@@ -1280,15 +1251,6 @@
         chart.updateIndicatorSettings(indicator.id, {
           inputs: Number.isFinite(period) && period > 0 ? { length: period } : {},
           styles: style
-        });
-        renderState();
-      });
-
-      document.getElementById('addMacdStack').addEventListener('click', function () {
-        if (!trackedMacdId) trackedMacdId = chart.addIndicator('MACD', { placement: 'new' });
-        chart.addIndicator('EMA', {
-          source: { kind: 'indicator', indicatorId: trackedMacdId, output: 'macd' },
-          inputs: { length: 5 }
         });
         renderState();
       });
