@@ -208,6 +208,26 @@ assert.strictEqual(chart.document.settings.chartType, 'line');
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 
+assert.strictEqual(chart.document.settings.period, 'daily');
+assert.strictEqual(chart.document.interval, '1D');
+assert.strictEqual(chart.sourceBars.length, data.length);
+assert.strictEqual(chart.bars.length, data.length);
+assert.strictEqual(chart.setPeriod('weekly'), 'weekly');
+assert.strictEqual(chart.document.interval, '1W');
+assert.ok(chart.bars.length < chart.sourceBars.length);
+const weeklyCount = chart.bars.length;
+assert.strictEqual(chart.setPeriod('monthly'), 'monthly');
+assert.strictEqual(chart.document.interval, '1M');
+assert.ok(chart.bars.length < weeklyCount);
+assert.strictEqual(chart.setPeriod('quarterly'), 'quarterly');
+assert.strictEqual(chart.document.interval, '3M');
+assert.ok(chart.bars.length > 0);
+assert.strictEqual(chart.setPeriod('yearly'), 'yearly');
+assert.strictEqual(chart.document.interval, '1Y');
+assert.ok(chart.bars.length > 0);
+assert.strictEqual(chart.setPeriod('daily'), 'daily');
+assert.strictEqual(chart.bars.length, chart.sourceBars.length);
+
 chart.setSeriesColorOrder(['#111111', '#222222', '#333333']);
 const ma20Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
 const ma200Id = chart.addIndicator('SMA', { placement: 'source', inputs: { length: 200 } });

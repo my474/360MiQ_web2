@@ -226,6 +226,13 @@
         <option value="bar">Bar</option>
         <option value="line">Line</option>
       </select>
+      <select id="chartPeriod" aria-label="Chart period">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="quarterly">Quarterly</option>
+        <option value="yearly">Yearly</option>
+      </select>
     </div>
 
     <section id="chart" class="test-chart"></section>
@@ -378,6 +385,7 @@
         });
         chart.on('save', renderState);
         document.getElementById('chartType').value = chart.document.settings.chartType;
+        document.getElementById('chartPeriod').value = chart.document.settings.period || 'daily';
         renderState();
       }
 
@@ -419,6 +427,9 @@
           symbol: doc.symbol,
           interval: doc.interval,
           chartType: doc.settings.chartType,
+          period: doc.settings.period,
+          renderedBars: chart.bars.length,
+          sourceBars: chart.sourceBars.length,
           panes: doc.panes.map(function (pane) {
             return { id: pane.id, title: pane.title, height: pane.height, scaleMode: pane.scaleMode };
           }),
@@ -594,6 +605,7 @@
         trackedRsiId = findFirstIndicator('RSI');
         trackedMacdId = findFirstIndicator('MACD');
         document.getElementById('chartType').value = chart.document.settings.chartType;
+        document.getElementById('chartPeriod').value = chart.document.settings.period || 'daily';
         renderState();
       });
 
@@ -612,6 +624,11 @@
 
       document.getElementById('chartType').addEventListener('change', function () {
         chart.setChartType(this.value);
+        renderState();
+      });
+
+      document.getElementById('chartPeriod').addEventListener('change', function () {
+        chart.setPeriod(this.value);
         renderState();
       });
 

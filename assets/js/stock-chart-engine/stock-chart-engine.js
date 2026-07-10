@@ -20,6 +20,13 @@
     '#dc2626', '#4f46e5', '#65a30d', '#ea580c', '#0f766e', '#9333ea',
     '#be123c', '#0369a1', '#ca8a04', '#16a34a', '#c2410c', '#7f1d1d'
   ];
+  var CHART_PERIODS = {
+    daily: { id: 'daily', interval: '1D', label: 'Daily' },
+    weekly: { id: 'weekly', interval: '1W', label: 'Weekly' },
+    monthly: { id: 'monthly', interval: '1M', label: 'Monthly' },
+    quarterly: { id: 'quarterly', interval: '3M', label: 'Quarterly' },
+    yearly: { id: 'yearly', interval: '1Y', label: 'Yearly' }
+  };
 
   var DRAWING_TOOLS = createDrawingTools();
 
@@ -325,6 +332,82 @@
     }).sort(function (a, b) {
       return a.time - b.time;
     });
+  }
+
+  function normalizePeriod(period) {
+    var normalized = String(period || '').toLowerCase();
+    var map = {
+      d: 'daily',
+      day: 'daily',
+      daily: 'daily',
+      '1d': 'daily',
+      w: 'weekly',
+      week: 'weekly',
+      weekly: 'weekly',
+      '1w': 'weekly',
+      m: 'monthly',
+      month: 'monthly',
+      monthly: 'monthly',
+      '1m': 'monthly',
+      q: 'quarterly',
+      quarter: 'quarterly',
+      quarterly: 'quarterly',
+      '3m': 'quarterly',
+      y: 'yearly',
+      year: 'yearly',
+      yearly: 'yearly',
+      '1y': 'yearly'
+    };
+    return map[normalized] || 'daily';
+  }
+
+  function periodInterval(period) {
+    var normalized = normalizePeriod(period);
+    return CHART_PERIODS[normalized].interval;
+  }
+
+  function periodBucketStart(time, period) {
+    var date = new Date(time * 1000);
+    var year = date.getUTCFullYear();
+    var month = date.getUTCMonth();
+    var day = date.getUTCDate();
+    if (period === 'weekly') {
+      var dayOfWeek = date.getUTCDay() || 7;
+      var start = Date.UTC(year, month, day);
+      return Math.floor((start - (dayOfWeek - 1) * 86400000) / 1000);
+    }
+    if (period === 'monthly') return Math.floor(Date.UTC(year, month, 1) / 1000);
+    if (period === 'quarterly') return Math.floor(Date.UTC(year, Math.floor(month / 3) * 3, 1) / 1000);
+    if (period === 'yearly') return Math.floor(Date.UTC(year, 0, 1) / 1000);
+    return Math.floor(Date.UTC(year, month, day) / 1000);
+  }
+
+  function aggregateBars(bars, period) {
+    var normalizedPeriod = normalizePeriod(period);
+    var normalizedBars = normalizeBars(bars);
+    if (normalizedPeriod === 'daily') return normalizedBars;
+    var buckets = [];
+    var current = null;
+    normalizedBars.forEach(function (bar) {
+      var bucketTime = periodBucketStart(bar.time, normalizedPeriod);
+      if (!current || current.time !== bucketTime) {
+        current = {
+          time: bucketTime,
+          open: bar.open,
+          high: bar.high,
+          low: bar.low,
+          close: bar.close,
+          volume: bar.volume
+        };
+        buckets.push(current);
+        return;
+      }
+      current.high = Math.max(current.high, bar.high);
+      current.low = Math.min(current.low, bar.low);
+      current.close = bar.close;
+      current.volume += bar.volume;
+    });
+    return buckets;
   }
 
   function seriesValueAt(data, time) {
@@ -1148,11 +1231,12 @@
     return {
       schemaVersion: SCHEMA_VERSION,
       symbol: options.symbol || 'DEMO',
-      interval: options.interval || '1D',
+      interval: periodInterval(options.period || options.interval || 'daily'),
       theme: options.theme || null,
       visibleRange: null,
       settings: {
         chartType: normalizeChartType(options.chartType || 'candlestick'),
+        period: normalizePeriod(options.period || options.interval || 'daily'),
         priceField: 'close',
         seriesColorIndex: 0,
         seriesColorOrder: DEFAULT_SERIES_COLOR_ORDER.slice(),
@@ -1168,6 +1252,7 @@
   }
 
   function migrateDocument(doc) {
+    var savedPeriod = doc && doc.settings && doc.settings.period || doc && doc.interval;
     var migrated = merge(createDefaultDocument(), doc || {});
     migrated.schemaVersion = SCHEMA_VERSION;
     migrated.panes = migrated.panes && migrated.panes.length ? migrated.panes : createDefaultDocument().panes;
@@ -1178,6 +1263,8 @@
     migrated.drawings = migrated.drawings || [];
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
+    migrated.settings.period = normalizePeriod(savedPeriod || migrated.settings.period || migrated.interval);
+    migrated.interval = periodInterval(migrated.settings.period);
     migrated.settings.seriesColorOrder = Array.isArray(migrated.settings.seriesColorOrder) && migrated.settings.seriesColorOrder.length ? migrated.settings.seriesColorOrder : DEFAULT_SERIES_COLOR_ORDER.slice();
     migrated.settings.seriesColorIndex = Math.max(0, toNumber(migrated.settings.seriesColorIndex, 0));
     return migrated;
@@ -1277,8 +1364,9 @@
     this.layoutId = options.layoutId || 'default';
     this.storage = options.storage || new LocalStorageAdapter(options.storagePrefix);
     this.events = new EventBus();
-    this.bars = normalizeBars(options.data || []);
     this.document = migrateDocument(options.document || (options.load !== false ? this.storage.load(this.layoutId) : null) || createDefaultDocument(options));
+    this.sourceBars = normalizeBars(options.data || []);
+    this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.document.theme = this.document.theme || getThemeName(options.theme);
     this.indicatorResults = {};
     this.paneRects = [];
@@ -1311,6 +1399,13 @@
       '<option value="candlestick">Candlestick</option>',
       '<option value="bar">Bar</option>',
       '<option value="line">Line</option>',
+      '</select>',
+      '<select class="sce-chart-period" data-sce-chart-period aria-label="Chart period">',
+      '<option value="daily">Daily</option>',
+      '<option value="weekly">Weekly</option>',
+      '<option value="monthly">Monthly</option>',
+      '<option value="quarterly">Quarterly</option>',
+      '<option value="yearly">Yearly</option>',
       '</select>',
       '<button type="button" data-sce-action="sma">SMA</button>',
       '<button type="button" data-sce-action="rsi">RSI</button>',
@@ -1356,6 +1451,9 @@
     this.toolbar.addEventListener('change', function (event) {
       if (event.target && event.target.getAttribute('data-sce-chart-type') != null) {
         self.setChartType(event.target.value);
+      }
+      if (event.target && event.target.getAttribute('data-sce-chart-period') != null) {
+        self.setPeriod(event.target.value);
       }
     });
 
@@ -1416,6 +1514,7 @@
 
   Chart.prototype.restore = function (doc) {
     this.document = migrateDocument(doc);
+    this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.compute();
     this.resize();
     this.emitChange('restore', {});
@@ -1445,22 +1544,24 @@
   };
 
   Chart.prototype.setData = function (bars) {
-    this.bars = normalizeBars(bars);
+    this.sourceBars = normalizeBars(bars);
+    this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.compute();
     this.fitContent();
-    this.emitChange('data', { barCount: this.bars.length });
+    this.emitChange('data', { barCount: this.bars.length, sourceBarCount: this.sourceBars.length });
   };
 
   Chart.prototype.updateBar = function (bar) {
     var normalized = normalizeBar(bar);
     if (!normalized.time) return;
-    var last = this.bars[this.bars.length - 1];
-    if (last && last.time === normalized.time) this.bars[this.bars.length - 1] = normalized;
-    else this.bars.push(normalized);
-    this.bars.sort(function (a, b) { return a.time - b.time; });
+    var last = this.sourceBars[this.sourceBars.length - 1];
+    if (last && last.time === normalized.time) this.sourceBars[this.sourceBars.length - 1] = normalized;
+    else this.sourceBars.push(normalized);
+    this.sourceBars.sort(function (a, b) { return a.time - b.time; });
+    this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.compute();
     this.draw();
-    this.emitChange('bar', normalized);
+    this.emitChange('bar', { bar: normalized, period: this.document.settings.period, barCount: this.bars.length });
   };
 
   Chart.prototype.setChartType = function (chartType) {
@@ -1468,6 +1569,23 @@
     this.draw();
     this.emitChange('chart:type', { chartType: this.document.settings.chartType });
     return this.document.settings.chartType;
+  };
+
+  Chart.prototype.setPeriod = function (period) {
+    var nextPeriod = normalizePeriod(period);
+    this.document.settings.period = nextPeriod;
+    this.document.interval = periodInterval(nextPeriod);
+    this.bars = aggregateBars(this.sourceBars, nextPeriod);
+    this.compute();
+    this.fitContent();
+    this.draw();
+    this.emitChange('chart:period', {
+      period: nextPeriod,
+      interval: this.document.interval,
+      barCount: this.bars.length,
+      sourceBarCount: this.sourceBars.length
+    });
+    return nextPeriod;
   };
 
   Chart.prototype.setPaneScaleMode = function (paneId, scaleMode) {
@@ -2081,6 +2199,8 @@
     if (title) title.textContent = this.document.symbol + ' ' + this.document.interval;
     var chartType = this.toolbar.querySelector('[data-sce-chart-type]');
     if (chartType) chartType.value = this.document.settings.chartType;
+    var chartPeriod = this.toolbar.querySelector('[data-sce-chart-period]');
+    if (chartPeriod) chartPeriod.value = this.document.settings.period;
     var themeButton = this.toolbar.querySelector('[data-sce-action="theme"]');
     if (themeButton) themeButton.textContent = this.document.theme === 'dark' ? 'Light' : 'Dark';
     var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
@@ -3615,9 +3735,11 @@
     Indicators: Indicators,
     drawingTools: DRAWING_TOOLS,
     drawingToolIconSvg: drawingToolIconSvg,
+    chartPeriods: CHART_PERIODS,
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,
     computeIndicatorGraph: computeIndicatorGraph,
+    aggregateBars: aggregateBars,
     normalizeBars: normalizeBars,
     createDemoData: createDemoData,
     themes: {
