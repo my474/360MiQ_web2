@@ -197,18 +197,31 @@
 }
 
 .sce-settings-popup input,
-.sce-settings-popup select {
+.sce-settings-popup select,
+.sce-settings-popup textarea {
   background: var(--sce-panel);
   border: 1px solid var(--sce-border);
   border-radius: 4px;
   box-sizing: border-box;
   color: var(--sce-text);
+  font: inherit;
+}
+
+.sce-settings-popup input,
+.sce-settings-popup select {
   height: 28px;
   padding: 0 7px;
 }
 
+.sce-settings-popup textarea {
+  min-height: 82px;
+  padding: 7px;
+  resize: vertical;
+}
+
 .sce-settings-popup input:focus,
 .sce-settings-popup select:focus,
+.sce-settings-popup textarea:focus,
 .sce-settings-title button:focus,
 .sce-settings-actions button:focus {
   border-color: #2563eb;
@@ -217,6 +230,7 @@
 
 .sce-root[data-sce-theme="dark"] .sce-settings-popup input:focus,
 .sce-root[data-sce-theme="dark"] .sce-settings-popup select:focus,
+.sce-root[data-sce-theme="dark"] .sce-settings-popup textarea:focus,
 .sce-root[data-sce-theme="dark"] .sce-settings-title button:focus,
 .sce-root[data-sce-theme="dark"] .sce-settings-actions button:focus {
   border-color: #60a5fa;

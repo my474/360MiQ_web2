@@ -1512,6 +1512,9 @@
     this.canvas.addEventListener('click', function (event) {
       self.handleCanvasClick(event);
     });
+    this.canvas.addEventListener('dblclick', function (event) {
+      self.handleCanvasDoubleClick(event);
+    });
     this.canvas.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && self.pendingDrawing) {
         event.preventDefault();
@@ -1999,6 +2002,7 @@
     this.settingsPopup.onfocusin = function (event) {
       if (!closest(event.target, 'sce-color-control')) self.closePopupColorPalette();
     };
+    this.settingsPopup.onkeydown = null;
   };
 
   Chart.prototype.closeIndicatorSettingsPopup = function () {
@@ -2046,6 +2050,74 @@
     this.closePopupColorPalette();
   };
 
+  Chart.prototype.openDrawingTextPopup = function (drawing, pointer) {
+    if (!drawing || !isEditableTextDrawing(drawing)) return false;
+    var tool = drawingToolDefinition(drawing.type);
+    pointer = pointer || this.drawingTextPopupPoint(drawing);
+    var left = clamp((pointer && pointer.x || 20) + 12, 8, Math.max(8, this.canvas.clientWidth - 306));
+    var top = clamp((pointer && pointer.y || 20) + 12, 8, Math.max(8, this.canvas.clientHeight - 190));
+    this.settingsPopup.style.left = left + 'px';
+    this.settingsPopup.style.top = top + 'px';
+    this.settingsPopup.innerHTML = [
+      '<div class="sce-settings-title">',
+      '<strong>', escapeHtml(tool.name || 'Text'), '</strong>',
+      '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
+      '</div>',
+      '<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>',
+      '<div class="sce-settings-actions">',
+      '<button type="button" data-sce-popup-action="remove">Remove</button>',
+      '<button type="button" data-sce-popup-action="apply">Apply</button>',
+      '</div>'
+    ].join('');
+    this.settingsPopup.removeAttribute('hidden');
+    this.settingsPopup.dataset.mode = 'drawing-text';
+    this.settingsPopup.dataset.drawingId = drawing.id;
+    this.bindDrawingTextPopup();
+    var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
+    if (field && field.focus) {
+      field.focus();
+      if (field.select) field.select();
+    }
+    return true;
+  };
+
+  Chart.prototype.bindDrawingTextPopup = function () {
+    var self = this;
+    this.settingsPopup.onclick = function (event) {
+      var action = event.target && event.target.getAttribute('data-sce-popup-action');
+      if (!action) return;
+      if (action === 'close') self.closeIndicatorSettingsPopup();
+      if (action === 'remove') {
+        self.removeDrawing(self.settingsPopup.dataset.drawingId);
+        self.closeIndicatorSettingsPopup();
+      }
+      if (action === 'apply') self.applyDrawingTextPopup();
+    };
+    this.settingsPopup.onkeydown = function (event) {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        self.applyDrawingTextPopup();
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        self.closeIndicatorSettingsPopup();
+      }
+    };
+    this.settingsPopup.onfocusin = null;
+  };
+
+  Chart.prototype.applyDrawingTextPopup = function () {
+    var drawingId = this.settingsPopup.dataset.drawingId;
+    var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
+    this.updateDrawingText(drawingId, field ? field.value : '');
+    this.closeIndicatorSettingsPopup();
+  };
+
+  Chart.prototype.drawingTextPopupPoint = function (drawing) {
+    var points = this.drawingScreenPoints(drawing).filter(function (point) { return point.y != null; });
+    return points[0] || { x: 20, y: 20 };
+  };
+
   Chart.prototype.moveIndicatorToPane = function (indicatorId, paneId) {
     return this.updateIndicator(indicatorId, { paneId: paneId });
   };
@@ -2082,6 +2154,15 @@
     this.emitChange('drawing:remove', { drawingId: drawingId });
   };
 
+  Chart.prototype.updateDrawingText = function (drawingId, text) {
+    var drawing = this.getDrawingById(drawingId);
+    if (!drawing || !isEditableTextDrawing(drawing)) return false;
+    drawing.text = String(text == null ? '' : text);
+    this.draw();
+    this.emitChange('drawing:text', drawing);
+    return true;
+  };
+
   Chart.prototype.getAllShapes = function () {
     return clone(this.document.drawings);
   };
@@ -2107,6 +2188,9 @@
       },
       remove: function () {
         self.removeDrawing(drawing.id);
+      },
+      setText: function (text) {
+        return self.updateDrawingText(drawing.id, text);
       }
     };
   };
@@ -2204,9 +2288,23 @@
       this.pendingDrawing = null;
       this.canvas.classList.remove('sce-crosshair-drawing');
       this.draw();
+      var createdDrawing = this.getDrawingById(drawingId);
+      if (isEditableTextDrawing(createdDrawing)) this.openDrawingTextPopup(createdDrawing, pointer);
     } else {
       this.draw();
     }
+  };
+
+  Chart.prototype.handleCanvasDoubleClick = function (event) {
+    if (this.pendingDrawing) return;
+    var pointer = this.pointerFromEvent(event);
+    var hit = this.hitTestDrawing(pointer);
+    if (!hit || !isEditableTextDrawing(hit.drawing)) return;
+    if (event.preventDefault) event.preventDefault();
+    this.selectedDrawingId = hit.drawing.id;
+    this.hoverDrawingId = hit.drawing.id;
+    this.openDrawingTextPopup(hit.drawing, pointer);
+    this.draw();
   };
 
   Chart.prototype.handlePointerDown = function (event) {
@@ -3937,6 +4035,12 @@
   function drawingRequiredPointCount(type) {
     var tool = drawingToolDefinition(type);
     return Math.max(1, tool.points || 1);
+  }
+
+  function isEditableTextDrawing(drawing) {
+    if (!drawing) return false;
+    var kind = drawingToolDefinition(drawing.type).renderKind;
+    return kind === 'text' || kind === 'callout' || kind === 'priceLabel';
   }
 
   function nearestSeriesPoint(data, time) {

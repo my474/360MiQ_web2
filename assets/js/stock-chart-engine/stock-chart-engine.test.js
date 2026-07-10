@@ -28,6 +28,7 @@ class FakeElement {
     this.listeners = {};
     this.parentNode = null;
     this.textContent = '';
+    this.dataset = {};
   }
 
   set innerHTML(value) {
@@ -60,6 +61,14 @@ class FakeElement {
 
   setAttribute(name, value) {
     this.attributes[name] = String(value);
+  }
+
+  removeAttribute(name) {
+    delete this.attributes[name];
+  }
+
+  hasAttribute(name) {
+    return Object.prototype.hasOwnProperty.call(this.attributes, name);
   }
 
   getAttribute(name) {
@@ -397,6 +406,29 @@ chart.handlePointerMove({ clientX: bodyMidpoint.x + 10, clientY: bodyMidpoint.y 
 chart.handlePointerUp();
 assert.notDeepStrictEqual(chart.getDrawingById(drawingId).points.map((point) => point.value), bodyDragPointsBefore);
 assert.ok(chart.indicatorLegendItems(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId, last.time, chart.theme()).length > 0);
+
+const textDrawingId = chart.addDrawing('text', [
+  { time: data[data.length - 10].time, value: data[data.length - 10].close }
+], { paneId: 'price', text: 'Original text' });
+assert.strictEqual(chart.updateDrawingText(textDrawingId, 'Edited text'), true);
+assert.strictEqual(chart.getDrawingById(textDrawingId).text, 'Edited text');
+assert.strictEqual(chart.getShapeById(textDrawingId).setText('Shape handle text'), true);
+assert.strictEqual(chart.getDrawingById(textDrawingId).text, 'Shape handle text');
+const textPoint = chart.drawingScreenPoints(chart.getDrawingById(textDrawingId))[0];
+chart.handleCanvasDoubleClick({ clientX: textPoint.x, clientY: textPoint.y, preventDefault() {} });
+assert.strictEqual(chart.settingsPopup.getAttribute('hidden'), null);
+assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-text');
+assert.strictEqual(chart.settingsPopup.dataset.drawingId, textDrawingId);
+
+chart.startDrawing('note');
+const noteRect = chart.getPaneRect('price');
+const noteRange = chart.paneRange('price');
+chart.handleCanvasClick({
+  clientX: chart.xForTime(data[data.length - 12].time, noteRect),
+  clientY: chart.yForValue(data[data.length - 12].close, noteRect, noteRange)
+});
+assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-text');
+assert.ok(chart.getDrawingById(chart.selectedDrawingId).type === 'note');
 
 const interactiveCountBefore = chart.getAllShapes().length;
 chart.startDrawing('triangle');
