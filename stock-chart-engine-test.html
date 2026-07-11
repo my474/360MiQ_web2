@@ -644,38 +644,47 @@
 
     .chart-toast {
       align-items: center;
-      background: var(--panel-elevated);
-      border: 1px solid var(--border-strong);
-      border-radius: 8px;
-      bottom: 18px;
-      box-shadow: var(--shadow);
-      color: var(--text);
+      background: #eef6ff;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+      color: #111827;
       display: flex;
-      font-size: 13px;
-      font-weight: 700;
-      gap: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      gap: 12px;
       left: 50%;
       max-width: calc(100vw - 32px);
-      min-height: 38px;
+      min-height: 54px;
       opacity: 0;
-      padding: 0 14px;
+      padding: 0 24px;
       pointer-events: none;
       position: fixed;
-      transform: translate(-50%, 12px);
+      top: 14px;
+      transform: translate(-50%, -12px);
       transition: opacity 160ms ease, transform 160ms ease;
-      z-index: 100;
+      white-space: nowrap;
+      z-index: 120;
     }
 
     .chart-toast::before {
-      background: var(--accent);
-      border-radius: 999px;
+      background: transparent;
+      border: 2px solid currentColor;
+      border-radius: 2px;
+      box-shadow: -5px 5px 0 -2px #eef6ff, -5px 5px 0 0 currentColor;
+      box-sizing: border-box;
       content: "";
-      height: 8px;
-      width: 8px;
+      height: 20px;
+      width: 16px;
+    }
+
+    .chart-toast.is-error {
+      background: #fff1f2;
+      color: #991b1b;
     }
 
     .chart-toast.is-error::before {
-      background: var(--danger);
+      box-shadow: -5px 5px 0 -2px #fff1f2, -5px 5px 0 0 currentColor;
     }
 
     .chart-toast.is-visible {
@@ -832,15 +841,14 @@
       }
 
       .chart-toast {
-        bottom: 14px;
-        left: 12px;
+        left: 50%;
         max-width: calc(100vw - 24px);
-        right: 12px;
-        transform: translateY(12px);
+        top: 10px;
+        transform: translate(-50%, -12px);
       }
 
       .chart-toast.is-visible {
-        transform: translateY(0);
+        transform: translate(-50%, 0);
       }
     }
   </style>
@@ -1646,7 +1654,7 @@
 
       document.getElementById('copyImageStrip').addEventListener('click', function () {
         chart.copyImage().then(function () {
-          showChartToast('Chart image copied');
+          showChartToast('Image copied');
           setDrawingToolStatus('Chart image copied to clipboard.');
         }).catch(function (error) {
           var message = error && error.message ? error.message : 'Chart image copy is not available in this browser.';
