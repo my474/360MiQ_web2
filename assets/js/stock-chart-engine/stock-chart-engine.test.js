@@ -382,6 +382,12 @@ additionalIndicators.forEach((type) => {
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
+const rsiLegendZone = chart.legendHitZones.find((zone) => zone.indicatorId === rsiId);
+chart.handlePointerMove({ clientX: rsiLegendZone.x + 4, clientY: rsiLegendZone.y + 4 });
+assert.strictEqual(chart.canvas.style.cursor, 'pointer');
+const priceRectForLegendCursor = chart.getPaneRect('price');
+chart.handlePointerMove({ clientX: priceRectForLegendCursor.x + priceRectForLegendCursor.width / 2, clientY: priceRectForLegendCursor.y + priceRectForLegendCursor.height / 2 });
+assert.strictEqual(chart.canvas.style.cursor, 'crosshair');
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);

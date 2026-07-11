@@ -2810,6 +2810,7 @@
     this.hoverDrawingId = hit ? hit.drawing.id : null;
     if (this.hitTestPaneResize(this.pointer)) this.canvas.style.cursor = 'ns-resize';
     else if (this.hitTestPaneControl(this.pointer)) this.canvas.style.cursor = 'pointer';
+    else if (this.hitTestLegend(this.pointer)) this.canvas.style.cursor = 'pointer';
     else this.canvas.style.cursor = hit ? 'move' : 'crosshair';
     this.draw();
   };
