@@ -389,7 +389,7 @@ const priceRectForLegendCursor = chart.getPaneRect('price');
 chart.handlePointerMove({ clientX: priceRectForLegendCursor.x + priceRectForLegendCursor.width / 2, clientY: priceRectForLegendCursor.y + priceRectForLegendCursor.height / 2 });
 assert.strictEqual(chart.canvas.style.cursor, 'crosshair');
 const priceMarkerTime = chart.scaleMarkerTimeForPane(priceRectForLegendCursor);
-assert.strictEqual(priceMarkerTime, chart.visibleBars()[0].time);
+assert.strictEqual(priceMarkerTime, chart.visibleBars()[chart.visibleBars().length - 1].time);
 assert.notStrictEqual(priceMarkerTime, chart.legendTimeForPane(priceRectForLegendCursor));
 const priceMarkerBar = chart.barNearTime(priceMarkerTime);
 const priceScaleMarkers = chart.scaleMarkerItems(priceRectForLegendCursor, priceMarkerTime, chart.theme());

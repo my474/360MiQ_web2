@@ -3594,7 +3594,7 @@
 
   Chart.prototype.scaleMarkerTimeForPane = function () {
     var visible = this.visibleBars();
-    return visible.length ? visible[0].time : null;
+    return visible.length ? visible[visible.length - 1].time : null;
   };
 
   Chart.prototype.pointerPaneRect = function () {
@@ -3717,7 +3717,7 @@
     var items = [];
     var paletteIndex = 0;
     var visible = this.visibleBars();
-    var visibleEnd = visible.length ? visible[visible.length - 1].time : null;
+    var visibleStart = visible.length ? visible[0].time : null;
     if (rect.paneId === 'price') {
       var bar = this.barNearTime(time);
       if (bar && bar.close != null) {
@@ -3737,7 +3737,7 @@
       result.render.forEach(function (renderItem) {
         if (renderItem.type === 'level') return;
         var data = result.outputs[renderItem.output] || [];
-        var valuePoint = firstVisibleSeriesPoint(data, time, visibleEnd);
+        var valuePoint = lastVisibleSeriesPoint(data, visibleStart, time);
         if (!valuePoint || valuePoint.value == null) return;
         var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
         var color = style.color || theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
@@ -4680,13 +4680,13 @@
     return nearest;
   }
 
-  function firstVisibleSeriesPoint(data, startTime, endTime) {
+  function lastVisibleSeriesPoint(data, startTime, endTime) {
     if (!data || !data.length) return null;
-    if (startTime == null) return data[0] || null;
-    for (var i = 0; i < data.length; i += 1) {
+    if (endTime == null) return data[data.length - 1] || null;
+    for (var i = data.length - 1; i >= 0; i -= 1) {
       var point = data[i];
       if (point.value == null) continue;
-      if (point.time >= startTime && (endTime == null || point.time <= endTime)) return point;
+      if (point.time <= endTime && (startTime == null || point.time >= startTime)) return point;
     }
     return null;
   }
