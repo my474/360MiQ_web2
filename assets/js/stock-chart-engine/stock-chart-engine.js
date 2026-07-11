@@ -3703,6 +3703,89 @@
       var y = rect.y + (rect.height / 4) * i;
       ctx.fillText(formatNumber(value), rect.scaleX + 6, y);
     }
+    this.drawScaleMarkers(rect, range, theme);
+    ctx.restore();
+  };
+
+  Chart.prototype.scaleMarkerItems = function (rect, time, theme) {
+    var self = this;
+    var items = [];
+    var paletteIndex = 0;
+    if (rect.paneId === 'price') {
+      var bar = this.barNearTime(time);
+      if (bar && bar.close != null) {
+        items.push({
+          kind: 'price-close',
+          value: bar.close,
+          color: bar.close >= bar.open ? theme.up : theme.down,
+          label: formatNumber(bar.close)
+        });
+      }
+    }
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.paneId !== rect.paneId || indicator.visible === false) return;
+      if (rect.paneId === 'price' && indicator.type === 'VOLUME') return;
+      var result = self.indicatorResults[indicator.id];
+      if (!result) return;
+      result.render.forEach(function (renderItem) {
+        if (renderItem.type === 'level') return;
+        var data = result.outputs[renderItem.output] || [];
+        var valuePoint = nearestSeriesPoint(data, time);
+        if (!valuePoint || valuePoint.value == null) return;
+        var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
+        var color = style.color || theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
+        items.push({
+          kind: 'indicator',
+          indicatorId: indicator.id,
+          output: renderItem.output,
+          value: valuePoint.value,
+          color: color,
+          label: formatNumber(valuePoint.value)
+        });
+        paletteIndex += 1;
+      });
+    });
+    return items;
+  };
+
+  Chart.prototype.drawScaleMarkers = function (rect, range, theme) {
+    var ctx = this.ctx;
+    var time = this.legendTimeForPane(rect);
+    var items = this.scaleMarkerItems(rect, time, theme);
+    if (!items.length) return;
+    ctx.save();
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    var height = 18;
+    var minTop = Math.min(rect.y + 24, rect.y + rect.height - height - 2);
+    var maxTop = rect.y + rect.height - height - 2;
+    var positioned = [];
+    items.forEach(function (item) {
+      var y = this.yForValue(item.value, rect, range);
+      if (y == null || y < rect.y || y > rect.y + rect.height) return;
+      positioned.push({
+        item: item,
+        y: y,
+        top: clamp(y - height / 2, minTop, maxTop)
+      });
+    }, this);
+    positioned.sort(function (a, b) {
+      return a.top - b.top;
+    });
+    positioned.forEach(function (entry, index) {
+      if (index > 0) entry.top = Math.max(entry.top, positioned[index - 1].top + height + 2);
+      entry.top = clamp(entry.top, minTop, maxTop);
+    });
+    positioned.forEach(function (entry) {
+      var item = entry.item;
+      var label = item.label;
+      var width = Math.min(rect.scaleWidth - 8, Math.max(34, approximateTextWidth(label) + 12));
+      ctx.fillStyle = item.color || theme.crosshair;
+      ctx.fillRect(rect.scaleX + 4, entry.top, width, height);
+      ctx.fillStyle = contrastTextColor(item.color || theme.crosshair);
+      ctx.fillText(label, rect.scaleX + 9, entry.top + height / 2);
+    });
     ctx.restore();
   };
 
@@ -4817,6 +4900,24 @@
     if (abs >= 1000) return (value / 1000).toFixed(2) + 'K';
     if (abs < 1 && abs > 0) return value.toFixed(4);
     return value.toFixed(2);
+  }
+
+  function contrastTextColor(color) {
+    if (!color || typeof color !== 'string') return '#ffffff';
+    var hex = color.trim();
+    if (hex.charAt(0) === '#') {
+      if (hex.length === 4) {
+        hex = '#' + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2) + hex.charAt(3) + hex.charAt(3);
+      }
+      if (hex.length === 7) {
+        var r = parseInt(hex.slice(1, 3), 16);
+        var g = parseInt(hex.slice(3, 5), 16);
+        var b = parseInt(hex.slice(5, 7), 16);
+        var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.62 ? '#111827' : '#ffffff';
+      }
+    }
+    return '#ffffff';
   }
 
   function formatDate(time) {
