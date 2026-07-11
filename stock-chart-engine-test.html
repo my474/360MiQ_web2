@@ -642,6 +642,47 @@
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 24%, transparent);
     }
 
+    .chart-toast {
+      align-items: center;
+      background: var(--panel-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      bottom: 18px;
+      box-shadow: var(--shadow);
+      color: var(--text);
+      display: flex;
+      font-size: 13px;
+      font-weight: 700;
+      gap: 8px;
+      left: 50%;
+      max-width: calc(100vw - 32px);
+      min-height: 38px;
+      opacity: 0;
+      padding: 0 14px;
+      pointer-events: none;
+      position: fixed;
+      transform: translate(-50%, 12px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      z-index: 100;
+    }
+
+    .chart-toast::before {
+      background: var(--accent);
+      border-radius: 999px;
+      content: "";
+      height: 8px;
+      width: 8px;
+    }
+
+    .chart-toast.is-error::before {
+      background: var(--danger);
+    }
+
+    .chart-toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
     .mobile-panel {
       display: none;
     }
@@ -788,6 +829,18 @@
 
       .confirm-dialog__actions button {
         width: 100%;
+      }
+
+      .chart-toast {
+        bottom: 14px;
+        left: 12px;
+        max-width: calc(100vw - 24px);
+        right: 12px;
+        transform: translateY(12px);
+      }
+
+      .chart-toast.is-visible {
+        transform: translateY(0);
       }
     }
   </style>
@@ -1000,6 +1053,7 @@
         </div>
       </section>
     </div>
+    <div id="chartToast" class="chart-toast" role="status" aria-live="polite" aria-atomic="true"></div>
   </main>
 
   <script src="assets/js/stock-chart-engine/stock-chart-engine.js"></script>
@@ -1473,6 +1527,20 @@
         document.getElementById('drawingToolStatus').textContent = message || 'Select an icon, then click on the chart to place its points.';
       }
 
+      var chartToastTimer = null;
+
+      function showChartToast(message, tone) {
+        var toast = document.getElementById('chartToast');
+        if (!toast) return;
+        window.clearTimeout(chartToastTimer);
+        toast.textContent = message || '';
+        toast.classList.toggle('is-error', tone === 'error');
+        toast.classList.add('is-visible');
+        chartToastTimer = window.setTimeout(function () {
+          toast.classList.remove('is-visible');
+        }, 2200);
+      }
+
       function startSelectedDrawingTool() {
         var toolId = document.getElementById('drawingTool').value || 'trendline';
         var tool = StockChartEngine.drawingTools[toolId] || StockChartEngine.drawingTools.trendline;
@@ -1578,9 +1646,12 @@
 
       document.getElementById('copyImageStrip').addEventListener('click', function () {
         chart.copyImage().then(function () {
+          showChartToast('Chart image copied');
           setDrawingToolStatus('Chart image copied to clipboard.');
         }).catch(function (error) {
-          setDrawingToolStatus(error && error.message ? error.message : 'Chart image copy is not available in this browser.');
+          var message = error && error.message ? error.message : 'Chart image copy is not available in this browser.';
+          showChartToast(message, 'error');
+          setDrawingToolStatus(message);
         });
       });
 
