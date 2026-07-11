@@ -1646,6 +1646,70 @@
     return dataUrl;
   };
 
+  Chart.prototype.exportImageBlob = function (options) {
+    options = options || {};
+    var self = this;
+    var type = options.type || 'image/png';
+    var quality = options.quality;
+    var includeInteraction = options.includeInteraction === true;
+    if (!this.canvas || !this.canvas.toBlob) {
+      return Promise.reject(new Error('Chart image blob export requires a canvas with toBlob support.'));
+    }
+
+    return new Promise(function (resolve, reject) {
+      var previousPointer = self.pointer;
+      var previousHoverDrawingId = self.hoverDrawingId;
+      var previousSelectedDrawingId = self.selectedDrawingId;
+      var previousPendingDrawing = self.pendingDrawing;
+
+      function restoreInteractionState() {
+        if (includeInteraction) return;
+        self.pointer = previousPointer;
+        self.hoverDrawingId = previousHoverDrawingId;
+        self.selectedDrawingId = previousSelectedDrawingId;
+        self.pendingDrawing = previousPendingDrawing;
+        if (self.pendingDrawing) self.canvas.classList.add('sce-crosshair-drawing');
+        self.draw();
+      }
+
+      try {
+        if (!includeInteraction) {
+          self.pointer = null;
+          self.hoverDrawingId = null;
+          self.selectedDrawingId = null;
+          self.pendingDrawing = null;
+          self.canvas.classList.remove('sce-crosshair-drawing');
+          self.draw();
+        }
+        self.canvas.toBlob(function (blob) {
+          restoreInteractionState();
+          if (blob) resolve(blob);
+          else reject(new Error('Chart image export returned an empty image blob.'));
+        }, type, quality);
+      } catch (error) {
+        restoreInteractionState();
+        reject(error);
+      }
+    });
+  };
+
+  Chart.prototype.copyImage = function (options) {
+    options = options || {};
+    var clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
+    var ClipboardItemCtor = typeof ClipboardItem !== 'undefined' ? ClipboardItem : null;
+    if (!ClipboardItemCtor && typeof window !== 'undefined') ClipboardItemCtor = window.ClipboardItem;
+    if (!clipboard || !clipboard.write || !ClipboardItemCtor) {
+      return Promise.reject(new Error('Copying chart images requires browser clipboard image support.'));
+    }
+    return this.exportImageBlob(merge({ type: 'image/png' }, options)).then(function (blob) {
+      var item = {};
+      item[blob.type || 'image/png'] = blob;
+      return clipboard.write([new ClipboardItemCtor(item)]).then(function () {
+        return blob;
+      });
+    });
+  };
+
   Chart.prototype.load = function (layoutId) {
     var doc = this.storage.load(layoutId || this.layoutId);
     if (!doc) return false;

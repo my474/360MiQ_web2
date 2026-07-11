@@ -936,6 +936,20 @@
         <select id="drawingTool" aria-label="Drawing tool"></select>
         <div id="drawingToolPalette" class="drawing-tool-palette" role="toolbar" aria-label="Drawing tools"></div>
         <div class="rail-divider"></div>
+        <button type="button" id="exportImageStrip" class="drawing-action-button" title="Export chart image" aria-label="Export chart image">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v10"></path>
+            <path d="M8 9l4 4 4-4"></path>
+            <path d="M5 15v4h14v-4"></path>
+          </svg>
+        </button>
+        <button type="button" id="copyImageStrip" class="drawing-action-button" title="Copy chart image" aria-label="Copy chart image">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="8" width="11" height="11" rx="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+        <div class="rail-divider"></div>
         <button type="button" id="removeShapes" class="drawing-action-button danger" title="Clear drawings" aria-label="Clear drawings">
           <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h18"></path>
@@ -1555,6 +1569,19 @@
 
       document.getElementById('exportImage').addEventListener('click', function () {
         chart.downloadImage('stock-chart-lab.png');
+      });
+
+      document.getElementById('exportImageStrip').addEventListener('click', function () {
+        chart.downloadImage('stock-chart-lab.png');
+        setDrawingToolStatus('Chart image exported.');
+      });
+
+      document.getElementById('copyImageStrip').addEventListener('click', function () {
+        chart.copyImage().then(function () {
+          setDrawingToolStatus('Chart image copied to clipboard.');
+        }).catch(function (error) {
+          setDrawingToolStatus(error && error.message ? error.message : 'Chart image copy is not available in this browser.');
+        });
       });
 
       document.getElementById('newData').addEventListener('click', function () {
