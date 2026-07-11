@@ -1741,11 +1741,11 @@
       });
 
       document.getElementById('copyShareUrl').addEventListener('click', function () {
-        chart.copyShareUrl({ includeData: true, maxLength: 16000 }).then(function () {
+        chart.copyShareUrl({ includeData: false, maxLength: 16000 }).then(function () {
           showChartToast('Share URL copied');
-          setDrawingToolStatus('Share URL copied to clipboard.');
+          setDrawingToolStatus('Share URL copied to clipboard. It includes drawings, indicators, panes, and settings.');
         }).catch(function (error) {
-          var message = error && error.message ? error.message : 'Chart is too large for a URL. Use Copy Chart Layout or Export Chart JSON.';
+          var message = error && error.message ? error.message : 'Could not copy the share URL. Use Copy Chart Layout or Export Chart JSON.';
           showChartToast(message, 'error');
           setDrawingToolStatus(message);
         });

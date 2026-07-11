@@ -623,6 +623,12 @@ assert.ok(chart.getAllShapes().length > 0);
 assert.strictEqual(chart.sourceBars.length, data.length);
 const shareUrl = chart.createShareUrl({ baseUrl: 'https://example.test/chart.html', includeData: true, maxLength: 100000 });
 assert.ok(shareUrl.indexOf('https://example.test/chart.html#sce-layout=') === 0);
+const layoutOnlyShareUrl = chart.createShareUrl({ baseUrl: 'https://example.test/chart.html', includeData: false, maxLength: 16000 });
+assert.ok(layoutOnlyShareUrl.length < 16000);
+const layoutOnlyPayload = JSON.parse(decodeURIComponent(layoutOnlyShareUrl.split('#sce-layout=')[1]));
+assert.strictEqual(layoutOnlyPayload.type, 'stock-chart-engine-layout');
+assert.ok(layoutOnlyPayload.document.drawings.length > 0);
+assert.strictEqual(Object.prototype.hasOwnProperty.call(layoutOnlyPayload, 'data'), false);
 
 chart.destroy();
 

@@ -96,6 +96,38 @@
     return output;
   }
 
+  function fallbackCopyText(text, unsupportedMessage) {
+    if (typeof Promise === 'undefined') {
+      throw new Error(unsupportedMessage);
+    }
+    if (typeof document === 'undefined' || !document.createElement || !document.body) {
+      return Promise.reject(new Error(unsupportedMessage));
+    }
+    return new Promise(function (resolve, reject) {
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', 'readonly');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '0';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try {
+        if (document.execCommand && document.execCommand('copy')) {
+          resolve(text);
+        } else {
+          reject(new Error(unsupportedMessage));
+        }
+      } catch (error) {
+        reject(error);
+      } finally {
+        if (textarea.parentNode) textarea.parentNode.removeChild(textarea);
+      }
+    });
+  }
+
   function createDrawingTools() {
     var specs = [
       ['trendline', 'Trendline', 'trend', 'line', 2, ['trend_line']],
@@ -1705,12 +1737,12 @@
   Chart.prototype.copyLayout = function (options) {
     var text = this.exportLayoutJson(options);
     var clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
-    if (!clipboard || !clipboard.writeText) {
-      return Promise.reject(new Error('Copying chart layouts requires browser clipboard text support.'));
+    if (clipboard && clipboard.writeText) {
+      return clipboard.writeText(text).then(function () {
+        return text;
+      });
     }
-    return clipboard.writeText(text).then(function () {
-      return text;
-    });
+    return fallbackCopyText(text, 'Copying chart layouts requires browser clipboard text support.');
   };
 
   Chart.prototype.createShareUrl = function (options) {
@@ -1730,14 +1762,19 @@
   };
 
   Chart.prototype.copyShareUrl = function (options) {
-    var url = this.createShareUrl(options);
-    var clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
-    if (!clipboard || !clipboard.writeText) {
-      return Promise.reject(new Error('Copying chart share URLs requires browser clipboard text support.'));
+    var url;
+    try {
+      url = this.createShareUrl(options);
+    } catch (error) {
+      return Promise.reject(error);
     }
-    return clipboard.writeText(url).then(function () {
-      return url;
-    });
+    var clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
+    if (clipboard && clipboard.writeText) {
+      return clipboard.writeText(url).then(function () {
+        return url;
+      });
+    }
+    return fallbackCopyText(url, 'Copying chart share URLs requires browser clipboard text support.');
   };
 
   Chart.prototype.exportImageBlob = function (options) {
