@@ -666,6 +666,7 @@ assert.ok(StockChartEngine.drawingToolIconSvg('trendline').indexOf('<svg') === 0
 assert.ok(StockChartEngine.chartTypeIconSvg('candlestick').indexOf('<svg') === 0);
 assert.ok(StockChartEngine.chartTypeIconSvg('bar').indexOf('<svg') === 0);
 assert.ok(StockChartEngine.chartTypeIconSvg('line').indexOf('<svg') === 0);
+assert.ok(StockChartEngine.chartTypeChevronSvg().indexOf('sce-chart-type-chevron') !== -1);
 assert.strictEqual(StockChartEngine.chartTypeLabel('bar'), 'Bar');
 const registryShapeId = chart.createMultipointShape([
   { time: data[data.length - 22].time, price: data[data.length - 22].close },

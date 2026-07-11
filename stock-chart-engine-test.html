@@ -155,6 +155,7 @@
       font-weight: 700;
       gap: 8px;
       height: 32px;
+      justify-content: flex-start;
       list-style: none;
       min-width: 150px;
       padding: 0 10px;
@@ -204,6 +205,20 @@
       flex: 0 0 auto;
       height: 16px;
       width: 16px;
+    }
+
+    .chart-type-chevron,
+    .sce-chart-type-chevron {
+      flex: 0 0 auto;
+      height: 14px;
+      margin-left: auto;
+      transition: transform 120ms ease;
+      width: 14px;
+    }
+
+    .chart-type-picker[open] .chart-type-chevron,
+    .chart-type-picker[open] .sce-chart-type-chevron {
+      transform: rotate(180deg);
     }
 
     .control-menu summary {
@@ -1223,7 +1238,7 @@
         var select = document.getElementById('chartType');
         var summary = document.getElementById('chartTypeSummary');
         select.value = normalized;
-        summary.innerHTML = StockChartEngine.chartTypeIconSvg(normalized).replace('sce-chart-type-icon', 'chart-type-icon') + '<span>' + chartTypeLabel(normalized) + '</span>';
+        summary.innerHTML = StockChartEngine.chartTypeIconSvg(normalized).replace('sce-chart-type-icon', 'chart-type-icon') + '<span>' + chartTypeLabel(normalized) + '</span>' + StockChartEngine.chartTypeChevronSvg().replace('sce-chart-type-chevron', 'chart-type-chevron');
         Array.prototype.forEach.call(document.querySelectorAll('[data-chart-type-value]'), function (button) {
           var type = button.getAttribute('data-chart-type-value');
           var selected = type === normalized;

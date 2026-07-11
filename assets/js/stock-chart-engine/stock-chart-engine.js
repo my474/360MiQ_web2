@@ -3109,7 +3109,7 @@
     if (chartType) chartType.value = this.document.settings.chartType;
     var chartTypeButton = this.toolbar.querySelector('[data-sce-chart-type-button]');
     if (chartTypeButton) {
-      chartTypeButton.innerHTML = chartTypeIconSvg(this.document.settings.chartType) + '<span>' + chartTypeLabel(this.document.settings.chartType) + '</span>';
+      chartTypeButton.innerHTML = chartTypeIconSvg(this.document.settings.chartType) + '<span>' + chartTypeLabel(this.document.settings.chartType) + '</span>' + chartTypeChevronSvg();
     }
     if (this.toolbar.querySelectorAll) {
       Array.prototype.forEach.call(this.toolbar.querySelectorAll('[data-sce-chart-type-option]'), function (button) {
@@ -4982,6 +4982,10 @@
     return 'Candlestick';
   }
 
+  function chartTypeChevronSvg() {
+    return '<svg class="sce-chart-type-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  }
+
   function formatNumber(value) {
     var abs = Math.abs(value);
     if (abs >= 1000000000) return (value / 1000000000).toFixed(2) + 'B';
@@ -5039,6 +5043,7 @@
     drawingTools: DRAWING_TOOLS,
     drawingToolIconSvg: drawingToolIconSvg,
     chartTypeIconSvg: chartTypeIconSvg,
+    chartTypeChevronSvg: chartTypeChevronSvg,
     chartTypeLabel: chartTypeLabel,
     chartPeriods: CHART_PERIODS,
     createDefaultDocument: createDefaultDocument,
