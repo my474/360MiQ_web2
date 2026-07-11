@@ -1440,7 +1440,6 @@
       '<span class="sce-title"></span>',
       '<select class="sce-chart-type" data-sce-chart-type aria-label="Chart type">',
       '<option value="candlestick">Candlestick</option>',
-      '<option value="hollow-candlestick">Hollow Candlestick</option>',
       '<option value="bar">Bar</option>',
       '<option value="line">Line</option>',
       '</select>',
@@ -3807,33 +3806,39 @@
       this.drawPriceLine(rect, range, theme);
       return;
     }
-    this.drawCandles(rect, range, theme, chartType === 'hollow-candlestick');
+    this.drawCandles(rect, range, theme);
   };
 
-  Chart.prototype.drawCandles = function (rect, range, theme, hollow) {
+  Chart.prototype.drawCandles = function (rect, range, theme) {
     var ctx = this.ctx;
     var bars = this.visibleBars();
     if (!bars.length) return;
     var spacing = rect.width / Math.max(1, bars.length);
     var candleWidth = clamp(spacing * 0.62, 2, 18);
+    var allStartIndex = this.bars.findIndex(function (candidate) {
+      return candidate.time === bars[0].time;
+    });
     ctx.save();
-    bars.forEach(function (bar) {
+    bars.forEach(function (bar, index) {
       var x = this.xForTime(bar.time, rect);
       var open = this.yForValue(bar.open, rect, range);
       var close = this.yForValue(bar.close, rect, range);
       var high = this.yForValue(bar.high, rect, range);
       var low = this.yForValue(bar.low, rect, range);
       if (open == null || close == null || high == null || low == null) return;
-      var up = bar.close >= bar.open;
-      ctx.strokeStyle = up ? theme.up : theme.down;
-      ctx.fillStyle = up ? theme.up : theme.down;
+      var previousBar = allStartIndex > 0 ? this.bars[allStartIndex + index - 1] : bars[index - 1];
+      var previousClose = previousBar ? previousBar.close : bar.open;
+      var green = bar.close >= previousClose;
+      var hollow = bar.close >= bar.open;
+      ctx.strokeStyle = green ? theme.up : theme.down;
+      ctx.fillStyle = green ? theme.up : theme.down;
       ctx.beginPath();
       ctx.moveTo(x, high);
       ctx.lineTo(x, low);
       ctx.stroke();
       var bodyTop = Math.min(open, close);
       var bodyHeight = Math.max(1, Math.abs(open - close));
-      if (hollow && up) {
+      if (hollow) {
         ctx.strokeRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
       } else {
         ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
@@ -4752,15 +4757,15 @@
       candles: 'candlestick',
       candlestick: 'candlestick',
       candlesticks: 'candlestick',
-      hollow: 'hollow-candlestick',
-      hollow_candle: 'hollow-candlestick',
-      hollow_candles: 'hollow-candlestick',
-      hollow_candlestick: 'hollow-candlestick',
-      hollow_candlesticks: 'hollow-candlestick',
-      'hollow-candle': 'hollow-candlestick',
-      'hollow-candles': 'hollow-candlestick',
-      'hollow-candlestick': 'hollow-candlestick',
-      'hollow-candlesticks': 'hollow-candlestick',
+      hollow: 'candlestick',
+      hollow_candle: 'candlestick',
+      hollow_candles: 'candlestick',
+      hollow_candlestick: 'candlestick',
+      hollow_candlesticks: 'candlestick',
+      'hollow-candle': 'candlestick',
+      'hollow-candles': 'candlestick',
+      'hollow-candlestick': 'candlestick',
+      'hollow-candlesticks': 'candlestick',
       bar: 'bar',
       bars: 'bar',
       ohlc: 'bar',

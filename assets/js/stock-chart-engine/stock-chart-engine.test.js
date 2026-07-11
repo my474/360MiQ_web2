@@ -253,20 +253,28 @@ assert.strictEqual(chart.setChartType('bar'), 'bar');
 assert.strictEqual(chart.document.settings.chartType, 'bar');
 assert.strictEqual(chart.setChartType('line'), 'line');
 assert.strictEqual(chart.document.settings.chartType, 'line');
-assert.strictEqual(chart.setChartType('hollow-candles'), 'hollow-candlestick');
-assert.strictEqual(chart.document.settings.chartType, 'hollow-candlestick');
-const originalVisibleBarsForHollowCandles = chart.visibleBars.bind(chart);
-chart.visibleBars = function visibleBarsForHollowCandlesTest() {
-  return [
-    { time: 1000, open: 100, high: 112, low: 96, close: 110, volume: 1000 },
-    { time: 2000, open: 110, high: 114, low: 98, close: 102, volume: 1100 }
-  ];
+assert.strictEqual(chart.setChartType('hollow-candles'), 'candlestick');
+assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+const originalBarsForCandlestickRules = chart.bars;
+const originalVisibleBarsForCandlestickRules = chart.visibleBars.bind(chart);
+chart.bars = [
+  { time: 1000, open: 101, high: 108, low: 99, close: 105, volume: 1000 },
+  { time: 2000, open: 108, high: 110, low: 104, close: 106, volume: 1100 },
+  { time: 3000, open: 102, high: 105, low: 100, close: 104, volume: 1200 },
+  { time: 4000, open: 103, high: 104, low: 98, close: 99, volume: 1300 }
+];
+chart.visibleBars = function visibleBarsForCandlestickRulesTest() {
+  return chart.bars;
 };
 chart.canvas.commands = [];
-chart.drawCandles({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68 }, { min: 90, max: 120 }, chart.theme(), true);
-assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect'), 'hollow up candle should stroke the body');
-assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect'), 'down candle should remain filled');
-chart.visibleBars = originalVisibleBarsForHollowCandles;
+chart.drawCandles({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68 }, { min: 90, max: 120 }, chart.theme());
+const candleTheme = chart.theme();
+assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect' && command.strokeStyle === candleTheme.up), 'green hollow candle should stroke the body');
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect' && command.fillStyle === candleTheme.up), 'green filled candle should fill the body');
+assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect' && command.strokeStyle === candleTheme.down), 'red hollow candle should stroke the body');
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect' && command.fillStyle === candleTheme.down), 'red filled candle should fill the body');
+chart.bars = originalBarsForCandlestickRules;
+chart.visibleBars = originalVisibleBarsForCandlestickRules;
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 
