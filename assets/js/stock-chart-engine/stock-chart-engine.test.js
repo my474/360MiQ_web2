@@ -611,6 +611,18 @@ assert.ok(exportedPng.indexOf('data:image/png;base64,') === 0);
 const exportedJpeg = chart.exportImage({ type: 'image/jpeg', quality: 0.8, includeInteraction: true });
 assert.ok(exportedJpeg.indexOf('data:image/jpeg;base64,') === 0);
 assert.strictEqual(chart.canvas.exportCalls[chart.canvas.exportCalls.length - 1].quality, 0.8);
+const exportedLayout = chart.exportLayout({ includeData: true });
+assert.strictEqual(exportedLayout.type, 'stock-chart-engine-layout');
+assert.ok(exportedLayout.document.drawings.length > 0);
+assert.strictEqual(exportedLayout.data.length, data.length);
+const exportedLayoutJson = chart.exportLayoutJson({ includeData: true, pretty: false });
+chart.removeAllShapes();
+assert.strictEqual(chart.getAllShapes().length, 0);
+chart.importLayout(exportedLayoutJson);
+assert.ok(chart.getAllShapes().length > 0);
+assert.strictEqual(chart.sourceBars.length, data.length);
+const shareUrl = chart.createShareUrl({ baseUrl: 'https://example.test/chart.html', includeData: true, maxLength: 100000 });
+assert.ok(shareUrl.indexOf('https://example.test/chart.html#sce-layout=') === 0);
 
 chart.destroy();
 

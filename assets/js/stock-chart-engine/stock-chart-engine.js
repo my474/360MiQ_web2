@@ -1646,6 +1646,100 @@
     return dataUrl;
   };
 
+  Chart.prototype.exportLayout = function (options) {
+    options = options || {};
+    var layout = {
+      type: 'stock-chart-engine-layout',
+      version: VERSION,
+      schemaVersion: SCHEMA_VERSION,
+      exportedAt: new Date().toISOString(),
+      document: this.serialize()
+    };
+    if (options.includeData !== false) layout.data = clone(this.sourceBars);
+    return layout;
+  };
+
+  Chart.prototype.exportLayoutJson = function (options) {
+    options = options || {};
+    return JSON.stringify(this.exportLayout(options), null, options.pretty === false ? 0 : 2);
+  };
+
+  Chart.prototype.importLayout = function (layout) {
+    var payload = typeof layout === 'string' ? JSON.parse(layout) : clone(layout);
+    if (!payload || typeof payload !== 'object') throw new Error('Chart layout import requires a layout object or JSON string.');
+    var doc = payload.document || payload.chart || payload;
+    if (payload.data) this.sourceBars = normalizeBars(payload.data);
+    this.restore(doc);
+    return this.serialize();
+  };
+
+  Chart.prototype.downloadLayout = function (filename, options) {
+    options = options || {};
+    var json = this.exportLayoutJson(options);
+    var name = filename || (this.document.symbol || 'chart') + '-layout.json';
+    if (typeof document !== 'undefined' && document.createElement) {
+      var link = document.createElement('a');
+      var objectUrl = null;
+      if (typeof Blob !== 'undefined') {
+        var urlApi = typeof URL !== 'undefined' ? URL : (typeof window !== 'undefined' ? window.URL : null);
+        if (urlApi && urlApi.createObjectURL) {
+          objectUrl = urlApi.createObjectURL(new Blob([json], { type: 'application/json' }));
+          link.href = objectUrl;
+        }
+      }
+      if (!link.href) link.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+      link.download = name;
+      if (document.body && document.body.appendChild) document.body.appendChild(link);
+      if (link.click) link.click();
+      if (link.parentNode && link.parentNode.removeChild) link.parentNode.removeChild(link);
+      if (objectUrl) {
+        setTimeout(function () {
+          var revokeApi = typeof URL !== 'undefined' ? URL : (typeof window !== 'undefined' ? window.URL : null);
+          if (revokeApi && revokeApi.revokeObjectURL) revokeApi.revokeObjectURL(objectUrl);
+        }, 0);
+      }
+    }
+    return json;
+  };
+
+  Chart.prototype.copyLayout = function (options) {
+    var text = this.exportLayoutJson(options);
+    var clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
+    if (!clipboard || !clipboard.writeText) {
+      return Promise.reject(new Error('Copying chart layouts requires browser clipboard text support.'));
+    }
+    return clipboard.writeText(text).then(function () {
+      return text;
+    });
+  };
+
+  Chart.prototype.createShareUrl = function (options) {
+    options = options || {};
+    var baseUrl = options.baseUrl;
+    if (!baseUrl && typeof window !== 'undefined' && window.location) {
+      baseUrl = window.location.href.split('#')[0];
+    }
+    if (!baseUrl) throw new Error('A base URL is required to create a chart share URL.');
+    var json = this.exportLayoutJson(merge({}, options, { pretty: false }));
+    var url = baseUrl + '#sce-layout=' + encodeURIComponent(json);
+    var maxLength = options.maxLength || 16000;
+    if (maxLength && url.length > maxLength) {
+      throw new Error('This chart is too large for a share URL. Use Export Chart JSON or Copy Chart Layout instead.');
+    }
+    return url;
+  };
+
+  Chart.prototype.copyShareUrl = function (options) {
+    var url = this.createShareUrl(options);
+    var clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : null;
+    if (!clipboard || !clipboard.writeText) {
+      return Promise.reject(new Error('Copying chart share URLs requires browser clipboard text support.'));
+    }
+    return clipboard.writeText(url).then(function () {
+      return url;
+    });
+  };
+
   Chart.prototype.exportImageBlob = function (options) {
     options = options || {};
     var self = this;
