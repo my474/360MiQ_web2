@@ -1440,6 +1440,7 @@
       '<span class="sce-title"></span>',
       '<select class="sce-chart-type" data-sce-chart-type aria-label="Chart type">',
       '<option value="candlestick">Candlestick</option>',
+      '<option value="hollow-candlestick">Hollow Candlestick</option>',
       '<option value="bar">Bar</option>',
       '<option value="line">Line</option>',
       '</select>',
@@ -3806,10 +3807,10 @@
       this.drawPriceLine(rect, range, theme);
       return;
     }
-    this.drawCandles(rect, range, theme);
+    this.drawCandles(rect, range, theme, chartType === 'hollow-candlestick');
   };
 
-  Chart.prototype.drawCandles = function (rect, range, theme) {
+  Chart.prototype.drawCandles = function (rect, range, theme, hollow) {
     var ctx = this.ctx;
     var bars = this.visibleBars();
     if (!bars.length) return;
@@ -3832,7 +3833,11 @@
       ctx.stroke();
       var bodyTop = Math.min(open, close);
       var bodyHeight = Math.max(1, Math.abs(open - close));
-      ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+      if (hollow && up) {
+        ctx.strokeRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+      } else {
+        ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+      }
     }, this);
     ctx.restore();
   };
@@ -4747,6 +4752,15 @@
       candles: 'candlestick',
       candlestick: 'candlestick',
       candlesticks: 'candlestick',
+      hollow: 'hollow-candlestick',
+      hollow_candle: 'hollow-candlestick',
+      hollow_candles: 'hollow-candlestick',
+      hollow_candlestick: 'hollow-candlestick',
+      hollow_candlesticks: 'hollow-candlestick',
+      'hollow-candle': 'hollow-candlestick',
+      'hollow-candles': 'hollow-candlestick',
+      'hollow-candlestick': 'hollow-candlestick',
+      'hollow-candlesticks': 'hollow-candlestick',
       bar: 'bar',
       bars: 'bar',
       ohlc: 'bar',

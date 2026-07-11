@@ -115,6 +115,8 @@ class FakeCanvas extends FakeElement {
     const ctx = {
       _alphaStack: [],
       globalAlpha: 1,
+      fillStyle: '#000000',
+      strokeStyle: '#000000',
       beginPath() {},
       clearRect() {},
       closePath() {},
@@ -122,7 +124,7 @@ class FakeCanvas extends FakeElement {
         canvas.commands.push({ type: 'fill', alpha: this.globalAlpha });
       },
       fillRect(x, y, width, height) {
-        canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha });
+        canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha, fillStyle: this.fillStyle });
       },
       fillText(text, x, y) {
         canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha });
@@ -143,10 +145,10 @@ class FakeCanvas extends FakeElement {
       setLineDash() {},
       setTransform() {},
       stroke() {
-        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha });
+        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha, strokeStyle: this.strokeStyle });
       },
       strokeRect(x, y, width, height) {
-        canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha });
+        canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha, strokeStyle: this.strokeStyle });
       }
     };
     return ctx;
@@ -251,6 +253,20 @@ assert.strictEqual(chart.setChartType('bar'), 'bar');
 assert.strictEqual(chart.document.settings.chartType, 'bar');
 assert.strictEqual(chart.setChartType('line'), 'line');
 assert.strictEqual(chart.document.settings.chartType, 'line');
+assert.strictEqual(chart.setChartType('hollow-candles'), 'hollow-candlestick');
+assert.strictEqual(chart.document.settings.chartType, 'hollow-candlestick');
+const originalVisibleBarsForHollowCandles = chart.visibleBars.bind(chart);
+chart.visibleBars = function visibleBarsForHollowCandlesTest() {
+  return [
+    { time: 1000, open: 100, high: 112, low: 96, close: 110, volume: 1000 },
+    { time: 2000, open: 110, high: 114, low: 98, close: 102, volume: 1100 }
+  ];
+};
+chart.canvas.commands = [];
+chart.drawCandles({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68 }, { min: 90, max: 120 }, chart.theme(), true);
+assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect'), 'hollow up candle should stroke the body');
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect'), 'down candle should remain filled');
+chart.visibleBars = originalVisibleBarsForHollowCandles;
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 
