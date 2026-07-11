@@ -3832,12 +3832,20 @@
       var hollow = bar.close >= bar.open;
       ctx.strokeStyle = green ? theme.up : theme.down;
       ctx.fillStyle = green ? theme.up : theme.down;
-      ctx.beginPath();
-      ctx.moveTo(x, high);
-      ctx.lineTo(x, low);
-      ctx.stroke();
       var bodyTop = Math.min(open, close);
-      var bodyHeight = Math.max(1, Math.abs(open - close));
+      var bodyBottom = Math.max(open, close);
+      var bodyHeight = Math.max(1, bodyBottom - bodyTop);
+      ctx.beginPath();
+      if (hollow) {
+        ctx.moveTo(x, high);
+        ctx.lineTo(x, bodyTop);
+        ctx.moveTo(x, bodyBottom);
+        ctx.lineTo(x, low);
+      } else {
+        ctx.moveTo(x, high);
+        ctx.lineTo(x, low);
+      }
+      ctx.stroke();
       if (hollow) {
         ctx.strokeRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
       } else {

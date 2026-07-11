@@ -273,6 +273,9 @@ assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect' 
 assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect' && command.fillStyle === candleTheme.up), 'green filled candle should fill the body');
 assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect' && command.strokeStyle === candleTheme.down), 'red hollow candle should stroke the body');
 assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect' && command.fillStyle === candleTheme.down), 'red filled candle should fill the body');
+const firstHollowWickCommands = chart.canvas.commands.slice(0, 5);
+assert.deepStrictEqual(firstHollowWickCommands.map((command) => command.type), ['moveTo', 'lineTo', 'moveTo', 'lineTo', 'stroke']);
+assert.ok(firstHollowWickCommands[1].y < firstHollowWickCommands[2].y, 'hollow candle wick should skip the body interior');
 chart.bars = originalBarsForCandlestickRules;
 chart.visibleBars = originalVisibleBarsForCandlestickRules;
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
