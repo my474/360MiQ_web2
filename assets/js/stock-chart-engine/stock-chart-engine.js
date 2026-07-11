@@ -3592,6 +3592,11 @@
     return visible.length ? visible[visible.length - 1].time : null;
   };
 
+  Chart.prototype.scaleMarkerTimeForPane = function () {
+    var visible = this.visibleBars();
+    return visible.length ? visible[0].time : null;
+  };
+
   Chart.prototype.pointerPaneRect = function () {
     if (!this.pointer) return null;
     for (var i = 0; i < this.paneRects.length; i += 1) {
@@ -3711,6 +3716,8 @@
     var self = this;
     var items = [];
     var paletteIndex = 0;
+    var visible = this.visibleBars();
+    var visibleEnd = visible.length ? visible[visible.length - 1].time : null;
     if (rect.paneId === 'price') {
       var bar = this.barNearTime(time);
       if (bar && bar.close != null) {
@@ -3730,7 +3737,7 @@
       result.render.forEach(function (renderItem) {
         if (renderItem.type === 'level') return;
         var data = result.outputs[renderItem.output] || [];
-        var valuePoint = nearestSeriesPoint(data, time);
+        var valuePoint = firstVisibleSeriesPoint(data, time, visibleEnd);
         if (!valuePoint || valuePoint.value == null) return;
         var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
         var color = style.color || theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
@@ -3750,7 +3757,7 @@
 
   Chart.prototype.drawScaleMarkers = function (rect, range, theme) {
     var ctx = this.ctx;
-    var time = this.legendTimeForPane(rect);
+    var time = this.scaleMarkerTimeForPane(rect);
     var items = this.scaleMarkerItems(rect, time, theme);
     if (!items.length) return;
     ctx.save();
@@ -4671,6 +4678,17 @@
       }
     });
     return nearest;
+  }
+
+  function firstVisibleSeriesPoint(data, startTime, endTime) {
+    if (!data || !data.length) return null;
+    if (startTime == null) return data[0] || null;
+    for (var i = 0; i < data.length; i += 1) {
+      var point = data[i];
+      if (point.value == null) continue;
+      if (point.time >= startTime && (endTime == null || point.time <= endTime)) return point;
+    }
+    return null;
   }
 
   function indicatorLegendName(indicator, output) {
