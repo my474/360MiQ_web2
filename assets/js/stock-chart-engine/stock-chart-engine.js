@@ -4162,23 +4162,25 @@
   Chart.prototype.drawCrosshair = function (theme) {
     if (!this.pointer) return;
     var ctx = this.ctx;
-    var rect = null;
+    var activeRect = null;
     for (var i = 0; i < this.paneRects.length; i += 1) {
       var candidate = this.paneRects[i];
       if (this.pointer.y >= candidate.y && this.pointer.y <= candidate.y + candidate.height) {
-        rect = candidate;
+        activeRect = candidate;
         break;
       }
     }
-    if (!rect) return;
+    if (!activeRect) return;
     ctx.save();
     ctx.strokeStyle = theme.crosshair;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.moveTo(this.pointer.x, rect.y);
-    ctx.lineTo(this.pointer.x, rect.y + rect.height);
-    ctx.moveTo(rect.x, this.pointer.y);
-    ctx.lineTo(rect.x + rect.width, this.pointer.y);
+    this.paneRects.forEach(function (rect) {
+      ctx.moveTo(this.pointer.x, rect.y);
+      ctx.lineTo(this.pointer.x, rect.y + rect.height);
+    }, this);
+    ctx.moveTo(activeRect.x, this.pointer.y);
+    ctx.lineTo(activeRect.x + activeRect.width, this.pointer.y);
     ctx.stroke();
     ctx.restore();
   };

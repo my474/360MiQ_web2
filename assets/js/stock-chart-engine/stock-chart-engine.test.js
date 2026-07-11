@@ -127,8 +127,12 @@ class FakeCanvas extends FakeElement {
       fillText(text, x, y) {
         canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha });
       },
-      lineTo() {},
-      moveTo() {},
+      lineTo(x, y) {
+        canvas.commands.push({ type: 'lineTo', x, y, alpha: this.globalAlpha });
+      },
+      moveTo(x, y) {
+        canvas.commands.push({ type: 'moveTo', x, y, alpha: this.globalAlpha });
+      },
       quadraticCurveTo() {},
       restore() {
         this.globalAlpha = this._alphaStack.length ? this._alphaStack.pop() : 1;
@@ -384,6 +388,19 @@ assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
 assert.ok(!paneLegendTexts.includes('Volume'));
 assert.ok(!paneLegendTexts.includes('Relative Strength Index'));
+const rsiPaneRectForCrosshair = chart.getPaneRect(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId);
+const crosshairPaneRects = chart.paneRects.slice();
+const crosshairX = crosshairPaneRects[0].x + Math.round(crosshairPaneRects[0].width / 3);
+chart.pointer = { x: crosshairX, y: rsiPaneRectForCrosshair.y + Math.round(rsiPaneRectForCrosshair.height / 2), pointerType: 'mouse' };
+chart.canvas.commands = [];
+chart.drawCrosshair(chart.theme());
+const verticalCrosshairSegments = chart.canvas.commands.filter((command) => command.type === 'lineTo' && command.x === crosshairX);
+assert.strictEqual(verticalCrosshairSegments.length, crosshairPaneRects.length);
+crosshairPaneRects.forEach((rect) => {
+  assert.ok(verticalCrosshairSegments.some((command) => command.y === rect.y + rect.height));
+});
+assert.strictEqual(chart.canvas.commands.filter((command) => command.type === 'lineTo' && command.y === chart.pointer.y && command.x !== crosshairX).length, 1);
+chart.pointer = null;
 const volumePaneId = chart.document.indicators.find((indicator) => indicator.id === volumePaneIndicatorId).paneId;
 assert.notStrictEqual(volumePaneId, 'price');
 assert.strictEqual(chart.removeIndicator(volumePaneIndicatorId), true);
