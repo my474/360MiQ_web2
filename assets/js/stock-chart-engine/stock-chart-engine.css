@@ -70,6 +70,71 @@
   min-width: 112px;
 }
 
+.sce-chart-type-picker {
+  position: relative;
+}
+
+.sce-chart-type-picker summary {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  color: var(--sce-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  gap: 7px;
+  height: 28px;
+  list-style: none;
+  min-width: 126px;
+  padding: 0 9px;
+  white-space: nowrap;
+}
+
+.sce-chart-type-picker summary::-webkit-details-marker {
+  display: none;
+}
+
+.sce-chart-type-picker[open] summary,
+.sce-chart-type-picker summary:hover,
+.sce-chart-type-picker summary:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.sce-chart-type-menu {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+  display: grid;
+  gap: 3px;
+  left: 0;
+  min-width: 158px;
+  padding: 5px;
+  position: absolute;
+  top: 33px;
+  z-index: 8;
+}
+
+.sce-chart-type-menu button {
+  align-items: center;
+  border-color: transparent;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.sce-chart-type-menu button.is-selected {
+  border-color: #2563eb;
+}
+
+.sce-chart-type-icon {
+  flex: 0 0 auto;
+  height: 16px;
+  width: 16px;
+}
+
 .sce-toolbar button:hover,
 .sce-toolbar button:focus,
 .sce-toolbar select:focus {
@@ -79,7 +144,11 @@
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:hover,
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:focus,
-.sce-root[data-sce-theme="dark"] .sce-toolbar select:focus {
+.sce-root[data-sce-theme="dark"] .sce-toolbar select:focus,
+.sce-root[data-sce-theme="dark"] .sce-chart-type-picker[open] summary,
+.sce-root[data-sce-theme="dark"] .sce-chart-type-picker summary:hover,
+.sce-root[data-sce-theme="dark"] .sce-chart-type-picker summary:focus,
+.sce-root[data-sce-theme="dark"] .sce-chart-type-menu button.is-selected {
   border-color: #60a5fa;
 }
 

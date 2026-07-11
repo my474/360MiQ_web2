@@ -1438,7 +1438,15 @@
     this.toolbar.className = 'sce-toolbar';
     this.toolbar.innerHTML = [
       '<span class="sce-title"></span>',
-      '<select class="sce-chart-type" data-sce-chart-type aria-label="Chart type">',
+      '<details class="sce-chart-type-picker" data-sce-chart-type-picker>',
+      '<summary data-sce-chart-type-button aria-label="Chart type"></summary>',
+      '<div class="sce-chart-type-menu">',
+      '<button type="button" data-sce-chart-type-option="candlestick">', chartTypeIconSvg('candlestick'), '<span>Candlestick</span></button>',
+      '<button type="button" data-sce-chart-type-option="bar">', chartTypeIconSvg('bar'), '<span>Bar</span></button>',
+      '<button type="button" data-sce-chart-type-option="line">', chartTypeIconSvg('line'), '<span>Line</span></button>',
+      '</div>',
+      '</details>',
+      '<select class="sce-chart-type" data-sce-chart-type aria-label="Chart type" hidden>',
       '<option value="candlestick">Candlestick</option>',
       '<option value="bar">Bar</option>',
       '<option value="line">Line</option>',
@@ -1488,6 +1496,14 @@
   Chart.prototype.bindDom = function () {
     var self = this;
     this.toolbar.addEventListener('click', function (event) {
+      var chartTypeOption = closestAttribute(event.target, 'data-sce-chart-type-option');
+      if (chartTypeOption) {
+        if (event.preventDefault) event.preventDefault();
+        self.setChartType(chartTypeOption.getAttribute('data-sce-chart-type-option'));
+        var picker = closestAttribute(chartTypeOption, 'data-sce-chart-type-picker');
+        if (picker) picker.removeAttribute('open');
+        return;
+      }
       var action = event.target && event.target.getAttribute('data-sce-action');
       if (!action) return;
       if (action === 'sma') self.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
@@ -3091,6 +3107,17 @@
     if (title) title.textContent = this.document.symbol + ' ' + this.document.interval;
     var chartType = this.toolbar.querySelector('[data-sce-chart-type]');
     if (chartType) chartType.value = this.document.settings.chartType;
+    var chartTypeButton = this.toolbar.querySelector('[data-sce-chart-type-button]');
+    if (chartTypeButton) {
+      chartTypeButton.innerHTML = chartTypeIconSvg(this.document.settings.chartType) + '<span>' + chartTypeLabel(this.document.settings.chartType) + '</span>';
+    }
+    if (this.toolbar.querySelectorAll) {
+      Array.prototype.forEach.call(this.toolbar.querySelectorAll('[data-sce-chart-type-option]'), function (button) {
+        var selected = button.getAttribute('data-sce-chart-type-option') === this.document.settings.chartType;
+        button.classList.toggle('is-selected', selected);
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      }, this);
+    }
     var chartPeriod = this.toolbar.querySelector('[data-sce-chart-period]');
     if (chartPeriod) chartPeriod.value = this.document.settings.period;
     var themeButton = this.toolbar.querySelector('[data-sce-action="theme"]');
@@ -4938,6 +4965,23 @@
     return common + (paths[icon] || paths.maximize) + '</svg>';
   }
 
+  function chartTypeIconSvg(type) {
+    var normalized = normalizeChartType(type);
+    var paths = {
+      candlestick: '<path d="M7 4v4"/><rect x="5" y="8" width="4" height="7"/><path d="M7 15v5"/><path d="M17 4v3"/><rect x="15" y="7" width="4" height="9"/><path d="M17 16v4"/>',
+      bar: '<path d="M7 4v16"/><path d="M4 8h3"/><path d="M7 15h4"/><path d="M17 4v16"/><path d="M14 11h3"/><path d="M17 17h4"/>',
+      line: '<path d="M4 17l5-6 4 3 7-8"/><circle cx="4" cy="17" r="1.2"/><circle cx="9" cy="11" r="1.2"/><circle cx="13" cy="14" r="1.2"/><circle cx="20" cy="6" r="1.2"/>'
+    };
+    return '<svg class="sce-chart-type-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (paths[normalized] || paths.candlestick) + '</svg>';
+  }
+
+  function chartTypeLabel(type) {
+    var normalized = normalizeChartType(type);
+    if (normalized === 'bar') return 'Bar';
+    if (normalized === 'line') return 'Line';
+    return 'Candlestick';
+  }
+
   function formatNumber(value) {
     var abs = Math.abs(value);
     if (abs >= 1000000000) return (value / 1000000000).toFixed(2) + 'B';
@@ -4994,6 +5038,8 @@
     Indicators: Indicators,
     drawingTools: DRAWING_TOOLS,
     drawingToolIconSvg: drawingToolIconSvg,
+    chartTypeIconSvg: chartTypeIconSvg,
+    chartTypeLabel: chartTypeLabel,
     chartPeriods: CHART_PERIODS,
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,

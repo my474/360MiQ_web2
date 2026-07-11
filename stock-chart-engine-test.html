@@ -139,6 +139,73 @@
       position: relative;
     }
 
+    .chart-type-picker {
+      position: relative;
+    }
+
+    .chart-type-picker summary {
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 700;
+      gap: 8px;
+      height: 32px;
+      list-style: none;
+      min-width: 150px;
+      padding: 0 10px;
+      white-space: nowrap;
+    }
+
+    .chart-type-picker summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .chart-type-picker[open] summary,
+    .chart-type-picker summary:hover,
+    .chart-type-picker summary:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .chart-type-menu {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 4px;
+      left: 0;
+      min-width: 170px;
+      padding: 6px;
+      position: absolute;
+      top: 39px;
+      z-index: 24;
+    }
+
+    .chart-type-menu button {
+      align-items: center;
+      border-color: transparent;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .chart-type-menu button.is-selected {
+      border-color: var(--accent);
+    }
+
+    .chart-type-icon,
+    .sce-chart-type-icon {
+      flex: 0 0 auto;
+      height: 16px;
+      width: 16px;
+    }
+
     .control-menu summary {
       align-items: center;
       background: var(--panel-bg);
@@ -865,7 +932,15 @@
       </div>
 
       <div class="toolbar-group">
-        <select id="chartType" aria-label="Chart type">
+        <details class="chart-type-picker" id="chartTypePicker">
+          <summary id="chartTypeSummary" aria-label="Chart type"></summary>
+          <div class="chart-type-menu" role="menu">
+            <button type="button" data-chart-type-value="candlestick" role="menuitem"></button>
+            <button type="button" data-chart-type-value="bar" role="menuitem"></button>
+            <button type="button" data-chart-type-value="line" role="menuitem"></button>
+          </div>
+        </details>
+        <select id="chartType" aria-label="Chart type" hidden>
           <option value="candlestick">Candlestick</option>
           <option value="bar">Bar</option>
           <option value="line">Line</option>
@@ -1139,8 +1214,28 @@
         return found ? found.id : null;
       }
 
+      function chartTypeLabel(type) {
+        return StockChartEngine.chartTypeLabel ? StockChartEngine.chartTypeLabel(type) : (type === 'bar' ? 'Bar' : type === 'line' ? 'Line' : 'Candlestick');
+      }
+
+      function syncChartTypePicker(value) {
+        var normalized = value || 'candlestick';
+        var select = document.getElementById('chartType');
+        var summary = document.getElementById('chartTypeSummary');
+        select.value = normalized;
+        summary.innerHTML = StockChartEngine.chartTypeIconSvg(normalized).replace('sce-chart-type-icon', 'chart-type-icon') + '<span>' + chartTypeLabel(normalized) + '</span>';
+        Array.prototype.forEach.call(document.querySelectorAll('[data-chart-type-value]'), function (button) {
+          var type = button.getAttribute('data-chart-type-value');
+          var selected = type === normalized;
+          button.innerHTML = StockChartEngine.chartTypeIconSvg(type).replace('sce-chart-type-icon', 'chart-type-icon') + '<span>' + chartTypeLabel(type) + '</span>';
+          button.classList.toggle('is-selected', selected);
+          button.setAttribute('aria-selected', selected ? 'true' : 'false');
+        });
+      }
+
       function renderState() {
         var doc = chart.serialize();
+        syncChartTypePicker(doc.settings.chartType);
         renderPaneScaleOptions(doc);
         renderIndicatorSettingsOptions(doc);
         var summary = {
@@ -1218,6 +1313,36 @@
         document.addEventListener('focusin', function (event) {
           if (event.target.closest && event.target.closest('.control-menu')) return;
           closeControlMenus();
+        });
+      }
+
+      function initChartTypePicker() {
+        var picker = document.getElementById('chartTypePicker');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-chart-type-value]'), function (button) {
+          button.addEventListener('click', function () {
+            var type = this.getAttribute('data-chart-type-value') || 'candlestick';
+            chart.setChartType(type);
+            picker.removeAttribute('open');
+            renderState();
+          });
+        });
+        picker.addEventListener('toggle', function () {
+          if (picker.open) closeControlMenus();
+        });
+        picker.addEventListener('focusout', function () {
+          window.setTimeout(function () {
+            if (!picker.contains(document.activeElement)) picker.removeAttribute('open');
+          }, 0);
+        });
+        picker.addEventListener('keydown', function (event) {
+          if (event.key !== 'Escape') return;
+          picker.removeAttribute('open');
+          var summary = picker.querySelector('summary');
+          if (summary && summary.focus) summary.focus();
+        });
+        document.addEventListener('click', function (event) {
+          if (picker.contains(event.target)) return;
+          picker.removeAttribute('open');
         });
       }
 
@@ -1909,6 +2034,7 @@
       });
 
       initControlMenus();
+      initChartTypePicker();
       initIndicatorSearch();
       renderDrawingToolOptions();
       seedChart(document.documentElement.getAttribute('data-theme') || 'light', true);
