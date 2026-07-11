@@ -1428,6 +1428,7 @@
       '<button type="button" data-sce-action="fit">Fit</button>',
       '<button type="button" data-sce-action="log">Log</button>',
       '<button type="button" data-sce-action="theme">Dark</button>',
+      '<button type="button" data-sce-action="export-image">Export PNG</button>',
       '<button type="button" data-sce-action="save">Save</button>'
     ].join('');
     this.canvasWrap = document.createElement('div');
@@ -1471,6 +1472,7 @@
       }
       if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
       if (action === 'theme') self.toggleTheme();
+      if (action === 'export-image') self.downloadImage();
       if (action === 'save') self.save();
     });
     this.toolbar.addEventListener('change', function (event) {
@@ -1593,6 +1595,55 @@
     var saved = this.storage.save(this.layoutId, this.serialize());
     this.events.emit('save', { saved: saved, document: this.serialize() });
     return saved;
+  };
+
+  Chart.prototype.exportImage = function (options) {
+    options = options || {};
+    var type = options.type || 'image/png';
+    var quality = options.quality;
+    var includeInteraction = options.includeInteraction === true;
+    if (!this.canvas || !this.canvas.toDataURL) {
+      throw new Error('Chart image export requires a canvas with toDataURL support.');
+    }
+
+    var previousPointer = this.pointer;
+    var previousHoverDrawingId = this.hoverDrawingId;
+    var previousSelectedDrawingId = this.selectedDrawingId;
+    var previousPendingDrawing = this.pendingDrawing;
+    try {
+      if (!includeInteraction) {
+        this.pointer = null;
+        this.hoverDrawingId = null;
+        this.selectedDrawingId = null;
+        this.pendingDrawing = null;
+        this.canvas.classList.remove('sce-crosshair-drawing');
+        this.draw();
+      }
+      return quality == null ? this.canvas.toDataURL(type) : this.canvas.toDataURL(type, quality);
+    } finally {
+      if (!includeInteraction) {
+        this.pointer = previousPointer;
+        this.hoverDrawingId = previousHoverDrawingId;
+        this.selectedDrawingId = previousSelectedDrawingId;
+        this.pendingDrawing = previousPendingDrawing;
+        if (this.pendingDrawing) this.canvas.classList.add('sce-crosshair-drawing');
+        this.draw();
+      }
+    }
+  };
+
+  Chart.prototype.downloadImage = function (filename, options) {
+    var dataUrl = this.exportImage(options);
+    var name = filename || (this.document.symbol || 'chart') + '-' + (this.document.interval || 'image') + '.png';
+    if (typeof document !== 'undefined' && document.createElement) {
+      var link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = name;
+      if (document.body && document.body.appendChild) document.body.appendChild(link);
+      if (link.click) link.click();
+      if (link.parentNode && link.parentNode.removeChild) link.parentNode.removeChild(link);
+    }
+    return dataUrl;
   };
 
   Chart.prototype.load = function (layoutId) {

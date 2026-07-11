@@ -107,6 +107,7 @@ class FakeCanvas extends FakeElement {
   constructor() {
     super('canvas');
     this.commands = [];
+    this.exportCalls = [];
   }
 
   getContext() {
@@ -145,6 +146,11 @@ class FakeCanvas extends FakeElement {
       }
     };
     return ctx;
+  }
+
+  toDataURL(type, quality) {
+    this.exportCalls.push({ type, quality });
+    return `data:${type || 'image/png'};base64,ZmFrZS1jaGFydA==`;
   }
 }
 
@@ -600,6 +606,11 @@ const savedLayout = chart.storage.load('default');
 assert.ok(savedLayout.drawings.length > 0);
 assert.deepStrictEqual(savedLayout.panes.map((pane) => pane.id), chart.document.panes.map((pane) => pane.id));
 assert.deepStrictEqual(savedLayout.panes.map((pane) => pane.height), chart.document.panes.map((pane) => pane.height));
+const exportedPng = chart.exportImage();
+assert.ok(exportedPng.indexOf('data:image/png;base64,') === 0);
+const exportedJpeg = chart.exportImage({ type: 'image/jpeg', quality: 0.8, includeInteraction: true });
+assert.ok(exportedJpeg.indexOf('data:image/jpeg;base64,') === 0);
+assert.strictEqual(chart.canvas.exportCalls[chart.canvas.exportCalls.length - 1].quality, 0.8);
 
 chart.destroy();
 

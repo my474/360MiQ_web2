@@ -916,6 +916,7 @@
             <button type="button" id="appendBar">Append Bar</button>
             <button type="button" id="saveLayout">Save</button>
             <button type="button" id="loadLayout">Load</button>
+            <button type="button" id="exportImage">Export PNG</button>
             <button type="button" id="resetLayout">Reset Saved</button>
           </div>
         </div>
@@ -1550,6 +1551,10 @@
         trackedRsiId = null;
         trackedMacdId = null;
         seedChart(document.documentElement.getAttribute('data-theme'), false);
+      });
+
+      document.getElementById('exportImage').addEventListener('click', function () {
+        chart.downloadImage('stock-chart-lab.png');
       });
 
       document.getElementById('newData').addEventListener('click', function () {
