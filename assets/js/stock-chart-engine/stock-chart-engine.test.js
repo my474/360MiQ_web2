@@ -202,6 +202,15 @@ function createFakeDom() {
   return { container, documentElement };
 }
 
+function formatTestNumber(value) {
+  const abs = Math.abs(value);
+  if (abs >= 1000000000) return `${(value / 1000000000).toFixed(2)}B`;
+  if (abs >= 1000000) return `${(value / 1000000).toFixed(2)}M`;
+  if (abs >= 1000) return `${(value / 1000).toFixed(2)}K`;
+  if (abs < 1 && abs > 0) return value.toFixed(4);
+  return value.toFixed(2);
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -392,6 +401,28 @@ const rsiPaneRectForCrosshair = chart.getPaneRect(chart.document.indicators.find
 const crosshairPaneRects = chart.paneRects.slice();
 const crosshairX = crosshairPaneRects[0].x + Math.round(crosshairPaneRects[0].width / 3);
 chart.pointer = { x: crosshairX, y: rsiPaneRectForCrosshair.y + Math.round(rsiPaneRectForCrosshair.height / 2), pointerType: 'mouse' };
+const crosshairLegendTime = chart.legendTimeForPane(crosshairPaneRects[0]);
+const expectedCrosshairBar = chart.barNearTime(crosshairLegendTime);
+const expectedCrosshairPriceLabel = 'O ' + formatTestNumber(expectedCrosshairBar.open) +
+  ' H ' + formatTestNumber(expectedCrosshairBar.high) +
+  ' L ' + formatTestNumber(expectedCrosshairBar.low) +
+  ' C ' + formatTestNumber(expectedCrosshairBar.close);
+const latestVisibleBar = chart.visibleBars()[chart.visibleBars().length - 1];
+const latestPriceLabel = 'O ' + formatTestNumber(latestVisibleBar.open) +
+  ' H ' + formatTestNumber(latestVisibleBar.high) +
+  ' L ' + formatTestNumber(latestVisibleBar.low) +
+  ' C ' + formatTestNumber(latestVisibleBar.close);
+assert.notStrictEqual(expectedCrosshairPriceLabel, latestPriceLabel);
+crosshairPaneRects.forEach((rect) => {
+  assert.strictEqual(chart.legendTimeForPane(rect), crosshairLegendTime);
+});
+const expectedRsiLegendLabel = chart.indicatorLegendItems(rsiPaneRectForCrosshair.paneId, crosshairLegendTime, chart.theme())[0].label;
+chart.canvas.commands = [];
+chart.draw();
+const crosshairLegendTexts = chart.canvas.commands.filter((command) => command.type === 'fillText').map((command) => command.text);
+assert.ok(crosshairLegendTexts.includes(expectedCrosshairPriceLabel));
+assert.ok(!crosshairLegendTexts.includes(latestPriceLabel));
+assert.ok(crosshairLegendTexts.includes(expectedRsiLegendLabel));
 chart.canvas.commands = [];
 chart.drawCrosshair(chart.theme());
 const verticalCrosshairSegments = chart.canvas.commands.filter((command) => command.type === 'lineTo' && command.x === crosshairX);

@@ -3584,11 +3584,22 @@
   };
 
   Chart.prototype.legendTimeForPane = function (rect) {
-    if (this.pointer && this.pointer.x >= rect.x && this.pointer.x <= rect.x + rect.width && this.pointer.y >= rect.y && this.pointer.y <= rect.y + rect.height) {
+    if (this.pointer && this.pointerPaneRect() && this.pointer.x >= rect.x && this.pointer.x <= rect.x + rect.width) {
       return Math.round(this.timeForX(this.pointer.x, rect));
     }
     var visible = this.visibleBars();
     return visible.length ? visible[visible.length - 1].time : null;
+  };
+
+  Chart.prototype.pointerPaneRect = function () {
+    if (!this.pointer) return null;
+    for (var i = 0; i < this.paneRects.length; i += 1) {
+      var rect = this.paneRects[i];
+      if (this.pointer.x >= rect.x && this.pointer.x <= rect.x + rect.width && this.pointer.y >= rect.y && this.pointer.y <= rect.y + rect.height) {
+        return rect;
+      }
+    }
+    return null;
   };
 
   Chart.prototype.barNearTime = function (time) {
@@ -4162,14 +4173,7 @@
   Chart.prototype.drawCrosshair = function (theme) {
     if (!this.pointer) return;
     var ctx = this.ctx;
-    var activeRect = null;
-    for (var i = 0; i < this.paneRects.length; i += 1) {
-      var candidate = this.paneRects[i];
-      if (this.pointer.y >= candidate.y && this.pointer.y <= candidate.y + candidate.height) {
-        activeRect = candidate;
-        break;
-      }
-    }
+    var activeRect = this.pointerPaneRect();
     if (!activeRect) return;
     ctx.save();
     ctx.strokeStyle = theme.crosshair;
