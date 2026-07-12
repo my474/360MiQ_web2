@@ -17,12 +17,18 @@ class FakeClassList {
   }
 }
 
+class FakeStyle {
+  setProperty(name, value) {
+    this[name] = value;
+  }
+}
+
 class FakeElement {
   constructor(tagName) {
     this.tagName = tagName;
     this.children = [];
     this.attributes = {};
-    this.style = {};
+    this.style = new FakeStyle();
     this.className = '';
     this.classList = new FakeClassList(this);
     this.listeners = {};
@@ -248,6 +254,30 @@ const chart = new StockChartEngine.Chart('#chart', {
   load: false,
   autosave: false
 });
+const drawingMenuForPosition = new FakeElement('div');
+drawingMenuForPosition.getBoundingClientRect = function getMenuRect() {
+  return { width: 360, height: 240 };
+};
+const drawingSummaryForPosition = new FakeElement('summary');
+drawingSummaryForPosition.getBoundingClientRect = function getSummaryRect() {
+  return { left: 12, right: 54, top: 120, bottom: 152, width: 42, height: 32 };
+};
+chart.drawingToolsLayer.querySelectorAll = function queryOpenDrawingGroups(selector) {
+  if (selector !== '.sce-drawing-tool-group[open]') return [];
+  return [{
+    querySelector(query) {
+      if (query === 'summary') return drawingSummaryForPosition;
+      if (query === '.sce-drawing-tool-menu') return drawingMenuForPosition;
+      return null;
+    }
+  }];
+};
+global.window.innerWidth = 500;
+global.window.innerHeight = 420;
+chart.positionDrawingToolMenus();
+assert.strictEqual(drawingMenuForPosition.style['--sce-drawing-menu-left'], '62px');
+assert.strictEqual(drawingMenuForPosition.style['--sce-drawing-menu-top'], '120px');
+assert.strictEqual(drawingMenuForPosition.style['--sce-drawing-menu-max-height'], '288px');
 const priceRectForLeadSpace = chart.getPaneRect('price');
 const latestXWithLeadSpace = chart.xForTime(chart.visibleBars()[chart.visibleBars().length - 1].time, priceRectForLeadSpace);
 assert.ok(priceRectForLeadSpace.x + priceRectForLeadSpace.width - latestXWithLeadSpace > 10);

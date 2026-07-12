@@ -1802,6 +1802,7 @@
     this.themeListener = this.handleThemeChange.bind(this);
     this.resizeListener = this.resize.bind(this);
     this.keydownListener = this.handleDocumentKeyDown.bind(this);
+    this.drawingMenuPositionListener = this.positionDrawingToolMenus.bind(this);
     this.initDom();
     this.bindDom();
     this.compute();
@@ -1939,6 +1940,15 @@
         });
       }
     });
+    this.drawingToolsLayer.addEventListener('toggle', function (event) {
+      if (!event.target || event.target.tagName !== 'DETAILS') return;
+      setTimeout(function () {
+        self.positionDrawingToolMenus();
+      }, 0);
+    }, true);
+    this.drawingToolsLayer.addEventListener('scroll', function () {
+      self.positionDrawingToolMenus();
+    }, true);
     this.toolbar.addEventListener('change', function (event) {
       if (event.target && event.target.getAttribute('data-sce-chart-type') != null) {
         self.setChartType(event.target.value);
@@ -2007,6 +2017,7 @@
       }
     });
     window.addEventListener('resize', this.resizeListener);
+    window.addEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.addEventListener('themechange', this.themeListener);
     if (document.addEventListener) document.addEventListener('keydown', this.keydownListener);
   };
@@ -2014,6 +2025,7 @@
   Chart.prototype.destroy = function () {
     this.destroyed = true;
     window.removeEventListener('resize', this.resizeListener);
+    window.removeEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.removeEventListener('themechange', this.themeListener);
     if (document.removeEventListener) document.removeEventListener('keydown', this.keydownListener);
     clearTimeout(this.autosaveTimer);
@@ -3680,6 +3692,31 @@
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (!this.document.visibleRange) this.fitContent();
     this.draw();
+    this.positionDrawingToolMenus();
+  };
+
+  Chart.prototype.positionDrawingToolMenus = function () {
+    if (!this.drawingToolsLayer || !this.drawingToolsLayer.querySelectorAll) return;
+    var groups = Array.prototype.slice.call(this.drawingToolsLayer.querySelectorAll('.sce-drawing-tool-group[open]'));
+    if (!groups.length) return;
+    var viewportWidth = window.innerWidth || document.documentElement.clientWidth || this.canvas.clientWidth || 900;
+    var viewportHeight = window.innerHeight || document.documentElement.clientHeight || this.canvas.clientHeight || 560;
+    groups.forEach(function (group) {
+      var summary = group.querySelector && group.querySelector('summary');
+      var menu = group.querySelector && group.querySelector('.sce-drawing-tool-menu');
+      if (!summary || !menu || !summary.getBoundingClientRect) return;
+      var rect = summary.getBoundingClientRect();
+      var menuRect = menu.getBoundingClientRect ? menu.getBoundingClientRect() : { width: 0 };
+      var fallbackWidth = viewportWidth < 880 ? Math.min(280, Math.max(220, viewportWidth - 58)) : 360;
+      var menuWidth = Math.min(menuRect.width || fallbackWidth, Math.max(220, viewportWidth - 16));
+      var left = rect.right + 8;
+      if (left + menuWidth > viewportWidth - 8) left = Math.max(8, viewportWidth - menuWidth - 8);
+      var top = Math.max(8, Math.min(rect.top, viewportHeight - 180));
+      var maxHeight = Math.max(160, viewportHeight - top - 12);
+      menu.style.setProperty('--sce-drawing-menu-left', Math.round(left) + 'px');
+      menu.style.setProperty('--sce-drawing-menu-top', Math.round(top) + 'px');
+      menu.style.setProperty('--sce-drawing-menu-max-height', Math.round(maxHeight) + 'px');
+    });
   };
 
   Chart.prototype.visibleBars = function () {

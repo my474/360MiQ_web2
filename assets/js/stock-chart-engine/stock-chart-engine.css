@@ -335,14 +335,15 @@
   display: grid;
   gap: 4px;
   grid-template-columns: repeat(2, minmax(170px, 1fr));
-  left: 48px;
-  max-height: min(520px, calc(100vh - 150px));
+  left: var(--sce-drawing-menu-left, 64px);
+  max-height: min(520px, var(--sce-drawing-menu-max-height, calc(100vh - 150px)));
+  max-width: calc(100vw - 16px);
   min-width: 360px;
   overflow: auto;
   padding: 7px;
-  position: absolute;
-  top: 0;
-  z-index: 12;
+  position: fixed;
+  top: var(--sce-drawing-menu-top, 96px);
+  z-index: 80;
 }
 
 .sce-drawing-tool-menu button {
@@ -586,8 +587,7 @@
 
   .sce-drawing-tool-menu {
     grid-template-columns: 1fr;
-    left: 40px;
-    max-height: min(58vh, 420px);
+    max-height: min(58vh, var(--sce-drawing-menu-max-height, 420px));
     min-width: min(280px, calc(100vw - 58px));
   }
 
