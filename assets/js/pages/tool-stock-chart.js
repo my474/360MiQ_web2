@@ -12,6 +12,7 @@
     var shareLayoutPayload = null;
     var shareLayoutApplied = false;
     var shareLayoutLoading = false;
+    var sharedPreviewActive = false;
 
     function normalizeCode(value) {
         var code = String(value || '').trim();
@@ -29,6 +30,12 @@
         if (!status) return;
         status.textContent = message || '';
         status.classList.toggle('is-error', !!isError);
+    }
+
+    function setSharedSaveVisible(visible) {
+        var button = document.getElementById('toolStockChartSaveShared');
+        if (!button) return;
+        button.hidden = !visible;
     }
 
     function ensureEngineReady() {
@@ -53,7 +60,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.8';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.9';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -91,6 +98,12 @@
         url.searchParams.set('stockcode', code);
         url.searchParams.set('tab', '3');
         window.history.replaceState(null, '', url.toString());
+    }
+
+    function currentThemeName() {
+        if (document.documentElement.getAttribute('data-theme') === 'dark') return 'dark';
+        if (window.ThemeController && window.ThemeController.isDark && window.ThemeController.isDark()) return 'dark';
+        return 'light';
     }
 
     function getShareLayoutPayload() {
@@ -284,11 +297,13 @@
         }
     }
 
-    function renderChart(code, bars) {
+    function renderChart(code, bars, options) {
+        options = options || {};
         var container = document.getElementById('toolStockChart');
         if (!container || !window.StockChartEngine) return;
         var layoutId = escapeLayoutId(code);
-        var layoutExisted = hasStoredLayout(layoutId);
+        var shouldLoadStoredLayout = options.load !== false;
+        var layoutExisted = shouldLoadStoredLayout && hasStoredLayout(layoutId);
 
         if (stockChart && stockChart.destroy) stockChart.destroy();
         stockChart = new StockChartEngine.Chart(container, {
@@ -296,20 +311,39 @@
             interval: 'daily',
             data: bars,
             layoutId: layoutId,
-            storagePrefix: STOCK_CHART_STORAGE_PREFIX
+            storagePrefix: STOCK_CHART_STORAGE_PREFIX,
+            load: shouldLoadStoredLayout,
+            autosave: options.autosave !== false
         });
         stockChart.document.symbol = code;
         stockChart.updateToolbar();
-        ensureStarterStudies(stockChart, layoutExisted);
+        if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         setTimeout(function () {
             if (stockChart && stockChart.resize) stockChart.resize();
         }, 0);
+    }
+
+    function applySharedLayout(code, payload, bars) {
+        renderChart(code, bars, {
+            load: false,
+            autosave: false,
+            skipStarterStudies: true
+        });
+        stockChart.importLayout(payload);
+        stockChart.document.symbol = code;
+        stockChart.setTheme(currentThemeName());
+        stockChart.updateToolbar();
+        sharedPreviewActive = true;
+        setSharedSaveVisible(true);
+        setStatus('Shared chart preview. Click Save Layout to replace your saved ' + code + ' layout.', false);
     }
 
     function loadStockChart(rawCode) {
         var code = normalizeCode(rawCode);
         var input = document.getElementById('toolStockChartCode');
         if (input) input.value = code;
+        sharedPreviewActive = false;
+        setSharedSaveVisible(false);
 
         if (!isValidCode(code)) {
             setStatus('Enter a valid stock code.', true);
@@ -349,20 +383,12 @@
         ensureEngineReady().then(function () {
             var sharedBars = payload && Array.isArray(payload.data) ? payload.data : null;
             if (sharedBars && sharedBars.length) {
-                renderChart(code, sharedBars);
-                stockChart.importLayout(payload);
-                stockChart.document.symbol = code;
-                stockChart.updateToolbar();
-                setStatus('Shared chart loaded.', false);
+                applySharedLayout(code, payload, sharedBars);
                 shareLayoutLoading = false;
                 return null;
             }
             return requestBars(code).then(function (response) {
-                renderChart(code, response.bars);
-                stockChart.importLayout(payload);
-                stockChart.document.symbol = code;
-                stockChart.updateToolbar();
-                setStatus('Shared chart loaded.', false);
+                applySharedLayout(code, payload, response.bars);
                 shareLayoutLoading = false;
                 return null;
             });
@@ -371,7 +397,20 @@
             setStatus('Could not load shared chart.', true);
             shareLayoutApplied = false;
             shareLayoutLoading = false;
+            sharedPreviewActive = false;
+            setSharedSaveVisible(false);
         });
+    }
+
+    function saveSharedLayout() {
+        if (!stockChart || !sharedPreviewActive) return;
+        stockChart.options.autosave = true;
+        stockChart.document.settings.autosave = true;
+        stockChart.save();
+        stockChart.scheduleAutosave();
+        sharedPreviewActive = false;
+        setSharedSaveVisible(false);
+        setStatus('Shared layout saved for ' + currentCode + '.', false);
     }
 
     function preloadEngine() {
@@ -521,6 +560,10 @@
         loadButton.addEventListener('click', function () {
             loadStockChart(input.value);
         });
+        var saveSharedButton = document.getElementById('toolStockChartSaveShared');
+        if (saveSharedButton) {
+            saveSharedButton.addEventListener('click', saveSharedLayout);
+        }
 
         var stockChartTabShown = false;
         $('.nav-tabs a[href="#tab-3"]').on('shown.bs.tab', function () {

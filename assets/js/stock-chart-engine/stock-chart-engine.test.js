@@ -275,6 +275,9 @@ const chart = new StockChartEngine.Chart('#chart', {
   load: false,
   autosave: false
 });
+assert.strictEqual(chart.autosaveTimer, null);
+chart.emitChange('autosave-disabled-check', {});
+assert.strictEqual(chart.autosaveTimer, null);
 const toolbarOpenDetail = new FakeElement('details');
 toolbarOpenDetail.setAttribute('open', 'open');
 chart.toolbar.querySelectorAll = function queryOpenToolbarMenus(selector) {

@@ -777,6 +777,11 @@ select optgroup {
   width: 100%;
 }
 
+.stock-chart-save-shared {
+  justify-self: end;
+  margin-left: auto;
+}
+
 .stock-chart-status.is-error {
   color: #dc2626;
 }
@@ -849,6 +854,11 @@ select optgroup {
 
   .stock-chart-search-card .btn {
     width: 100%;
+  }
+
+  .stock-chart-save-shared {
+    justify-self: stretch;
+    margin-left: 0;
   }
 
   .stock-chart-stage,
@@ -1015,6 +1025,7 @@ select optgroup {
                                             <input id="toolStockChartCode" class="form-control" type="search" placeholder="Type a stock code, e.g. AAPL, SPY, 0005.HK" autocomplete="off" spellcheck="false" maxlength="40" aria-label="Stock code">
                                         </div>
                                         <button id="toolStockChartLoad" class="btn btn-primary" type="button"><i class="fas fa-search"></i> Load Chart</button>
+                                        <button id="toolStockChartSaveShared" class="btn btn-outline-primary stock-chart-save-shared" type="button" hidden>Save Layout</button>
                                         <div id="toolStockChartStatus" class="stock-chart-status" aria-live="polite"></div>
                                     </div>
                                     <div class="stock-chart-stage">
@@ -1050,8 +1061,8 @@ window.__TOOL_PAGE_CONFIG = {
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
 <script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
-<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.8"></script>
-<script src="assets/js/pages/tool-stock-chart.js?v=20260713.9"></script>
+<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.9"></script>
+<script src="assets/js/pages/tool-stock-chart.js?v=20260713.10"></script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->

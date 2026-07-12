@@ -2454,6 +2454,8 @@
   Chart.prototype.scheduleAutosave = function () {
     var self = this;
     clearTimeout(this.autosaveTimer);
+    this.autosaveTimer = null;
+    if (this.options.autosave === false || this.document.settings.autosave === false) return;
     this.autosaveTimer = setTimeout(function () {
       if (!self.destroyed) self.save();
     }, this.options.autosaveDelay || 1200);
