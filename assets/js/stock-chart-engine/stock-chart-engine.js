@@ -1962,6 +1962,15 @@
       if (!event.target || event.target.tagName !== 'DETAILS') return;
       if (event.target.hasAttribute('open')) self.closeSiblingDetailsMenus(self.toolbar, event.target);
     }, true);
+    this.toolbar.addEventListener('mousedown', function (event) {
+      self.closeToolbarMenusForTarget(event.target);
+    });
+    this.toolbar.addEventListener('touchstart', function (event) {
+      self.closeToolbarMenusForTarget(event.target);
+    });
+    this.toolbar.addEventListener('focusin', function (event) {
+      self.closeToolbarMenusForTarget(event.target);
+    });
     this.drawingToolsLayer.addEventListener('scroll', function () {
       self.positionDrawingToolMenus();
     }, true);
@@ -2091,6 +2100,12 @@
 
   Chart.prototype.closeToolbarMenus = function () {
     this.closeDetailsMenus(this.toolbar);
+  };
+
+  Chart.prototype.closeToolbarMenusForTarget = function (target) {
+    var details = closestTagName(target, 'DETAILS');
+    if (details && elementContains(this.toolbar, details)) return;
+    this.closeToolbarMenus();
   };
 
   Chart.prototype.closeDrawingToolMenus = function () {
@@ -5844,6 +5859,15 @@
   function closestAttribute(element, attributeName) {
     while (element) {
       if (element.getAttribute && element.getAttribute(attributeName) != null) return element;
+      element = element.parentNode;
+    }
+    return null;
+  }
+
+  function closestTagName(element, tagName) {
+    tagName = String(tagName || '').toUpperCase();
+    while (element) {
+      if (String(element.tagName || '').toUpperCase() === tagName) return element;
       element = element.parentNode;
     }
     return null;

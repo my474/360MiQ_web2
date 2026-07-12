@@ -298,6 +298,20 @@ chart.toolbar.querySelectorAll = function querySiblingToolbarMenus(selector) {
 chart.closeSiblingDetailsMenus(chart.toolbar, openedToolbarDetail);
 assert.strictEqual(openedToolbarDetail.hasAttribute('open'), true);
 assert.strictEqual(siblingToolbarDetail.hasAttribute('open'), false);
+const chartTypeDetailForSelectFocus = new FakeElement('details');
+chartTypeDetailForSelectFocus.setAttribute('open', 'open');
+const chartTypeSummaryForSelectFocus = new FakeElement('summary');
+chartTypeDetailForSelectFocus.appendChild(chartTypeSummaryForSelectFocus);
+chart.toolbar.appendChild(chartTypeDetailForSelectFocus);
+chart.toolbar.querySelectorAll = function queryToolbarMenusForSelectFocus(selector) {
+  return selector === 'details[open]' ? [chartTypeDetailForSelectFocus] : [];
+};
+chart.closeToolbarMenusForTarget(chartTypeSummaryForSelectFocus);
+assert.strictEqual(chartTypeDetailForSelectFocus.hasAttribute('open'), true);
+const periodSelectForFocus = new FakeElement('select');
+chart.toolbar.appendChild(periodSelectForFocus);
+chart.closeToolbarMenusForTarget(periodSelectForFocus);
+assert.strictEqual(chartTypeDetailForSelectFocus.hasAttribute('open'), false);
 const drawingMenuForPosition = new FakeElement('div');
 drawingMenuForPosition.getBoundingClientRect = function getMenuRect() {
   return { width: 360, height: 240 };
