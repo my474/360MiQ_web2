@@ -328,7 +328,7 @@
         var parts = [item.code, item.name_tc, item.name_en, item.exchange].filter(function (part) {
             return part !== null && part !== undefined && String(part).trim() !== '';
         });
-        return parts.join(' | ');
+        return parts.join(' ' + String.fromCharCode(9679) + ' ');
     }
 
     function initAutocomplete() {
