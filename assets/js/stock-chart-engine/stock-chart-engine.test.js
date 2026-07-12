@@ -213,6 +213,11 @@ function formatTestNumber(value) {
   return value.toFixed(2);
 }
 
+function formatTestDate(time) {
+  const date = new Date(time * 1000);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -482,7 +487,7 @@ chart.draw();
 const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);
-assert.ok(paneLegendTexts.some((text) => text.indexOf('O ') === 0));
+assert.ok(paneLegendTexts.some((text) => /^\d{4}-\d{2}-\d{2}  O /.test(text)));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('RSI ') === 0));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
@@ -494,12 +499,12 @@ const crosshairX = crosshairPaneRects[0].x + Math.round(crosshairPaneRects[0].wi
 chart.pointer = { x: crosshairX, y: rsiPaneRectForCrosshair.y + Math.round(rsiPaneRectForCrosshair.height / 2), pointerType: 'mouse' };
 const crosshairLegendTime = chart.legendTimeForPane(crosshairPaneRects[0]);
 const expectedCrosshairBar = chart.barNearTime(crosshairLegendTime);
-const expectedCrosshairPriceLabel = 'O ' + formatTestNumber(expectedCrosshairBar.open) +
+const expectedCrosshairPriceLabel = formatTestDate(expectedCrosshairBar.time) + '  O ' + formatTestNumber(expectedCrosshairBar.open) +
   ' H ' + formatTestNumber(expectedCrosshairBar.high) +
   ' L ' + formatTestNumber(expectedCrosshairBar.low) +
   ' C ' + formatTestNumber(expectedCrosshairBar.close);
 const latestVisibleBar = chart.visibleBars()[chart.visibleBars().length - 1];
-const latestPriceLabel = 'O ' + formatTestNumber(latestVisibleBar.open) +
+const latestPriceLabel = formatTestDate(latestVisibleBar.time) + '  O ' + formatTestNumber(latestVisibleBar.open) +
   ' H ' + formatTestNumber(latestVisibleBar.high) +
   ' L ' + formatTestNumber(latestVisibleBar.low) +
   ' C ' + formatTestNumber(latestVisibleBar.close);

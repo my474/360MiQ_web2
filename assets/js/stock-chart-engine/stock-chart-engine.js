@@ -3983,7 +3983,7 @@
     if (rect.paneId === 'price') {
       var bar = this.barNearTime(legendTime);
       if (bar) {
-        var priceLabel = 'O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close);
+        var priceLabel = formatDate(bar.time) + '  O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close);
         ctx.fillStyle = bar.close >= bar.open ? theme.up : theme.down;
         ctx.fillText(priceLabel, x, y);
         x += approximateTextWidth(priceLabel) + 14;
