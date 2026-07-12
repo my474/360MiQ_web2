@@ -907,6 +907,36 @@ function renderMeasurementTool(type, points) {
 assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
 assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
 assert.ok(renderMeasurementTool('position_forecast').some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-long-position',
+  type: 'date_and_price_range',
+  paneId: 'price',
+  text: 'Long position',
+  points: measurementRenderPoints.slice(0, 2),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-short-position',
+  type: 'date_and_price_range',
+  paneId: 'price',
+  text: 'Short position',
+  points: measurementRenderPoints.slice(0, 2),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-position-forecast',
+  type: 'date_and_price_range',
+  paneId: 'price',
+  text: 'Position forecast',
+  points: measurementRenderPoints.slice(0, 2),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
 assert.ok(renderMeasurementTool('date_range').some((command) => command.type === 'fillText' && /\d+d$/.test(command.text)));
 assert.ok(renderMeasurementTool('price_range').some((command) => command.type === 'fillText' && command.text.indexOf('%') !== -1));
 assert.ok(renderMeasurementTool('date_and_price_range').some((command) => command.type === 'fillText' && command.text.indexOf(' / ') !== -1));

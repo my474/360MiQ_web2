@@ -4127,7 +4127,7 @@
     points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return false;
     var tool = drawingToolDefinition(drawing.type);
-    var kind = tool.renderKind;
+    var kind = drawingRenderKind(drawing, tool);
     var rect = this.getPaneRect(drawing.paneId);
     var bounds = pointBounds(points);
 
@@ -4992,7 +4992,7 @@
     var rawPoints = drawing.points || [];
     var points = this.drawingScreenPoints(drawing).filter(function (point) { return point.y != null; });
     var tool = drawingToolDefinition(drawing.type);
-    var kind = tool.renderKind;
+    var kind = drawingRenderKind(drawing, tool);
     var style = merge({ color: theme.drawing, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, drawing.style || {});
     if (!style.color) style.color = theme.drawing;
     if (!points.length) return;
@@ -5666,6 +5666,16 @@
 
   function drawingToolDefinition(type) {
     return DRAWING_TOOLS[normalizeDrawingType(type)] || DRAWING_TOOLS.text;
+  }
+
+  function drawingRenderKind(drawing, tool) {
+    var kind = tool && tool.renderKind || drawingToolDefinition(drawing && drawing.type).renderKind;
+    var textKey = normalizeDrawingKey(drawing && drawing.text);
+    var typeKey = normalizeDrawingKey(drawing && drawing.type);
+    if (typeKey === 'long_position' || textKey === 'long_position') return 'positionLong';
+    if (typeKey === 'short_position' || textKey === 'short_position') return 'positionShort';
+    if (typeKey === 'position_forecast' || textKey === 'position_forecast') return 'positionForecast';
+    return kind;
   }
 
   function drawingRequiredPointCount(type) {
