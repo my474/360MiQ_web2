@@ -678,6 +678,7 @@ assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
 const volumePaneIndicatorId = chart.addIndicator('VOLUME', { placement: 'new' });
 chart.updateIndicatorSettings(volumePaneIndicatorId, {
+  inputs: { length: 20 },
   styles: { value: { color: '#2563eb', opacity: 0.55 } }
 });
 chart.canvas.commands = [];
@@ -687,6 +688,8 @@ const volumeLegendPoint = chart.indicatorResults[volumePaneIndicatorId].outputs.
 const volumeLegendItem = chart.indicatorLegendItems(volumePaneIndicator.paneId, volumeLegendPoint.time, chart.theme()).find((item) => item.indicatorId === volumePaneIndicatorId);
 assert.strictEqual(volumeLegendItem.color, chart.volumeColorForPoint(volumeLegendPoint, chart.theme()));
 assert.notStrictEqual(volumeLegendItem.color, '#2563eb');
+assert.strictEqual(volumeLegendItem.label.indexOf('VOLUME 20 '), -1);
+assert.ok(volumeLegendItem.label.indexOf('VOLUME ') === 0);
 chart.openIndicatorSettingsPopup({ indicatorId: volumePaneIndicatorId, output: 'value' }, { x: 180, y: 160 });
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
 assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="length"'), -1);

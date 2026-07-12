@@ -6045,6 +6045,7 @@
     var definition = Indicators[indicator.type];
     var inputs = indicator.inputs || {};
     var name = definition ? definition.id : indicator.type;
+    if (indicator.type === 'VOLUME') return 'VOLUME';
     if (inputs.length) name += ' ' + inputs.length;
     if (indicator.type === 'MACD') {
       if (output === 'signal') return 'MACD Signal';
