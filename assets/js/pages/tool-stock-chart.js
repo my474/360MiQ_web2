@@ -11,6 +11,7 @@
     var engineReadyPromise = null;
     var shareLayoutPayload = null;
     var shareLayoutApplied = false;
+    var shareLayoutLoading = false;
 
     function normalizeCode(value) {
         var code = String(value || '').trim();
@@ -336,11 +337,13 @@
     }
 
     function loadSharedChart(payload) {
+        if (shareLayoutLoading) return;
         var code = codeFromLayoutPayload(payload);
         var input = document.getElementById('toolStockChartCode');
         if (input) input.value = code;
         currentCode = code;
         shareLayoutApplied = true;
+        shareLayoutLoading = true;
         setStatus('Loading shared chart...', false);
 
         ensureEngineReady().then(function () {
@@ -351,6 +354,7 @@
                 stockChart.document.symbol = code;
                 stockChart.updateToolbar();
                 setStatus('Shared chart loaded.', false);
+                shareLayoutLoading = false;
                 return null;
             }
             return requestBars(code).then(function (response) {
@@ -359,12 +363,14 @@
                 stockChart.document.symbol = code;
                 stockChart.updateToolbar();
                 setStatus('Shared chart loaded.', false);
+                shareLayoutLoading = false;
                 return null;
             });
         }).catch(function (error) {
             console.error(error);
             setStatus('Could not load shared chart.', true);
             shareLayoutApplied = false;
+            shareLayoutLoading = false;
         });
     }
 
@@ -470,13 +476,38 @@
 
     function ensureLoaded() {
         var sharePayload = getShareLayoutPayload();
-        if (sharePayload && !shareLayoutApplied) {
+        if (sharePayload && (!shareLayoutApplied || shareLayoutLoading)) {
             loadSharedChart(sharePayload);
             return;
         }
         var code = normalizeCode(document.getElementById('toolStockChartCode').value || initialCode());
         if (!stockChart || code !== currentCode) loadStockChart(code);
         else if (stockChart.resize) setTimeout(function () { stockChart.resize(); }, 0);
+    }
+
+    function activateStockChartTab() {
+        var $tab = $('.nav-tabs a[href="#tab-3"]');
+        if ($tab.length && typeof $tab.tab === 'function') {
+            $tab.tab('show');
+            return true;
+        }
+
+        var tabLink = document.querySelector('.nav-tabs a[href="#tab-3"]');
+        var tabPane = document.getElementById('tab-3');
+        if (!tabLink || !tabPane) return false;
+
+        Array.prototype.forEach.call(document.querySelectorAll('.nav-tabs a'), function (link) {
+            link.classList.remove('active');
+            link.setAttribute('aria-selected', 'false');
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.tab-pane'), function (pane) {
+            pane.classList.remove('active', 'show');
+        });
+
+        tabLink.classList.add('active');
+        tabLink.setAttribute('aria-selected', 'true');
+        tabPane.classList.add('active', 'show');
+        return true;
     }
 
     $(function () {
@@ -491,13 +522,18 @@
             loadStockChart(input.value);
         });
 
+        var stockChartTabShown = false;
         $('.nav-tabs a[href="#tab-3"]').on('shown.bs.tab', function () {
+            stockChartTabShown = true;
             ensureLoaded();
         });
 
         var params = new URLSearchParams(window.location.search);
         if (params.get('tab') === '3' || window.location.hash === '#tab-3' || getShareLayoutPayload()) {
-            setTimeout(ensureLoaded, 150);
+            activateStockChartTab();
+            setTimeout(function () {
+                if (!stockChartTabShown) ensureLoaded();
+            }, 150);
         }
     });
 
