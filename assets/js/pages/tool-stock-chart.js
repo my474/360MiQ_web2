@@ -9,6 +9,8 @@
     var stockChart = null;
     var currentCode = '';
     var engineReadyPromise = null;
+    var shareLayoutPayload = null;
+    var shareLayoutApplied = false;
 
     function normalizeCode(value) {
         var code = String(value || '').trim();
@@ -50,7 +52,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.7';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.8';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -88,6 +90,26 @@
         url.searchParams.set('stockcode', code);
         url.searchParams.set('tab', '3');
         window.history.replaceState(null, '', url.toString());
+    }
+
+    function getShareLayoutPayload() {
+        if (shareLayoutPayload !== null) return shareLayoutPayload;
+        shareLayoutPayload = false;
+        var marker = '#sce-layout=';
+        var hash = window.location.hash || '';
+        if (hash.indexOf(marker) !== 0) return false;
+        try {
+            shareLayoutPayload = JSON.parse(decodeURIComponent(hash.substring(marker.length)));
+        } catch (error) {
+            console.error('Unable to parse stock chart share URL:', error);
+            shareLayoutPayload = false;
+        }
+        return shareLayoutPayload;
+    }
+
+    function codeFromLayoutPayload(payload) {
+        var doc = payload && (payload.document || payload.chart || payload);
+        return normalizeCode(doc && doc.symbol || 'SPY');
     }
 
     function endpointCandidates(file) {
@@ -313,6 +335,39 @@
         });
     }
 
+    function loadSharedChart(payload) {
+        var code = codeFromLayoutPayload(payload);
+        var input = document.getElementById('toolStockChartCode');
+        if (input) input.value = code;
+        currentCode = code;
+        shareLayoutApplied = true;
+        setStatus('Loading shared chart...', false);
+
+        ensureEngineReady().then(function () {
+            var sharedBars = payload && Array.isArray(payload.data) ? payload.data : null;
+            if (sharedBars && sharedBars.length) {
+                renderChart(code, sharedBars);
+                stockChart.importLayout(payload);
+                stockChart.document.symbol = code;
+                stockChart.updateToolbar();
+                setStatus('Shared chart loaded.', false);
+                return null;
+            }
+            return requestBars(code).then(function (response) {
+                renderChart(code, response.bars);
+                stockChart.importLayout(payload);
+                stockChart.document.symbol = code;
+                stockChart.updateToolbar();
+                setStatus('Shared chart loaded.', false);
+                return null;
+            });
+        }).catch(function (error) {
+            console.error(error);
+            setStatus('Could not load shared chart.', true);
+            shareLayoutApplied = false;
+        });
+    }
+
     function preloadEngine() {
         if (window.StockChartEngine) return;
         setStatus('Loading chart engine...', false);
@@ -404,6 +459,8 @@
 
     function initialCode() {
         var params = new URLSearchParams(window.location.search);
+        var sharePayload = getShareLayoutPayload();
+        if (sharePayload) return codeFromLayoutPayload(sharePayload);
         var configured = window.__TOOL_PAGE_CONFIG && window.__TOOL_PAGE_CONFIG.stockChartCodefromURL;
         if (configured) return normalizeCode(configured);
         if (params.get('stockcode')) return normalizeCode(params.get('stockcode'));
@@ -412,6 +469,11 @@
     }
 
     function ensureLoaded() {
+        var sharePayload = getShareLayoutPayload();
+        if (sharePayload && !shareLayoutApplied) {
+            loadSharedChart(sharePayload);
+            return;
+        }
         var code = normalizeCode(document.getElementById('toolStockChartCode').value || initialCode());
         if (!stockChart || code !== currentCode) loadStockChart(code);
         else if (stockChart.resize) setTimeout(function () { stockChart.resize(); }, 0);
@@ -434,7 +496,7 @@
         });
 
         var params = new URLSearchParams(window.location.search);
-        if (params.get('tab') === '3' || window.location.hash === '#tab-3') {
+        if (params.get('tab') === '3' || window.location.hash === '#tab-3' || getShareLayoutPayload()) {
             setTimeout(ensureLoaded, 150);
         }
     });

@@ -84,12 +84,14 @@
   min-width: 112px;
 }
 
-.sce-chart-type-picker {
+.sce-chart-type-picker,
+.sce-share-picker {
   position: relative;
 }
 
 .sce-chart-type-picker summary,
-.sce-date-range-picker summary {
+.sce-date-range-picker summary,
+.sce-share-picker summary {
   align-items: center;
   background: transparent;
   border: 1px solid var(--sce-border);
@@ -115,13 +117,23 @@
   min-width: 108px;
 }
 
+.sce-share-picker summary {
+  min-width: 92px;
+}
+
+.sce-share-picker summary svg {
+  height: 15px;
+  width: 15px;
+}
+
 .sce-date-range-picker summary strong {
   font-size: 12px;
   font-weight: 800;
 }
 
 .sce-chart-type-picker summary::-webkit-details-marker,
-.sce-date-range-picker summary::-webkit-details-marker {
+.sce-date-range-picker summary::-webkit-details-marker,
+.sce-share-picker summary::-webkit-details-marker {
   display: none;
 }
 
@@ -130,13 +142,17 @@
 .sce-chart-type-picker summary:focus,
 .sce-date-range-picker[open] summary,
 .sce-date-range-picker summary:hover,
-.sce-date-range-picker summary:focus {
+.sce-date-range-picker summary:focus,
+.sce-share-picker[open] summary,
+.sce-share-picker summary:hover,
+.sce-share-picker summary:focus {
   border-color: #2563eb;
   outline: none;
 }
 
 .sce-chart-type-menu,
-.sce-date-range-menu {
+.sce-date-range-menu,
+.sce-share-menu {
   background: var(--sce-panel);
   border: 1px solid var(--sce-border);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
@@ -157,8 +173,15 @@
   right: 0;
 }
 
+.sce-share-menu {
+  left: auto;
+  min-width: 190px;
+  right: 0;
+}
+
 .sce-chart-type-menu button,
-.sce-date-range-menu button {
+.sce-date-range-menu button,
+.sce-share-menu button {
   align-items: center;
   border-color: transparent;
   display: flex;
@@ -169,6 +192,19 @@
 
 .sce-date-range-menu button {
   justify-content: center;
+}
+
+.sce-share-menu button {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.sce-share-status {
+  color: var(--sce-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  min-height: 15px;
+  padding: 3px 6px 1px;
 }
 
 .sce-chart-type-menu button.is-selected,
@@ -191,7 +227,8 @@
 }
 
 .sce-chart-type-picker[open] .sce-chart-type-chevron,
-.sce-date-range-picker[open] .sce-chart-type-chevron {
+.sce-date-range-picker[open] .sce-chart-type-chevron,
+.sce-share-picker[open] .sce-chart-type-chevron {
   transform: rotate(180deg);
 }
 
@@ -211,6 +248,9 @@
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker summary:focus,
+.sce-root[data-sce-theme="dark"] .sce-share-picker[open] summary,
+.sce-root[data-sce-theme="dark"] .sce-share-picker summary:hover,
+.sce-root[data-sce-theme="dark"] .sce-share-picker summary:focus,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-menu button.is-selected,
 .sce-root[data-sce-theme="dark"] .sce-date-range-menu button.is-selected {
   border-color: #60a5fa;
