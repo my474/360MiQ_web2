@@ -347,6 +347,7 @@ assert.strictEqual(Math.round(chart.barIndexAtPoint({
 
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+assert.strictEqual(chart.document.settings.autosave, true);
 assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-magnet"') !== -1);
 assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-stay-drawing"') !== -1);
 assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-lock-drawings"') !== -1);
@@ -358,6 +359,7 @@ assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom out"><svg') !== -1);
+assert.strictEqual(chart.toolbar.innerHTML.indexOf('data-sce-action="save"'), -1);
 assert.strictEqual(chart.setPaneScaleMode('price', 'log'), 'log');
 assert.strictEqual(chart.paneScaleMode('price'), 'log');
 assert.strictEqual(chart.yForValue(0, chart.getPaneRect('price'), chart.paneRange('price')), null);
@@ -884,6 +886,34 @@ assert.strictEqual(chart.setAllDrawingsVisible(true), true);
 assert.strictEqual(chart.setStayInDrawingMode(true), true);
 assert.strictEqual(chart.toggleStayInDrawingMode(), false);
 chart.removeEntity(registryShapeId);
+const measurementRenderRect = chart.getPaneRect('price');
+const measurementRenderRange = chart.paneRange('price');
+const measurementRenderPoints = [
+  { time: data[data.length - 28].time, value: data[data.length - 28].close },
+  { time: data[data.length - 16].time, value: data[data.length - 16].close + 4 },
+  { time: data[data.length - 8].time, value: data[data.length - 8].close - 2 }
+];
+function renderMeasurementTool(type, points) {
+  chart.canvas.commands = [];
+  chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+    id: `render-${type}`,
+    type,
+    paneId: 'price',
+    points: points || measurementRenderPoints.slice(0, StockChartEngine.drawingTools[type].points),
+    style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+  });
+  return chart.canvas.commands;
+}
+assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
+assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
+assert.ok(renderMeasurementTool('position_forecast').some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
+assert.ok(renderMeasurementTool('date_range').some((command) => command.type === 'fillText' && /\d+d$/.test(command.text)));
+assert.ok(renderMeasurementTool('price_range').some((command) => command.type === 'fillText' && command.text.indexOf('%') !== -1));
+assert.ok(renderMeasurementTool('date_and_price_range').some((command) => command.type === 'fillText' && command.text.indexOf(' / ') !== -1));
+assert.ok(renderMeasurementTool('bars_pattern').filter((command) => command.type === 'strokeRect').length >= 8);
+assert.ok(renderMeasurementTool('ghost_feed').filter((command) => command.type === 'strokeRect').length >= 9);
+assert.ok(renderMeasurementTool('sector', measurementRenderPoints).some((command) => command.type === 'stroke'));
+assert.ok(renderMeasurementTool('fixed_range_volume_profile').filter((command) => command.type === 'fillRect').length >= 8);
 
 Object.keys(StockChartEngine.drawingTools).forEach((toolId, toolIndex) => {
   const tool = StockChartEngine.drawingTools[toolId];

@@ -1649,7 +1649,7 @@
         stayInDrawingMode: false,
         seriesColorIndex: 0,
         seriesColorOrder: DEFAULT_SERIES_COLOR_ORDER.slice(),
-        autosave: options.autosave !== false
+        autosave: true
       },
       panes: [
         { id: 'price', title: 'Price', height: 420, seriesIds: ['main'], scaleIds: ['right'], scaleMode: 'linear', type: 'price' }
@@ -1677,6 +1677,7 @@
     migrated.settings.dateRangePreset = normalizeDateRangePreset(migrated.settings.dateRangePreset);
     migrated.settings.magnetMode = !!migrated.settings.magnetMode;
     migrated.settings.stayInDrawingMode = !!migrated.settings.stayInDrawingMode;
+    migrated.settings.autosave = true;
     migrated.interval = periodInterval(migrated.settings.period);
     migrated.settings.seriesColorOrder = Array.isArray(migrated.settings.seriesColorOrder) && migrated.settings.seriesColorOrder.length ? migrated.settings.seriesColorOrder : DEFAULT_SERIES_COLOR_ORDER.slice();
     migrated.settings.seriesColorIndex = Math.max(0, toNumber(migrated.settings.seriesColorIndex, 0));
@@ -1854,8 +1855,7 @@
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-in" title="Zoom in" aria-label="Zoom in">', paneControlIconSvg('zoom-in'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-out" title="Zoom out" aria-label="Zoom out">', paneControlIconSvg('zoom-out'), '</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
-      '<button type="button" data-sce-action="export-image">Export PNG</button>',
-      '<button type="button" data-sce-action="save">Save</button>'
+      '<button type="button" data-sce-action="export-image">Export PNG</button>'
     ].join('');
     this.canvasWrap = document.createElement('div');
     this.canvasWrap.className = 'sce-canvas-wrap';
@@ -1919,7 +1919,6 @@
       if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
       if (action === 'theme') self.toggleTheme();
       if (action === 'export-image') self.downloadImage();
-      if (action === 'save') self.save();
     });
     this.drawingToolsLayer.addEventListener('click', function (event) {
       var toolButton = closestAttribute(event.target, 'data-sce-drawing-tool');
@@ -2373,7 +2372,6 @@
 
   Chart.prototype.scheduleAutosave = function () {
     var self = this;
-    if (!this.document.settings.autosave) return;
     clearTimeout(this.autosaveTimer);
     this.autosaveTimer = setTimeout(function () {
       if (!self.destroyed) self.save();
@@ -5118,7 +5116,15 @@
     } else if (kind === 'sine' && point(1)) {
       drawSineLine(ctx, point(0), point(1));
       ctx.stroke();
-    } else if (kind.indexOf('position') === 0 || kind === 'dateRange' || kind === 'priceRange' || kind === 'datePriceRange') {
+    } else if ((kind === 'positionLong' || kind === 'positionShort') && point(1)) {
+      drawPositionRiskReward(ctx, point(0), point(1), rawPoints[0], rawPoints[1], kind === 'positionLong', style, theme.background);
+    } else if (kind === 'positionForecast' && point(1)) {
+      drawPositionForecast(ctx, point(0), point(1), rawPoints[0], rawPoints[1], style);
+    } else if (kind === 'dateRange' && point(1)) {
+      drawDateRangeTool(ctx, point(0), point(1), rawPoints[0], rawPoints[1], style);
+    } else if (kind === 'priceRange' && point(1)) {
+      drawPriceRangeTool(ctx, point(0), point(1), rawPoints[0], rawPoints[1], style);
+    } else if (kind === 'datePriceRange') {
       if (point(1)) {
         drawScreenRectangle(ctx, point(0), point(1), true);
         drawValueLabel(rangeLabel(kind, rawPoints[0], rawPoints[1]), midpoint(point(0), point(1)));
@@ -5525,6 +5531,56 @@
     }
   }
 
+  function drawPositionRiskReward(ctx, anchor, target, rawAnchor, rawTarget, isLong, style, background) {
+    var spanX = Math.max(48, Math.abs(target.x - anchor.x));
+    var left = Math.min(anchor.x, target.x);
+    var entryY = anchor.y;
+    var targetY = target.y;
+    var rewardHeight = Math.max(18, Math.abs(entryY - targetY));
+    var riskHeight = Math.max(14, rewardHeight * 0.45);
+    var rewardTop = isLong ? entryY - rewardHeight : entryY;
+    var riskTop = isLong ? entryY : entryY - riskHeight;
+    var top = Math.min(rewardTop, riskTop);
+    var height = rewardHeight + riskHeight;
+    ctx.fillStyle = 'rgba(22, 163, 74, 0.18)';
+    ctx.fillRect(left, rewardTop, spanX, rewardHeight);
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.18)';
+    ctx.fillRect(left, riskTop, spanX, riskHeight);
+    ctx.strokeStyle = style.color;
+    ctx.strokeRect(left, top, spanX, height);
+    drawLine(ctx, { x: left, y: entryY }, { x: left + spanX, y: entryY });
+    ctx.fillStyle = style.color;
+    ctx.fillText((isLong ? 'Long' : 'Short') + ' ' + priceMoveLabel(rawAnchor, rawTarget), left + 6, top + 14);
+    ctx.fillStyle = background || '#fff';
+  }
+
+  function drawPositionForecast(ctx, a, b, rawA, rawB, style) {
+    drawLine(ctx, a, b);
+    drawArrowHead(ctx, a.x, a.y, b.x, b.y, style.color);
+    var width = Math.max(28, Math.abs(b.x - a.x) * 0.28);
+    ctx.strokeRect(b.x - width / 2, b.y - 16, width, 32);
+    ctx.fillStyle = style.color;
+    ctx.fillText('Forecast ' + combinedRangeLabel(rawA, rawB), midpoint(a, b).x + 6, midpoint(a, b).y - 8);
+  }
+
+  function drawDateRangeTool(ctx, a, b, rawA, rawB, style) {
+    var y = Math.max(a.y, b.y) + 18;
+    drawLine(ctx, { x: a.x, y: y }, { x: b.x, y: y });
+    drawLine(ctx, { x: a.x, y: y - 8 }, { x: a.x, y: y + 8 });
+    drawLine(ctx, { x: b.x, y: y - 8 }, { x: b.x, y: y + 8 });
+    ctx.fillStyle = style.color;
+    ctx.fillText(dateDeltaLabel(rawA, rawB), midpoint(a, b).x + 6, y - 6);
+  }
+
+  function drawPriceRangeTool(ctx, a, b, rawA, rawB, style) {
+    var x = Math.max(a.x, b.x) + 18;
+    drawLine(ctx, { x: x, y: a.y }, { x: x, y: b.y });
+    drawLine(ctx, { x: x - 8, y: a.y }, { x: x + 8, y: a.y });
+    drawLine(ctx, { x: x - 8, y: b.y }, { x: x + 8, y: b.y });
+    ctx.fillStyle = style.color;
+    ctx.fillText(priceMoveLabel(rawA, rawB), x + 6, midpoint(a, b).y);
+  }
+
   function drawGhostBars(ctx, a, b, ghost) {
     var minX = Math.min(a.x, b.x);
     var maxX = Math.max(a.x, b.x);
@@ -5565,11 +5621,27 @@
     return formatNumber((b.value || 0) - (a.value || 0));
   }
 
+  function priceMoveLabel(a, b) {
+    if (!a || !b) return '';
+    var delta = (b.value || 0) - (a.value || 0);
+    var percent = a.value ? delta / a.value * 100 : null;
+    return formatNumber(delta) + (percent == null || !Number.isFinite(percent) ? '' : ' (' + (percent >= 0 ? '+' : '') + percent.toFixed(1) + '%)');
+  }
+
+  function dateDeltaLabel(a, b) {
+    if (!a || !b) return '';
+    return Math.abs(Math.round((b.time - a.time) / 86400)) + 'd';
+  }
+
+  function combinedRangeLabel(a, b) {
+    return dateDeltaLabel(a, b) + ' / ' + priceMoveLabel(a, b);
+  }
+
   function rangeLabel(kind, a, b) {
     if (!a || !b) return kind;
-    if (kind === 'dateRange') return Math.abs(Math.round((b.time - a.time) / 86400)) + ' bars';
-    if (kind === 'priceRange') return formatNumber((b.value || 0) - (a.value || 0));
-    return Math.abs(Math.round((b.time - a.time) / 86400)) + ' bars / ' + formatNumber((b.value || 0) - (a.value || 0));
+    if (kind === 'dateRange') return dateDeltaLabel(a, b);
+    if (kind === 'priceRange') return priceMoveLabel(a, b);
+    return combinedRangeLabel(a, b);
   }
 
   function angleLabel(a, b) {
