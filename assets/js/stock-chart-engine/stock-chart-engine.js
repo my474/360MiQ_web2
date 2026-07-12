@@ -1806,6 +1806,7 @@
     this.themeListener = this.handleThemeChange.bind(this);
     this.resizeListener = this.resize.bind(this);
     this.keydownListener = this.handleDocumentKeyDown.bind(this);
+    this.documentPointerDownListener = this.handleDocumentPointerDown.bind(this);
     this.drawingMenuPositionListener = this.positionDrawingToolMenus.bind(this);
     this.initDom();
     this.bindDom();
@@ -1967,6 +1968,12 @@
         self.setPeriod(event.target.value);
       }
     });
+    this.toolbar.addEventListener('focusout', function (event) {
+      self.closeMenusAfterFocusLoss(self.toolbar, self.closeToolbarMenus, event);
+    });
+    this.drawingToolsLayer.addEventListener('focusout', function (event) {
+      self.closeMenusAfterFocusLoss(self.drawingToolsLayer, self.closeDrawingToolMenus, event);
+    });
     this.paneControlsLayer.addEventListener('click', function (event) {
       var button = closestAttribute(event.target, 'data-sce-pane-action');
       if (!button) return;
@@ -2029,7 +2036,11 @@
     window.addEventListener('resize', this.resizeListener);
     window.addEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.addEventListener('themechange', this.themeListener);
-    if (document.addEventListener) document.addEventListener('keydown', this.keydownListener);
+    if (document.addEventListener) {
+      document.addEventListener('keydown', this.keydownListener);
+      document.addEventListener('mousedown', this.documentPointerDownListener);
+      document.addEventListener('touchstart', this.documentPointerDownListener);
+    }
   };
 
   Chart.prototype.destroy = function () {
@@ -2037,7 +2048,11 @@
     window.removeEventListener('resize', this.resizeListener);
     window.removeEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.removeEventListener('themechange', this.themeListener);
-    if (document.removeEventListener) document.removeEventListener('keydown', this.keydownListener);
+    if (document.removeEventListener) {
+      document.removeEventListener('keydown', this.keydownListener);
+      document.removeEventListener('mousedown', this.documentPointerDownListener);
+      document.removeEventListener('touchstart', this.documentPointerDownListener);
+    }
     clearTimeout(this.autosaveTimer);
     this.container.innerHTML = '';
   };
@@ -2053,6 +2068,35 @@
       event.preventDefault();
       this.cancelDrawing();
     }
+  };
+
+  Chart.prototype.closeDetailsMenus = function (root) {
+    if (!root || !root.querySelectorAll) return;
+    Array.prototype.forEach.call(root.querySelectorAll('details[open]'), function (details) {
+      details.removeAttribute('open');
+    });
+  };
+
+  Chart.prototype.closeToolbarMenus = function () {
+    this.closeDetailsMenus(this.toolbar);
+  };
+
+  Chart.prototype.closeDrawingToolMenus = function () {
+    this.closeDetailsMenus(this.drawingToolsLayer);
+  };
+
+  Chart.prototype.closeMenusAfterFocusLoss = function (root, closeFn, event) {
+    var self = this;
+    var nextTarget = event && event.relatedTarget;
+    setTimeout(function () {
+      if (!elementContains(root, nextTarget)) closeFn.call(self);
+    }, 0);
+  };
+
+  Chart.prototype.handleDocumentPointerDown = function (event) {
+    var target = event && event.target;
+    if (!elementContains(this.toolbar, target)) this.closeToolbarMenus();
+    if (!elementContains(this.drawingToolsLayer, target)) this.closeDrawingToolMenus();
   };
 
   Chart.prototype.on = function (eventName, handler) {
@@ -4796,6 +4840,28 @@
     ctx.restore();
   };
 
+  Chart.prototype.volumeColorSourceBars = function () {
+    return normalizeChartType(this.document.settings.chartType) === 'heikin_ashi' ? this.heikinAshiBars() : this.bars;
+  };
+
+  Chart.prototype.volumeColorForPoint = function (point, theme, sourceBars) {
+    var source = sourceBars || this.volumeColorSourceBars();
+    var barIndex = -1;
+    for (var i = 0; i < source.length; i += 1) {
+      if (source[i].time === point.time) {
+        barIndex = i;
+        break;
+      }
+    }
+    var bar = barIndex >= 0 ? source[barIndex] : null;
+    var close = bar ? bar.close : point.close;
+    var previousClose = barIndex > 0 ? source[barIndex - 1].close : (bar ? bar.open : point.open);
+    if (close == null) close = point.value;
+    if (previousClose == null) previousClose = point.open;
+    if (previousClose == null) previousClose = close;
+    return close >= previousClose ? theme.volumeUp : theme.volumeDown;
+  };
+
   Chart.prototype.drawHistogram = function (rect, range, theme, data, style, useVolumeColor) {
     var ctx = this.ctx;
     var visible = this.visibleBars();
@@ -4805,6 +4871,7 @@
     var spacing = rect.width / Math.max(1, visible.length);
     var barWidth = clamp(spacing * 0.7, 1, 14);
     var zeroY = this.yForValue(Math.max(0, range.min), rect, range);
+    var volumeColorSource = useVolumeColor ? this.volumeColorSourceBars() : null;
     ctx.save();
     ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
     data.forEach(function (point) {
@@ -4812,7 +4879,7 @@
       var x = this.xForTime(point.time, rect);
       var y = this.yForValue(point.value, rect, range);
       if (y == null) return;
-      if (useVolumeColor) ctx.fillStyle = point.close >= point.open ? theme.volumeUp : theme.volumeDown;
+      if (useVolumeColor) ctx.fillStyle = this.volumeColorForPoint(point, theme, volumeColorSource);
       else ctx.fillStyle = point.value >= 0 ? theme.volumeUp : theme.volumeDown;
       if (style.color) ctx.fillStyle = style.color;
       ctx.fillRect(x - barWidth / 2, Math.min(y, zeroY), barWidth, Math.max(1, Math.abs(zeroY - y)));
@@ -4837,13 +4904,14 @@
     var overlayHeight = Math.max(36, Math.min(rect.height * 0.28, 130));
     var baseline = rect.y + rect.height - 2;
     var opacity = normalizeOpacity(style.opacity, 0.55);
+    var volumeColorSource = this.volumeColorSourceBars();
     ctx.save();
     ctx.globalAlpha = opacity;
     data.forEach(function (point) {
       if (point.time < first || point.time > last || point.value == null) return;
       var x = this.xForTime(point.time, rect);
       var height = Math.max(1, (point.value / maxVolume) * overlayHeight);
-      ctx.fillStyle = style.color || (point.close >= point.open ? theme.volumeUp : theme.volumeDown);
+      ctx.fillStyle = style.color || this.volumeColorForPoint(point, theme, volumeColorSource);
       ctx.fillRect(x - barWidth / 2, baseline - height, barWidth, height);
     }, this);
     ctx.restore();
@@ -5766,6 +5834,17 @@
       element = element.parentNode;
     }
     return null;
+  }
+
+  function elementContains(root, target) {
+    if (!root || !target) return false;
+    if (root === target) return true;
+    if (root.contains) return root.contains(target);
+    while (target) {
+      if (target === root) return true;
+      target = target.parentNode;
+    }
+    return false;
   }
 
   function paneControlIconSvg(icon) {

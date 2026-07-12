@@ -15,6 +15,19 @@ class FakeClassList {
   remove(name) {
     this.element.className = (this.element.className || '').split(/\s+/).filter((part) => part && part !== name).join(' ');
   }
+
+  toggle(name, force) {
+    const parts = this.element.className ? this.element.className.split(/\s+/).filter(Boolean) : [];
+    const hasClass = parts.includes(name);
+    const shouldAdd = force === undefined ? !hasClass : Boolean(force);
+    if (shouldAdd && !hasClass) parts.push(name);
+    if (!shouldAdd && hasClass) {
+      const index = parts.indexOf(name);
+      parts.splice(index, 1);
+    }
+    this.element.className = parts.join(' ');
+    return shouldAdd;
+  }
 }
 
 class FakeStyle {
@@ -87,6 +100,14 @@ class FakeElement {
       return findElement(this, (element) => (element.className || '').split(/\s+/).includes(className));
     }
     return null;
+  }
+
+  contains(target) {
+    while (target) {
+      if (target === this) return true;
+      target = target.parentNode;
+    }
+    return false;
   }
 
   addEventListener(type, handler) {
@@ -254,6 +275,19 @@ const chart = new StockChartEngine.Chart('#chart', {
   load: false,
   autosave: false
 });
+const toolbarOpenDetail = new FakeElement('details');
+toolbarOpenDetail.setAttribute('open', 'open');
+chart.toolbar.querySelectorAll = function queryOpenToolbarMenus(selector) {
+  return selector === 'details[open]' ? [toolbarOpenDetail] : [];
+};
+const drawingOpenDetail = new FakeElement('details');
+drawingOpenDetail.setAttribute('open', 'open');
+chart.drawingToolsLayer.querySelectorAll = function queryOpenDrawingMenus(selector) {
+  return selector === 'details[open]' ? [drawingOpenDetail] : [];
+};
+chart.handleDocumentPointerDown({ target: new FakeElement('button') });
+assert.strictEqual(toolbarOpenDetail.hasAttribute('open'), false);
+assert.strictEqual(drawingOpenDetail.hasAttribute('open'), false);
 const drawingMenuForPosition = new FakeElement('div');
 drawingMenuForPosition.getBoundingClientRect = function getMenuRect() {
   return { width: 360, height: 240 };
@@ -355,6 +389,22 @@ assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect' &&
 const firstHollowWickCommands = chart.canvas.commands.slice(0, 5);
 assert.deepStrictEqual(firstHollowWickCommands.map((command) => command.type), ['moveTo', 'lineTo', 'moveTo', 'lineTo', 'stroke']);
 assert.ok(firstHollowWickCommands[1].y < firstHollowWickCommands[2].y, 'hollow candle wick should skip the body interior');
+const candleRuleVolumeData = chart.bars.map((bar) => ({
+  time: bar.time,
+  value: bar.volume,
+  open: bar.open,
+  close: bar.close
+}));
+chart.canvas.commands = [];
+chart.drawVolumeOverlay({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'price' }, candleTheme, candleRuleVolumeData, { opacity: 1 });
+const overlayVolumeStyles = chart.canvas.commands.filter((command) => command.type === 'fillRect').map((command) => command.fillStyle);
+assert.strictEqual(overlayVolumeStyles[1], candleTheme.volumeUp, 'green filled candle volume should use up color');
+assert.strictEqual(overlayVolumeStyles[2], candleTheme.volumeDown, 'red hollow candle volume should use down color');
+chart.canvas.commands = [];
+chart.drawHistogram({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'volume' }, { min: 0, max: 1400 }, candleTheme, candleRuleVolumeData, { opacity: 1 }, true);
+const paneVolumeStyles = chart.canvas.commands.filter((command) => command.type === 'fillRect').map((command) => command.fillStyle);
+assert.strictEqual(paneVolumeStyles[1], candleTheme.volumeUp, 'pane volume should match green filled candle color');
+assert.strictEqual(paneVolumeStyles[2], candleTheme.volumeDown, 'pane volume should match red hollow candle color');
 chart.bars = originalBarsForCandlestickRules;
 chart.visibleBars = originalVisibleBarsForCandlestickRules;
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
