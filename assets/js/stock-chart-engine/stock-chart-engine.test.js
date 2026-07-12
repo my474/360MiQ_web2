@@ -265,6 +265,15 @@ assert.strictEqual(chart.setChartType('bar'), 'bar');
 assert.strictEqual(chart.document.settings.chartType, 'bar');
 assert.strictEqual(chart.setChartType('line'), 'line');
 assert.strictEqual(chart.document.settings.chartType, 'line');
+assert.strictEqual(chart.setChartType('heikin-ashi'), 'heikin_ashi');
+assert.strictEqual(chart.document.settings.chartType, 'heikin_ashi');
+assert.strictEqual(chart.setChartType('area'), 'area');
+assert.strictEqual(chart.document.settings.chartType, 'area');
+chart.canvas.commands = [];
+chart.drawPriceArea({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'price' }, { min: 70, max: 140 }, chart.theme());
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fill'), 'area chart should fill under the price line');
+assert.strictEqual(chart.setChartType('baseline'), 'baseline');
+assert.strictEqual(chart.document.settings.chartType, 'baseline');
 assert.strictEqual(chart.setChartType('hollow-candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
 const originalBarsForCandlestickRules = chart.bars;
@@ -292,6 +301,7 @@ chart.bars = originalBarsForCandlestickRules;
 chart.visibleBars = originalVisibleBarsForCandlestickRules;
 assert.strictEqual(chart.setChartType('candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+assert.strictEqual(chart.heikinAshiBars().length, chart.bars.length);
 
 assert.strictEqual(chart.document.settings.period, 'daily');
 assert.strictEqual(chart.document.interval, '1D');
@@ -403,6 +413,12 @@ assert.strictEqual(updatedMa.styles.value.opacity, 0.35);
 chart.canvas.commands = [];
 chart.draw();
 assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && command.alpha === 0.35));
+
+['AROON', 'AO', 'STOCHRSI', 'UO', 'VORTEX', 'VWMA', 'LSMA', 'FISHER', 'PPO', 'KST', 'TSI'].forEach((type) => {
+  const id = chart.addIndicator(type, { placement: StockChartEngine.Indicators[type].defaultPanePolicy === 'source' ? 'source' : 'new' });
+  assert.ok(chart.indicatorResults[id], `${type} should compute a result`);
+  assert.ok(Object.keys(chart.indicatorResults[id].outputs).length > 0, `${type} should expose outputs`);
+});
 
 chart.setTheme('dark');
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
@@ -696,15 +712,40 @@ Object.keys(StockChartEngine.drawingTools).forEach((toolId) => {
 });
 assert.ok(StockChartEngine.drawingToolIconSvg('trendline').indexOf('<svg') === 0);
 assert.ok(StockChartEngine.chartTypeIconSvg('candlestick').indexOf('<svg') === 0);
+assert.ok(StockChartEngine.chartTypeIconSvg('heikin_ashi').indexOf('<svg') === 0);
 assert.ok(StockChartEngine.chartTypeIconSvg('bar').indexOf('<svg') === 0);
 assert.ok(StockChartEngine.chartTypeIconSvg('line').indexOf('<svg') === 0);
+assert.ok(StockChartEngine.chartTypeIconSvg('area').indexOf('<svg') === 0);
+assert.ok(StockChartEngine.chartTypeIconSvg('baseline').indexOf('<svg') === 0);
 assert.ok(StockChartEngine.chartTypeChevronSvg().indexOf('sce-chart-type-chevron') !== -1);
 assert.strictEqual(StockChartEngine.chartTypeLabel('bar'), 'Bar');
+assert.strictEqual(StockChartEngine.chartTypeLabel('heikin_ashi'), 'Heikin Ashi');
+assert.ok(Object.keys(StockChartEngine.Indicators).length >= 40);
 const registryShapeId = chart.createMultipointShape([
   { time: data[data.length - 22].time, price: data[data.length - 22].close },
   { time: data[data.length - 8].time, price: data[data.length - 8].close }
 ], { shape: 'trend_line' });
 assert.strictEqual(chart.getDrawingById(registryShapeId).type, 'trendline');
+assert.strictEqual(chart.setDrawingMagnetMode(true), true);
+const priceRectForSnap = chart.getPaneRect('price');
+const snapBar = chart.bars[chart.bars.length - 5];
+const snapPoint = chart.valueFromPoint({
+  x: chart.xForTime(snapBar.time + 500, priceRectForSnap),
+  y: chart.yForValue(snapBar.close + 0.01, priceRectForSnap, chart.paneRange('price'))
+});
+assert.strictEqual(snapPoint.time, snapBar.time);
+assert.strictEqual(snapPoint.value, snapBar.close);
+assert.strictEqual(chart.toggleDrawingMagnetMode(), false);
+chart.selectedDrawingId = registryShapeId;
+assert.strictEqual(chart.moveDrawingZOrder(registryShapeId, 'front'), true);
+assert.strictEqual(chart.setAllDrawingsLocked(true), true);
+assert.strictEqual(chart.getAllShapes().every((drawing) => drawing.locked), true);
+assert.strictEqual(chart.setAllDrawingsLocked(false), false);
+assert.strictEqual(chart.setAllDrawingsVisible(false), false);
+assert.strictEqual(chart.getAllShapes().every((drawing) => drawing.visible === false), true);
+assert.strictEqual(chart.setAllDrawingsVisible(true), true);
+assert.strictEqual(chart.setStayInDrawingMode(true), true);
+assert.strictEqual(chart.toggleStayInDrawingMode(), false);
 chart.removeEntity(registryShapeId);
 
 Object.keys(StockChartEngine.drawingTools).forEach((toolId, toolIndex) => {

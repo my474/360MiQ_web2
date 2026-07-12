@@ -625,6 +625,37 @@
     return out;
   }
 
+  function rollingVwma(bars, length) {
+    var out = [];
+    for (var i = length - 1; i < bars.length; i += 1) {
+      var priceVolume = 0;
+      var volume = 0;
+      for (var j = i - length + 1; j <= i; j += 1) {
+        priceVolume += bars[j].close * bars[j].volume;
+        volume += bars[j].volume;
+      }
+      out.push({ time: bars[i].time, value: volume ? priceVolume / volume : bars[i].close });
+    }
+    return out;
+  }
+
+  function rollingLinReg(data, length) {
+    var out = [];
+    var xMean = (length - 1) / 2;
+    var denominator = 0;
+    for (var x = 0; x < length; x += 1) denominator += Math.pow(x - xMean, 2);
+    for (var i = length - 1; i < data.length; i += 1) {
+      var yMean = 0;
+      for (var j = 0; j < length; j += 1) yMean += data[i - length + 1 + j].value;
+      yMean /= length;
+      var numerator = 0;
+      for (var k = 0; k < length; k += 1) numerator += (k - xMean) * (data[i - length + 1 + k].value - yMean);
+      var slope = denominator ? numerator / denominator : 0;
+      out.push({ time: data[i].time, value: yMean + slope * xMean });
+    }
+    return out;
+  }
+
   function combineSeries(left, right, combiner) {
     var byTime = {};
     left.forEach(function (point) {
@@ -663,6 +694,84 @@
       sum += data[i].value;
       if (i >= length) sum -= data[i - length].value;
       if (i >= length - 1) out.push({ time: data[i].time, value: sum });
+    }
+    return out;
+  }
+
+  function sumWindow(data, endIndex, length) {
+    var sum = 0;
+    var start = Math.max(0, endIndex - length + 1);
+    for (var i = start; i <= endIndex; i += 1) sum += data[i].value || 0;
+    return sum;
+  }
+
+  function computeAroon(bars, length) {
+    var up = [];
+    var down = [];
+    for (var i = length - 1; i < bars.length; i += 1) {
+      var highIndex = i - length + 1;
+      var lowIndex = highIndex;
+      for (var j = i - length + 1; j <= i; j += 1) {
+        if (bars[j].high >= bars[highIndex].high) highIndex = j;
+        if (bars[j].low <= bars[lowIndex].low) lowIndex = j;
+      }
+      up.push({ time: bars[i].time, value: ((length - (i - highIndex)) / length) * 100 });
+      down.push({ time: bars[i].time, value: ((length - (i - lowIndex)) / length) * 100 });
+    }
+    return { up: up, down: down };
+  }
+
+  function computeUltimateOscillator(bars, fast, middle, slow) {
+    var bp = [];
+    var tr = [];
+    for (var i = 0; i < bars.length; i += 1) {
+      var previousClose = i ? bars[i - 1].close : bars[i].close;
+      bp.push({ time: bars[i].time, value: bars[i].close - Math.min(bars[i].low, previousClose) });
+      tr.push({ time: bars[i].time, value: Math.max(bars[i].high, previousClose) - Math.min(bars[i].low, previousClose) });
+    }
+    var out = [];
+    for (var j = slow - 1; j < bars.length; j += 1) {
+      var fastAvg = sumWindow(tr, j, fast) ? sumWindow(bp, j, fast) / sumWindow(tr, j, fast) : 0;
+      var midAvg = sumWindow(tr, j, middle) ? sumWindow(bp, j, middle) / sumWindow(tr, j, middle) : 0;
+      var slowAvg = sumWindow(tr, j, slow) ? sumWindow(bp, j, slow) / sumWindow(tr, j, slow) : 0;
+      out.push({ time: bars[j].time, value: 100 * ((4 * fastAvg + 2 * midAvg + slowAvg) / 7) });
+    }
+    return out;
+  }
+
+  function computeVortex(bars, length) {
+    var plus = [];
+    var minus = [];
+    var tr = [];
+    for (var i = 1; i < bars.length; i += 1) {
+      plus.push({ time: bars[i].time, value: Math.abs(bars[i].high - bars[i - 1].low) });
+      minus.push({ time: bars[i].time, value: Math.abs(bars[i].low - bars[i - 1].high) });
+      tr.push({ time: bars[i].time, value: Math.max(bars[i].high - bars[i].low, Math.abs(bars[i].high - bars[i - 1].close), Math.abs(bars[i].low - bars[i - 1].close)) });
+    }
+    return {
+      plus: combineSeries(rollingSum(plus, length), rollingSum(tr, length), function (a, b) { return b ? a / b : 0; }),
+      minus: combineSeries(rollingSum(minus, length), rollingSum(tr, length), function (a, b) { return b ? a / b : 0; })
+    };
+  }
+
+  function computeFisher(bars, length) {
+    var out = [];
+    var previousValue = 0;
+    var previousFish = 0;
+    for (var i = length - 1; i < bars.length; i += 1) {
+      var high = -Infinity;
+      var low = Infinity;
+      for (var j = i - length + 1; j <= i; j += 1) {
+        high = Math.max(high, bars[j].high);
+        low = Math.min(low, bars[j].low);
+      }
+      var mid = (bars[i].high + bars[i].low) / 2;
+      var value = high === low ? 0 : 0.33 * (2 * ((mid - low) / (high - low) - 0.5)) + 0.67 * previousValue;
+      value = clamp(value, -0.999, 0.999);
+      var fish = 0.5 * Math.log((1 + value) / (1 - value)) + 0.5 * previousFish;
+      out.push({ time: bars[i].time, value: fish });
+      previousValue = value;
+      previousFish = fish;
     }
     return out;
   }
@@ -1279,6 +1388,174 @@
         }
         return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
       }
+    },
+    AROON: {
+      id: 'AROON',
+      name: 'Aroon',
+      category: 'Trend',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 25 },
+      defaultStyles: { up: { color: null, lineWidth: 2 }, down: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var value = computeAroon(context.bars, Math.max(1, input.length));
+        return createIndicatorResult(indicator, value, [{ output: 'up', type: 'line' }, { output: 'down', type: 'line' }, { output: 'level50', type: 'level', value: 50 }]);
+      }
+    },
+    AO: {
+      id: 'AO',
+      name: 'Awesome Oscillator',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { fast: 5, slow: 34 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var median = context.bars.map(function (bar) { return { time: bar.time, value: (bar.high + bar.low) / 2 }; });
+        var value = combineSeries(rollingSma(median, input.fast), rollingSma(median, input.slow), function (a, b) { return a - b; });
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'histogram' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    },
+    STOCHRSI: {
+      id: 'STOCHRSI',
+      name: 'Stochastic RSI',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 14, smoothK: 3, smoothD: 3 },
+      defaultStyles: { k: { color: null, lineWidth: 2 }, d: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var rsi = computeRsi(compactSeries(sourceSeries(context, indicator.source)), input.length);
+        var raw = [];
+        for (var i = input.length - 1; i < rsi.length; i += 1) {
+          var high = -Infinity;
+          var low = Infinity;
+          for (var j = i - input.length + 1; j <= i; j += 1) {
+            high = Math.max(high, rsi[j].value);
+            low = Math.min(low, rsi[j].value);
+          }
+          raw.push({ time: rsi[i].time, value: high === low ? 50 : ((rsi[i].value - low) / (high - low)) * 100 });
+        }
+        var k = rollingSma(raw, input.smoothK);
+        return createIndicatorResult(indicator, { k: k, d: rollingSma(k, input.smoothD) }, [{ output: 'k', type: 'line' }, { output: 'd', type: 'line' }, { output: 'level80', type: 'level', value: 80 }, { output: 'level20', type: 'level', value: 20 }]);
+      }
+    },
+    UO: {
+      id: 'UO',
+      name: 'Ultimate Oscillator',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { fast: 7, middle: 14, slow: 28 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        return createIndicatorResult(indicator, { value: computeUltimateOscillator(context.bars, input.fast, input.middle, input.slow) }, [{ output: 'value', type: 'line' }, { output: 'level70', type: 'level', value: 70 }, { output: 'level30', type: 'level', value: 30 }]);
+      }
+    },
+    VORTEX: {
+      id: 'VORTEX',
+      name: 'Vortex Indicator',
+      category: 'Trend',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 14 },
+      defaultStyles: { plus: { color: null, lineWidth: 2 }, minus: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var value = computeVortex(context.bars, Math.max(1, input.length));
+        return createIndicatorResult(indicator, value, [{ output: 'plus', type: 'line' }, { output: 'minus', type: 'line' }]);
+      }
+    },
+    VWMA: {
+      id: 'VWMA',
+      name: 'Volume Weighted Moving Average',
+      category: 'Volume',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 20 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        return createIndicatorResult(indicator, { value: rollingVwma(context.bars, Math.max(1, input.length)) }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    LSMA: {
+      id: 'LSMA',
+      name: 'Least Squares Moving Average',
+      category: 'Trend',
+      defaultPanePolicy: 'source',
+      defaultInputs: { length: 25 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        return createIndicatorResult(indicator, { value: rollingLinReg(compactSeries(sourceSeries(context, indicator.source)), Math.max(2, input.length)) }, [{ output: 'value', type: 'line' }]);
+      }
+    },
+    FISHER: {
+      id: 'FISHER',
+      name: 'Fisher Transform',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { length: 10 },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        return createIndicatorResult(indicator, { value: computeFisher(context.bars, Math.max(2, input.length)) }, [{ output: 'value', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    },
+    PPO: {
+      id: 'PPO',
+      name: 'Percentage Price Oscillator',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { fast: 12, slow: 26, signal: 9 },
+      defaultStyles: { ppo: { color: null, lineWidth: 2 }, signal: { color: null, lineWidth: 2 }, histogram: { color: null } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var data = compactSeries(sourceSeries(context, indicator.source));
+        var ppo = combineSeries(rollingEma(data, input.fast), rollingEma(data, input.slow), function (a, b) { return b ? ((a - b) / b) * 100 : 0; });
+        var signal = rollingEma(ppo, input.signal);
+        var histogram = combineSeries(ppo, signal, function (a, b) { return a - b; });
+        return createIndicatorResult(indicator, { ppo: ppo, signal: signal, histogram: histogram }, [{ output: 'histogram', type: 'histogram' }, { output: 'ppo', type: 'line' }, { output: 'signal', type: 'line' }]);
+      }
+    },
+    KST: {
+      id: 'KST',
+      name: 'Know Sure Thing',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { signal: 9 },
+      defaultStyles: { value: { color: null, lineWidth: 2 }, signal: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var data = compactSeries(sourceSeries(context, indicator.source));
+        function roc(length) {
+          var out = [];
+          for (var i = length; i < data.length; i += 1) out.push({ time: data[i].time, value: data[i - length].value ? ((data[i].value - data[i - length].value) / data[i - length].value) * 100 : 0 });
+          return out;
+        }
+        var kst = combineSeries(combineSeries(rollingSma(roc(10), 10), rollingSma(roc(15), 10), function (a, b) { return a + 2 * b; }), combineSeries(rollingSma(roc(20), 10), rollingSma(roc(30), 15), function (a, b) { return 3 * a + 4 * b; }), function (a, b) { return a + b; });
+        var signal = rollingSma(kst, merge({}, this.defaultInputs, indicator.inputs).signal);
+        return createIndicatorResult(indicator, { value: kst, signal: signal }, [{ output: 'value', type: 'line' }, { output: 'signal', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
+    },
+    TSI: {
+      id: 'TSI',
+      name: 'True Strength Index',
+      category: 'Momentum',
+      defaultPanePolicy: 'new',
+      defaultInputs: { long: 25, short: 13, signal: 7 },
+      defaultStyles: { value: { color: null, lineWidth: 2 }, signal: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var data = compactSeries(sourceSeries(context, indicator.source));
+        var momentum = [];
+        var absMomentum = [];
+        for (var i = 1; i < data.length; i += 1) {
+          var diff = data[i].value - data[i - 1].value;
+          momentum.push({ time: data[i].time, value: diff });
+          absMomentum.push({ time: data[i].time, value: Math.abs(diff) });
+        }
+        var value = combineSeries(rollingEma(rollingEma(momentum, input.long), input.short), rollingEma(rollingEma(absMomentum, input.long), input.short), function (a, b) { return b ? 100 * a / b : 0; });
+        return createIndicatorResult(indicator, { value: value, signal: rollingEma(value, input.signal) }, [{ output: 'value', type: 'line' }, { output: 'signal', type: 'line' }, { output: 'zero', type: 'level', value: 0 }]);
+      }
     }
   });
 
@@ -1318,6 +1595,8 @@
         dateRangePreset: null,
         priceField: 'close',
         maximizedPaneId: null,
+        magnetMode: false,
+        stayInDrawingMode: false,
         seriesColorIndex: 0,
         seriesColorOrder: DEFAULT_SERIES_COLOR_ORDER.slice(),
         autosave: options.autosave !== false
@@ -1346,6 +1625,8 @@
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
     migrated.settings.period = normalizePeriod(savedPeriod || migrated.settings.period || migrated.interval);
     migrated.settings.dateRangePreset = normalizeDateRangePreset(migrated.settings.dateRangePreset);
+    migrated.settings.magnetMode = !!migrated.settings.magnetMode;
+    migrated.settings.stayInDrawingMode = !!migrated.settings.stayInDrawingMode;
     migrated.interval = periodInterval(migrated.settings.period);
     migrated.settings.seriesColorOrder = Array.isArray(migrated.settings.seriesColorOrder) && migrated.settings.seriesColorOrder.length ? migrated.settings.seriesColorOrder : DEFAULT_SERIES_COLOR_ORDER.slice();
     migrated.settings.seriesColorIndex = Math.max(0, toNumber(migrated.settings.seriesColorIndex, 0));
@@ -1490,14 +1771,20 @@
       '<summary data-sce-chart-type-button aria-label="Chart type"></summary>',
       '<div class="sce-chart-type-menu">',
       '<button type="button" data-sce-chart-type-option="candlestick">', chartTypeIconSvg('candlestick'), '<span>Candlestick</span></button>',
+      '<button type="button" data-sce-chart-type-option="heikin_ashi">', chartTypeIconSvg('heikin_ashi'), '<span>Heikin Ashi</span></button>',
       '<button type="button" data-sce-chart-type-option="bar">', chartTypeIconSvg('bar'), '<span>Bar</span></button>',
       '<button type="button" data-sce-chart-type-option="line">', chartTypeIconSvg('line'), '<span>Line</span></button>',
+      '<button type="button" data-sce-chart-type-option="area">', chartTypeIconSvg('area'), '<span>Area</span></button>',
+      '<button type="button" data-sce-chart-type-option="baseline">', chartTypeIconSvg('baseline'), '<span>Baseline</span></button>',
       '</div>',
       '</details>',
       '<select class="sce-chart-type" data-sce-chart-type aria-label="Chart type" hidden>',
       '<option value="candlestick">Candlestick</option>',
+      '<option value="heikin_ashi">Heikin Ashi</option>',
       '<option value="bar">Bar</option>',
       '<option value="line">Line</option>',
+      '<option value="area">Area</option>',
+      '<option value="baseline">Baseline</option>',
       '</select>',
       '<select class="sce-chart-period" data-sce-chart-period aria-label="Chart period">',
       '<option value="daily">Daily</option>',
@@ -2507,6 +2794,10 @@
       '<option value="dot"', lineStyle === 'dot' ? ' selected' : '', '>Dot</option>',
       '</select></label>',
       '<div class="sce-settings-actions">',
+      '<button type="button" data-sce-popup-action="send-back">Send back</button>',
+      '<button type="button" data-sce-popup-action="bring-front">Bring front</button>',
+      '</div>',
+      '<div class="sce-settings-actions">',
       '<button type="button" data-sce-popup-action="remove">Remove</button>',
       '<button type="button" data-sce-popup-action="apply">Apply</button>',
       '</div>'
@@ -2563,6 +2854,8 @@
         self.removeDrawing(self.settingsPopup.dataset.drawingId);
         self.closeIndicatorSettingsPopup();
       }
+      if (action === 'bring-front') self.moveDrawingZOrder(self.settingsPopup.dataset.drawingId, 'front');
+      if (action === 'send-back') self.moveDrawingZOrder(self.settingsPopup.dataset.drawingId, 'back');
       if (action === 'apply') self.applyDrawingSettingsPopup();
     };
     this.settingsPopup.onkeydown = function (event) {
@@ -2662,6 +2955,71 @@
     this.draw();
     this.emitChange('drawing:style', drawing);
     return true;
+  };
+
+  Chart.prototype.setDrawingMagnetMode = function (enabled) {
+    this.document.settings.magnetMode = !!enabled;
+    this.emitChange('drawing:magnet', { enabled: this.document.settings.magnetMode });
+    return this.document.settings.magnetMode;
+  };
+
+  Chart.prototype.toggleDrawingMagnetMode = function () {
+    return this.setDrawingMagnetMode(!this.document.settings.magnetMode);
+  };
+
+  Chart.prototype.setStayInDrawingMode = function (enabled) {
+    this.document.settings.stayInDrawingMode = !!enabled;
+    this.emitChange('drawing:stayMode', { enabled: this.document.settings.stayInDrawingMode });
+    return this.document.settings.stayInDrawingMode;
+  };
+
+  Chart.prototype.toggleStayInDrawingMode = function () {
+    return this.setStayInDrawingMode(!this.document.settings.stayInDrawingMode);
+  };
+
+  Chart.prototype.setAllDrawingsLocked = function (locked) {
+    this.document.drawings.forEach(function (drawing) {
+      drawing.locked = !!locked;
+    });
+    this.draw();
+    this.emitChange('drawing:lockAll', { locked: !!locked });
+    return !!locked;
+  };
+
+  Chart.prototype.setAllDrawingsVisible = function (visible) {
+    this.document.drawings.forEach(function (drawing) {
+      drawing.visible = !!visible;
+    });
+    if (!visible) {
+      this.selectedDrawingId = null;
+      this.hoverDrawingId = null;
+    }
+    this.draw();
+    this.emitChange('drawing:visibilityAll', { visible: !!visible });
+    return !!visible;
+  };
+
+  Chart.prototype.moveDrawingZOrder = function (drawingId, direction) {
+    var drawing = this.getDrawingById(drawingId);
+    if (!drawing) return false;
+    var maxZ = this.document.drawings.reduce(function (max, item) {
+      return Math.max(max, item.zIndex || 0);
+    }, 0);
+    if (direction === 'front' || direction === 'up') drawing.zIndex = maxZ + 1;
+    else if (direction === 'back' || direction === 'down') drawing.zIndex = 0;
+    else return false;
+    this.normalizeDrawingZOrder();
+    this.draw();
+    this.emitChange('drawing:zorder', { drawingId: drawingId, direction: direction });
+    return true;
+  };
+
+  Chart.prototype.normalizeDrawingZOrder = function () {
+    this.document.drawings.slice().sort(function (a, b) {
+      return (a.zIndex || 0) - (b.zIndex || 0);
+    }).forEach(function (drawing, index) {
+      drawing.zIndex = index + 1;
+    });
   };
 
   Chart.prototype.getAllShapes = function () {
@@ -2798,7 +3156,15 @@
       this.canvas.classList.remove('sce-crosshair-drawing');
       this.draw();
       var createdDrawing = this.getDrawingById(drawingId);
-      if (createdDrawing) this.openDrawingSettingsPopup(createdDrawing, pointer);
+      if (this.document.settings.stayInDrawingMode) {
+        this.startDrawing(pending.type, {
+          paneId: pending.paneId,
+          text: pending.text,
+          style: pending.style
+        });
+      } else if (createdDrawing) {
+        this.openDrawingSettingsPopup(createdDrawing, pointer);
+      }
     } else {
       this.draw();
     }
@@ -3389,14 +3755,32 @@
       var inPane = point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
       if (forcedPaneId ? rect.paneId === forcedPaneId : inPane) {
         var range = this.paneRange(rect.paneId);
-        return {
+        var valuePoint = {
           paneId: rect.paneId,
           time: Math.round(this.timeForX(point.x, rect)),
           value: this.valueForY(point.y, rect, range)
         };
+        return this.snapValuePoint(valuePoint);
       }
     }
     return null;
+  };
+
+  Chart.prototype.snapValuePoint = function (point) {
+    if (!point || !this.document.settings.magnetMode || point.paneId !== 'price' || !this.bars.length) return point;
+    var bar = this.barNearTime(point.time);
+    if (!bar) return point;
+    var values = [bar.open, bar.high, bar.low, bar.close];
+    var nearest = values[0];
+    var nearestDistance = Math.abs(nearest - point.value);
+    for (var i = 1; i < values.length; i += 1) {
+      var currentDistance = Math.abs(values[i] - point.value);
+      if (currentDistance < nearestDistance) {
+        nearest = values[i];
+        nearestDistance = currentDistance;
+      }
+    }
+    return { paneId: point.paneId, time: bar.time, value: nearest };
   };
 
   Chart.prototype.getDrawingById = function (drawingId) {
@@ -3915,6 +4299,10 @@
 
   Chart.prototype.drawPriceSeries = function (rect, range, theme) {
     var chartType = normalizeChartType(this.document.settings.chartType);
+    if (chartType === 'heikin_ashi') {
+      this.drawCandles(rect, range, theme, this.heikinAshiBars());
+      return;
+    }
     if (chartType === 'bar') {
       this.drawBars(rect, range, theme);
       return;
@@ -3923,16 +4311,30 @@
       this.drawPriceLine(rect, range, theme);
       return;
     }
+    if (chartType === 'area') {
+      this.drawPriceArea(rect, range, theme);
+      return;
+    }
+    if (chartType === 'baseline') {
+      this.drawPriceBaseline(rect, range, theme);
+      return;
+    }
     this.drawCandles(rect, range, theme);
   };
 
-  Chart.prototype.drawCandles = function (rect, range, theme) {
+  Chart.prototype.drawCandles = function (rect, range, theme, sourceBars) {
     var ctx = this.ctx;
-    var bars = this.visibleBars();
+    var source = sourceBars || this.bars;
+    var visible = this.visibleBars();
+    var visibleStart = visible.length ? visible[0].time : null;
+    var visibleEnd = visible.length ? visible[visible.length - 1].time : null;
+    var bars = source.filter(function (bar) {
+      return visibleStart == null || (bar.time >= visibleStart && bar.time <= visibleEnd);
+    });
     if (!bars.length) return;
     var spacing = rect.width / Math.max(1, bars.length);
     var candleWidth = clamp(spacing * 0.62, 2, 18);
-    var allStartIndex = this.bars.findIndex(function (candidate) {
+    var allStartIndex = source.findIndex(function (candidate) {
       return candidate.time === bars[0].time;
     });
     ctx.save();
@@ -3943,7 +4345,7 @@
       var high = this.yForValue(bar.high, rect, range);
       var low = this.yForValue(bar.low, rect, range);
       if (open == null || close == null || high == null || low == null) return;
-      var previousBar = allStartIndex > 0 ? this.bars[allStartIndex + index - 1] : bars[index - 1];
+      var previousBar = allStartIndex > 0 ? source[allStartIndex + index - 1] : bars[index - 1];
       var previousClose = previousBar ? previousBar.close : bar.open;
       var green = bar.close >= previousClose;
       var hollow = bar.close >= bar.open;
@@ -3970,6 +4372,23 @@
       }
     }, this);
     ctx.restore();
+  };
+
+  Chart.prototype.heikinAshiBars = function () {
+    var output = [];
+    this.bars.forEach(function (bar, index) {
+      var close = (bar.open + bar.high + bar.low + bar.close) / 4;
+      var open = index && output[index - 1] ? (output[index - 1].open + output[index - 1].close) / 2 : (bar.open + bar.close) / 2;
+      output.push({
+        time: bar.time,
+        open: open,
+        high: Math.max(bar.high, open, close),
+        low: Math.min(bar.low, open, close),
+        close: close,
+        volume: bar.volume
+      });
+    });
+    return output;
   };
 
   Chart.prototype.drawBars = function (rect, range, theme) {
@@ -4006,6 +4425,37 @@
     });
     this.drawLineSeries(rect, range, theme, data, {
       color: theme.indicatorPalette[0],
+      lineWidth: 2
+    });
+  };
+
+  Chart.prototype.drawPriceArea = function (rect, range, theme) {
+    var data = this.visibleBars().map(function (bar) {
+      return { time: bar.time, value: bar.close };
+    });
+    this.drawAreaSeries(rect, range, theme, data, {
+      color: theme.indicatorPalette[0],
+      fill: colorWithAlpha(theme.indicatorPalette[0], 0.18),
+      lineWidth: 2
+    });
+  };
+
+  Chart.prototype.drawPriceBaseline = function (rect, range, theme) {
+    var bars = this.visibleBars();
+    if (!bars.length) return;
+    var baseline = bars[0].close;
+    var upData = bars.map(function (bar) { return { time: bar.time, value: Math.max(bar.close, baseline) }; });
+    var downData = bars.map(function (bar) { return { time: bar.time, value: Math.min(bar.close, baseline) }; });
+    this.drawAreaSeries(rect, range, theme, upData, {
+      color: theme.up,
+      fill: colorWithAlpha(theme.up, 0.16),
+      baseline: baseline,
+      lineWidth: 2
+    });
+    this.drawAreaSeries(rect, range, theme, downData, {
+      color: theme.down,
+      fill: colorWithAlpha(theme.down, 0.14),
+      baseline: baseline,
       lineWidth: 2
     });
   };
@@ -4078,6 +4528,46 @@
       }
     }, this);
     if (started) ctx.stroke();
+    ctx.restore();
+  };
+
+  Chart.prototype.drawAreaSeries = function (rect, range, theme, data, style) {
+    var ctx = this.ctx;
+    var visible = this.visibleBars();
+    if (!visible.length || !data.length) return;
+    var first = visible[0].time;
+    var last = visible[visible.length - 1].time;
+    var baselineValue = style.baseline != null ? style.baseline : Math.max(range.min, Math.min(range.max, visible[0].close));
+    var baselineY = this.yForValue(baselineValue, rect, range);
+    if (baselineY == null) baselineY = rect.y + rect.height;
+    var points = [];
+    data.forEach(function (point) {
+      if (point.time < first || point.time > last || point.value == null) return;
+      var x = this.xForTime(point.time, rect);
+      var y = this.yForValue(point.value, rect, range);
+      if (y != null) points.push({ x: x, y: y });
+    }, this);
+    if (!points.length) return;
+    ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
+    ctx.fillStyle = style.fill || colorWithAlpha(style.color || theme.indicatorPalette[0], 0.16);
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, baselineY);
+    points.forEach(function (point) {
+      ctx.lineTo(point.x, point.y);
+    });
+    ctx.lineTo(points[points.length - 1].x, baselineY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = style.color || theme.indicatorPalette[0];
+    ctx.lineWidth = style.lineWidth || 2;
+    ctx.setLineDash(lineDashForStyle(style.lineStyle));
+    ctx.beginPath();
+    points.forEach(function (point, index) {
+      if (!index) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+    ctx.stroke();
     ctx.restore();
   };
 
@@ -4891,10 +5381,20 @@
       'hollow-candles': 'candlestick',
       'hollow-candlestick': 'candlestick',
       'hollow-candlesticks': 'candlestick',
+      heikin: 'heikin_ashi',
+      heikinashi: 'heikin_ashi',
+      heikin_ashi: 'heikin_ashi',
+      'heikin-ashi': 'heikin_ashi',
+      ha: 'heikin_ashi',
       bar: 'bar',
       bars: 'bar',
       ohlc: 'bar',
-      line: 'line'
+      line: 'line',
+      area: 'area',
+      mountain: 'area',
+      baseline: 'baseline',
+      base_line: 'baseline',
+      'base-line': 'baseline'
     };
     return map[normalized] || 'candlestick';
   }
@@ -5059,16 +5559,22 @@
     var normalized = normalizeChartType(type);
     var paths = {
       candlestick: '<path d="M7 4v4"/><rect x="5" y="8" width="4" height="7"/><path d="M7 15v5"/><path d="M17 4v3"/><rect x="15" y="7" width="4" height="9"/><path d="M17 16v4"/>',
+      heikin_ashi: '<path d="M7 4v4"/><rect x="5" y="8" width="4" height="8"/><path d="M7 16v4"/><path d="M17 4v5"/><rect x="15" y="9" width="4" height="6"/><path d="M17 15v5"/><path d="M4 20h16"/>',
       bar: '<path d="M7 4v16"/><path d="M4 8h3"/><path d="M7 15h4"/><path d="M17 4v16"/><path d="M14 11h3"/><path d="M17 17h4"/>',
-      line: '<path d="M4 17l5-6 4 3 7-8"/><circle cx="4" cy="17" r="1.2"/><circle cx="9" cy="11" r="1.2"/><circle cx="13" cy="14" r="1.2"/><circle cx="20" cy="6" r="1.2"/>'
+      line: '<path d="M4 17l5-6 4 3 7-8"/><circle cx="4" cy="17" r="1.2"/><circle cx="9" cy="11" r="1.2"/><circle cx="13" cy="14" r="1.2"/><circle cx="20" cy="6" r="1.2"/>',
+      area: '<path d="M4 17l5-6 4 3 7-8"/><path d="M4 20V17l5-6 4 3 7-8v14z" fill="currentColor" opacity=".16" stroke="none"/>',
+      baseline: '<path d="M4 12h16"/><path d="M4 17l5-5 4 2 7-8"/><path d="M4 7l5 5 4-2 7 8"/>'
     };
     return '<svg class="sce-chart-type-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (paths[normalized] || paths.candlestick) + '</svg>';
   }
 
   function chartTypeLabel(type) {
     var normalized = normalizeChartType(type);
+    if (normalized === 'heikin_ashi') return 'Heikin Ashi';
     if (normalized === 'bar') return 'Bar';
     if (normalized === 'line') return 'Line';
+    if (normalized === 'area') return 'Area';
+    if (normalized === 'baseline') return 'Baseline';
     return 'Candlestick';
   }
 

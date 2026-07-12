@@ -971,14 +971,20 @@
           <summary id="chartTypeSummary" aria-label="Chart type"></summary>
           <div class="chart-type-menu" role="menu">
             <button type="button" data-chart-type-value="candlestick" role="menuitem"></button>
+            <button type="button" data-chart-type-value="heikin_ashi" role="menuitem"></button>
             <button type="button" data-chart-type-value="bar" role="menuitem"></button>
             <button type="button" data-chart-type-value="line" role="menuitem"></button>
+            <button type="button" data-chart-type-value="area" role="menuitem"></button>
+            <button type="button" data-chart-type-value="baseline" role="menuitem"></button>
           </div>
         </details>
         <select id="chartType" aria-label="Chart type" hidden>
           <option value="candlestick">Candlestick</option>
+          <option value="heikin_ashi">Heikin Ashi</option>
           <option value="bar">Bar</option>
           <option value="line">Line</option>
+          <option value="area">Area</option>
+          <option value="baseline">Baseline</option>
         </select>
         <select id="chartPeriod" aria-label="Chart period">
           <option value="daily">Daily</option>
@@ -1030,6 +1036,17 @@
                   <option value="PIVOTS">Pivot Points</option>
                   <option value="PSAR">Parabolic SAR</option>
                   <option value="TRIX">TRIX</option>
+                  <option value="AROON">Aroon</option>
+                  <option value="AO">Awesome Oscillator</option>
+                  <option value="STOCHRSI">Stochastic RSI</option>
+                  <option value="UO">Ultimate Oscillator</option>
+                  <option value="VORTEX">Vortex</option>
+                  <option value="VWMA">VWMA</option>
+                  <option value="LSMA">LSMA</option>
+                  <option value="FISHER">Fisher Transform</option>
+                  <option value="PPO">PPO</option>
+                  <option value="KST">Know Sure Thing</option>
+                  <option value="TSI">True Strength Index</option>
                 </select>
               </div>
               <button type="button" id="addIndicator">Add</button>
@@ -1114,6 +1131,48 @@
       <aside class="drawing-rail" aria-label="Drawing tools">
         <select id="drawingTool" aria-label="Drawing tool"></select>
         <div id="drawingToolPalette" class="drawing-tool-palette" role="toolbar" aria-label="Drawing tools"></div>
+        <div class="rail-divider"></div>
+        <button type="button" id="magnetMode" class="drawing-action-button" title="Magnet mode" aria-label="Magnet mode" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 4v7a6 6 0 0 0 12 0V4"></path>
+            <path d="M6 8h5"></path>
+            <path d="M13 8h5"></path>
+          </svg>
+        </button>
+        <button type="button" id="stayDrawingMode" class="drawing-action-button" title="Stay in drawing mode" aria-label="Stay in drawing mode" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12a8 8 0 0 1 14-5"></path>
+            <path d="M18 3v4h-4"></path>
+            <path d="M20 12a8 8 0 0 1-14 5"></path>
+            <path d="M6 21v-4h4"></path>
+          </svg>
+        </button>
+        <button type="button" id="lockDrawings" class="drawing-action-button" title="Lock all drawings" aria-label="Lock all drawings" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+            <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+          </svg>
+        </button>
+        <button type="button" id="hideDrawings" class="drawing-action-button" title="Hide all drawings" aria-label="Hide all drawings" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3l18 18"></path>
+            <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"></path>
+            <path d="M9.4 5.1A10.7 10.7 0 0 1 12 4c5 0 9 5 9 8a8.6 8.6 0 0 1-2.1 3.5"></path>
+            <path d="M6.1 6.8C4.2 8.1 3 10.1 3 12c0 3 4 8 9 8a10.2 10.2 0 0 0 4.1-.9"></path>
+          </svg>
+        </button>
+        <button type="button" id="bringDrawingFront" class="drawing-action-button" title="Bring selected drawing front" aria-label="Bring selected drawing front">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="4" width="11" height="11" rx="2"></rect>
+            <rect x="5" y="9" width="11" height="11" rx="2"></rect>
+          </svg>
+        </button>
+        <button type="button" id="sendDrawingBack" class="drawing-action-button" title="Send selected drawing back" aria-label="Send selected drawing back">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="9" width="11" height="11" rx="2"></rect>
+            <rect x="8" y="4" width="11" height="11" rx="2"></rect>
+          </svg>
+        </button>
         <div class="rail-divider"></div>
         <button type="button" id="exportImageStrip" class="drawing-action-button" title="Export chart image" aria-label="Export chart image">
           <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -1293,6 +1352,7 @@
         var doc = chart.serialize();
         syncChartTypePicker(doc.settings.chartType);
         renderDateRangeButtons(doc.settings.dateRangePreset);
+        syncDrawingWorkflowButtons(doc);
         renderPaneScaleOptions(doc);
         renderIndicatorSettingsOptions(doc);
         var summary = {
@@ -1302,6 +1362,8 @@
           chartType: doc.settings.chartType,
           period: doc.settings.period,
           dateRangePreset: doc.settings.dateRangePreset,
+          magnetMode: doc.settings.magnetMode,
+          stayInDrawingMode: doc.settings.stayInDrawingMode,
           renderedBars: chart.bars.length,
           sourceBars: chart.sourceBars.length,
           visibleRange: doc.visibleRange,
@@ -1720,6 +1782,25 @@
         });
       }
 
+      function syncToggleButton(id, enabled) {
+        var button = document.getElementById(id);
+        if (!button) return;
+        button.classList.toggle('is-selected', !!enabled);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      }
+
+      function syncDrawingWorkflowButtons(doc) {
+        doc = doc || chart.serialize();
+        var drawings = doc.drawings || [];
+        syncToggleButton('magnetMode', doc.settings && doc.settings.magnetMode);
+        syncToggleButton('stayDrawingMode', doc.settings && doc.settings.stayInDrawingMode);
+        syncToggleButton('lockDrawings', drawings.length && drawings.every(function (drawing) { return drawing.locked; }));
+        syncToggleButton('hideDrawings', drawings.length && drawings.every(function (drawing) { return drawing.visible === false; }));
+        var hasSelectedDrawing = !!chart.selectedDrawingId;
+        document.getElementById('bringDrawingFront').disabled = !hasSelectedDrawing;
+        document.getElementById('sendDrawingBack').disabled = !hasSelectedDrawing;
+      }
+
       function setDrawingToolStatus(message) {
         document.getElementById('drawingToolStatus').textContent = message || 'Select an icon, then click on the chart to place its points.';
       }
@@ -1952,6 +2033,52 @@
           showChartToast(message, 'error');
           setDrawingToolStatus(message);
         });
+      });
+
+      document.getElementById('magnetMode').addEventListener('click', function () {
+        var enabled = chart.toggleDrawingMagnetMode();
+        showChartToast(enabled ? 'Magnet mode on' : 'Magnet mode off');
+        setDrawingToolStatus(enabled ? 'Magnet mode snaps drawing points to the nearest OHLC value.' : 'Magnet mode disabled.');
+        renderState();
+      });
+
+      document.getElementById('stayDrawingMode').addEventListener('click', function () {
+        var enabled = chart.toggleStayInDrawingMode();
+        showChartToast(enabled ? 'Stay in drawing mode on' : 'Stay in drawing mode off');
+        setDrawingToolStatus(enabled ? 'The selected drawing tool will remain armed after each drawing.' : 'Drawing tools will stop after each completed drawing.');
+        renderState();
+      });
+
+      document.getElementById('lockDrawings').addEventListener('click', function () {
+        var drawings = chart.getAllShapes();
+        var shouldLock = !(drawings.length && drawings.every(function (drawing) { return drawing.locked; }));
+        chart.setAllDrawingsLocked(shouldLock);
+        showChartToast(shouldLock ? 'Drawings locked' : 'Drawings unlocked');
+        setDrawingToolStatus(shouldLock ? 'All drawings are locked.' : 'All drawings are unlocked.');
+        renderState();
+      });
+
+      document.getElementById('hideDrawings').addEventListener('click', function () {
+        var drawings = chart.getAllShapes();
+        var shouldShow = drawings.length && drawings.every(function (drawing) { return drawing.visible === false; });
+        chart.setAllDrawingsVisible(shouldShow);
+        showChartToast(shouldShow ? 'Drawings shown' : 'Drawings hidden');
+        setDrawingToolStatus(shouldShow ? 'All drawings are visible.' : 'All drawings are hidden.');
+        renderState();
+      });
+
+      document.getElementById('bringDrawingFront').addEventListener('click', function () {
+        if (!chart.selectedDrawingId) return;
+        chart.moveDrawingZOrder(chart.selectedDrawingId, 'front');
+        setDrawingToolStatus('Selected drawing moved to front.');
+        renderState();
+      });
+
+      document.getElementById('sendDrawingBack').addEventListener('click', function () {
+        if (!chart.selectedDrawingId) return;
+        chart.moveDrawingZOrder(chart.selectedDrawingId, 'back');
+        setDrawingToolStatus('Selected drawing sent to back.');
+        renderState();
       });
 
       document.getElementById('newData').addEventListener('click', function () {
