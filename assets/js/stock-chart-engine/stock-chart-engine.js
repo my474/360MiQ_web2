@@ -1902,6 +1902,16 @@
       dateRangeButtonsHtml('data-sce-date-range'),
       '</div>',
       '</details>',
+      '<details class="sce-indicator-picker" data-sce-indicator-picker>',
+      '<summary aria-label="Indicators"><span>Indicators</span>', chartTypeChevronSvg(), '</summary>',
+      '<div class="sce-indicator-menu" role="menu">',
+      '<input type="search" data-sce-indicator-search placeholder="Search indicators" aria-label="Search indicators">',
+      '<div class="sce-indicator-list">',
+      indicatorButtonsHtml(),
+      '</div>',
+      '<div class="sce-indicator-empty" data-sce-indicator-empty hidden>No indicators found</div>',
+      '</div>',
+      '</details>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-in" title="Zoom in" aria-label="Zoom in">', paneControlIconSvg('zoom-in'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-out" title="Zoom out" aria-label="Zoom out">', paneControlIconSvg('zoom-out'), '</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
@@ -1957,6 +1967,14 @@
         self.setDateRangePreset(dateRangeButton.getAttribute('data-sce-date-range'));
         var rangePicker = closestAttribute(dateRangeButton, 'data-sce-date-range-picker');
         if (rangePicker) rangePicker.removeAttribute('open');
+        return;
+      }
+      var indicatorOption = closestAttribute(event.target, 'data-sce-indicator-option');
+      if (indicatorOption) {
+        if (event.preventDefault) event.preventDefault();
+        self.addIndicatorFromMenu(indicatorOption.getAttribute('data-sce-indicator-option'));
+        var indicatorPicker = closestAttribute(indicatorOption, 'data-sce-indicator-picker');
+        if (indicatorPicker) indicatorPicker.removeAttribute('open');
         return;
       }
       var shareButton = closestAttribute(event.target, 'data-sce-share-action');
@@ -2028,6 +2046,11 @@
     });
     this.toolbar.addEventListener('focusin', function (event) {
       self.closeToolbarMenusForTarget(event.target);
+    });
+    this.toolbar.addEventListener('input', function (event) {
+      if (event.target && event.target.getAttribute('data-sce-indicator-search') != null) {
+        self.filterIndicatorMenu(event.target.value);
+      }
     });
     this.drawingToolsLayer.addEventListener('scroll', function () {
       self.positionDrawingToolMenus();
@@ -2796,6 +2819,11 @@
     this.draw();
     this.emitChange('indicator:add', indicator);
     return id;
+  };
+
+  Chart.prototype.addIndicatorFromMenu = function (type) {
+    if (!Indicators[type]) return null;
+    return this.addIndicator(type, {});
   };
 
   Chart.prototype.nextSeriesColor = function () {
@@ -3914,6 +3942,21 @@
     var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
     if (logButton) logButton.textContent = 'Log: ' + this.paneScaleMode(this.activePaneId()).toUpperCase();
     this.updateDrawingUtilityButtons();
+  };
+
+  Chart.prototype.filterIndicatorMenu = function (query) {
+    if (!this.toolbar || !this.toolbar.querySelectorAll) return;
+    var text = String(query || '').trim().toLowerCase();
+    var visibleCount = 0;
+    var buttons = this.toolbar.querySelectorAll('[data-sce-indicator-option]');
+    Array.prototype.forEach.call(buttons, function (button) {
+      var haystack = String(button.getAttribute('data-sce-indicator-search') || '').toLowerCase();
+      var visible = !text || haystack.indexOf(text) !== -1;
+      button.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+    var empty = this.toolbar.querySelector('[data-sce-indicator-empty]');
+    if (empty) empty.hidden = visibleCount > 0;
   };
 
   Chart.prototype.updateDrawingUtilityButtons = function () {
@@ -6299,6 +6342,29 @@
   function dateRangeButtonsHtml(attributeName) {
     return DATE_RANGE_PRESETS.map(function (preset) {
       return '<button type="button" ' + attributeName + '="' + escapeHtml(preset.id) + '" aria-pressed="false">' + escapeHtml(preset.label) + '</button>';
+    }).join('');
+  }
+
+  function indicatorButtonsHtml() {
+    return Object.keys(Indicators).sort(function (left, right) {
+      var leftDefinition = Indicators[left] || {};
+      var rightDefinition = Indicators[right] || {};
+      var leftCategory = leftDefinition.category || '';
+      var rightCategory = rightDefinition.category || '';
+      if (leftCategory !== rightCategory) return leftCategory.localeCompare(rightCategory);
+      return (leftDefinition.name || left).localeCompare(rightDefinition.name || right);
+    }).map(function (type) {
+      var definition = Indicators[type] || {};
+      var category = definition.category || 'Indicator';
+      var name = definition.name || type;
+      var search = [type, name, category].join(' ').toLowerCase();
+      return [
+        '<button type="button" data-sce-indicator-option="', escapeHtml(type), '" data-sce-indicator-search="', escapeHtml(search), '" role="menuitem">',
+        '<strong>', escapeHtml(type), '</strong>',
+        '<span>', escapeHtml(name), '</span>',
+        '<em>', escapeHtml(category), '</em>',
+        '</button>'
+      ].join('');
     }).join('');
   }
 

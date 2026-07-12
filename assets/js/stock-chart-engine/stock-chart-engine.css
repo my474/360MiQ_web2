@@ -85,12 +85,14 @@
 }
 
 .sce-chart-type-picker,
+.sce-indicator-picker,
 .sce-share-picker {
   position: relative;
 }
 
 .sce-chart-type-picker summary,
 .sce-date-range-picker summary,
+.sce-indicator-picker summary,
 .sce-share-picker summary {
   align-items: center;
   background: transparent;
@@ -121,6 +123,10 @@
   min-width: 92px;
 }
 
+.sce-indicator-picker summary {
+  min-width: 106px;
+}
+
 .sce-share-picker summary svg {
   height: 15px;
   width: 15px;
@@ -133,6 +139,7 @@
 
 .sce-chart-type-picker summary::-webkit-details-marker,
 .sce-date-range-picker summary::-webkit-details-marker,
+.sce-indicator-picker summary::-webkit-details-marker,
 .sce-share-picker summary::-webkit-details-marker {
   display: none;
 }
@@ -143,6 +150,9 @@
 .sce-date-range-picker[open] summary,
 .sce-date-range-picker summary:hover,
 .sce-date-range-picker summary:focus,
+.sce-indicator-picker[open] summary,
+.sce-indicator-picker summary:hover,
+.sce-indicator-picker summary:focus,
 .sce-share-picker[open] summary,
 .sce-share-picker summary:hover,
 .sce-share-picker summary:focus {
@@ -152,6 +162,7 @@
 
 .sce-chart-type-menu,
 .sce-date-range-menu,
+.sce-indicator-menu,
 .sce-share-menu {
   background: var(--sce-panel);
   border: 1px solid var(--sce-border);
@@ -179,8 +190,37 @@
   right: 0;
 }
 
+.sce-indicator-menu {
+  gap: 6px;
+  max-height: min(430px, calc(100vh - 120px));
+  min-width: 320px;
+  overflow: auto;
+}
+
+.sce-indicator-menu input {
+  background: transparent;
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  color: var(--sce-text);
+  font-size: 12px;
+  height: 30px;
+  padding: 0 9px;
+  width: 100%;
+}
+
+.sce-indicator-menu input:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.sce-indicator-list {
+  display: grid;
+  gap: 3px;
+}
+
 .sce-chart-type-menu button,
 .sce-date-range-menu button,
+.sce-indicator-menu button,
 .sce-share-menu button {
   align-items: center;
   border-color: transparent;
@@ -197,6 +237,38 @@
 .sce-share-menu button {
   justify-content: flex-start;
   text-align: left;
+}
+
+.sce-indicator-menu button {
+  display: grid;
+  gap: 2px 8px;
+  grid-template-columns: 56px minmax(0, 1fr);
+  height: auto;
+  line-height: 1.25;
+  min-height: 42px;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.sce-indicator-menu button strong {
+  font-size: 12px;
+  grid-row: span 2;
+}
+
+.sce-indicator-menu button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sce-indicator-menu button em,
+.sce-indicator-empty {
+  color: var(--sce-muted);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.sce-indicator-empty {
+  padding: 7px 8px;
 }
 
 .sce-share-status {
@@ -228,6 +300,7 @@
 
 .sce-chart-type-picker[open] .sce-chart-type-chevron,
 .sce-date-range-picker[open] .sce-chart-type-chevron,
+.sce-indicator-picker[open] .sce-chart-type-chevron,
 .sce-share-picker[open] .sce-chart-type-chevron {
   transform: rotate(180deg);
 }
@@ -248,11 +321,15 @@
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker summary:focus,
+.sce-root[data-sce-theme="dark"] .sce-indicator-picker[open] summary,
+.sce-root[data-sce-theme="dark"] .sce-indicator-picker summary:hover,
+.sce-root[data-sce-theme="dark"] .sce-indicator-picker summary:focus,
 .sce-root[data-sce-theme="dark"] .sce-share-picker[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-share-picker summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-share-picker summary:focus,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-menu button.is-selected,
-.sce-root[data-sce-theme="dark"] .sce-date-range-menu button.is-selected {
+.sce-root[data-sce-theme="dark"] .sce-date-range-menu button.is-selected,
+.sce-root[data-sce-theme="dark"] .sce-indicator-menu input:focus {
   border-color: #60a5fa;
 }
 
@@ -627,6 +704,10 @@
 }
 
 @media (max-width: 880px) {
+  .sce-indicator-menu {
+    min-width: min(320px, calc(100vw - 28px));
+  }
+
   .sce-drawing-tools-layer {
     padding: 6px 4px;
     width: 46px;
