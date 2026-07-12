@@ -90,6 +90,49 @@
         window.history.replaceState(null, '', url.toString());
     }
 
+    function endpointCandidates(file) {
+        var candidates = [file, '/' + file];
+        if (window.location.pathname.slice(-1) === '/') candidates.unshift('../' + file);
+        return candidates.filter(function (candidate, index) {
+            return candidates.indexOf(candidate) === index;
+        });
+    }
+
+    function ajaxTextFromCandidates(file, options) {
+        options = options || {};
+        var candidates = endpointCandidates(file);
+        var lastError = null;
+
+        return new Promise(function (resolve, reject) {
+            function attempt(index) {
+                if (index >= candidates.length) {
+                    reject(lastError || new Error('Unable to load ' + file + '.'));
+                    return;
+                }
+
+                activeDataRequest = $.ajax({
+                    url: candidates[index],
+                    type: options.type || 'get',
+                    data: options.data || {},
+                    timeout: options.timeout || 20000,
+                    success: function (result) {
+                        resolve({ result: result, url: candidates[index] });
+                    },
+                    error: function (xhr, status, error) {
+                        if (status === 'abort') {
+                            reject(new Error('Request aborted.'));
+                            return;
+                        }
+                        lastError = new Error(file + ' failed at ' + candidates[index] + ' with status ' + (xhr && xhr.status ? xhr.status : status || error || 'unknown') + '.');
+                        attempt(index + 1);
+                    }
+                });
+            }
+
+            attempt(0);
+        });
+    }
+
     function decodeStockDate(token, previousDate) {
         var raw = String(token || '').trim();
         if (!raw) return '';
@@ -150,6 +193,64 @@
         return bars;
     }
 
+    function parseCloseHistoryResult(result) {
+        var bars = [];
+        var previousDate = '';
+        var previousName = '';
+        var previousClose = null;
+
+        String(result || '').split(/\r?\n|\r/).forEach(function (line) {
+            if (!line || line.indexOf(',') < 0) return;
+            if ((line.match(/,/g) || []).length === 1) line = ',' + line;
+
+            var row = line.split(',');
+            if (row.length !== 3) return;
+            if (row[0] !== '') previousName = row[0];
+            else row[0] = previousName;
+
+            var date = decodeStockDate(row[1], previousDate);
+            var close = Number(row[2]);
+            if (!date || !Number.isFinite(close)) return;
+
+            var open = previousClose === null ? close : previousClose;
+            bars.push({
+                time: date,
+                open: open,
+                high: Math.max(open, close),
+                low: Math.min(open, close),
+                close: close,
+                volume: 0
+            });
+            previousDate = date.substring(0, 10);
+            previousClose = close;
+        });
+
+        return bars;
+    }
+
+    function requestBars(code) {
+        return ajaxTextFromCandidates('db_stockquote_get.php', {
+            type: 'get',
+            data: { data: code, isIEX: '1' },
+            timeout: 20000
+        }).then(function (response) {
+            var bars = parseStockQuoteResult(response.result);
+            if (!bars.length) throw new Error('OHLC history was empty for ' + code + '.');
+            return { bars: bars, isFallback: false };
+        }).catch(function (primaryError) {
+            console.warn(primaryError);
+            return ajaxTextFromCandidates('db_top10_get.php', {
+                type: 'get',
+                data: { data: code, isIEX: '1' },
+                timeout: 20000
+            }).then(function (response) {
+                var bars = parseCloseHistoryResult(response.result);
+                if (!bars.length) throw new Error('Close history was empty for ' + code + '.');
+                return { bars: bars, isFallback: true };
+            });
+        });
+    }
+
     function ensureStarterStudies(chart, layoutExisted) {
         if (layoutExisted || !chart || !chart.document || chart.document.indicators.length) return;
         try {
@@ -200,30 +301,15 @@
         if (activeDataRequest && activeDataRequest.readyState !== 4) activeDataRequest.abort();
         ensureEngineReady().then(function () {
             if (requestId !== dataSerial) return;
-            activeDataRequest = $.ajax({
-                url: 'db_stockquote_get.php',
-                type: 'get',
-                data: { data: code, isIEX: '1' },
-                timeout: 20000,
-                success: function (result) {
-                    if (requestId !== dataSerial) return;
-                    var bars = parseStockQuoteResult(result);
-                    if (!bars.length) {
-                        setStatus('No chart history found for ' + code + '.', true);
-                        return;
-                    }
-                    renderChart(code, bars);
-                    setStatus(code + ' loaded: ' + bars.length + ' bars.', false);
-                },
-                error: function (xhr, status) {
-                    if (status === 'abort' || requestId !== dataSerial) return;
-                    setStatus('Could not load chart history for ' + code + '.', true);
-                }
+            return requestBars(code).then(function (payload) {
+                if (requestId !== dataSerial) return;
+                renderChart(code, payload.bars);
+                setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
             });
         }).catch(function (error) {
             if (requestId !== dataSerial) return;
             console.error(error);
-            setStatus('Could not load stock chart engine asset.', true);
+            setStatus('Could not load chart history for ' + code + '.', true);
         });
     }
 
