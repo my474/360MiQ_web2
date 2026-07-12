@@ -34,15 +34,16 @@
   border-bottom: 1px solid var(--sce-border);
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
   gap: 6px;
   min-height: 38px;
-  overflow-x: auto;
+  overflow: visible;
   padding: 5px 8px;
 }
 
 .sce-title {
   color: var(--sce-text);
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   font-size: 13px;
   font-weight: 700;
   margin-right: 8px;
@@ -237,7 +238,7 @@
   flex-direction: column;
   inset: 0 auto 0 0;
   justify-content: space-between;
-  padding: 7px 6px;
+  padding: 6px 6px;
   pointer-events: auto;
   position: absolute;
   width: 56px;
@@ -248,7 +249,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-height: 0;
   overflow-y: auto;
   overflow-x: visible;
@@ -260,8 +261,9 @@
   border-top: 1px solid var(--sce-border);
   display: grid;
   flex: 0 0 auto;
-  margin-top: 7px;
-  padding-top: 7px;
+  gap: 4px;
+  margin-top: 6px;
+  padding-top: 6px;
   width: 100%;
 }
 
@@ -279,7 +281,7 @@
   color: var(--sce-muted);
   cursor: pointer;
   display: flex;
-  height: 36px;
+  height: 32px;
   justify-content: center;
   list-style: none;
   padding: 0;
@@ -294,8 +296,8 @@
 .sce-drawing-tool-group summary svg,
 .sce-drawing-tools-bottom button svg,
 .sce-drawing-tool-menu button svg {
-  height: 20px;
-  width: 20px;
+  height: 18px;
+  width: 18px;
 }
 
 .sce-drawing-tool-caret {
@@ -303,7 +305,7 @@
   line-height: 1;
   position: absolute;
   right: 2px;
-  top: 12px;
+  top: 10px;
 }
 
 .sce-drawing-tool-group[open] summary,
@@ -578,7 +580,7 @@
 
   .sce-drawing-tool-group summary,
   .sce-drawing-tools-bottom button {
-    height: 34px;
+    height: 30px;
     width: 36px;
   }
 

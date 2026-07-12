@@ -369,7 +369,9 @@
       html.push('</div></details>');
     });
     html.push('</div><div class="sce-drawing-tools-bottom">');
-    html.push('<button type="button" data-sce-action="clear-drawings" title="Clear drawings" aria-label="Clear drawings">', paneControlIconSvg('close'), '</button>');
+    html.push('<button type="button" data-sce-action="export-image" title="Export image" aria-label="Export image">', paneControlIconSvg('download'), '</button>');
+    html.push('<button type="button" data-sce-action="copy-image" title="Copy image" aria-label="Copy image">', paneControlIconSvg('copy'), '</button>');
+    html.push('<button type="button" data-sce-action="clear-drawings" title="Clear drawings" aria-label="Clear drawings">', paneControlIconSvg('trash'), '</button>');
     html.push('</div>');
     return html.join('');
   }
@@ -1846,16 +1848,9 @@
       dateRangeButtonsHtml('data-sce-date-range'),
       '</div>',
       '</details>',
-      '<button type="button" data-sce-action="sma">SMA</button>',
-      '<button type="button" data-sce-action="rsi">RSI</button>',
-      '<button type="button" data-sce-action="macd">MACD</button>',
-      '<button type="button" data-sce-action="line">Line</button>',
-      '<button type="button" data-sce-action="clear-drawings">Clear Drawings</button>',
       '<button type="button" data-sce-action="zoom-in">Zoom +</button>',
       '<button type="button" data-sce-action="zoom-out">Zoom -</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
-      '<button type="button" data-sce-action="log">Log</button>',
-      '<button type="button" data-sce-action="theme">Dark</button>',
       '<button type="button" data-sce-action="export-image">Export PNG</button>',
       '<button type="button" data-sce-action="save">Save</button>'
     ].join('');
@@ -1937,6 +1932,12 @@
       if (!actionButton) return;
       if (event.preventDefault) event.preventDefault();
       if (actionButton.getAttribute('data-sce-action') === 'clear-drawings') self.removeAllShapes();
+      if (actionButton.getAttribute('data-sce-action') === 'export-image') self.downloadImage();
+      if (actionButton.getAttribute('data-sce-action') === 'copy-image') {
+        self.copyImage().catch(function (error) {
+          console.error(error);
+        });
+      }
     });
     this.toolbar.addEventListener('change', function (event) {
       if (event.target && event.target.getAttribute('data-sce-chart-type') != null) {
@@ -5682,7 +5683,10 @@
       'chevron-down': '<path d="m7 10 5 5 5-5"/>',
       maximize: '<path d="M8 4H4v4"/><path d="M16 4h4v4"/><path d="M20 16v4h-4"/><path d="M8 20H4v-4"/><path d="M4 4l6 6"/><path d="m20 4-6 6"/><path d="m20 20-6-6"/><path d="m4 20 6-6"/>',
       minimize: '<path d="M10 4v6H4"/><path d="M14 4v6h6"/><path d="M14 20v-6h6"/><path d="M10 20v-6H4"/>',
-      close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>'
+      close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
+      trash: '<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5"/><path d="M14 11v5"/>',
+      download: '<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 20h14"/>',
+      copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>'
     };
     return common + (paths[icon] || paths.maximize) + '</svg>';
   }
