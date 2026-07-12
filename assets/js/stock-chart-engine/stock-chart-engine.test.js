@@ -351,6 +351,9 @@ assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-mag
 assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-stay-drawing"') !== -1);
 assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-lock-drawings"') !== -1);
 assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-drawings-visible"') !== -1);
+assert.strictEqual(chart.drawingToolsLayer.innerHTML.indexOf('aria-label="Icons"'), -1);
+assert.strictEqual(chart.drawingToolsLayer.innerHTML.indexOf('aria-label="Stickers"'), -1);
+assert.strictEqual(chart.drawingToolsLayer.innerHTML.indexOf('aria-label="Emoji"'), -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);

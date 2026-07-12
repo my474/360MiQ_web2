@@ -334,10 +334,7 @@
       ['geometric', 'Geometric Shapes', 'rectangle'],
       ['annotation', 'Text & Notes', 'text'],
       ['pattern', 'Patterns', 'xabcd_pattern'],
-      ['measurement', 'Measure & Forecast', 'date_range'],
-      ['icon', 'Icons', 'icon'],
-      ['sticker', 'Stickers', 'sticker'],
-      ['emoji', 'Emoji', 'emoji']
+      ['measurement', 'Measure & Forecast', 'date_range']
     ];
     var byCategory = {};
     Object.keys(DRAWING_TOOLS).forEach(function (key) {
