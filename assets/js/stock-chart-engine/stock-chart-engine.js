@@ -2955,11 +2955,10 @@
     var style = indicator.styles && indicator.styles[output] || {};
     var length = indicator.inputs && indicator.inputs.length != null ? indicator.inputs.length : '';
     var opacity = style.opacity == null ? 1 : style.opacity;
-    this.settingsPopup.innerHTML = [
-      '<div class="sce-settings-title">',
-      '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
-      '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
-      '</div>',
+    var isVolume = indicator.type === 'VOLUME';
+    var controls = isVolume ? [
+      '<label>Opacity<input type="number" min="0.05" max="1" step="0.05" data-sce-popup-field="opacity" value="', escapeHtml(opacity), '"></label>'
+    ] : [
       '<label>Period<input type="number" min="1" max="1000" data-sce-popup-field="length" value="', escapeHtml(length), '"></label>',
       '<label>Output<input type="text" readonly data-sce-popup-field="output" value="', escapeHtml(output), '"></label>',
       '<label>Color<div class="sce-color-control">',
@@ -2975,7 +2974,14 @@
       '<option value="solid"', normalizeLineStyle(style.lineStyle) === 'solid' ? ' selected' : '', '>Solid</option>',
       '<option value="dash"', normalizeLineStyle(style.lineStyle) === 'dash' ? ' selected' : '', '>Dash</option>',
       '<option value="dot"', normalizeLineStyle(style.lineStyle) === 'dot' ? ' selected' : '', '>Dot</option>',
-      '</select></label>',
+      '</select></label>'
+    ];
+    this.settingsPopup.innerHTML = [
+      '<div class="sce-settings-title">',
+      '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
+      '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
+      '</div>',
+      controls.join(''),
       '<div class="sce-settings-actions">',
       '<button type="button" data-sce-popup-action="remove">Remove</button>',
       '<button type="button" data-sce-popup-action="apply">Apply</button>',
@@ -2987,7 +2993,7 @@
     this.settingsPopup.dataset.output = output;
     delete this.settingsPopup.dataset.drawingId;
     this.bindSettingsPopup();
-    this.positionSettingsPopup(pointer, 286, 324);
+    this.positionSettingsPopup(pointer, 286, isVolume ? 176 : 324);
   };
 
   Chart.prototype.bindSettingsPopup = function () {
@@ -3028,12 +3034,11 @@
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="lineStyle"]');
     var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="opacity"]');
     var style = {};
-    style[output] = {
-      color: color ? color.value : '#2563eb',
-      lineWidth: lineWidth ? Number(lineWidth.value) : 2,
-      lineStyle: lineStyle ? lineStyle.value : 'solid',
-      opacity: opacity ? Number(opacity.value) : 1
-    };
+    style[output] = {};
+    if (color) style[output].color = color.value;
+    if (lineWidth) style[output].lineWidth = Number(lineWidth.value);
+    if (lineStyle) style[output].lineStyle = lineStyle.value;
+    if (opacity) style[output].opacity = Number(opacity.value);
     this.updateIndicatorSettings(indicatorId, {
       inputs: length && length.value ? { length: Number(length.value) } : {},
       styles: style

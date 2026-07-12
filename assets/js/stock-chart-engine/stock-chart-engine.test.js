@@ -657,6 +657,13 @@ const volumeLegendPoint = chart.indicatorResults[volumePaneIndicatorId].outputs.
 const volumeLegendItem = chart.indicatorLegendItems(volumePaneIndicator.paneId, volumeLegendPoint.time, chart.theme()).find((item) => item.indicatorId === volumePaneIndicatorId);
 assert.strictEqual(volumeLegendItem.color, chart.volumeColorForPoint(volumeLegendPoint, chart.theme()));
 assert.notStrictEqual(volumeLegendItem.color, '#2563eb');
+chart.openIndicatorSettingsPopup({ indicatorId: volumePaneIndicatorId, output: 'value' }, { x: 180, y: 160 });
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
+assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="length"'), -1);
+assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="output"'), -1);
+assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="color"'), -1);
+assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="lineWidth"'), -1);
+assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="lineStyle"'), -1);
 const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);
