@@ -271,12 +271,10 @@
 }
 
 .sce-drawing-tools-bottom {
-  border-top: 1px solid var(--sce-border);
   display: grid;
   flex: 0 0 auto;
   gap: 4px;
-  margin-top: 6px;
-  padding-top: 6px;
+  margin-top: 4px;
   width: 100%;
 }
 
@@ -324,6 +322,7 @@
 .sce-drawing-tool-group[open] summary,
 .sce-drawing-tool-group summary:hover,
 .sce-drawing-tool-group summary:focus,
+.sce-drawing-tools-bottom button.is-active,
 .sce-drawing-tools-bottom button:hover,
 .sce-drawing-tools-bottom button:focus {
   background: rgba(37, 99, 235, 0.08);
@@ -335,6 +334,7 @@
 .sce-root[data-sce-theme="dark"] .sce-drawing-tool-group[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-drawing-tool-group summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-drawing-tool-group summary:focus,
+.sce-root[data-sce-theme="dark"] .sce-drawing-tools-bottom button.is-active,
 .sce-root[data-sce-theme="dark"] .sce-drawing-tools-bottom button:hover,
 .sce-root[data-sce-theme="dark"] .sce-drawing-tools-bottom button:focus {
   background: rgba(96, 165, 250, 0.16);

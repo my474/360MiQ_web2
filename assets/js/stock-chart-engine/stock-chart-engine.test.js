@@ -289,6 +289,10 @@ assert.strictEqual(Math.round(chart.barIndexAtPoint({
 
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-magnet"') !== -1);
+assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-stay-drawing"') !== -1);
+assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-lock-drawings"') !== -1);
+assert.ok(chart.drawingToolsLayer.innerHTML.indexOf('data-sce-action="toggle-drawings-visible"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);

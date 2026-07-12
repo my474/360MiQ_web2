@@ -369,6 +369,10 @@
       html.push('</div></details>');
     });
     html.push('</div><div class="sce-drawing-tools-bottom">');
+    html.push('<button type="button" data-sce-action="toggle-magnet" title="Magnet mode" aria-label="Magnet mode" aria-pressed="false">', paneControlIconSvg('magnet'), '</button>');
+    html.push('<button type="button" data-sce-action="toggle-stay-drawing" title="Stay in drawing mode" aria-label="Stay in drawing mode" aria-pressed="false">', paneControlIconSvg('repeat'), '</button>');
+    html.push('<button type="button" data-sce-action="toggle-lock-drawings" title="Lock drawings" aria-label="Lock drawings" aria-pressed="false">', paneControlIconSvg('lock'), '</button>');
+    html.push('<button type="button" data-sce-action="toggle-drawings-visible" title="Hide drawings" aria-label="Hide drawings" aria-pressed="false">', paneControlIconSvg('eye-off'), '</button>');
     html.push('<button type="button" data-sce-action="export-image" title="Export image" aria-label="Export image">', paneControlIconSvg('download'), '</button>');
     html.push('<button type="button" data-sce-action="copy-image" title="Copy image" aria-label="Copy image">', paneControlIconSvg('copy'), '</button>');
     html.push('<button type="button" data-sce-action="clear-drawings" title="Clear drawings" aria-label="Clear drawings">', paneControlIconSvg('trash'), '</button>');
@@ -1932,13 +1936,19 @@
       var actionButton = closestAttribute(event.target, 'data-sce-action');
       if (!actionButton) return;
       if (event.preventDefault) event.preventDefault();
-      if (actionButton.getAttribute('data-sce-action') === 'clear-drawings') self.removeAllShapes();
-      if (actionButton.getAttribute('data-sce-action') === 'export-image') self.downloadImage();
-      if (actionButton.getAttribute('data-sce-action') === 'copy-image') {
+      var drawingAction = actionButton.getAttribute('data-sce-action');
+      if (drawingAction === 'toggle-magnet') self.toggleDrawingMagnetMode();
+      if (drawingAction === 'toggle-stay-drawing') self.toggleStayInDrawingMode();
+      if (drawingAction === 'toggle-lock-drawings') self.setAllDrawingsLocked(!self.areAllDrawingsLocked());
+      if (drawingAction === 'toggle-drawings-visible') self.setAllDrawingsVisible(!self.areAnyDrawingsVisible());
+      if (drawingAction === 'clear-drawings') self.removeAllShapes();
+      if (drawingAction === 'export-image') self.downloadImage();
+      if (drawingAction === 'copy-image') {
         self.copyImage().catch(function (error) {
           console.error(error);
         });
       }
+      self.updateDrawingUtilityButtons();
     });
     this.drawingToolsLayer.addEventListener('toggle', function (event) {
       if (!event.target || event.target.tagName !== 'DETAILS') return;
@@ -3070,6 +3080,12 @@
     return !!locked;
   };
 
+  Chart.prototype.areAllDrawingsLocked = function () {
+    return !!this.document.drawings.length && this.document.drawings.every(function (drawing) {
+      return !!drawing.locked;
+    });
+  };
+
   Chart.prototype.setAllDrawingsVisible = function (visible) {
     this.document.drawings.forEach(function (drawing) {
       drawing.visible = !!visible;
@@ -3081,6 +3097,12 @@
     this.draw();
     this.emitChange('drawing:visibilityAll', { visible: !!visible });
     return !!visible;
+  };
+
+  Chart.prototype.areAnyDrawingsVisible = function () {
+    return this.document.drawings.some(function (drawing) {
+      return drawing.visible !== false;
+    });
   };
 
   Chart.prototype.moveDrawingZOrder = function (drawingId, direction) {
@@ -3677,6 +3699,30 @@
     if (themeButton) themeButton.textContent = this.document.theme === 'dark' ? 'Light' : 'Dark';
     var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
     if (logButton) logButton.textContent = 'Log: ' + this.paneScaleMode(this.activePaneId()).toUpperCase();
+    this.updateDrawingUtilityButtons();
+  };
+
+  Chart.prototype.updateDrawingUtilityButtons = function () {
+    if (!this.drawingToolsLayer || !this.drawingToolsLayer.querySelectorAll) return;
+    var self = this;
+    function update(action, active, title, icon) {
+      var button = self.drawingToolsLayer.querySelector('[data-sce-action="' + action + '"]');
+      if (!button) return;
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      button.classList.toggle('is-active', !!active);
+      if (title) {
+        button.setAttribute('title', title);
+        button.setAttribute('aria-label', title);
+      }
+      if (icon) button.innerHTML = paneControlIconSvg(icon);
+    }
+    update('toggle-magnet', this.document.settings.magnetMode, 'Magnet mode', 'magnet');
+    update('toggle-stay-drawing', this.document.settings.stayInDrawingMode, 'Stay in drawing mode', 'repeat');
+    var allLocked = this.areAllDrawingsLocked();
+    var anyVisible = this.areAnyDrawingsVisible();
+    var hasDrawings = this.document.drawings.length > 0;
+    update('toggle-lock-drawings', allLocked, allLocked ? 'Unlock drawings' : 'Lock drawings', allLocked ? 'unlock' : 'lock');
+    update('toggle-drawings-visible', hasDrawings && !anyVisible, hasDrawings && !anyVisible ? 'Show drawings' : 'Hide drawings', hasDrawings && !anyVisible ? 'eye' : 'eye-off');
   };
 
   Chart.prototype.resize = function () {
@@ -5734,7 +5780,13 @@
       download: '<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 20h14"/>',
       copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
       'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
-      'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>'
+      'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>',
+      magnet: '<path d="M7 5v7a5 5 0 0 0 10 0V5"/><path d="M7 5h4"/><path d="M13 5h4"/><path d="M7 9h4"/><path d="M13 9h4"/>',
+      repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+      lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+      unlock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M16 10V7a4 4 0 0 0-7.7-1.5"/>',
+      eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+      'eye-off': '<path d="M3 3l18 18"/><path d="M10.6 10.6A3 3 0 0 0 13.4 13.4"/><path d="M9.9 4.3A10.4 10.4 0 0 1 12 4c6 0 10 8 10 8a18 18 0 0 1-3.2 4.1"/><path d="M6.6 6.6C3.8 8.5 2 12 2 12s4 8 10 8a10 10 0 0 0 4.2-.9"/>'
     };
     return common + (paths[icon] || paths.maximize) + '</svg>';
   }
