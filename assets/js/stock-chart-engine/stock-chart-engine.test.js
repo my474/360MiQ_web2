@@ -217,6 +217,18 @@ const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
 const data = StockChartEngine.createDemoData(90);
+const demoCandleStyles = data.slice(1).reduce((counts, bar, index) => {
+  const previousClose = data[index].close;
+  if (bar.close >= bar.open && bar.close >= previousClose) counts.greenHollow += 1;
+  if (bar.close < bar.open && bar.close >= previousClose) counts.greenFilled += 1;
+  if (bar.close >= bar.open && bar.close < previousClose) counts.redHollow += 1;
+  if (bar.close < bar.open && bar.close < previousClose) counts.redFilled += 1;
+  return counts;
+}, { greenHollow: 0, greenFilled: 0, redHollow: 0, redFilled: 0 });
+assert.ok(demoCandleStyles.greenHollow > 0);
+assert.ok(demoCandleStyles.greenFilled > 0);
+assert.ok(demoCandleStyles.redHollow > 0);
+assert.ok(demoCandleStyles.redFilled > 0);
 const chart = new StockChartEngine.Chart('#chart', {
   data,
   symbol: 'TEST',
@@ -574,9 +586,14 @@ assert.notDeepStrictEqual(chart.getDrawingById(drawingId).points.map((point) => 
 assert.ok(chart.indicatorLegendItems(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId, last.time, chart.theme()).length > 0);
 
 let drawingStylePopupOpened = false;
+const currentBodyScreenPoints = chart.drawingScreenPoints(chart.getDrawingById(drawingId));
+const currentBodyMidpoint = {
+  x: (currentBodyScreenPoints[0].x + currentBodyScreenPoints[1].x) / 2,
+  y: (currentBodyScreenPoints[0].y + currentBodyScreenPoints[1].y) / 2
+};
 chart.handleCanvasDoubleClick({
-  clientX: bodyMidpoint.x,
-  clientY: bodyMidpoint.y,
+  clientX: currentBodyMidpoint.x,
+  clientY: currentBodyMidpoint.y,
   preventDefault() {
     drawingStylePopupOpened = true;
   }

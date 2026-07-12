@@ -5023,9 +5023,13 @@
     var time = Math.floor(Date.now() / 1000) - count * 86400;
     var close = 100;
     for (var i = 0; i < count; i += 1) {
-      var open = close;
-      var change = (Math.sin(i / 8) + Math.random() - 0.48) * 1.8;
-      close = Math.max(5, close + change);
+      var previousClose = close;
+      var wave = Math.sin(i / 9) * 0.28;
+      var pattern = i % 4;
+      var openGap = pattern === 0 ? -0.45 : pattern === 1 ? 1.55 : pattern === 2 ? -1.55 : 0.45;
+      var bodyMove = pattern === 0 ? 1.25 : pattern === 1 ? -0.65 : pattern === 2 ? 0.65 : -1.25;
+      var open = Math.max(5, previousClose + openGap + wave);
+      close = Math.max(5, open + bodyMove);
       var high = Math.max(open, close) + Math.random() * 2.4;
       var low = Math.min(open, close) - Math.random() * 2.4;
       data.push({ time: time + i * 86400, open: open, high: high, low: low, close: close, volume: 800000 + Math.random() * 1500000 });

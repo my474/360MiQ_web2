@@ -2033,8 +2033,12 @@
 
       document.getElementById('appendBar').addEventListener('click', function () {
         var last = data[data.length - 1];
-        var open = last.close;
-        var close = Math.max(5, open + (Math.random() - 0.45) * 3);
+        var pattern = data.length % 4;
+        var wave = Math.sin(data.length / 9) * 0.28;
+        var openGap = pattern === 0 ? -0.45 : pattern === 1 ? 1.55 : pattern === 2 ? -1.55 : 0.45;
+        var bodyMove = pattern === 0 ? 1.25 : pattern === 1 ? -0.65 : pattern === 2 ? 0.65 : -1.25;
+        var open = Math.max(5, last.close + openGap + wave);
+        var close = Math.max(5, open + bodyMove);
         var bar = {
           time: last.time + 86400,
           open: open,
