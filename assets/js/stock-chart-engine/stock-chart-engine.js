@@ -4465,6 +4465,29 @@
     return visible.length ? visible[visible.length - 1].time : null;
   };
 
+  Chart.prototype.scaleTicks = function (rect, range, count) {
+    count = Math.max(2, count || 5);
+    var ticks = [];
+    var logTransform = null;
+    var logMin = null;
+    var logMax = null;
+    if (this.paneScaleMode(rect.paneId) === 'log') {
+      logTransform = logScaleTransform(range);
+      logMin = logTransform.value(range.min);
+      logMax = logTransform.value(range.max);
+    }
+    for (var i = 0; i < count; i += 1) {
+      var ratio = count === 1 ? 0 : i / (count - 1);
+      var value = range.max - (range.max - range.min) * ratio;
+      if (logTransform && logMin != null && logMax != null) {
+        value = logTransform.inverse(logMax - (logMax - logMin) * ratio);
+      }
+      var y = this.yForValue(value, rect, range);
+      if (y != null) ticks.push({ value: value, y: y, index: i });
+    }
+    return ticks;
+  };
+
   Chart.prototype.pointerPaneRect = function () {
     if (!this.pointer) return null;
     for (var i = 0; i < this.paneRects.length; i += 1) {
@@ -4539,8 +4562,9 @@
     ctx.save();
     ctx.strokeStyle = theme.grid;
     ctx.lineWidth = 1;
-    for (var i = 1; i < 5; i += 1) {
-      var y = rect.y + (rect.height / 5) * i;
+    var ticks = this.scaleTicks(rect, range, 5);
+    for (var i = 1; i < ticks.length - 1; i += 1) {
+      var y = ticks[i].y;
       ctx.beginPath();
       ctx.moveTo(rect.x, Math.round(y) + 0.5);
       ctx.lineTo(rect.x + rect.width, Math.round(y) + 0.5);
@@ -4581,19 +4605,9 @@
       paneId: rect.paneId
     });
     ctx.fillText(scaleModeLabel, rect.scaleX + 6, rect.y + 12);
-    for (var i = 0; i <= 4; i += 1) {
-      var value = range.max - ((range.max - range.min) / 4) * i;
-      if (this.paneScaleMode(rect.paneId) === 'log') {
-        var logTransform = logScaleTransform(range);
-        var logMin = logTransform.value(range.min);
-        var logMax = logTransform.value(range.max);
-        if (logMin != null && logMax != null) {
-          value = logTransform.inverse(logMax - ((logMax - logMin) / 4) * i);
-        }
-      }
-      var y = rect.y + (rect.height / 4) * i;
-      ctx.fillText(formatNumber(value), rect.scaleX + 6, y);
-    }
+    this.scaleTicks(rect, range, 5).forEach(function (tick) {
+      ctx.fillText(formatNumber(tick.value), rect.scaleX + 6, tick.y);
+    });
     this.drawScaleMarkers(rect, range, theme);
     ctx.restore();
   };

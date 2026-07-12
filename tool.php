@@ -1061,8 +1061,8 @@ window.__TOOL_PAGE_CONFIG = {
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
 <script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
-<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.10"></script>
-<script src="assets/js/pages/tool-stock-chart.js?v=20260713.11"></script>
+<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.11"></script>
+<script src="assets/js/pages/tool-stock-chart.js?v=20260713.12"></script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->

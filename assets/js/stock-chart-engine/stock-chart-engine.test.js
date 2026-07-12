@@ -619,6 +619,21 @@ assert.ok(rsiScaleMarkers.some((item) => item.kind === 'indicator' && item.indic
 chart.canvas.commands = [];
 chart.drawScale(priceRectForLegendCursor, chart.paneRange('price'), chart.theme());
 assert.ok(chart.canvas.commands.some((command) => command.type === 'fillText' && command.text === formatTestNumber(priceMarkerBar.close)));
+const yAxisTickRect = chart.getPaneRect('price');
+const yAxisTickRange = chart.paneRange('price');
+const yAxisTicks = chart.scaleTicks(yAxisTickRect, yAxisTickRange, 5);
+chart.canvas.commands = [];
+chart.drawGrid(yAxisTickRect, yAxisTickRange, chart.theme());
+const horizontalGridY = chart.canvas.commands
+  .filter((command) => command.type === 'lineTo' && command.x === yAxisTickRect.x + yAxisTickRect.width)
+  .map((command) => command.y);
+assert.deepStrictEqual(horizontalGridY, yAxisTicks.slice(1, -1).map((tick) => Math.round(tick.y) + 0.5));
+chart.canvas.commands = [];
+chart.drawScale(yAxisTickRect, yAxisTickRange, chart.theme());
+const yAxisLabelY = chart.canvas.commands
+  .filter((command) => command.type === 'fillText' && command.x === yAxisTickRect.scaleX + 6 && Number.isFinite(parseFloat(command.text)))
+  .map((command) => command.y);
+assert.deepStrictEqual(yAxisLabelY, yAxisTicks.map((tick) => tick.y));
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
