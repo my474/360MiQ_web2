@@ -288,6 +288,16 @@ chart.drawingToolsLayer.querySelectorAll = function queryOpenDrawingMenus(select
 chart.handleDocumentPointerDown({ target: new FakeElement('button') });
 assert.strictEqual(toolbarOpenDetail.hasAttribute('open'), false);
 assert.strictEqual(drawingOpenDetail.hasAttribute('open'), false);
+const openedToolbarDetail = new FakeElement('details');
+const siblingToolbarDetail = new FakeElement('details');
+openedToolbarDetail.setAttribute('open', 'open');
+siblingToolbarDetail.setAttribute('open', 'open');
+chart.toolbar.querySelectorAll = function querySiblingToolbarMenus(selector) {
+  return selector === 'details[open]' ? [openedToolbarDetail, siblingToolbarDetail] : [];
+};
+chart.closeSiblingDetailsMenus(chart.toolbar, openedToolbarDetail);
+assert.strictEqual(openedToolbarDetail.hasAttribute('open'), true);
+assert.strictEqual(siblingToolbarDetail.hasAttribute('open'), false);
 const drawingMenuForPosition = new FakeElement('div');
 drawingMenuForPosition.getBoundingClientRect = function getMenuRect() {
   return { width: 360, height: 240 };
@@ -396,12 +406,12 @@ const candleRuleVolumeData = chart.bars.map((bar) => ({
   close: bar.close
 }));
 chart.canvas.commands = [];
-chart.drawVolumeOverlay({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'price' }, candleTheme, candleRuleVolumeData, { opacity: 1 });
+chart.drawVolumeOverlay({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'price' }, candleTheme, candleRuleVolumeData, { color: '#2563eb', opacity: 1 });
 const overlayVolumeStyles = chart.canvas.commands.filter((command) => command.type === 'fillRect').map((command) => command.fillStyle);
 assert.strictEqual(overlayVolumeStyles[1], candleTheme.volumeUp, 'green filled candle volume should use up color');
 assert.strictEqual(overlayVolumeStyles[2], candleTheme.volumeDown, 'red hollow candle volume should use down color');
 chart.canvas.commands = [];
-chart.drawHistogram({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'volume' }, { min: 0, max: 1400 }, candleTheme, candleRuleVolumeData, { opacity: 1 }, true);
+chart.drawHistogram({ x: 0, y: 0, width: 100, height: 100, scaleWidth: 68, paneId: 'volume' }, { min: 0, max: 1400 }, candleTheme, candleRuleVolumeData, { color: '#2563eb', opacity: 1 }, true);
 const paneVolumeStyles = chart.canvas.commands.filter((command) => command.type === 'fillRect').map((command) => command.fillStyle);
 assert.strictEqual(paneVolumeStyles[1], candleTheme.volumeUp, 'pane volume should match green filled candle color');
 assert.strictEqual(paneVolumeStyles[2], candleTheme.volumeDown, 'pane volume should match red hollow candle color');
@@ -585,8 +595,16 @@ chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 1
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
 const volumePaneIndicatorId = chart.addIndicator('VOLUME', { placement: 'new' });
+chart.updateIndicatorSettings(volumePaneIndicatorId, {
+  styles: { value: { color: '#2563eb', opacity: 0.55 } }
+});
 chart.canvas.commands = [];
 chart.draw();
+const volumePaneIndicator = chart.document.indicators.find((indicator) => indicator.id === volumePaneIndicatorId);
+const volumeLegendPoint = chart.indicatorResults[volumePaneIndicatorId].outputs.value[chart.indicatorResults[volumePaneIndicatorId].outputs.value.length - 1];
+const volumeLegendItem = chart.indicatorLegendItems(volumePaneIndicator.paneId, volumeLegendPoint.time, chart.theme()).find((item) => item.indicatorId === volumePaneIndicatorId);
+assert.strictEqual(volumeLegendItem.color, chart.volumeColorForPoint(volumeLegendPoint, chart.theme()));
+assert.notStrictEqual(volumeLegendItem.color, '#2563eb');
 const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);

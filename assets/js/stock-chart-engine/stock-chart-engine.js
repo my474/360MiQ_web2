@@ -1953,9 +1953,14 @@
     });
     this.drawingToolsLayer.addEventListener('toggle', function (event) {
       if (!event.target || event.target.tagName !== 'DETAILS') return;
+      if (event.target.hasAttribute('open')) self.closeSiblingDetailsMenus(self.drawingToolsLayer, event.target);
       setTimeout(function () {
         self.positionDrawingToolMenus();
       }, 0);
+    }, true);
+    this.toolbar.addEventListener('toggle', function (event) {
+      if (!event.target || event.target.tagName !== 'DETAILS') return;
+      if (event.target.hasAttribute('open')) self.closeSiblingDetailsMenus(self.toolbar, event.target);
     }, true);
     this.drawingToolsLayer.addEventListener('scroll', function () {
       self.positionDrawingToolMenus();
@@ -2074,6 +2079,13 @@
     if (!root || !root.querySelectorAll) return;
     Array.prototype.forEach.call(root.querySelectorAll('details[open]'), function (details) {
       details.removeAttribute('open');
+    });
+  };
+
+  Chart.prototype.closeSiblingDetailsMenus = function (root, openedDetails) {
+    if (!root || !root.querySelectorAll || !openedDetails) return;
+    Array.prototype.forEach.call(root.querySelectorAll('details[open]'), function (details) {
+      if (details !== openedDetails) details.removeAttribute('open');
     });
   };
 
@@ -4406,10 +4418,11 @@
         if (!valuePoint) return;
         var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
         if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
+        var color = renderItem.type === 'volume' ? self.volumeColorForPoint(valuePoint, theme) : style.color;
         items.push({
           indicatorId: indicator.id,
           output: renderItem.output,
-          color: style.color,
+          color: color,
           label: indicatorLegendName(indicator, renderItem.output) + ' ' + formatNumber(valuePoint.value)
         });
         paletteIndex += 1;
@@ -4881,7 +4894,7 @@
       if (y == null) return;
       if (useVolumeColor) ctx.fillStyle = this.volumeColorForPoint(point, theme, volumeColorSource);
       else ctx.fillStyle = point.value >= 0 ? theme.volumeUp : theme.volumeDown;
-      if (style.color) ctx.fillStyle = style.color;
+      if (!useVolumeColor && style.color) ctx.fillStyle = style.color;
       ctx.fillRect(x - barWidth / 2, Math.min(y, zeroY), barWidth, Math.max(1, Math.abs(zeroY - y)));
     }, this);
     ctx.restore();
@@ -4911,7 +4924,7 @@
       if (point.time < first || point.time > last || point.value == null) return;
       var x = this.xForTime(point.time, rect);
       var height = Math.max(1, (point.value / maxVolume) * overlayHeight);
-      ctx.fillStyle = style.color || this.volumeColorForPoint(point, theme, volumeColorSource);
+      ctx.fillStyle = this.volumeColorForPoint(point, theme, volumeColorSource);
       ctx.fillRect(x - barWidth / 2, baseline - height, barWidth, height);
     }, this);
     ctx.restore();
