@@ -327,6 +327,53 @@
     return svg(icons[kind] || icons.marker);
   }
 
+  function drawingToolStripHtml() {
+    var categoryOrder = [
+      ['trend', 'Trend Lines', 'trendline'],
+      ['fibonacci', 'Fibonacci & Gann', 'fib_retracement'],
+      ['geometric', 'Geometric Shapes', 'rectangle'],
+      ['annotation', 'Text & Notes', 'text'],
+      ['pattern', 'Patterns', 'xabcd_pattern'],
+      ['measurement', 'Measure & Forecast', 'date_range'],
+      ['icon', 'Icons', 'icon'],
+      ['sticker', 'Stickers', 'sticker'],
+      ['emoji', 'Emoji', 'emoji']
+    ];
+    var byCategory = {};
+    Object.keys(DRAWING_TOOLS).forEach(function (key) {
+      var tool = DRAWING_TOOLS[key];
+      if (!byCategory[tool.category]) byCategory[tool.category] = [];
+      byCategory[tool.category].push(tool);
+    });
+    var html = ['<div class="sce-drawing-tools-scroll">'];
+    categoryOrder.forEach(function (category) {
+      var tools = byCategory[category[0]];
+      if (!tools || !tools.length) return;
+      var representative = DRAWING_TOOLS[category[2]] || tools[0];
+      html.push(
+        '<details class="sce-drawing-tool-group">',
+        '<summary title="', escapeHtml(category[1]), '" aria-label="', escapeHtml(category[1]), '">',
+        representative.icon,
+        '<span class="sce-drawing-tool-caret">&rsaquo;</span>',
+        '</summary>',
+        '<div class="sce-drawing-tool-menu" role="menu" aria-label="', escapeHtml(category[1]), '">'
+      );
+      tools.forEach(function (tool) {
+        html.push(
+          '<button type="button" data-sce-drawing-tool="', escapeHtml(tool.id), '" title="', escapeHtml(tool.name), '" role="menuitem">',
+          tool.icon,
+          '<span>', escapeHtml(tool.name), '</span>',
+          '</button>'
+        );
+      });
+      html.push('</div></details>');
+    });
+    html.push('</div><div class="sce-drawing-tools-bottom">');
+    html.push('<button type="button" data-sce-action="clear-drawings" title="Clear drawings" aria-label="Clear drawings">', paneControlIconSvg('close'), '</button>');
+    html.push('</div>');
+    return html.join('');
+  }
+
   function uid(prefix) {
     return (prefix || 'id') + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
   }
@@ -1823,9 +1870,13 @@
     this.paneControlsLayer = document.createElement('div');
     this.paneControlsLayer.className = 'sce-pane-controls-layer';
     this.paneControlsLayer.setAttribute('aria-hidden', 'false');
+    this.drawingToolsLayer = document.createElement('div');
+    this.drawingToolsLayer.className = 'sce-drawing-tools-layer';
+    this.drawingToolsLayer.innerHTML = drawingToolStripHtml();
     this.canvasWrap.appendChild(this.canvas);
     this.canvasWrap.appendChild(this.settingsPopup);
     this.canvasWrap.appendChild(this.paneControlsLayer);
+    this.canvasWrap.appendChild(this.drawingToolsLayer);
     this.root.appendChild(this.toolbar);
     this.root.appendChild(this.canvasWrap);
     this.container.innerHTML = '';
@@ -1871,6 +1922,21 @@
       if (action === 'theme') self.toggleTheme();
       if (action === 'export-image') self.downloadImage();
       if (action === 'save') self.save();
+    });
+    this.drawingToolsLayer.addEventListener('click', function (event) {
+      var toolButton = closestAttribute(event.target, 'data-sce-drawing-tool');
+      if (toolButton) {
+        if (event.preventDefault) event.preventDefault();
+        self.startDrawing(toolButton.getAttribute('data-sce-drawing-tool'));
+        var details = toolButton;
+        while (details && details !== self.drawingToolsLayer && details.tagName !== 'DETAILS') details = details.parentNode;
+        if (details && details.tagName === 'DETAILS') details.removeAttribute('open');
+        return;
+      }
+      var actionButton = closestAttribute(event.target, 'data-sce-action');
+      if (!actionButton) return;
+      if (event.preventDefault) event.preventDefault();
+      if (actionButton.getAttribute('data-sce-action') === 'clear-drawings') self.removeAllShapes();
     });
     this.toolbar.addEventListener('change', function (event) {
       if (event.target && event.target.getAttribute('data-sce-chart-type') != null) {
@@ -3620,6 +3686,8 @@
     var height = this.canvas.clientHeight;
     var top = 0;
     var scaleWidth = 68;
+    var drawingRailWidth = this.drawingRailWidth();
+    var plotWidth = Math.max(120, width - scaleWidth - drawingRailWidth);
     var timeAxisHeight = 28;
     var layoutPanes = this.document.panes;
     var maximizedPaneId = this.document.settings.maximizedPaneId;
@@ -3641,18 +3709,24 @@
         paneId: pane.id,
         title: pane.title,
         paneIndex: self.document.panes.indexOf(pane),
-        x: 0,
+        x: drawingRailWidth,
         y: top,
-        width: width - scaleWidth,
+        width: plotWidth,
         height: paneHeight,
-        scaleX: width - scaleWidth,
+        scaleX: drawingRailWidth + plotWidth,
         scaleWidth: scaleWidth
       };
       top += paneHeight;
       return rect;
     });
-    this.timeAxisRect = { x: 0, y: available, width: width - scaleWidth, height: timeAxisHeight };
+    this.timeAxisRect = { x: drawingRailWidth, y: available, width: plotWidth, height: timeAxisHeight };
     return this.paneRects;
+  };
+
+  Chart.prototype.drawingRailWidth = function () {
+    if (this.options.drawingTools === false) return 0;
+    var width = this.canvas && this.canvas.clientWidth || 0;
+    return width && width < 520 ? 46 : 56;
   };
 
   Chart.prototype.paneRange = function (paneId) {
