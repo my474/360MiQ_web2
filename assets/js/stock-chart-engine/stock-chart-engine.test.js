@@ -832,6 +832,22 @@ const interactiveRange = chart.paneRange('price');
 assert.strictEqual(chart.getAllShapes().length, interactiveCountBefore + 1);
 assert.strictEqual(chart.getDrawingById(chart.selectedDrawingId).type, 'triangle');
 
+chart.startDrawing('arrow_mark_down');
+assert.strictEqual(chart.pendingDrawing.text, '');
+chart.cancelDrawing();
+const arrowMarkId = chart.addDrawing('arrow_mark_down', [
+  { time: data[data.length - 18].time, value: data[data.length - 18].close }
+], { paneId: 'price', text: 'Arrow mark down' });
+chart.canvas.commands = [];
+chart.drawDrawing(chart.getPaneRect('price'), chart.paneRange('price'), chart.theme(), chart.getDrawingById(arrowMarkId));
+assert.ok(!chart.canvas.commands.some((command) => command.type === 'fillText' && command.text === 'Arrow mark down'));
+const flagMarkId = chart.addDrawing('flag_mark', [
+  { time: data[data.length - 17].time, value: data[data.length - 17].close }
+], { paneId: 'price', text: 'Flag mark' });
+chart.canvas.commands = [];
+chart.drawDrawing(chart.getPaneRect('price'), chart.paneRange('price'), chart.theme(), chart.getDrawingById(flagMarkId));
+assert.ok(!chart.canvas.commands.some((command) => command.type === 'fillText' && command.text === 'Flag mark'));
+
 const shapeId = chart.createMultipointShape([
   { time: data[data.length - 20].time, price: data[data.length - 20].close },
   { time: last.time, price: last.close }

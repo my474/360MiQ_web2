@@ -3271,7 +3271,7 @@
       points: [],
       paneId: options.paneId || null,
       requiredPoints: drawingRequiredPointCount(type),
-      text: options.text || tool.name,
+      text: options.text != null ? options.text : (isIconOnlyDrawingType(type) ? '' : tool.name),
       style: sanitizeDrawingStyle(pendingStyle)
     };
     this.selectedDrawingId = null;
@@ -5062,7 +5062,8 @@
       drawTag(ctx, drawing.text || tool.name, target, style.color, theme.background);
     } else if (kind.indexOf('marker') === 0 || kind === 'flag') {
       drawMarker(ctx, point(0), kind, style.color);
-      if (drawing.text) drawValueLabel(drawing.text, point(0));
+      var markerText = markerDisplayText(drawing, tool);
+      if (markerText) drawValueLabel(markerText, point(0));
     } else if (kind === 'line' || kind === 'arrow' || kind === 'measurement' || kind === 'angle') {
       if (point(1)) {
         drawLine(ctx, point(0), point(1));
@@ -5676,6 +5677,19 @@
     if (typeKey === 'short_position' || textKey === 'short_position') return 'positionShort';
     if (typeKey === 'position_forecast' || textKey === 'position_forecast') return 'positionForecast';
     return kind;
+  }
+
+  function isIconOnlyDrawingType(type) {
+    var key = normalizeDrawingType(type);
+    return key === 'flag_mark' || key.indexOf('arrow_mark_') === 0;
+  }
+
+  function markerDisplayText(drawing, tool) {
+    if (!drawing || !drawing.text) return '';
+    var typeKey = normalizeDrawingType(drawing.type);
+    var textKey = normalizeDrawingKey(drawing.text);
+    if (isIconOnlyDrawingType(typeKey) && (!textKey || textKey === normalizeDrawingKey(tool && tool.name))) return '';
+    return drawing.text;
   }
 
   function drawingRequiredPointCount(type) {
