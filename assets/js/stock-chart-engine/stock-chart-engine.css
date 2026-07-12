@@ -51,7 +51,8 @@
 }
 
 .sce-toolbar button,
-.sce-toolbar select {
+.sce-toolbar select,
+.sce-toolbar .sce-stock-info-link {
   background: transparent;
   border: 1px solid var(--sce-border);
   border-radius: 4px;
@@ -61,6 +62,17 @@
   line-height: 1;
   padding: 0 9px;
   white-space: nowrap;
+}
+
+.sce-toolbar .sce-stock-info-link {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.sce-toolbar .sce-stock-info-link[hidden] {
+  display: none;
 }
 
 .sce-toolbar button {
@@ -310,6 +322,8 @@
 
 .sce-toolbar button:hover,
 .sce-toolbar button:focus,
+.sce-toolbar .sce-stock-info-link:hover,
+.sce-toolbar .sce-stock-info-link:focus,
 .sce-toolbar select:focus {
   border-color: #2563eb;
   outline: none;
@@ -317,6 +331,8 @@
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:hover,
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:focus,
+.sce-root[data-sce-theme="dark"] .sce-toolbar .sce-stock-info-link:hover,
+.sce-root[data-sce-theme="dark"] .sce-toolbar .sce-stock-info-link:focus,
 .sce-root[data-sce-theme="dark"] .sce-toolbar select:focus,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-picker[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-picker summary:hover,

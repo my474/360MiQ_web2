@@ -1870,6 +1870,7 @@
     this.toolbar.className = 'sce-toolbar';
     this.toolbar.innerHTML = [
       '<span class="sce-title"></span>',
+      '<a class="sce-stock-info-link" data-sce-stock-info-link href="#" target="_blank" rel="noopener noreferrer" hidden>Stock Info</a>',
       '<details class="sce-chart-type-picker" data-sce-chart-type-picker>',
       '<summary data-sce-chart-type-button aria-label="Chart type"></summary>',
       '<div class="sce-chart-type-menu">',
@@ -2549,6 +2550,7 @@
     this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.compute();
     this.fitContent();
+    this.updateToolbar();
     this.emitChange('data', { barCount: this.bars.length, sourceBarCount: this.sourceBars.length });
   };
 
@@ -2562,6 +2564,7 @@
     this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.compute();
     this.draw();
+    this.updateToolbar();
     this.emitChange('bar', { bar: normalized, period: this.document.settings.period, barCount: this.bars.length });
   };
 
@@ -3911,6 +3914,17 @@
   Chart.prototype.updateToolbar = function () {
     var title = this.toolbar.querySelector('.sce-title');
     if (title) title.textContent = this.document.symbol + ' ' + this.document.interval;
+    var stockInfoLink = this.toolbar.querySelector('[data-sce-stock-info-link]');
+    if (stockInfoLink) {
+      var href = this.stockInfoHref();
+      if (href) {
+        stockInfoLink.href = href;
+        stockInfoLink.removeAttribute('hidden');
+      } else {
+        stockInfoLink.setAttribute('hidden', 'hidden');
+        stockInfoLink.href = '#';
+      }
+    }
     var chartType = this.toolbar.querySelector('[data-sce-chart-type]');
     if (chartType) chartType.value = this.document.settings.chartType;
     var chartTypeButton = this.toolbar.querySelector('[data-sce-chart-type-button]');
@@ -3942,6 +3956,12 @@
     var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
     if (logButton) logButton.textContent = 'Log: ' + this.paneScaleMode(this.activePaneId()).toUpperCase();
     this.updateDrawingUtilityButtons();
+  };
+
+  Chart.prototype.stockInfoHref = function () {
+    var symbol = String(this.document && this.document.symbol || '').trim();
+    if (!symbol || !this.sourceBars || !this.sourceBars.length) return '';
+    return 'stockinfo?code=' + encodeURIComponent(symbol);
   };
 
   Chart.prototype.filterIndicatorMenu = function (query) {

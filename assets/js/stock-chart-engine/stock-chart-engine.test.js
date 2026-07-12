@@ -58,6 +58,14 @@ class FakeElement {
       title.className = 'sce-title';
       this.appendChild(title);
     }
+    if (value && value.indexOf('data-sce-stock-info-link') !== -1) {
+      const stockInfoLink = new FakeElement('a');
+      stockInfoLink.className = 'sce-stock-info-link';
+      stockInfoLink.setAttribute('data-sce-stock-info-link', '');
+      stockInfoLink.setAttribute('href', '#');
+      stockInfoLink.setAttribute('hidden', 'hidden');
+      this.appendChild(stockInfoLink);
+    }
   }
 
   get innerHTML() {
@@ -91,13 +99,20 @@ class FakeElement {
   }
 
   getAttribute(name) {
-    return this.attributes[name] || null;
+    return Object.prototype.hasOwnProperty.call(this.attributes, name) ? this.attributes[name] : null;
   }
 
   querySelector(selector) {
     if (selector.charAt(0) === '.') {
       const className = selector.slice(1);
       return findElement(this, (element) => (element.className || '').split(/\s+/).includes(className));
+    }
+    const attrMatch = selector.match(/^\[([^=\]]+)(?:="([^"]*)")?\]$/);
+    if (attrMatch) {
+      return findElement(this, (element) => {
+        const value = element.getAttribute(attrMatch[1]);
+        return attrMatch[2] == null ? value != null : value === attrMatch[2];
+      });
     }
     return null;
   }
@@ -362,6 +377,15 @@ assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom out"><svg') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-stock-info-link') !== -1);
+assert.strictEqual(chart.stockInfoHref(), 'stockinfo?code=TEST');
+const stockInfoLink = chart.toolbar.querySelector('[data-sce-stock-info-link]');
+assert.strictEqual(stockInfoLink.href, 'stockinfo?code=TEST');
+assert.strictEqual(stockInfoLink.hasAttribute('hidden'), false);
+const originalSourceBarsForStockInfo = chart.sourceBars;
+chart.sourceBars = [];
+assert.strictEqual(chart.stockInfoHref(), '');
+chart.sourceBars = originalSourceBarsForStockInfo;
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-indicator-picker') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-indicator-search') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-indicator-option="RSI"') !== -1);
