@@ -60,7 +60,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.9';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.10';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -124,6 +124,12 @@
     function codeFromLayoutPayload(payload) {
         var doc = payload && (payload.document || payload.chart || payload);
         return normalizeCode(doc && doc.symbol || 'SPY');
+    }
+
+    function layoutWithoutEmbeddedData(payload) {
+        var copy = JSON.parse(JSON.stringify(payload || {}));
+        delete copy.data;
+        return copy;
     }
 
     function endpointCandidates(file) {
@@ -329,7 +335,7 @@
             autosave: false,
             skipStarterStudies: true
         });
-        stockChart.importLayout(payload);
+        stockChart.importLayout(layoutWithoutEmbeddedData(payload));
         stockChart.document.symbol = code;
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
@@ -381,12 +387,6 @@
         setStatus('Loading shared chart...', false);
 
         ensureEngineReady().then(function () {
-            var sharedBars = payload && Array.isArray(payload.data) ? payload.data : null;
-            if (sharedBars && sharedBars.length) {
-                applySharedLayout(code, payload, sharedBars);
-                shareLayoutLoading = false;
-                return null;
-            }
             return requestBars(code).then(function (response) {
                 applySharedLayout(code, payload, response.bars);
                 shareLayoutLoading = false;

@@ -1858,9 +1858,8 @@
       '<details class="sce-share-picker" data-sce-share-picker>',
       '<summary aria-label="Share chart">', paneControlIconSvg('share'), '<span>Share</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-share-menu" role="menu">',
+      '<button type="button" data-sce-share-action="share-chart">Share Chart</button>',
       '<button type="button" data-sce-share-action="copy-share-url">Copy Share URL</button>',
-      '<button type="button" data-sce-share-action="copy-layout">Copy Layout JSON</button>',
-      '<button type="button" data-sce-share-action="download-layout">Download Layout JSON</button>',
       '<div class="sce-share-status" data-sce-share-status aria-live="polite"></div>',
       '</div>',
       '</details>'
@@ -2221,7 +2220,7 @@
       exportedAt: new Date().toISOString(),
       document: this.serialize()
     };
-    if (options.includeData !== false) layout.data = clone(this.sourceBars);
+    if (options.includeData === true) layout.data = clone(this.sourceBars);
     return layout;
   };
 
@@ -2286,11 +2285,11 @@
       baseUrl = window.location.href.split('#')[0];
     }
     if (!baseUrl) throw new Error('A base URL is required to create a chart share URL.');
-    var json = this.exportLayoutJson(merge({}, options, { pretty: false }));
+    var json = this.exportLayoutJson(merge({}, options, { includeData: false, pretty: false }));
     var url = baseUrl + '#sce-layout=' + encodeURIComponent(json);
     var maxLength = options.maxLength || 16000;
     if (maxLength && url.length > maxLength) {
-      throw new Error('This chart is too large for a share URL. Use Export Chart JSON or Copy Chart Layout instead.');
+      throw new Error('This chart is too large for a share URL.');
     }
     return url;
   };
@@ -2313,17 +2312,10 @@
 
   Chart.prototype.createBestShareUrl = function (options) {
     options = options || {};
-    try {
-      return {
-        url: this.createShareUrl(merge({ includeData: true, maxLength: 60000 }, options)),
-        includeData: true
-      };
-    } catch (error) {
-      return {
-        url: this.createShareUrl(merge({ includeData: false, maxLength: options.maxLength || 16000 }, options)),
-        includeData: false
-      };
-    }
+    return {
+      url: this.createShareUrl(merge({ includeData: false, maxLength: options.maxLength || 16000 }, options)),
+      includeData: false
+    };
   };
 
   Chart.prototype.copyBestShareUrl = function (options) {
@@ -2344,32 +2336,50 @@
     });
   };
 
+  Chart.prototype.shareChart = function (options) {
+    var result;
+    try {
+      result = this.createBestShareUrl(options);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      return navigator.share({
+        title: (this.document.symbol || 'Stock') + ' chart',
+        text: 'Interactive stock chart',
+        url: result.url
+      }).then(function () {
+        return result;
+      });
+    }
+    return this.copyBestShareUrl(options).then(function () {
+      result.copied = true;
+      return result;
+    });
+  };
+
   Chart.prototype.handleShareAction = function (action) {
     var self = this;
     this.setShareStatus('Working...');
+    if (action === 'share-chart') {
+      this.shareChart().then(function (result) {
+        self.setShareStatus(result.copied ? 'Share URL copied.' : 'Chart shared.');
+      }).catch(function (error) {
+        if (error && error.name === 'AbortError') {
+          self.setShareStatus('');
+          return;
+        }
+        self.setShareStatus(error.message || 'Could not share chart.');
+      });
+      return;
+    }
     if (action === 'copy-share-url') {
-      this.copyBestShareUrl().then(function (result) {
-        self.setShareStatus(result.includeData ? 'Share URL copied.' : 'Share URL copied without embedded price data.');
+      this.copyBestShareUrl().then(function () {
+        self.setShareStatus('Share URL copied.');
       }).catch(function (error) {
         self.setShareStatus(error.message || 'Could not copy share URL.');
       });
       return;
-    }
-    if (action === 'copy-layout') {
-      this.copyLayout({ includeData: true, pretty: false }).then(function () {
-        self.setShareStatus('Layout JSON copied.');
-      }).catch(function (error) {
-        self.setShareStatus(error.message || 'Could not copy layout JSON.');
-      });
-      return;
-    }
-    if (action === 'download-layout') {
-      try {
-        this.downloadLayout(null, { includeData: true });
-        this.setShareStatus('Layout JSON downloaded.');
-      } catch (error) {
-        this.setShareStatus(error.message || 'Could not download layout JSON.');
-      }
     }
   };
 
