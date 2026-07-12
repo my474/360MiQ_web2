@@ -289,6 +289,10 @@ assert.strictEqual(Math.round(chart.barIndexAtPoint({
 
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom out"><svg') !== -1);
 assert.strictEqual(chart.setPaneScaleMode('price', 'log'), 'log');
 assert.strictEqual(chart.paneScaleMode('price'), 'log');
 assert.strictEqual(chart.yForValue(0, chart.getPaneRect('price'), chart.paneRange('price')), null);

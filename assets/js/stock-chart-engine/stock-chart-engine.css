@@ -67,6 +67,19 @@
   cursor: pointer;
 }
 
+.sce-toolbar .sce-toolbar-icon-button {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0;
+  width: 32px;
+}
+
+.sce-toolbar .sce-toolbar-icon-button svg {
+  height: 16px;
+  width: 16px;
+}
+
 .sce-toolbar select {
   min-width: 112px;
 }

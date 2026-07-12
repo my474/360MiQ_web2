@@ -1849,8 +1849,8 @@
       dateRangeButtonsHtml('data-sce-date-range'),
       '</div>',
       '</details>',
-      '<button type="button" data-sce-action="zoom-in">Zoom +</button>',
-      '<button type="button" data-sce-action="zoom-out">Zoom -</button>',
+      '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-in" title="Zoom in" aria-label="Zoom in">', paneControlIconSvg('zoom-in'), '</button>',
+      '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-out" title="Zoom out" aria-label="Zoom out">', paneControlIconSvg('zoom-out'), '</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
       '<button type="button" data-sce-action="export-image">Export PNG</button>',
       '<button type="button" data-sce-action="save">Save</button>'
@@ -5732,7 +5732,9 @@
       close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
       trash: '<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5"/><path d="M14 11v5"/>',
       download: '<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 20h14"/>',
-      copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>'
+      copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
+      'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
+      'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>'
     };
     return common + (paths[icon] || paths.maximize) + '</svg>';
   }
