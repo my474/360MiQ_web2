@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <link rel="stylesheet" href="assets/css/inlinehelp.css">
     <link rel="stylesheet" href="assets/css/help-tip2.css">
+    <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css?v=20260712.1">
     
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -719,6 +720,142 @@ select optgroup {
   background-color: transparent;
   color: #8ec8ff;
 }
+
+#tab-3 {
+  text-align: left;
+}
+
+.stock-chart-tool-shell {
+  margin: 26px clamp(12px, 3vw, 40px) 34px;
+}
+
+.stock-chart-search-card {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 14px;
+}
+
+.stock-chart-search-card label {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  margin: 0 4px 0 0;
+  text-transform: uppercase;
+}
+
+.stock-chart-search-card .stock-chart-input-wrap {
+  flex: 1 1 260px;
+  min-width: 0;
+  position: relative;
+}
+
+.stock-chart-search-card .form-control {
+  border-color: #cbd5e1;
+  border-radius: 6px;
+  height: 42px;
+}
+
+.stock-chart-search-card .btn {
+  border-radius: 6px;
+  font-weight: 700;
+  height: 42px;
+  min-width: 116px;
+}
+
+.stock-chart-status {
+  color: #64748b;
+  font-size: 13px;
+  min-height: 20px;
+  width: 100%;
+}
+
+.stock-chart-status.is-error {
+  color: #dc2626;
+}
+
+.stock-chart-stage {
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  height: min(78vh, 820px);
+  min-height: 560px;
+  overflow: hidden;
+}
+
+#toolStockChart {
+  height: 100%;
+  min-height: 560px;
+  width: 100%;
+}
+
+#tab-3 .ui-autocomplete {
+  z-index: 10000;
+}
+
+[data-theme="dark"] .stock-chart-search-card,
+[data-theme="dark"] .stock-chart-stage {
+  background: #111827;
+  border-color: #293244;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .stock-chart-search-card label {
+  color: #dbeafe;
+}
+
+[data-theme="dark"] .stock-chart-search-card .form-control {
+  background: #172033;
+  border-color: #374151;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .stock-chart-search-card .form-control::placeholder {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .stock-chart-search-card .form-control:focus {
+  background: #172033;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 0.18rem rgba(96, 165, 250, 0.24);
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .stock-chart-status {
+  color: #a8c7e8;
+}
+
+[data-theme="dark"] .stock-chart-status.is-error {
+  color: #fca5a5;
+}
+
+@media (max-width: 767.98px) {
+  .stock-chart-tool-shell {
+    margin: 18px 8px 26px;
+  }
+
+  .stock-chart-search-card {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .stock-chart-search-card .btn {
+    width: 100%;
+  }
+
+  .stock-chart-stage,
+  #toolStockChart {
+    min-height: 620px;
+  }
+}
 </style>
 <?php $page = 'tool'; include "./header.php" ?>
 <body>
@@ -731,6 +868,7 @@ select optgroup {
                         <ul class="nav nav-tabs panel-heading not-selectable">
                             <li class="nav-item"><a class="nav-link active mynav-link" id="race-tab" data-bs-toggle="tab" data-bs-target="#race" role="tab" data-toggle="tab" href="#tab-1">Race</a></li>
                             <li class="nav-item"><a class="nav-link mynav-link" id="chartcomposer-tab" data-bs-toggle="tab" data-bs-target="#chartcomposer" role="tab" data-toggle="tab" href="#tab-2">Chart Composer&nbsp;<span class="new-badge">NEW</span><span class="sr-only new">(new feature)</span></a></li>
+                            <li class="nav-item"><a class="nav-link mynav-link" id="stockchart-tab" data-bs-toggle="tab" data-bs-target="#tab-3" role="tab" data-toggle="tab" href="#tab-3">Stock Chart</a></li>
                         </ul>
                         
                         <!-- Tab Navigation -->
@@ -866,6 +1004,24 @@ select optgroup {
                                 <div id="notification" class="notification"></div>
                                 <div id="container" class="not-selectable" style="height: 725px;"></div>
                             </div>
+
+                            <div class="tab-pane" role="tabpanel" id="tab-3">
+                                <h2 class="sr-only">Stock Chart - Interactive Technical Analysis Chart</h2>
+                                <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
+                                <div class="stock-chart-tool-shell">
+                                    <div class="stock-chart-search-card">
+                                        <label for="toolStockChartCode">Stock Code</label>
+                                        <div class="stock-chart-input-wrap">
+                                            <input id="toolStockChartCode" class="form-control" type="search" placeholder="Type a stock code, e.g. AAPL, SPY, 0005.HK" autocomplete="off" spellcheck="false" maxlength="40" aria-label="Stock code">
+                                        </div>
+                                        <button id="toolStockChartLoad" class="btn btn-primary" type="button"><i class="fas fa-search"></i> Load Chart</button>
+                                        <div id="toolStockChartStatus" class="stock-chart-status" aria-live="polite"></div>
+                                    </div>
+                                    <div class="stock-chart-stage">
+                                        <div id="toolStockChart"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -887,12 +1043,15 @@ window.__TOOL_PAGE_CONFIG = {
     "timeframefromURL": <?php echo json_encode(isset($_GET['tf']) ? $_GET['tf'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
     "composerCodesfromURL": <?php echo json_encode(isset($_GET['codes']) ? $_GET['codes'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
     "composerFromfromURL": <?php echo json_encode(isset($_GET['cfrom']) ? $_GET['cfrom'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-    "composerTofromURL": <?php echo json_encode(isset($_GET['cto']) ? $_GET['cto'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
+    "composerTofromURL": <?php echo json_encode(isset($_GET['cto']) ? $_GET['cto'] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+    "stockChartCodefromURL": <?php echo json_encode(isset($_GET['stockcode']) ? $_GET['stockcode'] : ((isset($_GET['tab']) && $_GET['tab'] == '3' && isset($_GET['code'])) ? $_GET['code'] : ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
 <script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
+<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260712.1"></script>
+<script src="assets/js/pages/tool-stock-chart.js?v=20260712.1"></script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->
