@@ -428,6 +428,13 @@
     return values;
   }
 
+  function roundOutwardToStep(value, step, direction) {
+    if (!Number.isFinite(value) || !Number.isFinite(step) || step <= 0) return value;
+    var scaled = value / step;
+    var rounded = direction < 0 ? Math.floor(scaled) * step : Math.ceil(scaled) * step;
+    return roundTickValue(rounded, step);
+  }
+
   function toNumber(value, fallback) {
     var parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -4059,6 +4066,42 @@
     return found;
   };
 
+  Chart.prototype.adaptiveBoundedOscillatorRange = function (paneId, min, max) {
+    var bounded = this.boundedOscillatorConfig(paneId);
+    if (!bounded || this.paneScaleMode(paneId) === 'log') return null;
+    var levels = this.paneLevelValues(paneId).filter(function (value) {
+      return value > bounded.min && value < bounded.max;
+    });
+    if (Number.isFinite(bounded.center) && levels.indexOf(bounded.center) === -1) levels.push(bounded.center);
+    levels = levels.sort(function (a, b) {
+      return a - b;
+    });
+    var boundedSpan = Math.max(1, bounded.max - bounded.min);
+    var step = Math.max(1, niceStep(boundedSpan / 10));
+    var pad = Math.max((max - min) * 0.12, boundedSpan * 0.04);
+    var referenceMin = levels.length ? Math.min.apply(null, levels) : bounded.min;
+    var referenceMax = levels.length ? Math.max.apply(null, levels) : bounded.max;
+    var lowerLimit = Math.min(bounded.min, min);
+    var upperLimit = Math.max(bounded.max, max);
+    var lower = Math.min(min - pad, referenceMin);
+    var upper = Math.max(max + pad, referenceMax);
+
+    lower = Math.max(lowerLimit, roundOutwardToStep(lower, step, -1));
+    upper = Math.min(upperLimit, roundOutwardToStep(upper, step, 1));
+    if (lower >= referenceMin && lower - step >= lowerLimit) lower = roundTickValue(lower - step, step);
+    if (upper <= referenceMax && upper + step <= upperLimit) upper = roundTickValue(upper + step, step);
+    if (upper - lower < step * 2) {
+      var center = Number.isFinite(bounded.center) ? bounded.center : (lower + upper) / 2;
+      lower = Math.max(lowerLimit, roundOutwardToStep(center - step, step, -1));
+      upper = Math.min(upperLimit, roundOutwardToStep(center + step, step, 1));
+    }
+    if (lower === upper) {
+      lower -= step;
+      upper += step;
+    }
+    return { min: lower, max: upper };
+  };
+
   Chart.prototype.paneRange = function (paneId) {
     var values = [];
     var visible = this.visibleBars();
@@ -4090,14 +4133,8 @@
     if (!values.length) return { min: 0, max: 1 };
     var min = Math.min.apply(null, values);
     var max = Math.max.apply(null, values);
-    var bounded = this.boundedOscillatorConfig(paneId);
-    if (bounded && this.paneScaleMode(paneId) !== 'log') {
-      var boundedMin = Math.min(min, bounded.min);
-      var boundedMax = Math.max(max, bounded.max);
-      if (boundedMin === bounded.min && boundedMax === bounded.max) return { min: bounded.min, max: bounded.max };
-      min = boundedMin;
-      max = boundedMax;
-    }
+    var boundedRange = this.adaptiveBoundedOscillatorRange(paneId, min, max);
+    if (boundedRange) return boundedRange;
     if (min === max) {
       min -= Math.abs(min || 1) * 0.05;
       max += Math.abs(max || 1) * 0.05;

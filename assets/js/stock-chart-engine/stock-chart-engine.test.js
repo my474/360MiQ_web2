@@ -617,7 +617,10 @@ const rsiPaneForMarker = chart.getPaneRect(chart.document.indicators.find((indic
 const rsiScaleMarkers = chart.scaleMarkerItems(rsiPaneForMarker, priceMarkerTime, chart.theme());
 assert.ok(rsiScaleMarkers.some((item) => item.kind === 'indicator' && item.indicatorId === rsiId && item.output === 'value'));
 const rsiRange = chart.paneRange(rsiPaneForMarker.paneId);
-assert.deepStrictEqual(rsiRange, { min: 0, max: 100 });
+assert.ok(rsiRange.min > 0);
+assert.ok(rsiRange.max < 100);
+assert.ok(rsiRange.min <= 30);
+assert.ok(rsiRange.max >= 70);
 assert.deepStrictEqual(chart.scaleTicks(rsiPaneForMarker, rsiRange, 5).map((tick) => tick.value), [70, 50, 30]);
 chart.canvas.commands = [];
 chart.drawScale(priceRectForLegendCursor, chart.paneRange('price'), chart.theme());
