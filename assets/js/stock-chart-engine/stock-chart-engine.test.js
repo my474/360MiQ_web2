@@ -616,6 +616,9 @@ assert.strictEqual(priceScaleMarkers.filter((item) => item.kind === 'price-open'
 const rsiPaneForMarker = chart.getPaneRect(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId);
 const rsiScaleMarkers = chart.scaleMarkerItems(rsiPaneForMarker, priceMarkerTime, chart.theme());
 assert.ok(rsiScaleMarkers.some((item) => item.kind === 'indicator' && item.indicatorId === rsiId && item.output === 'value'));
+const rsiRange = chart.paneRange(rsiPaneForMarker.paneId);
+assert.deepStrictEqual(rsiRange, { min: 0, max: 100 });
+assert.deepStrictEqual(chart.scaleTicks(rsiPaneForMarker, rsiRange, 5).map((tick) => tick.value), [70, 50, 30]);
 chart.canvas.commands = [];
 chart.drawScale(priceRectForLegendCursor, chart.paneRange('price'), chart.theme());
 assert.ok(chart.canvas.commands.some((command) => command.type === 'fillText' && command.text === formatTestNumber(priceMarkerBar.close)));
@@ -627,13 +630,16 @@ chart.drawGrid(yAxisTickRect, yAxisTickRange, chart.theme());
 const horizontalGridY = chart.canvas.commands
   .filter((command) => command.type === 'lineTo' && command.x === yAxisTickRect.x + yAxisTickRect.width)
   .map((command) => command.y);
-assert.deepStrictEqual(horizontalGridY, yAxisTicks.slice(1, -1).map((tick) => Math.round(tick.y) + 0.5));
+assert.deepStrictEqual(horizontalGridY, yAxisTicks
+  .filter((tick) => tick.y > yAxisTickRect.y + 1 && tick.y < yAxisTickRect.y + yAxisTickRect.height - 1)
+  .map((tick) => Math.round(tick.y) + 0.5));
 chart.canvas.commands = [];
 chart.drawScale(yAxisTickRect, yAxisTickRange, chart.theme());
 const yAxisLabelY = chart.canvas.commands
   .filter((command) => command.type === 'fillText' && command.x === yAxisTickRect.scaleX + 6 && Number.isFinite(parseFloat(command.text)))
   .map((command) => command.y);
 assert.deepStrictEqual(yAxisLabelY, yAxisTicks.map((tick) => tick.y));
+assert.ok(yAxisTicks.every((tick) => Math.abs(tick.value) >= 100 || Number.isInteger(tick.value)));
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);

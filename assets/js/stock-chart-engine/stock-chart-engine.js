@@ -385,6 +385,49 @@
     return Math.max(min, Math.min(max, value));
   }
 
+  function niceStep(rawStep) {
+    rawStep = Math.abs(Number(rawStep));
+    if (!Number.isFinite(rawStep) || rawStep === 0) return 1;
+    var power = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    var fraction = rawStep / power;
+    var niceFraction = 10;
+    if (fraction <= 1) niceFraction = 1;
+    else if (fraction <= 2) niceFraction = 2;
+    else if (fraction <= 2.5) niceFraction = 2.5;
+    else if (fraction <= 5) niceFraction = 5;
+    return niceFraction * power;
+  }
+
+  function roundTickValue(value, step) {
+    var decimals = Math.max(0, -Math.floor(Math.log10(Math.abs(step) || 1)) + 2);
+    return Number(Number(value).toFixed(Math.min(8, decimals)));
+  }
+
+  function niceLinearTickValues(min, max, targetCount) {
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return [];
+    if (min === max) {
+      min -= Math.abs(min || 1) * 0.5;
+      max += Math.abs(max || 1) * 0.5;
+    }
+    targetCount = Math.max(2, targetCount || 5);
+    var step = niceStep((max - min) / Math.max(1, targetCount - 1));
+    var values = [];
+    var start = Math.ceil(min / step) * step;
+    var end = Math.floor(max / step) * step;
+    for (var value = start; value <= end + step * 0.001; value += step) {
+      values.push(roundTickValue(value, step));
+      if (values.length > targetCount + 4) break;
+    }
+    if (values.length < 2 && step > 0) {
+      step = niceStep((max - min) / Math.max(1, targetCount));
+      start = Math.ceil(min / step) * step;
+      end = Math.floor(max / step) * step;
+      values = [];
+      for (var retry = start; retry <= end + step * 0.001; retry += step) values.push(roundTickValue(retry, step));
+    }
+    return values;
+  }
+
   function toNumber(value, fallback) {
     var parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -3981,6 +4024,41 @@
     return width && width < 520 ? 46 : 56;
   };
 
+  Chart.prototype.paneLevelValues = function (paneId) {
+    var values = [];
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.paneId !== paneId || indicator.visible === false) return;
+      var result = this.indicatorResults[indicator.id];
+      if (!result) return;
+      result.render.forEach(function (renderItem) {
+        if (renderItem.type === 'level' && Number.isFinite(Number(renderItem.value))) values.push(Number(renderItem.value));
+      });
+    }, this);
+    return values.filter(function (value, index) {
+      return values.indexOf(value) === index;
+    }).sort(function (a, b) {
+      return b - a;
+    });
+  };
+
+  Chart.prototype.boundedOscillatorConfig = function (paneId) {
+    var configs = {
+      RSI: { min: 0, max: 100, center: 50 },
+      STOCH: { min: 0, max: 100, center: 50 },
+      STOCHRSI: { min: 0, max: 100, center: 50 },
+      MFI: { min: 0, max: 100, center: 50 },
+      UO: { min: 0, max: 100, center: 50 },
+      WILLIAMS: { min: -100, max: 0, center: -50 }
+    };
+    var found = null;
+    this.document.indicators.some(function (indicator) {
+      if (indicator.paneId !== paneId || indicator.visible === false || !configs[indicator.type]) return false;
+      found = configs[indicator.type];
+      return true;
+    });
+    return found;
+  };
+
   Chart.prototype.paneRange = function (paneId) {
     var values = [];
     var visible = this.visibleBars();
@@ -4012,6 +4090,14 @@
     if (!values.length) return { min: 0, max: 1 };
     var min = Math.min.apply(null, values);
     var max = Math.max.apply(null, values);
+    var bounded = this.boundedOscillatorConfig(paneId);
+    if (bounded && this.paneScaleMode(paneId) !== 'log') {
+      var boundedMin = Math.min(min, bounded.min);
+      var boundedMax = Math.max(max, bounded.max);
+      if (boundedMin === bounded.min && boundedMax === bounded.max) return { min: bounded.min, max: bounded.max };
+      min = boundedMin;
+      max = boundedMax;
+    }
     if (min === max) {
       min -= Math.abs(min || 1) * 0.05;
       max += Math.abs(max || 1) * 0.05;
@@ -4467,7 +4553,27 @@
 
   Chart.prototype.scaleTicks = function (rect, range, count) {
     count = Math.max(2, count || 5);
-    var ticks = [];
+    var values = [];
+    var bounded = this.boundedOscillatorConfig(rect.paneId);
+    if (bounded && this.paneScaleMode(rect.paneId) !== 'log') {
+      values = this.paneLevelValues(rect.paneId).filter(function (value) {
+        return value > bounded.min && value < bounded.max;
+      });
+      if (Number.isFinite(bounded.center) && values.indexOf(bounded.center) === -1) values.push(bounded.center);
+      values = values.filter(function (value, index) {
+        return values.indexOf(value) === index && value >= range.min && value <= range.max;
+      }).sort(function (a, b) {
+        return b - a;
+      });
+      if (values.length) {
+        return values.map(function (value, index) {
+          return { value: value, y: this.yForValue(value, rect, range), index: index };
+        }, this).filter(function (tick) {
+          return tick.y != null;
+        });
+      }
+    }
+
     var logTransform = null;
     var logMin = null;
     var logMax = null;
@@ -4476,6 +4582,18 @@
       logMin = logTransform.value(range.min);
       logMax = logTransform.value(range.max);
     }
+    if (!logTransform) {
+      values = niceLinearTickValues(range.min, range.max, count).sort(function (a, b) {
+        return b - a;
+      });
+      return values.map(function (value, index) {
+        return { value: value, y: this.yForValue(value, rect, range), index: index };
+      }, this).filter(function (tick) {
+        return tick.y != null;
+      });
+    }
+
+    var ticks = [];
     for (var i = 0; i < count; i += 1) {
       var ratio = count === 1 ? 0 : i / (count - 1);
       var value = range.max - (range.max - range.min) * ratio;
@@ -4563,8 +4681,9 @@
     ctx.strokeStyle = theme.grid;
     ctx.lineWidth = 1;
     var ticks = this.scaleTicks(rect, range, 5);
-    for (var i = 1; i < ticks.length - 1; i += 1) {
+    for (var i = 0; i < ticks.length; i += 1) {
       var y = ticks[i].y;
+      if (y <= rect.y + 1 || y >= rect.y + rect.height - 1) continue;
       ctx.beginPath();
       ctx.moveTo(rect.x, Math.round(y) + 0.5);
       ctx.lineTo(rect.x + rect.width, Math.round(y) + 0.5);
