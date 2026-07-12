@@ -8,6 +8,7 @@
     var dataSerial = 0;
     var stockChart = null;
     var currentCode = '';
+    var engineReadyPromise = null;
 
     function normalizeCode(value) {
         var code = String(value || '').trim();
@@ -25,6 +26,48 @@
         if (!status) return;
         status.textContent = message || '';
         status.classList.toggle('is-error', !!isError);
+    }
+
+    function ensureEngineReady() {
+        if (window.StockChartEngine) return Promise.resolve(window.StockChartEngine);
+        if (engineReadyPromise) return engineReadyPromise;
+
+        engineReadyPromise = new Promise(function (resolve, reject) {
+            var existing = document.querySelector('script[data-tool-stock-chart-engine]');
+            if (existing) {
+                existing.addEventListener('load', function () {
+                    if (window.StockChartEngine) resolve(window.StockChartEngine);
+                    else {
+                        engineReadyPromise = null;
+                        reject(new Error('StockChartEngine was not registered after script load.'));
+                    }
+                }, { once: true });
+                existing.addEventListener('error', function () {
+                    engineReadyPromise = null;
+                    reject(new Error('Unable to load stock-chart-engine.js.'));
+                }, { once: true });
+                return;
+            }
+
+            var script = document.createElement('script');
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260712.1';
+            script.async = false;
+            script.setAttribute('data-tool-stock-chart-engine', 'true');
+            script.onload = function () {
+                if (window.StockChartEngine) resolve(window.StockChartEngine);
+                else {
+                    engineReadyPromise = null;
+                    reject(new Error('StockChartEngine was not registered after script load.'));
+                }
+            };
+            script.onerror = function () {
+                engineReadyPromise = null;
+                reject(new Error('Unable to load assets/js/stock-chart-engine/stock-chart-engine.js.'));
+            };
+            document.head.appendChild(script);
+        });
+
+        return engineReadyPromise;
     }
 
     function escapeLayoutId(code) {
@@ -155,25 +198,43 @@
 
         var requestId = ++dataSerial;
         if (activeDataRequest && activeDataRequest.readyState !== 4) activeDataRequest.abort();
-        activeDataRequest = $.ajax({
-            url: 'db_stockquote_get.php',
-            type: 'get',
-            data: { data: code, isIEX: '1' },
-            timeout: 20000,
-            success: function (result) {
-                if (requestId !== dataSerial) return;
-                var bars = parseStockQuoteResult(result);
-                if (!bars.length) {
-                    setStatus('No chart history found for ' + code + '.', true);
-                    return;
+        ensureEngineReady().then(function () {
+            if (requestId !== dataSerial) return;
+            activeDataRequest = $.ajax({
+                url: 'db_stockquote_get.php',
+                type: 'get',
+                data: { data: code, isIEX: '1' },
+                timeout: 20000,
+                success: function (result) {
+                    if (requestId !== dataSerial) return;
+                    var bars = parseStockQuoteResult(result);
+                    if (!bars.length) {
+                        setStatus('No chart history found for ' + code + '.', true);
+                        return;
+                    }
+                    renderChart(code, bars);
+                    setStatus(code + ' loaded: ' + bars.length + ' bars.', false);
+                },
+                error: function (xhr, status) {
+                    if (status === 'abort' || requestId !== dataSerial) return;
+                    setStatus('Could not load chart history for ' + code + '.', true);
                 }
-                renderChart(code, bars);
-                setStatus(code + ' loaded: ' + bars.length + ' bars.', false);
-            },
-            error: function (xhr, status) {
-                if (status === 'abort' || requestId !== dataSerial) return;
-                setStatus('Could not load chart history for ' + code + '.', true);
-            }
+            });
+        }).catch(function (error) {
+            if (requestId !== dataSerial) return;
+            console.error(error);
+            setStatus('Could not load stock chart engine asset.', true);
+        });
+    }
+
+    function preloadEngine() {
+        if (window.StockChartEngine) return;
+        setStatus('Loading chart engine...', false);
+        ensureEngineReady().then(function () {
+            setStatus('', false);
+        }).catch(function (error) {
+            console.error(error);
+            setStatus('Could not load stock chart engine asset.', true);
         });
     }
 
@@ -265,10 +326,6 @@
     }
 
     function ensureLoaded() {
-        if (!window.StockChartEngine) {
-            setStatus('Stock chart engine is not available.', true);
-            return;
-        }
         var code = normalizeCode(document.getElementById('toolStockChartCode').value || initialCode());
         if (!stockChart || code !== currentCode) loadStockChart(code);
         else if (stockChart.resize) setTimeout(function () { stockChart.resize(); }, 0);
@@ -281,6 +338,7 @@
 
         input.value = initialCode();
         initAutocomplete();
+        preloadEngine();
         loadButton.addEventListener('click', function () {
             loadStockChart(input.value);
         });
