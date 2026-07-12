@@ -3700,12 +3700,14 @@
   };
 
   Chart.prototype.xForTime = function (time, rect) {
-    var visible = this.visibleBars();
-    if (!visible.length) return rect.x;
-    var first = visible[0].time;
-    var last = visible[visible.length - 1].time;
-    if (first === last) return rect.x + rect.width / 2;
-    return rect.x + ((time - first) / (last - first)) * rect.width;
+    if (!this.bars.length) return rect.x;
+    var range = this.visibleIndexRange();
+    var from = range.from;
+    var to = range.to;
+    if (to < from) return rect.x;
+    if (from === to) return rect.x + rect.width / 2;
+    var index = this.indexForTime(time);
+    return rect.x + ((index - from) / (to - from)) * rect.width;
   };
 
   Chart.prototype.yForValue = function (value, rect, range) {
@@ -3721,11 +3723,41 @@
   };
 
   Chart.prototype.timeForX = function (x, rect) {
-    var visible = this.visibleBars();
-    if (!visible.length) return null;
-    var first = visible[0].time;
-    var last = visible[visible.length - 1].time;
-    return first + ((x - rect.x) / rect.width) * (last - first);
+    if (!this.bars.length) return null;
+    var range = this.visibleIndexRange();
+    if (range.to < range.from) return null;
+    if (range.from === range.to) return this.bars[range.from].time;
+    var ratio = clamp((x - rect.x) / Math.max(1, rect.width), 0, 1);
+    return this.timeForIndex(range.from + ratio * (range.to - range.from));
+  };
+
+  Chart.prototype.indexForTime = function (time) {
+    if (!this.bars.length) return 0;
+    time = toNumber(time, this.bars[0].time);
+    if (time <= this.bars[0].time) return 0;
+    var lastIndex = this.bars.length - 1;
+    if (time >= this.bars[lastIndex].time) return lastIndex;
+    for (var i = 1; i < this.bars.length; i += 1) {
+      var left = this.bars[i - 1];
+      var right = this.bars[i];
+      if (time === right.time) return i;
+      if (time < right.time) {
+        var span = Math.max(1, right.time - left.time);
+        return (i - 1) + ((time - left.time) / span);
+      }
+    }
+    return lastIndex;
+  };
+
+  Chart.prototype.timeForIndex = function (index) {
+    if (!this.bars.length) return null;
+    index = clamp(toNumber(index, 0), 0, this.bars.length - 1);
+    var leftIndex = Math.floor(index);
+    var rightIndex = Math.ceil(index);
+    if (leftIndex === rightIndex) return this.bars[leftIndex].time;
+    var left = this.bars[leftIndex];
+    var right = this.bars[rightIndex];
+    return left.time + (index - leftIndex) * (right.time - left.time);
   };
 
   Chart.prototype.valueForY = function (y, rect, range) {
