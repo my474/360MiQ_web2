@@ -3620,7 +3620,16 @@
     rect = rect || this.paneRects[0] || { x: 0, width: this.canvas.clientWidth || 1 };
     var range = this.visibleIndexRange();
     var ratio = clamp((point.x - rect.x) / Math.max(1, rect.width), 0, 1);
-    return range.from + ratio * Math.max(1, range.to - range.from);
+    return Math.min(range.to, range.from + ratio * this.visibleIndexSpan(range));
+  };
+
+  Chart.prototype.rightLeadBars = function () {
+    return Math.max(0, toNumber(this.options.rightLeadBars, 3));
+  };
+
+  Chart.prototype.visibleIndexSpan = function (range) {
+    range = range || this.visibleIndexRange();
+    return Math.max(1, range.to - range.from + this.rightLeadBars());
   };
 
   Chart.prototype.updateToolbar = function () {
@@ -3782,7 +3791,7 @@
     if (to < from) return rect.x;
     if (from === to) return rect.x + rect.width / 2;
     var index = this.indexForTime(time);
-    return rect.x + ((index - from) / (to - from)) * rect.width;
+    return rect.x + ((index - from) / this.visibleIndexSpan(range)) * rect.width;
   };
 
   Chart.prototype.yForValue = function (value, rect, range) {
@@ -3803,7 +3812,7 @@
     if (range.to < range.from) return null;
     if (range.from === range.to) return this.bars[range.from].time;
     var ratio = clamp((x - rect.x) / Math.max(1, rect.width), 0, 1);
-    return this.timeForIndex(range.from + ratio * (range.to - range.from));
+    return this.timeForIndex(Math.min(range.to, range.from + ratio * this.visibleIndexSpan(range)));
   };
 
   Chart.prototype.indexForTime = function (time) {

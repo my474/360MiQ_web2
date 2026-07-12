@@ -248,6 +248,14 @@ const chart = new StockChartEngine.Chart('#chart', {
   load: false,
   autosave: false
 });
+const priceRectForLeadSpace = chart.getPaneRect('price');
+const latestXWithLeadSpace = chart.xForTime(chart.visibleBars()[chart.visibleBars().length - 1].time, priceRectForLeadSpace);
+assert.ok(priceRectForLeadSpace.x + priceRectForLeadSpace.width - latestXWithLeadSpace > 10);
+assert.strictEqual(chart.timeForX(priceRectForLeadSpace.x + priceRectForLeadSpace.width, priceRectForLeadSpace), chart.visibleBars()[chart.visibleBars().length - 1].time);
+assert.strictEqual(Math.round(chart.barIndexAtPoint({
+  x: priceRectForLeadSpace.x + priceRectForLeadSpace.width,
+  y: priceRectForLeadSpace.y + priceRectForLeadSpace.height / 2
+})), chart.visibleIndexRange().to);
 
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
