@@ -1793,9 +1793,12 @@
       '<option value="quarterly">Quarterly</option>',
       '<option value="yearly">Yearly</option>',
       '</select>',
-      '<div class="sce-date-range-buttons" data-sce-date-ranges aria-label="Date range">',
+      '<details class="sce-date-range-picker" data-sce-date-range-picker>',
+      '<summary data-sce-date-range-button aria-label="Date range"></summary>',
+      '<div class="sce-date-range-menu" data-sce-date-ranges role="menu">',
       dateRangeButtonsHtml('data-sce-date-range'),
       '</div>',
+      '</details>',
       '<button type="button" data-sce-action="sma">SMA</button>',
       '<button type="button" data-sce-action="rsi">RSI</button>',
       '<button type="button" data-sce-action="macd">MACD</button>',
@@ -1846,6 +1849,8 @@
       if (dateRangeButton) {
         if (event.preventDefault) event.preventDefault();
         self.setDateRangePreset(dateRangeButton.getAttribute('data-sce-date-range'));
+        var rangePicker = closestAttribute(dateRangeButton, 'data-sce-date-range-picker');
+        if (rangePicker) rangePicker.removeAttribute('open');
         return;
       }
       var action = event.target && event.target.getAttribute('data-sce-action');
@@ -3569,6 +3574,10 @@
     }
     var chartPeriod = this.toolbar.querySelector('[data-sce-chart-period]');
     if (chartPeriod) chartPeriod.value = this.document.settings.period;
+    var dateRangeButton = this.toolbar.querySelector('[data-sce-date-range-button]');
+    if (dateRangeButton) {
+      dateRangeButton.innerHTML = '<span>Range</span><strong>' + dateRangeLabel(this.document.settings.dateRangePreset) + '</strong>' + chartTypeChevronSvg();
+    }
     if (this.toolbar.querySelectorAll) {
       Array.prototype.forEach.call(this.toolbar.querySelectorAll('[data-sce-date-range]'), function (button) {
         var selected = button.getAttribute('data-sce-date-range') === this.document.settings.dateRangePreset;
@@ -5588,6 +5597,11 @@
     }).join('');
   }
 
+  function dateRangeLabel(presetId) {
+    var preset = dateRangePresetById(presetId);
+    return preset ? preset.label : 'Auto';
+  }
+
   function formatNumber(value) {
     var abs = Math.abs(value);
     if (abs >= 1000000000) return (value / 1000000000).toFixed(2) + 'B';
@@ -5654,6 +5668,7 @@
     chartPeriods: CHART_PERIODS,
     dateRangePresets: DATE_RANGE_PRESETS,
     dateRangeButtonsHtml: dateRangeButtonsHtml,
+    dateRangeLabel: dateRangeLabel,
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,
     computeIndicatorGraph: computeIndicatorGraph,

@@ -139,11 +139,13 @@
       position: relative;
     }
 
-    .chart-type-picker {
+    .chart-type-picker,
+    .date-range-picker {
       position: relative;
     }
 
-    .chart-type-picker summary {
+    .chart-type-picker summary,
+    .date-range-picker summary {
       align-items: center;
       background: var(--panel-bg);
       border: 1px solid var(--border);
@@ -162,18 +164,32 @@
       white-space: nowrap;
     }
 
-    .chart-type-picker summary::-webkit-details-marker {
+    .date-range-picker summary {
+      min-width: 112px;
+    }
+
+    .date-range-picker summary strong {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .chart-type-picker summary::-webkit-details-marker,
+    .date-range-picker summary::-webkit-details-marker {
       display: none;
     }
 
     .chart-type-picker[open] summary,
     .chart-type-picker summary:hover,
-    .chart-type-picker summary:focus {
+    .chart-type-picker summary:focus,
+    .date-range-picker[open] summary,
+    .date-range-picker summary:hover,
+    .date-range-picker summary:focus {
       border-color: var(--accent);
       outline: none;
     }
 
-    .chart-type-menu {
+    .chart-type-menu,
+    .date-range-menu {
       background: var(--panel-elevated);
       border: 1px solid var(--border-strong);
       box-shadow: var(--shadow);
@@ -187,7 +203,15 @@
       z-index: 24;
     }
 
-    .chart-type-menu button {
+    .date-range-menu {
+      grid-template-columns: repeat(3, minmax(44px, 1fr));
+      left: auto;
+      min-width: 184px;
+      right: 0;
+    }
+
+    .chart-type-menu button,
+    .date-range-menu button {
       align-items: center;
       border-color: transparent;
       display: flex;
@@ -196,7 +220,12 @@
       width: 100%;
     }
 
-    .chart-type-menu button.is-selected {
+    .date-range-menu button {
+      justify-content: center;
+    }
+
+    .chart-type-menu button.is-selected,
+    .date-range-menu button.is-selected {
       border-color: var(--accent);
     }
 
@@ -217,7 +246,9 @@
     }
 
     .chart-type-picker[open] .chart-type-chevron,
-    .chart-type-picker[open] .sce-chart-type-chevron {
+    .chart-type-picker[open] .sce-chart-type-chevron,
+    .date-range-picker[open] .chart-type-chevron,
+    .date-range-picker[open] .sce-chart-type-chevron {
       transform: rotate(180deg);
     }
 
@@ -313,26 +344,6 @@
       display: grid;
       gap: 6px;
       grid-template-columns: 1fr 1fr;
-    }
-
-    .date-range-buttons {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      min-width: 0;
-    }
-
-    .date-range-buttons button {
-      height: 32px;
-      min-width: 36px;
-      padding: 0 8px;
-    }
-
-    .date-range-buttons button.is-selected {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--accent-text);
     }
 
     .icon-button {
@@ -995,7 +1006,10 @@
         </select>
       </div>
 
-      <div class="date-range-buttons" id="dateRangeButtons" aria-label="Date range"></div>
+      <details class="date-range-picker" id="dateRangePicker">
+        <summary id="dateRangeSummary" aria-label="Date range"></summary>
+        <div class="date-range-menu" id="dateRangeButtons" aria-label="Date range" role="menu"></div>
+      </details>
 
       <details class="control-menu">
         <summary>Indicators</summary>
@@ -1333,14 +1347,20 @@
         var container = document.getElementById('dateRangeButtons');
         container.innerHTML = StockChartEngine.dateRangeButtonsHtml('data-date-range');
         Array.prototype.forEach.call(container.querySelectorAll('[data-date-range]'), function (button) {
+          button.setAttribute('role', 'menuitem');
           button.addEventListener('click', function () {
             chart.setDateRangePreset(this.getAttribute('data-date-range'));
+            document.getElementById('dateRangePicker').removeAttribute('open');
             renderState();
           });
         });
       }
 
       function renderDateRangeButtons(selectedPreset) {
+        var summary = document.getElementById('dateRangeSummary');
+        if (summary) {
+          summary.innerHTML = '<span>Range</span><strong>' + StockChartEngine.dateRangeLabel(selectedPreset) + '</strong>' + StockChartEngine.chartTypeChevronSvg().replace('sce-chart-type-chevron', 'chart-type-chevron');
+        }
         Array.prototype.forEach.call(document.querySelectorAll('[data-date-range]'), function (button) {
           var selected = button.getAttribute('data-date-range') === selectedPreset;
           button.classList.toggle('is-selected', selected);
