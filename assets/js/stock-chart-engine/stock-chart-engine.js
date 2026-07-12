@@ -3983,7 +3983,7 @@
     if (rect.paneId === 'price') {
       var bar = this.barNearTime(legendTime);
       if (bar) {
-        var priceLabel = formatDate(bar.time) + '  O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close);
+        var priceLabel = formatDate(bar.time) + '  O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close) + this.pricePercentChangeLabel(bar);
         ctx.fillStyle = bar.close >= bar.open ? theme.up : theme.down;
         ctx.fillText(priceLabel, x, y);
         x += approximateTextWidth(priceLabel) + 14;
@@ -4130,6 +4130,23 @@
       }
     });
     return nearest;
+  };
+
+  Chart.prototype.previousBarForTime = function (time) {
+    if (time == null || !this.bars.length) return null;
+    for (var i = 0; i < this.bars.length; i += 1) {
+      if (this.bars[i].time === time) return i > 0 ? this.bars[i - 1] : null;
+      if (this.bars[i].time > time) return i > 1 ? this.bars[i - 2] : null;
+    }
+    return this.bars.length > 1 ? this.bars[this.bars.length - 2] : null;
+  };
+
+  Chart.prototype.pricePercentChangeLabel = function (bar) {
+    var previous = bar ? this.previousBarForTime(bar.time) : null;
+    if (!previous || !previous.close) return '';
+    var percent = ((bar.close - previous.close) / previous.close) * 100;
+    if (!Number.isFinite(percent)) return '';
+    return ' (' + (percent >= 0 ? '+' : '') + percent.toFixed(1) + '%)';
   };
 
   Chart.prototype.indicatorLegendItems = function (paneId, time, theme) {

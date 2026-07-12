@@ -218,6 +218,13 @@ function formatTestDate(time) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+function formatTestPriceLegend(chart, bar) {
+  const previous = chart.previousBarForTime(bar.time);
+  const percent = previous && previous.close ? ((bar.close - previous.close) / previous.close) * 100 : null;
+  const suffix = percent == null || !Number.isFinite(percent) ? '' : ` (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`;
+  return `${formatTestDate(bar.time)}  O ${formatTestNumber(bar.open)} H ${formatTestNumber(bar.high)} L ${formatTestNumber(bar.low)} C ${formatTestNumber(bar.close)}${suffix}`;
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -487,7 +494,7 @@ chart.draw();
 const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);
-assert.ok(paneLegendTexts.some((text) => /^\d{4}-\d{2}-\d{2}  O /.test(text)));
+assert.ok(paneLegendTexts.some((text) => /^\d{4}-\d{2}-\d{2}  O .* C .* \([+-]\d+\.\d%\)$/.test(text)));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('RSI ') === 0));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
@@ -499,15 +506,9 @@ const crosshairX = crosshairPaneRects[0].x + Math.round(crosshairPaneRects[0].wi
 chart.pointer = { x: crosshairX, y: rsiPaneRectForCrosshair.y + Math.round(rsiPaneRectForCrosshair.height / 2), pointerType: 'mouse' };
 const crosshairLegendTime = chart.legendTimeForPane(crosshairPaneRects[0]);
 const expectedCrosshairBar = chart.barNearTime(crosshairLegendTime);
-const expectedCrosshairPriceLabel = formatTestDate(expectedCrosshairBar.time) + '  O ' + formatTestNumber(expectedCrosshairBar.open) +
-  ' H ' + formatTestNumber(expectedCrosshairBar.high) +
-  ' L ' + formatTestNumber(expectedCrosshairBar.low) +
-  ' C ' + formatTestNumber(expectedCrosshairBar.close);
+const expectedCrosshairPriceLabel = formatTestPriceLegend(chart, expectedCrosshairBar);
 const latestVisibleBar = chart.visibleBars()[chart.visibleBars().length - 1];
-const latestPriceLabel = formatTestDate(latestVisibleBar.time) + '  O ' + formatTestNumber(latestVisibleBar.open) +
-  ' H ' + formatTestNumber(latestVisibleBar.high) +
-  ' L ' + formatTestNumber(latestVisibleBar.low) +
-  ' C ' + formatTestNumber(latestVisibleBar.close);
+const latestPriceLabel = formatTestPriceLegend(chart, latestVisibleBar);
 assert.notStrictEqual(expectedCrosshairPriceLabel, latestPriceLabel);
 crosshairPaneRects.forEach((rect) => {
   assert.strictEqual(chart.legendTimeForPane(rect), crosshairLegendTime);
