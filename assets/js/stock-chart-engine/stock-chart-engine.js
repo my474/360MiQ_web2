@@ -27,6 +27,19 @@
     quarterly: { id: 'quarterly', interval: '3M', label: 'Quarterly' },
     yearly: { id: 'yearly', interval: '1Y', label: 'Yearly' }
   };
+  var DATE_RANGE_PRESETS = [
+    { id: '1m', label: '1M', months: 1 },
+    { id: '3m', label: '3M', months: 3 },
+    { id: '6m', label: '6M', months: 6 },
+    { id: 'ytd', label: 'YTD', ytd: true },
+    { id: '1y', label: '1Y', years: 1 },
+    { id: '2y', label: '2Y', years: 2 },
+    { id: '3y', label: '3Y', years: 3 },
+    { id: '5y', label: '5Y', years: 5 },
+    { id: '8y', label: '8Y', years: 8 },
+    { id: '10y', label: '10Y', years: 10 },
+    { id: 'all', label: 'All', all: true }
+  ];
 
   var DRAWING_TOOLS = createDrawingTools();
 
@@ -396,6 +409,39 @@
   function periodInterval(period) {
     var normalized = normalizePeriod(period);
     return CHART_PERIODS[normalized].interval;
+  }
+
+  function normalizeDateRangePreset(presetId) {
+    var normalized = String(presetId || '').toLowerCase();
+    for (var i = 0; i < DATE_RANGE_PRESETS.length; i += 1) {
+      if (DATE_RANGE_PRESETS[i].id === normalized) return normalized;
+    }
+    return null;
+  }
+
+  function dateRangePresetById(presetId) {
+    var normalized = normalizeDateRangePreset(presetId);
+    for (var i = 0; i < DATE_RANGE_PRESETS.length; i += 1) {
+      if (DATE_RANGE_PRESETS[i].id === normalized) return DATE_RANGE_PRESETS[i];
+    }
+    return null;
+  }
+
+  function shiftUtcMonths(time, amount) {
+    var date = new Date(time * 1000);
+    date.setUTCMonth(date.getUTCMonth() + amount);
+    return Math.floor(date.getTime() / 1000);
+  }
+
+  function shiftUtcYears(time, amount) {
+    var date = new Date(time * 1000);
+    date.setUTCFullYear(date.getUTCFullYear() + amount);
+    return Math.floor(date.getTime() / 1000);
+  }
+
+  function startOfUtcYear(time) {
+    var date = new Date(time * 1000);
+    return Math.floor(Date.UTC(date.getUTCFullYear(), 0, 1) / 1000);
   }
 
   function periodBucketStart(time, period) {
@@ -1269,6 +1315,7 @@
       settings: {
         chartType: normalizeChartType(options.chartType || 'candlestick'),
         period: normalizePeriod(options.period || options.interval || 'daily'),
+        dateRangePreset: null,
         priceField: 'close',
         maximizedPaneId: null,
         seriesColorIndex: 0,
@@ -1298,6 +1345,7 @@
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
     migrated.settings.period = normalizePeriod(savedPeriod || migrated.settings.period || migrated.interval);
+    migrated.settings.dateRangePreset = normalizeDateRangePreset(migrated.settings.dateRangePreset);
     migrated.interval = periodInterval(migrated.settings.period);
     migrated.settings.seriesColorOrder = Array.isArray(migrated.settings.seriesColorOrder) && migrated.settings.seriesColorOrder.length ? migrated.settings.seriesColorOrder : DEFAULT_SERIES_COLOR_ORDER.slice();
     migrated.settings.seriesColorIndex = Math.max(0, toNumber(migrated.settings.seriesColorIndex, 0));
@@ -1458,6 +1506,9 @@
       '<option value="quarterly">Quarterly</option>',
       '<option value="yearly">Yearly</option>',
       '</select>',
+      '<div class="sce-date-range-buttons" data-sce-date-ranges aria-label="Date range">',
+      dateRangeButtonsHtml('data-sce-date-range'),
+      '</div>',
       '<button type="button" data-sce-action="sma">SMA</button>',
       '<button type="button" data-sce-action="rsi">RSI</button>',
       '<button type="button" data-sce-action="macd">MACD</button>',
@@ -1502,6 +1553,12 @@
         self.setChartType(chartTypeOption.getAttribute('data-sce-chart-type-option'));
         var picker = closestAttribute(chartTypeOption, 'data-sce-chart-type-picker');
         if (picker) picker.removeAttribute('open');
+        return;
+      }
+      var dateRangeButton = closestAttribute(event.target, 'data-sce-date-range');
+      if (dateRangeButton) {
+        if (event.preventDefault) event.preventDefault();
+        self.setDateRangePreset(dateRangeButton.getAttribute('data-sce-date-range'));
         return;
       }
       var action = event.target && event.target.getAttribute('data-sce-action');
@@ -1919,8 +1976,31 @@
     return nextPeriod;
   };
 
+  Chart.prototype.setDateRangePreset = function (presetId) {
+    var preset = dateRangePresetById(presetId);
+    if (!preset || !this.bars.length) return null;
+    var lastIndex = this.bars.length - 1;
+    var firstIndex = 0;
+    if (!preset.all) {
+      var endTime = this.bars[lastIndex].time;
+      var startTime = preset.ytd ? startOfUtcYear(endTime) : preset.months ? shiftUtcMonths(endTime, -preset.months) : shiftUtcYears(endTime, -preset.years);
+      for (var i = 0; i < this.bars.length; i += 1) {
+        if (this.bars[i].time >= startTime) {
+          firstIndex = i;
+          break;
+        }
+      }
+    }
+    this.document.settings.dateRangePreset = preset.id;
+    this.setVisibleIndexRange(firstIndex, lastIndex);
+    this.draw();
+    this.emitChange('range:preset', { preset: preset.id, visibleRange: clone(this.document.visibleRange) });
+    return this.document.visibleRange;
+  };
+
   Chart.prototype.zoom = function (factor, anchorRatio) {
     if (!this.bars.length) return false;
+    this.document.settings.dateRangePreset = null;
     factor = Math.max(0.1, toNumber(factor, 1));
     anchorRatio = clamp(toNumber(anchorRatio, 0.5), 0, 1);
     var range = this.visibleIndexRange();
@@ -1948,6 +2028,7 @@
     if (!this.bars.length) return false;
     barDelta = Math.round(toNumber(barDelta, 0));
     if (!barDelta) return false;
+    this.document.settings.dateRangePreset = null;
     var range = this.visibleIndexRange();
     this.setVisibleIndexRange(range.from + barDelta, range.to + barDelta);
     this.draw();
@@ -2927,6 +3008,7 @@
     var pixelDelta = pointer.x - state.startPointer.x;
     var barDelta = Math.round(-(pixelDelta / Math.max(1, rect.width)) * rangeCount);
     if (Math.abs(pixelDelta) > 2) state.moved = true;
+    if (state.moved) this.document.settings.dateRangePreset = null;
     this.setVisibleIndexRange(state.startRange.from + barDelta, state.startRange.to + barDelta);
   };
 
@@ -3043,6 +3125,7 @@
 
   Chart.prototype.fitContent = function () {
     if (!this.bars.length) return;
+    this.document.settings.dateRangePreset = null;
     var count = Math.min(this.bars.length, this.options.initialBarCount || 140);
     this.setVisibleIndexRange(this.bars.length - count, this.bars.length - 1);
   };
@@ -3120,6 +3203,13 @@
     }
     var chartPeriod = this.toolbar.querySelector('[data-sce-chart-period]');
     if (chartPeriod) chartPeriod.value = this.document.settings.period;
+    if (this.toolbar.querySelectorAll) {
+      Array.prototype.forEach.call(this.toolbar.querySelectorAll('[data-sce-date-range]'), function (button) {
+        var selected = button.getAttribute('data-sce-date-range') === this.document.settings.dateRangePreset;
+        button.classList.toggle('is-selected', selected);
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      }, this);
+    }
     var themeButton = this.toolbar.querySelector('[data-sce-action="theme"]');
     if (themeButton) themeButton.textContent = this.document.theme === 'dark' ? 'Light' : 'Dark';
     var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
@@ -4986,6 +5076,12 @@
     return '<svg class="sce-chart-type-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
   }
 
+  function dateRangeButtonsHtml(attributeName) {
+    return DATE_RANGE_PRESETS.map(function (preset) {
+      return '<button type="button" ' + attributeName + '="' + escapeHtml(preset.id) + '" aria-pressed="false">' + escapeHtml(preset.label) + '</button>';
+    }).join('');
+  }
+
   function formatNumber(value) {
     var abs = Math.abs(value);
     if (abs >= 1000000000) return (value / 1000000000).toFixed(2) + 'B';
@@ -5050,6 +5146,8 @@
     chartTypeChevronSvg: chartTypeChevronSvg,
     chartTypeLabel: chartTypeLabel,
     chartPeriods: CHART_PERIODS,
+    dateRangePresets: DATE_RANGE_PRESETS,
+    dateRangeButtonsHtml: dateRangeButtonsHtml,
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,
     computeIndicatorGraph: computeIndicatorGraph,

@@ -70,6 +70,30 @@
   min-width: 112px;
 }
 
+.sce-date-range-buttons {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 3px;
+}
+
+.sce-date-range-buttons button {
+  min-width: 34px;
+  padding: 0 7px;
+}
+
+.sce-date-range-buttons button.is-selected {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-date-range-buttons button.is-selected {
+  background: #60a5fa;
+  border-color: #60a5fa;
+  color: #07111f;
+}
+
 .sce-chart-type-picker {
   position: relative;
 }

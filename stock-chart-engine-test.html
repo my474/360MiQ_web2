@@ -315,6 +315,26 @@
       grid-template-columns: 1fr 1fr;
     }
 
+    .date-range-buttons {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .date-range-buttons button {
+      height: 32px;
+      min-width: 36px;
+      padding: 0 8px;
+    }
+
+    .date-range-buttons button.is-selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
     .icon-button {
       align-items: center;
       display: inline-flex;
@@ -969,6 +989,8 @@
         </select>
       </div>
 
+      <div class="date-range-buttons" id="dateRangeButtons" aria-label="Date range"></div>
+
       <details class="control-menu">
         <summary>Indicators</summary>
         <div class="menu-panel wide">
@@ -1164,7 +1186,7 @@
   <script>
     (function () {
       var layoutId = 'stock-chart-engine-manual-test';
-      var data = StockChartEngine.createDemoData(260);
+      var data = StockChartEngine.createDemoData(4200);
       var chart = null;
       var trackedRsiId = null;
       var trackedMacdId = null;
@@ -1248,9 +1270,29 @@
         });
       }
 
+      function initDateRangeButtons() {
+        var container = document.getElementById('dateRangeButtons');
+        container.innerHTML = StockChartEngine.dateRangeButtonsHtml('data-date-range');
+        Array.prototype.forEach.call(container.querySelectorAll('[data-date-range]'), function (button) {
+          button.addEventListener('click', function () {
+            chart.setDateRangePreset(this.getAttribute('data-date-range'));
+            renderState();
+          });
+        });
+      }
+
+      function renderDateRangeButtons(selectedPreset) {
+        Array.prototype.forEach.call(document.querySelectorAll('[data-date-range]'), function (button) {
+          var selected = button.getAttribute('data-date-range') === selectedPreset;
+          button.classList.toggle('is-selected', selected);
+          button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        });
+      }
+
       function renderState() {
         var doc = chart.serialize();
         syncChartTypePicker(doc.settings.chartType);
+        renderDateRangeButtons(doc.settings.dateRangePreset);
         renderPaneScaleOptions(doc);
         renderIndicatorSettingsOptions(doc);
         var summary = {
@@ -1259,6 +1301,7 @@
           interval: doc.interval,
           chartType: doc.settings.chartType,
           period: doc.settings.period,
+          dateRangePreset: doc.settings.dateRangePreset,
           renderedBars: chart.bars.length,
           sourceBars: chart.sourceBars.length,
           visibleRange: doc.visibleRange,
@@ -1912,7 +1955,7 @@
       });
 
       document.getElementById('newData').addEventListener('click', function () {
-        data = StockChartEngine.createDemoData(260);
+        data = StockChartEngine.createDemoData(4200);
         chart.setData(data);
         renderState();
       });
@@ -2054,6 +2097,7 @@
 
       initControlMenus();
       initChartTypePicker();
+      initDateRangeButtons();
       initIndicatorSearch();
       renderDrawingToolOptions();
       seedChart(document.documentElement.getAttribute('data-theme') || 'light', true);

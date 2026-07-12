@@ -313,6 +313,21 @@ assert.ok(chart.bars.length > 0);
 assert.strictEqual(chart.setPeriod('daily'), 'daily');
 assert.strictEqual(chart.bars.length, chart.sourceBars.length);
 
+const longRangeData = StockChartEngine.createDemoData(4200);
+chart.setData(longRangeData);
+const oneYearRange = chart.setDateRangePreset('1y');
+assert.ok(oneYearRange);
+assert.strictEqual(chart.document.settings.dateRangePreset, '1y');
+const oneYearBars = chart.visibleBars();
+assert.ok(oneYearBars.length >= 350 && oneYearBars.length <= 370);
+assert.strictEqual(oneYearBars[oneYearBars.length - 1].time, chart.bars[chart.bars.length - 1].time);
+chart.setDateRangePreset('all');
+assert.strictEqual(chart.document.settings.dateRangePreset, 'all');
+assert.deepStrictEqual(chart.visibleIndexRange(), { from: 0, to: chart.bars.length - 1 });
+chart.zoomIn(0.5);
+assert.strictEqual(chart.document.settings.dateRangePreset, null);
+chart.setData(data);
+
 const initialVisibleRange = chart.visibleIndexRange();
 const initialVisibleCount = initialVisibleRange.to - initialVisibleRange.from + 1;
 assert.ok(initialVisibleCount > 20);
