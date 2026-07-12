@@ -689,6 +689,7 @@ const volumeLegendItem = chart.indicatorLegendItems(volumePaneIndicator.paneId, 
 assert.strictEqual(volumeLegendItem.color, chart.volumeColorForPoint(volumeLegendPoint, chart.theme()));
 assert.notStrictEqual(volumeLegendItem.color, '#2563eb');
 assert.strictEqual(volumeLegendItem.label.indexOf('VOLUME 20 '), -1);
+assert.strictEqual(volumeLegendItem.label.indexOf('VOLUME (20) '), -1);
 assert.ok(volumeLegendItem.label.indexOf('VOLUME ') === 0);
 chart.openIndicatorSettingsPopup({ indicatorId: volumePaneIndicatorId, output: 'value' }, { x: 180, y: 160 });
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
@@ -701,7 +702,7 @@ const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);
 assert.ok(paneLegendTexts.some((text) => /^\d{4}-\d{2}-\d{2}  O .* C .* \([+-]\d+\.\d%\)$/.test(text)));
-assert.ok(paneLegendTexts.some((text) => text.indexOf('RSI ') === 0));
+assert.ok(paneLegendTexts.some((text) => text.indexOf('RSI (14) ') === 0));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
 assert.ok(!paneLegendTexts.includes('Volume'));
