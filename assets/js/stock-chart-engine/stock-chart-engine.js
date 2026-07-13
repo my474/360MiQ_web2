@@ -211,9 +211,9 @@
       ['inside_pitchfork', 'Inside pitchfork', 'fibonacci', 'pitchfork', 3],
       ['fib_channel', 'Fib channel', 'fibonacci', 'fibChannel', 3],
       ['fib_time_zone', 'Fib time zone', 'fibonacci', 'timeZones', 2],
-      ['gann_box', 'Gann box', 'fibonacci', 'gridBox', 2],
-      ['gann_square_fixed', 'Gann square fixed', 'fibonacci', 'gridBox', 2],
-      ['gann_square', 'Gann square', 'fibonacci', 'gridBox', 2],
+      ['gann_box', 'Gann box', 'fibonacci', 'gannBox', 2],
+      ['gann_square_fixed', 'Gann square fixed', 'fibonacci', 'gannSquareFixed', 2],
+      ['gann_square', 'Gann square', 'fibonacci', 'gannSquare', 2],
       ['gann_fan', 'Gann fan', 'fibonacci', 'fan', 2],
       ['fib_speed_resistance_fan', 'Fib speed resistance fan', 'fibonacci', 'fan', 2],
       ['trend_based_fib_time', 'Trend-based fib time', 'fibonacci', 'timeZones', 3],
@@ -4951,7 +4951,7 @@
       }
     }
 
-    if (kind === 'rectangle' || kind === 'gridBox' || kind === 'rotatedRectangle' || kind === 'ellipse' ||
+    if (kind === 'rectangle' || kind === 'gridBox' || kind === 'gannBox' || kind === 'gannSquare' || kind === 'gannSquareFixed' || kind === 'rotatedRectangle' || kind === 'ellipse' ||
       kind === 'polygon' || kind === 'channel' || kind === 'fibChannel' || kind === 'wedge' ||
       kind.indexOf('position') === 0 || kind === 'dateRange' || kind === 'priceRange' || kind === 'datePriceRange' ||
       kind === 'barsPattern' || kind === 'ghostFeed' || kind === 'volumeProfile') {
@@ -5992,6 +5992,8 @@
     } else if ((kind === 'rectangle' || kind === 'gridBox') && point(1)) {
       drawScreenRectangle(ctx, point(0), point(1), true);
       if (kind === 'gridBox') drawGridBox(ctx, point(0), point(1), 3, 3);
+    } else if ((kind === 'gannBox' || kind === 'gannSquare' || kind === 'gannSquareFixed') && point(1)) {
+      drawGannTool(ctx, point(0), point(1), kind);
     } else if (kind === 'rotatedRectangle' && point(2)) {
       drawPolyline(ctx, rotatedRectanglePoints(point(0), point(1), point(2)), true);
       ctx.fill();
@@ -6249,6 +6251,97 @@
       var y = minY + (maxY - minY) * r / rows;
       ctx.moveTo(minX, y);
       ctx.lineTo(maxX, y);
+    }
+    ctx.stroke();
+  }
+
+  function squarePointFromAnchor(a, b, mode) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    var side = mode === 'fixed' ? Math.min(Math.abs(dx), Math.abs(dy)) : Math.max(Math.abs(dx), Math.abs(dy));
+    side = Math.max(2, side);
+    return {
+      x: a.x + (dx < 0 ? -side : side),
+      y: a.y + (dy < 0 ? -side : side)
+    };
+  }
+
+  function drawGannTool(ctx, a, b, kind) {
+    var end = b;
+    var columns = 4;
+    var rows = 4;
+    if (kind === 'gannSquare') {
+      end = squarePointFromAnchor(a, b, 'square');
+    } else if (kind === 'gannSquareFixed') {
+      end = squarePointFromAnchor(a, b, 'fixed');
+      columns = 8;
+      rows = 8;
+    }
+    drawScreenRectangle(ctx, a, end, true);
+    drawGridBox(ctx, a, end, columns, rows);
+    if (kind === 'gannBox') {
+      drawGannBoxAngles(ctx, a, end);
+    } else if (kind === 'gannSquare') {
+      drawGannSquareAngles(ctx, a, end, false);
+    } else {
+      drawGannSquareAngles(ctx, a, end, true);
+    }
+  }
+
+  function gannBounds(a, b) {
+    var minX = Math.min(a.x, b.x);
+    var maxX = Math.max(a.x, b.x);
+    var minY = Math.min(a.y, b.y);
+    var maxY = Math.max(a.y, b.y);
+    return {
+      minX: minX,
+      maxX: maxX,
+      minY: minY,
+      maxY: maxY,
+      centerX: (minX + maxX) / 2,
+      centerY: (minY + maxY) / 2
+    };
+  }
+
+  function drawGannBoxAngles(ctx, a, b) {
+    var bounds = gannBounds(a, b);
+    ctx.beginPath();
+    ctx.moveTo(bounds.minX, bounds.minY);
+    ctx.lineTo(bounds.maxX, bounds.maxY);
+    ctx.moveTo(bounds.minX, bounds.maxY);
+    ctx.lineTo(bounds.maxX, bounds.minY);
+    ctx.moveTo(bounds.centerX, bounds.minY);
+    ctx.lineTo(bounds.maxX, bounds.centerY);
+    ctx.moveTo(bounds.centerX, bounds.maxY);
+    ctx.lineTo(bounds.minX, bounds.centerY);
+    ctx.stroke();
+  }
+
+  function drawGannSquareAngles(ctx, a, b, dense) {
+    var bounds = gannBounds(a, b);
+    ctx.beginPath();
+    ctx.moveTo(bounds.minX, bounds.minY);
+    ctx.lineTo(bounds.maxX, bounds.maxY);
+    ctx.moveTo(bounds.minX, bounds.maxY);
+    ctx.lineTo(bounds.maxX, bounds.minY);
+    ctx.moveTo(bounds.centerX, bounds.minY);
+    ctx.lineTo(bounds.centerX, bounds.maxY);
+    ctx.moveTo(bounds.minX, bounds.centerY);
+    ctx.lineTo(bounds.maxX, bounds.centerY);
+    if (dense) {
+      [
+        { x: bounds.minX, y: bounds.minY },
+        { x: bounds.centerX, y: bounds.minY },
+        { x: bounds.maxX, y: bounds.minY },
+        { x: bounds.maxX, y: bounds.centerY },
+        { x: bounds.maxX, y: bounds.maxY },
+        { x: bounds.centerX, y: bounds.maxY },
+        { x: bounds.minX, y: bounds.maxY },
+        { x: bounds.minX, y: bounds.centerY }
+      ].forEach(function (target) {
+        ctx.moveTo(bounds.centerX, bounds.centerY);
+        ctx.lineTo(target.x, target.y);
+      });
     }
     ctx.stroke();
   }

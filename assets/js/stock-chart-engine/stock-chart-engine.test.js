@@ -1300,6 +1300,20 @@ assert.ok(renderMeasurementTool('bars_pattern').filter((command) => command.type
 assert.ok(renderMeasurementTool('ghost_feed').filter((command) => command.type === 'strokeRect').length >= 9);
 assert.ok(renderMeasurementTool('sector', measurementRenderPoints).some((command) => command.type === 'stroke'));
 assert.ok(renderMeasurementTool('fixed_range_volume_profile').filter((command) => command.type === 'fillRect').length >= 8);
+const gannBoxCommands = renderMeasurementTool('gann_box', measurementRenderPoints.slice(0, 2));
+const gannSquareCommands = renderMeasurementTool('gann_square', measurementRenderPoints.slice(0, 2));
+const gannSquareFixedCommands = renderMeasurementTool('gann_square_fixed', measurementRenderPoints.slice(0, 2));
+const gannBoxRect = gannBoxCommands.find((command) => command.type === 'strokeRect');
+const gannSquareRect = gannSquareCommands.find((command) => command.type === 'strokeRect');
+const gannSquareFixedRect = gannSquareFixedCommands.find((command) => command.type === 'strokeRect');
+assert.ok(gannBoxRect);
+assert.ok(gannSquareRect);
+assert.ok(gannSquareFixedRect);
+assert.notStrictEqual(Math.round(gannBoxRect.width), Math.round(gannBoxRect.height));
+assert.strictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareRect.height));
+assert.strictEqual(Math.round(gannSquareFixedRect.width), Math.round(gannSquareFixedRect.height));
+assert.notStrictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareFixedRect.width));
+assert.ok(gannSquareFixedCommands.filter((command) => command.type === 'lineTo').length > gannSquareCommands.filter((command) => command.type === 'lineTo').length);
 
 Object.keys(StockChartEngine.drawingTools).forEach((toolId, toolIndex) => {
   const tool = StockChartEngine.drawingTools[toolId];
