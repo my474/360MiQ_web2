@@ -430,6 +430,35 @@ assert.strictEqual(chart.yForValue(-1, chart.getPaneRect('price'), chart.paneRan
 assert.ok(chart.scaleHitZones.some((zone) => zone.paneId === 'price'));
 assert.strictEqual(chart.togglePaneScaleMode('price'), 'linear');
 assert.strictEqual(chart.paneScaleMode('price'), 'linear');
+chart.draw();
+const yScaleDragRect = chart.getPaneRect('price');
+const yScaleStartRange = chart.paneRange('price');
+const yScaleStartSpan = yScaleStartRange.max - yScaleStartRange.min;
+chart.handlePointerDown({
+  clientX: yScaleDragRect.scaleX + 12,
+  clientY: yScaleDragRect.y + yScaleDragRect.height / 2
+});
+chart.handlePointerMove({
+  clientX: yScaleDragRect.scaleX + 12,
+  clientY: yScaleDragRect.y + yScaleDragRect.height / 2 + 72
+});
+const yScaleZoomedOutRange = chart.paneRange('price');
+assert.ok(yScaleZoomedOutRange.max - yScaleZoomedOutRange.min > yScaleStartSpan);
+chart.handlePointerUp();
+assert.ok(chart.paneManualRange('price'));
+chart.handlePointerDown({
+  clientX: yScaleDragRect.scaleX + 12,
+  clientY: yScaleDragRect.y + yScaleDragRect.height / 2
+});
+chart.handlePointerMove({
+  clientX: yScaleDragRect.scaleX + 12,
+  clientY: yScaleDragRect.y + yScaleDragRect.height / 2 - 72
+});
+const yScaleZoomedInRange = chart.paneRange('price');
+assert.ok(yScaleZoomedInRange.max - yScaleZoomedInRange.min < yScaleZoomedOutRange.max - yScaleZoomedOutRange.min);
+chart.handlePointerUp();
+chart.fitContent();
+assert.strictEqual(chart.paneManualRange('price'), null);
 
 const macdLogId = chart.addIndicator('MACD', { placement: 'new' });
 const macdLogIndicator = chart.document.indicators.find((indicator) => indicator.id === macdLogId);

@@ -1702,7 +1702,7 @@
         autosave: true
       },
       panes: [
-        { id: 'price', title: 'Price', height: 420, seriesIds: ['main'], scaleIds: ['right'], scaleMode: 'linear', type: 'price' }
+        { id: 'price', title: 'Price', height: 420, seriesIds: ['main'], scaleIds: ['right'], scaleMode: 'linear', manualRange: null, type: 'price' }
       ],
       indicators: [],
       drawings: [],
@@ -1717,6 +1717,7 @@
     migrated.panes = migrated.panes && migrated.panes.length ? migrated.panes : createDefaultDocument().panes;
     migrated.panes.forEach(function (pane) {
       pane.scaleMode = normalizeScaleMode(pane.scaleMode);
+      pane.manualRange = normalizeManualRange(pane.manualRange);
       pane.height = Math.max(80, toNumber(pane.height, pane.type === 'price' ? 420 : 180));
     });
     migrated.indicators = migrated.indicators || [];
@@ -1839,6 +1840,7 @@
     this.paneRects = [];
     this.legendHitZones = [];
     this.scaleHitZones = [];
+    this.scaleDragHitZones = [];
     this.paneControlHitZones = [];
     this.paneResizeHitZones = [];
     this.pointer = null;
@@ -1846,9 +1848,11 @@
     this.selectedDrawingId = null;
     this.pendingDrawing = null;
     this.dragState = null;
+    this.yScaleDragState = null;
     this.tapState = null;
     this.paneResizeState = null;
     this.panState = null;
+    this.suppressNextClick = false;
     this.autosaveTimer = null;
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
@@ -2656,6 +2660,7 @@
     var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
     if (!pane) return null;
     pane.scaleMode = normalizeScaleMode(scaleMode);
+    pane.manualRange = null;
     this.draw();
     this.emitChange('pane:scale', { paneId: paneId, scaleMode: pane.scaleMode });
     return pane.scaleMode;
@@ -2703,9 +2708,11 @@
       seriesIds: [],
       scaleIds: ['right'],
       scaleMode: 'linear',
+      manualRange: null,
       type: 'indicator'
     }, pane || {});
     created.scaleMode = normalizeScaleMode(created.scaleMode);
+    created.manualRange = normalizeManualRange(created.manualRange);
     this.document.panes.push(created);
     this.resize();
     this.emitChange('pane:add', created);
@@ -2969,6 +2976,16 @@
   Chart.prototype.hitTestScaleMode = function (pointer) {
     for (var i = this.scaleHitZones.length - 1; i >= 0; i -= 1) {
       var zone = this.scaleHitZones[i];
+      if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) {
+        return zone;
+      }
+    }
+    return null;
+  };
+
+  Chart.prototype.hitTestScaleDrag = function (pointer) {
+    for (var i = this.scaleDragHitZones.length - 1; i >= 0; i -= 1) {
+      var zone = this.scaleDragHitZones[i];
       if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) {
         return zone;
       }
@@ -3471,6 +3488,10 @@
   };
 
   Chart.prototype.handleCanvasClick = function (event) {
+    if (this.suppressNextClick) {
+      this.suppressNextClick = false;
+      return;
+    }
     var pointer = this.pointerFromEvent(event);
     if (!this.pendingDrawing) {
       var paneControlHit = this.hitTestPaneControl(pointer);
@@ -3534,6 +3555,7 @@
   };
 
   Chart.prototype.handlePointerDown = function (event) {
+    this.suppressNextClick = false;
     this.canvas.focus();
     if (this.pendingDrawing) return;
     this.pointer = this.pointerFromEvent(event);
@@ -3548,6 +3570,11 @@
     if (paneResizeHit) {
       this.tapState = null;
       this.beginPaneResize(paneResizeHit, this.pointer);
+      return;
+    }
+    var scaleDragHit = this.hitTestScaleDrag(this.pointer);
+    if (scaleDragHit) {
+      this.beginYAxisScaleDrag(scaleDragHit, this.pointer);
       return;
     }
     var deleteHit = this.hitTestDrawingDelete(this.pointer);
@@ -3609,6 +3636,11 @@
       this.draw();
       return;
     }
+    if (this.yScaleDragState) {
+      this.dragYAxisScale(this.pointer);
+      this.draw();
+      return;
+    }
     if (this.panState) {
       this.panVisibleRange(this.pointer);
       this.draw();
@@ -3625,6 +3657,8 @@
     if (this.hitTestPaneResize(this.pointer)) this.canvas.style.cursor = 'ns-resize';
     else if (this.hitTestPaneControl(this.pointer)) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestLegend(this.pointer)) this.canvas.style.cursor = 'pointer';
+    else if (this.hitTestScaleMode(this.pointer)) this.canvas.style.cursor = 'pointer';
+    else if (this.hitTestScaleDrag(this.pointer)) this.canvas.style.cursor = 'ns-resize';
     else this.canvas.style.cursor = hit ? 'move' : 'crosshair';
     this.draw();
   };
@@ -3648,6 +3682,17 @@
       this.tapState = null;
       this.canvas.style.cursor = 'crosshair';
       if (panned) this.emitChange('range:pan', { visibleRange: clone(this.document.visibleRange) });
+      return;
+    }
+    if (this.yScaleDragState) {
+      var scaleState = this.yScaleDragState;
+      this.yScaleDragState = null;
+      this.tapState = null;
+      this.canvas.style.cursor = 'crosshair';
+      if (scaleState.moved) {
+        this.suppressNextClick = true;
+        this.emitChange('pane:y-scale', { paneId: scaleState.paneId, manualRange: this.paneManualRange(scaleState.paneId) });
+      }
       return;
     }
     if (!this.dragState) {
@@ -3690,7 +3735,9 @@
     this.tapState = null;
     this.dragState = null;
     this.paneResizeState = null;
+    this.yScaleDragState = null;
     this.panState = null;
+    this.suppressNextClick = false;
     this.canvas.style.cursor = 'crosshair';
     this.draw();
   };
@@ -3792,6 +3839,51 @@
     lowerPane.height = Math.round(total - nextUpper);
   };
 
+  Chart.prototype.beginYAxisScaleDrag = function (zone, pointer) {
+    if (!zone) return false;
+    var rect = this.getPaneRect(zone.paneId);
+    if (!rect) return false;
+    this.yScaleDragState = {
+      paneId: zone.paneId,
+      rect: clone(rect),
+      startPointer: pointer,
+      startRange: this.paneRange(zone.paneId),
+      moved: false
+    };
+    this.canvas.style.cursor = 'ns-resize';
+    return true;
+  };
+
+  Chart.prototype.dragYAxisScale = function (pointer) {
+    var state = this.yScaleDragState;
+    if (!state || !state.startRange) return;
+    var dy = pointer.y - state.startPointer.y;
+    if (Math.abs(dy) > 2) state.moved = true;
+    var factor = clamp(Math.exp(dy / 180), 0.08, 12);
+    var range = this.scaledPaneRange(state.paneId, state.startRange, factor);
+    if (range) this.setPaneManualRange(state.paneId, range);
+  };
+
+  Chart.prototype.scaledPaneRange = function (paneId, range, factor) {
+    if (!range || !Number.isFinite(range.min) || !Number.isFinite(range.max) || range.min === range.max) return null;
+    factor = clamp(toNumber(factor, 1), 0.08, 12);
+    if (this.paneScaleMode(paneId) === 'log') {
+      var transform = logScaleTransform(range);
+      var minValue = transform.value(range.min);
+      var maxValue = transform.value(range.max);
+      if (minValue == null || maxValue == null || minValue === maxValue) return null;
+      var centerValue = (minValue + maxValue) / 2;
+      var nextSpan = Math.abs(maxValue - minValue) * factor;
+      var nextMin = transform.inverse(centerValue - nextSpan / 2);
+      var nextMax = transform.inverse(centerValue + nextSpan / 2);
+      if (!Number.isFinite(nextMin) || !Number.isFinite(nextMax) || nextMin === nextMax) return null;
+      return { min: Math.min(nextMin, nextMax), max: Math.max(nextMin, nextMax) };
+    }
+    var center = (range.min + range.max) / 2;
+    var span = Math.max(0.0000001, (range.max - range.min) * factor);
+    return { min: center - span / 2, max: center + span / 2 };
+  };
+
   Chart.prototype.moveSelectedDrawing = function (pointer) {
     var state = this.dragState;
     if (!state) return;
@@ -3843,8 +3935,27 @@
   Chart.prototype.fitContent = function () {
     if (!this.bars.length) return;
     this.document.settings.dateRangePreset = null;
+    this.clearManualPaneRanges();
     var count = Math.min(this.bars.length, this.options.initialBarCount || 140);
     this.setVisibleIndexRange(this.bars.length - count, this.bars.length - 1);
+  };
+
+  Chart.prototype.clearManualPaneRanges = function () {
+    this.document.panes.forEach(function (pane) {
+      pane.manualRange = null;
+    });
+  };
+
+  Chart.prototype.setPaneManualRange = function (paneId, range) {
+    var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
+    if (!pane) return null;
+    pane.manualRange = normalizeManualRange(range);
+    return pane.manualRange;
+  };
+
+  Chart.prototype.paneManualRange = function (paneId) {
+    var pane = this.document.panes.filter(function (item) { return item.id === paneId; })[0];
+    return pane ? normalizeManualRange(pane.manualRange) : null;
   };
 
   Chart.prototype.visibleIndexRange = function () {
@@ -4173,6 +4284,7 @@
   Chart.prototype.paneRange = function (paneId) {
     var values = [];
     var visible = this.visibleBars();
+    var manualRange = this.paneManualRange(paneId);
     if (paneId === 'price') {
       visible.forEach(function (bar) {
         values.push(bar.high, bar.low);
@@ -4198,9 +4310,10 @@
         if (point.value != null) values.push(point.value);
       });
     });
-    if (!values.length) return { min: 0, max: 1 };
+    if (!values.length) return manualRange || { min: 0, max: 1 };
     var min = Math.min.apply(null, values);
     var max = Math.max.apply(null, values);
+    if (manualRange) return manualRange;
     var boundedRange = this.adaptiveBoundedOscillatorRange(paneId, min, max);
     if (boundedRange) return boundedRange;
     if (min === max) {
@@ -4486,6 +4599,7 @@
     this.layoutPanes();
     this.legendHitZones = [];
     this.scaleHitZones = [];
+    this.scaleDragHitZones = [];
     this.paneControlHitZones = [];
     this.paneResizeHitZones = [];
     for (var i = 0; i < this.paneRects.length; i += 1) {
@@ -4821,6 +4935,13 @@
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     var scaleModeLabel = this.paneScaleMode(rect.paneId).toUpperCase();
+    this.scaleDragHitZones.push({
+      x: rect.scaleX,
+      y: rect.y,
+      width: rect.scaleWidth,
+      height: rect.height,
+      paneId: rect.paneId
+    });
     this.scaleHitZones.push({
       x: rect.scaleX + 4,
       y: rect.y + 2,
@@ -6147,6 +6268,14 @@
 
   function normalizeScaleMode(mode) {
     return String(mode || 'linear').toLowerCase() === 'log' ? 'log' : 'linear';
+  }
+
+  function normalizeManualRange(range) {
+    if (!range || typeof range !== 'object') return null;
+    var min = Number(range.min);
+    var max = Number(range.max);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) return null;
+    return { min: Math.min(min, max), max: Math.max(min, max) };
   }
 
   function normalizeLineStyle(style) {

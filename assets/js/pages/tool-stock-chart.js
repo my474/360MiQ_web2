@@ -60,7 +60,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.18';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.19';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
