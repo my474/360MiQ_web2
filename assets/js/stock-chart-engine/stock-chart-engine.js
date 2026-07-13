@@ -2053,7 +2053,8 @@
         self.handleShareAction(shareButton.getAttribute('data-sce-share-action'));
         return;
       }
-      var action = event.target && event.target.getAttribute('data-sce-action');
+      var actionButton = closestAttribute(event.target, 'data-sce-action');
+      var action = actionButton && actionButton.getAttribute('data-sce-action');
       if (!action) return;
       if (action === 'sma') self.addIndicator('SMA', { placement: 'source', inputs: { length: 20 } });
       if (action === 'rsi') self.addIndicator('RSI', { placement: 'new' });

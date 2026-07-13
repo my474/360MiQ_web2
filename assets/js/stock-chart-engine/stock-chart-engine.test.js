@@ -377,6 +377,22 @@ assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom out"><svg') !== -1);
+const zoomButtonForNestedClick = new FakeElement('button');
+zoomButtonForNestedClick.setAttribute('data-sce-action', 'zoom-in');
+const zoomSvgForNestedClick = new FakeElement('svg');
+zoomButtonForNestedClick.appendChild(zoomSvgForNestedClick);
+chart.toolbar.appendChild(zoomButtonForNestedClick);
+chart.fitContent();
+const zoomBeforeNestedClick = chart.visibleIndexRange();
+chart.toolbar.dispatchEvent({
+  type: 'click',
+  target: zoomSvgForNestedClick,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+const zoomAfterNestedClick = chart.visibleIndexRange();
+assert.ok(zoomAfterNestedClick.to - zoomAfterNestedClick.from < zoomBeforeNestedClick.to - zoomBeforeNestedClick.from);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-stock-info-link') !== -1);
 assert.strictEqual(chart.stockInfoHref(), 'stockinfo?code=TEST');
 const stockInfoLink = chart.toolbar.querySelector('[data-sce-stock-info-link]');
