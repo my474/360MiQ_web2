@@ -4984,6 +4984,15 @@
     if (kind === 'text' || kind === 'priceLabel' || kind === 'callout' || kind === 'vwapAnchor' || kind.indexOf('marker') === 0 || kind === 'flag') {
       return pointer.x >= points[0].x - tolerance && pointer.x <= points[0].x + 130 && pointer.y >= points[0].y - 26 && pointer.y <= points[0].y + 14;
     }
+    if (kind === 'signpost') {
+      var signpostRange = rect ? this.paneRange(rect.paneId) : null;
+      var signpostAnchor = signpostAnchorScreenPoint(this, drawing.points && drawing.points[0], points[0], rect, signpostRange);
+      var signpostHit = signpostGeometry(drawing.text || tool.name, points[0], signpostAnchor);
+      var inBubble = pointer.x >= signpostHit.bubbleX - tolerance && pointer.x <= signpostHit.bubbleX + signpostHit.width + tolerance &&
+        pointer.y >= signpostHit.bubbleY - tolerance && pointer.y <= signpostHit.bubbleY + signpostHit.height + tolerance;
+      if (inBubble) return true;
+      return distanceToSegment(pointer, signpostHit.anchor, { x: points[0].x, y: signpostHit.stemEndY }) <= tolerance;
+    }
 
     if (points.length > 1) {
       for (var i = 0; i < points.length - 1; i += 1) {
@@ -6791,24 +6800,36 @@
     return { x: labelPoint.x, y: labelPoint.y - 30 };
   }
 
-  function drawSignpost(ctx, label, p, anchor, color, background) {
+  function signpostGeometry(label, p, anchor) {
     var width = Math.max(70, approximateTextWidth(label) + 24);
     var height = 30;
     var bubbleX = p.x - width / 2;
     var bubbleY = p.y - height / 2;
     anchor = anchor || { x: p.x, y: bubbleY - 30 };
     var stemEndY = anchor.y < bubbleY ? bubbleY : (anchor.y > bubbleY + height ? bubbleY + height : p.y);
+    return {
+      width: width,
+      height: height,
+      bubbleX: bubbleX,
+      bubbleY: bubbleY,
+      anchor: anchor,
+      stemEndY: stemEndY
+    };
+  }
+
+  function drawSignpost(ctx, label, p, anchor, color, background) {
+    var geometry = signpostGeometry(label, p, anchor);
     ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(p.x, anchor.y);
-    ctx.lineTo(p.x, stemEndY);
+    ctx.moveTo(p.x, geometry.anchor.y);
+    ctx.lineTo(p.x, geometry.stemEndY);
     ctx.stroke();
     ctx.fillStyle = background || '#fff';
-    roundedRectPath(ctx, bubbleX, bubbleY, width, height, 7);
+    roundedRectPath(ctx, geometry.bubbleX, geometry.bubbleY, geometry.width, geometry.height, 7);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = color;
-    ctx.fillText(label, bubbleX + 12, bubbleY + height / 2 + 4);
+    ctx.fillText(label, geometry.bubbleX + 12, geometry.bubbleY + geometry.height / 2 + 4);
   }
 
   function drawCommentBubble(ctx, label, p, color, background) {

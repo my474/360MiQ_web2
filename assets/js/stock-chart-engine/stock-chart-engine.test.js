@@ -1373,6 +1373,31 @@ const signpostAnchorPoint = chart.drawingScreenPoints({
 assert.ok(signpostCommands.some((command) => command.type === 'lineTo' && Math.round(command.x) === Math.round(signpostAnchorPoint.x) && command.y < signpostAnchorPoint.y));
 assert.ok(signpostCommands.some((command) => command.type === 'quadraticCurveTo'));
 assert.ok(signpostCommands.some((command) => command.type === 'fillText' && command.text === 'Signpost'));
+const selectableSignpost = {
+  id: 'selectable-signpost',
+  type: 'signpost',
+  paneId: 'price',
+  text: 'Signpost',
+  points: [{
+    time: measurementRenderPoints[0].time,
+    value: measurementRenderPoints[0].value,
+    anchorValue: measurementRenderPoints[0].value + 3
+  }],
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+};
+const originalDrawingsForSignpostHit = chart.document.drawings;
+chart.document.drawings = [selectableSignpost];
+const selectableSignpostPoint = chart.drawingScreenPoints(selectableSignpost)[0];
+assert.strictEqual(chart.hitTestDrawing({ x: selectableSignpostPoint.x, y: selectableSignpostPoint.y }).drawing, selectableSignpost);
+const selectableSignpostRect = chart.getPaneRect('price');
+const selectableSignpostRange = chart.paneRange('price');
+const selectableSignpostAnchorY = chart.yForValue(selectableSignpost.points[0].anchorValue, selectableSignpostRect, selectableSignpostRange);
+const selectableSignpostBubbleTop = selectableSignpostPoint.y - 15;
+assert.strictEqual(chart.hitTestDrawing({
+  x: selectableSignpostPoint.x,
+  y: (selectableSignpostAnchorY + selectableSignpostBubbleTop) / 2
+}).drawing, selectableSignpost);
+chart.document.drawings = originalDrawingsForSignpostHit;
 const commentCommands = renderMeasurementTool('comment', measurementRenderPoints);
 assert.ok(commentCommands.some((command) => command.type === 'strokeRect'));
 assert.ok(commentCommands.some((command) => command.type === 'lineTo'));
