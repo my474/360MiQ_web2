@@ -6984,6 +6984,10 @@
     if (typeKey === 'long_position' || textKey === 'long_position') return 'positionLong';
     if (typeKey === 'short_position' || textKey === 'short_position') return 'positionShort';
     if (typeKey === 'position_forecast' || textKey === 'position_forecast') return 'positionForecast';
+    if ((typeKey === 'text' || kind === 'text') && textKey === 'note') return 'note';
+    if ((typeKey === 'text' || kind === 'text') && textKey === 'anchored_note') return 'anchoredNote';
+    if ((typeKey === 'callout' || kind === 'callout') && textKey === 'signpost') return 'signpost';
+    if ((typeKey === 'callout' || kind === 'callout') && textKey === 'comment') return 'comment';
     return kind;
   }
 

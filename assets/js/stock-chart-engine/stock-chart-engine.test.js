@@ -1347,6 +1347,58 @@ assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));
 assertUniqueRenderSignatures(['text', 'note', 'anchored_note', 'signpost', 'callout', 'comment', 'price_label', 'price_note'], measurementRenderPoints);
+const noteCommands = renderMeasurementTool('note', measurementRenderPoints);
+assert.ok(noteCommands.some((command) => command.type === 'strokeRect'));
+const anchoredNoteCommands = renderMeasurementTool('anchored_note', measurementRenderPoints);
+assert.ok(anchoredNoteCommands.some((command) => command.type === 'strokeRect'));
+assert.ok(anchoredNoteCommands.some((command) => command.type === 'lineTo'));
+const signpostCommands = renderMeasurementTool('signpost', measurementRenderPoints);
+assert.ok(signpostCommands.some((command) => command.type === 'fillRect'));
+assert.ok(signpostCommands.some((command) => command.type === 'lineTo'));
+const commentCommands = renderMeasurementTool('comment', measurementRenderPoints);
+assert.ok(commentCommands.some((command) => command.type === 'strokeRect'));
+assert.ok(commentCommands.some((command) => command.type === 'lineTo'));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-note-shape',
+  type: 'text',
+  paneId: 'price',
+  text: 'Note',
+  points: measurementRenderPoints.slice(0, 1),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect'));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-anchored-note-shape',
+  type: 'text',
+  paneId: 'price',
+  text: 'Anchored note',
+  points: measurementRenderPoints.slice(0, 1),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect'));
+assert.ok(chart.canvas.commands.some((command) => command.type === 'lineTo'));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-comment-shape',
+  type: 'callout',
+  paneId: 'price',
+  text: 'Comment',
+  points: measurementRenderPoints.slice(0, 1),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect'));
+chart.canvas.commands = [];
+chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
+  id: 'legacy-signpost-shape',
+  type: 'callout',
+  paneId: 'price',
+  text: 'Signpost',
+  points: measurementRenderPoints.slice(0, 1),
+  style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
+});
+assert.ok(chart.canvas.commands.some((command) => command.type === 'lineTo'));
 assertUniqueRenderSignatures(['brush', 'highlighter', 'path'], measurementRenderPoints);
 assertUniqueRenderSignatures(['triangle', 'triangle_pattern'], measurementRenderPoints);
 assertUniqueRenderSignatures(['arrow_marker', 'icon', 'sticker', 'emoji'], measurementRenderPoints);
