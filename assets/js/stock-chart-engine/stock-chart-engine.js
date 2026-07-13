@@ -5299,12 +5299,14 @@
       return visibleStart == null || (bar.time >= visibleStart && bar.time <= visibleEnd);
     });
     if (!bars.length) return;
-    var spacing = rect.width / Math.max(1, bars.length);
-    var candleWidth = clamp(spacing * 0.62, 2, 18);
+    var spacing = this.priceBarSpacing(rect);
+    var candleWidth = this.candleBodyWidth(spacing);
+    var wickWidth = this.priceStrokeWidth(spacing);
     var allStartIndex = source.findIndex(function (candidate) {
       return candidate.time === bars[0].time;
     });
     ctx.save();
+    ctx.lineWidth = wickWidth;
     bars.forEach(function (bar, index) {
       var x = this.xForTime(bar.time, rect);
       var open = this.yForValue(bar.open, rect, range);
@@ -5362,10 +5364,10 @@
     var ctx = this.ctx;
     var bars = this.visibleBars();
     if (!bars.length) return;
-    var spacing = rect.width / Math.max(1, bars.length);
-    var tickWidth = clamp(spacing * 0.34, 3, 10);
+    var spacing = this.priceBarSpacing(rect);
+    var tickWidth = this.ohlcTickWidth(spacing);
     ctx.save();
-    ctx.lineWidth = 1.25;
+    ctx.lineWidth = this.priceStrokeWidth(spacing);
     bars.forEach(function (bar) {
       var x = this.xForTime(bar.time, rect);
       var open = this.yForValue(bar.open, rect, range);
@@ -5384,6 +5386,31 @@
       ctx.stroke();
     }, this);
     ctx.restore();
+  };
+
+  Chart.prototype.priceBarSpacing = function (rect) {
+    return rect.width / Math.max(1, this.visibleIndexSpan());
+  };
+
+  Chart.prototype.candleBodyWidth = function (spacing) {
+    spacing = Math.max(0, toNumber(spacing, 1));
+    if (spacing < 1.2) return clamp(spacing * 0.72, 0.35, 0.9);
+    if (spacing < 2.4) return clamp(spacing * 0.56, 0.7, 1.35);
+    return clamp(spacing * 0.62, 1.4, 18);
+  };
+
+  Chart.prototype.ohlcTickWidth = function (spacing) {
+    spacing = Math.max(0, toNumber(spacing, 1));
+    if (spacing < 1.2) return clamp(spacing * 0.45, 0.25, 0.65);
+    if (spacing < 2.4) return clamp(spacing * 0.38, 0.55, 1.1);
+    return clamp(spacing * 0.34, 1.2, 10);
+  };
+
+  Chart.prototype.priceStrokeWidth = function (spacing) {
+    spacing = Math.max(0, toNumber(spacing, 1));
+    if (spacing < 1.2) return 0.55;
+    if (spacing < 2.4) return 0.8;
+    return 1.25;
   };
 
   Chart.prototype.drawPriceLine = function (rect, range, theme) {

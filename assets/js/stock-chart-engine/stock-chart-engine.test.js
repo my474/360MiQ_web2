@@ -549,6 +549,10 @@ assert.strictEqual(chart.setChartType('baseline'), 'baseline');
 assert.strictEqual(chart.document.settings.chartType, 'baseline');
 assert.strictEqual(chart.setChartType('hollow-candles'), 'candlestick');
 assert.strictEqual(chart.document.settings.chartType, 'candlestick');
+assert.ok(chart.candleBodyWidth(0.5) < 1);
+assert.ok(chart.ohlcTickWidth(0.5) < 0.5);
+assert.ok(chart.priceStrokeWidth(0.5) < 1);
+assert.ok(chart.candleBodyWidth(12) > chart.candleBodyWidth(0.5));
 const originalBarsForCandlestickRules = chart.bars;
 const originalVisibleBarsForCandlestickRules = chart.visibleBars.bind(chart);
 chart.bars = [
