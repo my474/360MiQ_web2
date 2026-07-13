@@ -13,6 +13,7 @@
     var shareLayoutApplied = false;
     var shareLayoutLoading = false;
     var sharedPreviewActive = false;
+    var stockMetadataByCode = {};
 
     function normalizeCode(value) {
         var code = String(value || '').trim();
@@ -38,6 +39,54 @@
         button.hidden = !visible;
     }
 
+    function cleanMetadataText(value) {
+        return String(value || '').trim();
+    }
+
+    function stockMetadataFromSource(source, fallbackCode) {
+        source = source || {};
+        var code = normalizeCode(source.code || source.symbol || source.value || fallbackCode || '');
+        return {
+            code: code,
+            name_en: cleanMetadataText(source.name_en || source.englishName || source.name || ''),
+            name_tc: cleanMetadataText(source.name_tc || source.chineseName || source.name_cn || source.name_sc || '')
+        };
+    }
+
+    function rememberStockMetadata(source, fallbackCode) {
+        var metadata = stockMetadataFromSource(source, fallbackCode);
+        if (!metadata.code) return metadata;
+        var existing = stockMetadataByCode[metadata.code] || {};
+        stockMetadataByCode[metadata.code] = {
+            code: metadata.code,
+            name_en: metadata.name_en || existing.name_en || '',
+            name_tc: metadata.name_tc || existing.name_tc || ''
+        };
+        return stockMetadataByCode[metadata.code];
+    }
+
+    function stockMetadataForCode(code, preferred) {
+        var normalizedCode = normalizeCode(code);
+        var cached = stockMetadataByCode[normalizedCode] || {};
+        var incoming = stockMetadataFromSource(preferred, normalizedCode);
+        return {
+            code: normalizedCode,
+            name_en: incoming.name_en || cached.name_en || '',
+            name_tc: incoming.name_tc || cached.name_tc || ''
+        };
+    }
+
+    function applyStockMetadata(chart, code, preferred) {
+        var metadata = rememberStockMetadata(stockMetadataForCode(code, preferred), code);
+        if (chart && chart.setSymbolInfo) chart.setSymbolInfo(metadata);
+        else if (chart && chart.document) {
+            chart.document.symbol = metadata.code;
+            chart.document.symbolInfo = metadata;
+            if (chart.updateToolbar) chart.updateToolbar();
+        }
+        return metadata;
+    }
+
     function ensureEngineReady() {
         if (window.StockChartEngine) return Promise.resolve(window.StockChartEngine);
         if (engineReadyPromise) return engineReadyPromise;
@@ -60,7 +109,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.20';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.21';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -314,6 +363,7 @@
         if (stockChart && stockChart.destroy) stockChart.destroy();
         stockChart = new StockChartEngine.Chart(container, {
             symbol: code,
+            symbolInfo: stockMetadataForCode(code, options.symbolInfo),
             interval: 'daily',
             data: bars,
             layoutId: layoutId,
@@ -321,8 +371,7 @@
             load: shouldLoadStoredLayout,
             autosave: options.autosave !== false
         });
-        stockChart.document.symbol = code;
-        stockChart.updateToolbar();
+        applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         setTimeout(function () {
             if (stockChart && stockChart.resize) stockChart.resize();
@@ -336,7 +385,7 @@
             skipStarterStudies: true
         });
         stockChart.importLayout(layoutWithoutEmbeddedData(payload));
-        stockChart.document.symbol = code;
+        applyStockMetadata(stockChart, code, payload && payload.document && payload.document.symbolInfo);
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
         sharedPreviewActive = true;
@@ -344,10 +393,11 @@
         setStatus('Shared chart preview. Click Save Layout to replace your saved ' + code + ' layout.', false);
     }
 
-    function loadStockChart(rawCode) {
+    function loadStockChart(rawCode, metadata) {
         var code = normalizeCode(rawCode);
         var input = document.getElementById('toolStockChartCode');
         if (input) input.value = code;
+        var symbolInfo = rememberStockMetadata(metadata, code);
         sharedPreviewActive = false;
         setSharedSaveVisible(false);
 
@@ -366,7 +416,7 @@
             if (requestId !== dataSerial) return;
             return requestBars(code).then(function (payload) {
                 if (requestId !== dataSerial) return;
-                renderChart(code, payload.bars);
+                renderChart(code, payload.bars, { symbolInfo: symbolInfo });
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
             });
         }).catch(function (error) {
@@ -474,7 +524,8 @@
             select: function (event, ui) {
                 event.preventDefault();
                 $(this).val(ui.item.code || ui.item.value);
-                loadStockChart(ui.item.code || ui.item.value);
+                rememberStockMetadata(ui.item, ui.item.code || ui.item.value);
+                loadStockChart(ui.item.code || ui.item.value, ui.item);
             },
             open: function () {
                 $('.ui-autocomplete').css('z-index', 10000);

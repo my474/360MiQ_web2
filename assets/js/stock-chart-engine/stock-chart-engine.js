@@ -109,6 +109,15 @@
     return output;
   }
 
+  function normalizeSymbolInfo(info, fallbackSymbol) {
+    info = info || {};
+    return {
+      code: String(info.code || info.symbol || fallbackSymbol || '').trim(),
+      name_en: String(info.name_en || info.englishName || info.name || '').trim(),
+      name_tc: String(info.name_tc || info.chineseName || info.chinese || '').trim()
+    };
+  }
+
   function fallbackCopyText(text, unsupportedMessage) {
     if (typeof Promise === 'undefined') {
       throw new Error(unsupportedMessage);
@@ -1686,6 +1695,7 @@
     return {
       schemaVersion: SCHEMA_VERSION,
       symbol: options.symbol || 'DEMO',
+      symbolInfo: normalizeSymbolInfo(options.symbolInfo || options, options.symbol || 'DEMO'),
       interval: periodInterval(options.period || options.interval || 'daily'),
       theme: options.theme || null,
       visibleRange: null,
@@ -1714,6 +1724,8 @@
     var savedPeriod = doc && doc.settings && doc.settings.period || doc && doc.interval;
     var migrated = merge(createDefaultDocument(), doc || {});
     migrated.schemaVersion = SCHEMA_VERSION;
+    migrated.symbolInfo = normalizeSymbolInfo(migrated.symbolInfo, migrated.symbol);
+    if (!migrated.symbolInfo.code) migrated.symbolInfo.code = String(migrated.symbol || '').trim();
     migrated.panes = migrated.panes && migrated.panes.length ? migrated.panes : createDefaultDocument().panes;
     migrated.panes.forEach(function (pane) {
       pane.scaleMode = normalizeScaleMode(pane.scaleMode);
@@ -2556,6 +2568,17 @@
     this.fitContent();
     this.updateToolbar();
     this.emitChange('data', { barCount: this.bars.length, sourceBarCount: this.sourceBars.length });
+  };
+
+  Chart.prototype.setSymbolInfo = function (info) {
+    var normalized = normalizeSymbolInfo(info, this.document.symbol);
+    if (normalized.code) this.document.symbol = normalized.code;
+    else normalized.code = String(this.document.symbol || '').trim();
+    this.document.symbolInfo = normalized;
+    this.updateToolbar();
+    this.draw();
+    this.emitChange('symbol:info', { symbolInfo: clone(this.document.symbolInfo) });
+    return this.document.symbolInfo;
   };
 
   Chart.prototype.updateBar = function (bar) {
@@ -4626,6 +4649,7 @@
     ctx.fillStyle = theme.paneBackground;
     ctx.fillRect(rect.x, rect.y, rect.width + rect.scaleWidth, rect.height);
     this.drawGrid(rect, range, theme);
+    if (rect.paneId === 'price') this.drawPriceWatermark(rect, theme);
     if (rect.paneId === 'price') this.drawPriceVolumeOverlays(rect, theme);
     if (rect.paneId === 'price') this.drawPriceSeries(rect, range, theme);
     this.drawIndicators(rect, range, theme);
@@ -4639,6 +4663,50 @@
     ctx.moveTo(rect.x, rect.y + rect.height - 0.5);
     ctx.lineTo(rect.x + rect.width + rect.scaleWidth, rect.y + rect.height - 0.5);
     ctx.stroke();
+    ctx.restore();
+  };
+
+  Chart.prototype.watermarkLines = function () {
+    var info = normalizeSymbolInfo(this.document.symbolInfo, this.document.symbol);
+    var code = info.code || String(this.document.symbol || '').trim();
+    var lines = [];
+    if (code) lines.push({ text: code, kind: 'code' });
+    [info.name_en, info.name_tc].forEach(function (name) {
+      if (!name) return;
+      var duplicate = lines.some(function (line) {
+        return line.text.toLowerCase && line.text.toLowerCase() === String(name).toLowerCase();
+      });
+      if (!duplicate) lines.push({ text: name, kind: 'name' });
+    });
+    return lines;
+  };
+
+  Chart.prototype.drawPriceWatermark = function (rect, theme) {
+    var lines = this.watermarkLines();
+    if (!lines.length || rect.width < 120 || rect.height < 90) return;
+    var ctx = this.ctx;
+    var maxWidth = Math.max(80, rect.width * 0.72);
+    var codeSize = fittedFontSize(lines[0].text, maxWidth, Math.min(58, Math.max(30, rect.width / 12)), 22);
+    var nameSize = fittedFontSize(lines.slice(1).map(function (line) { return line.text; }).join(' '), maxWidth, Math.min(20, Math.max(13, rect.width / 38)), 11);
+    var visibleLines = rect.height < 150 ? lines.slice(0, 2) : lines.slice(0, 3);
+    var lineHeights = visibleLines.map(function (line) {
+      return line.kind === 'code' ? codeSize * 1.15 : nameSize * 1.35;
+    });
+    var totalHeight = lineHeights.reduce(function (sum, height) { return sum + height; }, 0);
+    var y = rect.y + rect.height / 2 - totalHeight / 2;
+
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = theme.text;
+    ctx.globalAlpha = theme.name === 'dark' ? 0.10 : 0.075;
+    visibleLines.forEach(function (line, index) {
+      var fontSize = line.kind === 'code' ? codeSize : nameSize;
+      ctx.font = (line.kind === 'code' ? '700 ' : '600 ') + fontSize + 'px sans-serif';
+      y += lineHeights[index] / 2;
+      ctx.fillText(line.text, rect.x + rect.width / 2, y);
+      y += lineHeights[index] / 2;
+    });
     ctx.restore();
   };
 
@@ -6359,6 +6427,14 @@
 
   function approximateTextWidth(text) {
     return String(text || '').length * 7;
+  }
+
+  function fittedFontSize(text, maxWidth, preferredSize, minSize) {
+    var value = String(text || '').trim();
+    if (!value) return minSize;
+    var estimated = value.length * preferredSize * 0.58;
+    if (estimated <= maxWidth) return preferredSize;
+    return Math.max(minSize, Math.floor(preferredSize * maxWidth / Math.max(1, estimated)));
   }
 
   function distance(a, b) {
