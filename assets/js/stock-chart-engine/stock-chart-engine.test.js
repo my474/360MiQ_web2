@@ -262,8 +262,9 @@ function formatTestDate(time) {
 
 function formatTestPriceLegend(chart, bar) {
   const previous = chart.previousBarForTime(bar.time);
-  const percent = previous && previous.close ? ((bar.close - previous.close) / previous.close) * 100 : null;
-  const suffix = percent == null || !Number.isFinite(percent) ? '' : ` (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`;
+  const change = previous && previous.close ? bar.close - previous.close : null;
+  const percent = previous && previous.close ? (change / previous.close) * 100 : null;
+  const suffix = change == null || !Number.isFinite(change) || !Number.isFinite(percent) ? '' : ` ${change >= 0 ? '+' : ''}${formatTestNumber(change)} (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`;
   return `${formatTestDate(bar.time)}  O ${formatTestNumber(bar.open)} H ${formatTestNumber(bar.high)} L ${formatTestNumber(bar.low)} C ${formatTestNumber(bar.close)}${suffix}`;
 }
 
@@ -913,6 +914,7 @@ chart.pointer = { x: crosshairX, y: rsiPaneRectForCrosshair.y + Math.round(rsiPa
 const crosshairLegendTime = chart.legendTimeForPane(crosshairPaneRects[0]);
 const expectedCrosshairBar = chart.barNearTime(crosshairLegendTime);
 const expectedCrosshairPriceLabel = formatTestPriceLegend(chart, expectedCrosshairBar);
+assert.ok(/ C [-0-9.]+ [+-][0-9.]+(?:K|M|B)? \([+-][0-9.]+%\)$/.test(expectedCrosshairPriceLabel));
 const latestVisibleBar = chart.visibleBars()[chart.visibleBars().length - 1];
 const latestPriceLabel = formatTestPriceLegend(chart, latestVisibleBar);
 assert.notStrictEqual(expectedCrosshairPriceLabel, latestPriceLabel);

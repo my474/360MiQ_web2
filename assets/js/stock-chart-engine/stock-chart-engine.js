@@ -5192,9 +5192,11 @@
   Chart.prototype.pricePercentChangeLabel = function (bar) {
     var previous = bar ? this.previousBarForTime(bar.time) : null;
     if (!previous || !previous.close) return '';
-    var percent = ((bar.close - previous.close) / previous.close) * 100;
-    if (!Number.isFinite(percent)) return '';
-    return ' (' + (percent >= 0 ? '+' : '') + percent.toFixed(1) + '%)';
+    var change = bar.close - previous.close;
+    var percent = (change / previous.close) * 100;
+    if (!Number.isFinite(change) || !Number.isFinite(percent)) return '';
+    var sign = change >= 0 ? '+' : '';
+    return ' ' + sign + formatNumber(change) + ' (' + (percent >= 0 ? '+' : '') + percent.toFixed(1) + '%)';
   };
 
   Chart.prototype.indicatorLegendItems = function (paneId, time, theme) {
