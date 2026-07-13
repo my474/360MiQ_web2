@@ -419,6 +419,30 @@ const menuSmaId = chart.addIndicatorFromMenu('SMA');
 assert.ok(chart.document.indicators.some((indicator) => indicator.id === menuSmaId && indicator.type === 'SMA'));
 assert.strictEqual(chart.addIndicatorFromMenu('NOPE'), null);
 chart.removeIndicator(menuSmaId);
+const sourceRsiId = chart.addIndicator('RSI', { placement: 'new' });
+const sourceRsi = chart.document.indicators.find((indicator) => indicator.id === sourceRsiId);
+const sourceSmaOnRsiId = chart.addIndicator('SMA', {
+  source: { kind: 'indicator', indicatorId: sourceRsiId, output: 'value' },
+  inputs: { length: 9 }
+});
+const sourceSmaOnRsi = chart.document.indicators.find((indicator) => indicator.id === sourceSmaOnRsiId);
+assert.strictEqual(sourceSmaOnRsi.paneId, sourceRsi.paneId);
+assert.strictEqual(sourceSmaOnRsi.source.indicatorId, sourceRsiId);
+assert.ok((chart.indicatorResults[sourceSmaOnRsiId].outputs.value || []).every((point) => point.value >= 0 && point.value <= 100));
+const detachedSmaId = chart.addIndicator('SMA', { inputs: { length: 5 } });
+chart.updateIndicatorSettings(detachedSmaId, {
+  source: { kind: 'indicator', indicatorId: sourceRsiId, output: 'value' }
+});
+const detachedSma = chart.document.indicators.find((indicator) => indicator.id === detachedSmaId);
+assert.strictEqual(detachedSma.paneId, sourceRsi.paneId);
+assert.strictEqual(detachedSma.source.indicatorId, sourceRsiId);
+const sourceOptionKeys = chart.indicatorSourceOptions(sourceSmaOnRsiId).map((option) => option.key);
+assert.ok(sourceOptionKeys.includes('price:close'));
+assert.ok(sourceOptionKeys.includes(`indicator:${sourceRsiId}:value`));
+assert.strictEqual(sourceOptionKeys.some((key) => key.indexOf(`indicator:${sourceSmaOnRsiId}:`) === 0), false);
+chart.removeIndicator(detachedSmaId);
+chart.removeIndicator(sourceSmaOnRsiId);
+chart.removeIndicator(sourceRsiId);
 const savedToolbarQuerySelectorAll = chart.toolbar.querySelectorAll;
 const savedToolbarQuerySelector = chart.toolbar.querySelector;
 const menuSmaButton = new FakeElement('button');

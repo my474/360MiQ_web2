@@ -40,6 +40,16 @@
     { id: '10y', label: '10Y', years: 10 },
     { id: 'all', label: 'All', all: true }
   ];
+  var PRICE_SOURCE_FIELDS = [
+    { field: 'open', label: 'Open' },
+    { field: 'high', label: 'High' },
+    { field: 'low', label: 'Low' },
+    { field: 'close', label: 'Close' },
+    { field: 'hl2', label: 'HL2' },
+    { field: 'hlc3', label: 'HLC3' },
+    { field: 'ohlc4', label: 'OHLC4' },
+    { field: 'volume', label: 'Volume' }
+  ];
 
   var DRAWING_TOOLS = createDrawingTools();
 
@@ -116,6 +126,32 @@
       name_en: String(info.name_en || info.englishName || info.name || '').trim(),
       name_tc: String(info.name_tc || info.chineseName || info.chinese || '').trim()
     };
+  }
+
+  function normalizeIndicatorSource(source) {
+    source = source || {};
+    if (source.kind === 'indicator' && source.indicatorId) {
+      return {
+        kind: 'indicator',
+        indicatorId: String(source.indicatorId),
+        output: String(source.output || 'value')
+      };
+    }
+    return {
+      kind: 'price',
+      field: priceSourceField(source.field || 'close')
+    };
+  }
+
+  function priceSourceField(field) {
+    var normalized = String(field || 'close').toLowerCase();
+    return PRICE_SOURCE_FIELDS.some(function (item) { return item.field === normalized; }) ? normalized : 'close';
+  }
+
+  function sourceKey(source) {
+    source = normalizeIndicatorSource(source);
+    if (source.kind === 'indicator') return 'indicator:' + source.indicatorId + ':' + source.output;
+    return 'price:' + source.field;
   }
 
   function fallbackCopyText(text, unsupportedMessage) {
@@ -611,19 +647,27 @@
   }
 
   function sourceSeries(context, source) {
-    source = source || { kind: 'price', field: 'close' };
+    source = normalizeIndicatorSource(source || { kind: 'price', field: 'close' });
     if (source.kind === 'indicator') {
       var indicatorResult = context.indicatorResults[source.indicatorId];
       if (!indicatorResult) return [];
       return clone(indicatorResult.outputs[source.output || 'value'] || []);
     }
 
-    var field = source.field || 'close';
+    var field = priceSourceField(source.field || 'close');
     return context.bars.map(function (bar) {
-      return { time: bar.time, value: toNumber(bar[field], null) };
+      return { time: bar.time, value: priceSourceValue(bar, field) };
     }).filter(function (point) {
       return point.value != null;
     });
+  }
+
+  function priceSourceValue(bar, field) {
+    if (!bar) return null;
+    if (field === 'hl2') return (toNumber(bar.high, 0) + toNumber(bar.low, 0)) / 2;
+    if (field === 'hlc3') return (toNumber(bar.high, 0) + toNumber(bar.low, 0) + toNumber(bar.close, 0)) / 3;
+    if (field === 'ohlc4') return (toNumber(bar.open, 0) + toNumber(bar.high, 0) + toNumber(bar.low, 0) + toNumber(bar.close, 0)) / 4;
+    return toNumber(bar[field], null);
   }
 
   function rollingSma(data, length) {
@@ -1733,6 +1777,9 @@
       pane.height = Math.max(80, toNumber(pane.height, pane.type === 'price' ? 420 : 180));
     });
     migrated.indicators = migrated.indicators || [];
+    migrated.indicators.forEach(function (indicator) {
+      indicator.source = normalizeIndicatorSource(indicator.source);
+    });
     migrated.drawings = migrated.drawings || [];
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
@@ -2817,15 +2864,15 @@
     options = options || {};
     if (options.paneId) return options.paneId;
     var definition = Indicators[type];
-    var placement = options.placement || (definition && definition.defaultPanePolicy) || 'source';
-    if (placement === 'new') {
-      return this.addPane({ title: definition ? definition.name : type });
-    }
     if (options.source && options.source.kind === 'indicator') {
       var sourceIndicator = this.document.indicators.filter(function (indicator) {
         return indicator.id === options.source.indicatorId;
       })[0];
       if (sourceIndicator) return sourceIndicator.paneId;
+    }
+    var placement = options.placement || (definition && definition.defaultPanePolicy) || 'source';
+    if (placement === 'new') {
+      return this.addPane({ title: definition ? definition.name : type });
     }
     return 'price';
   };
@@ -2841,7 +2888,7 @@
       id: id,
       type: type,
       paneId: paneId,
-      source: options.source || { kind: 'price', field: options.field || 'close' },
+      source: normalizeIndicatorSource(options.source || { kind: 'price', field: options.field || 'close' }),
       inputs: merge({}, Indicators[type].defaultInputs || {}, options.inputs || {}),
       styles: styles,
       visible: options.visible !== false,
@@ -2957,10 +3004,53 @@
     return true;
   };
 
+  Chart.prototype.indicatorDependsOn = function (indicatorId, sourceIndicatorId) {
+    var byId = {};
+    this.document.indicators.forEach(function (indicator) {
+      byId[indicator.id] = indicator;
+    });
+    var visited = {};
+    function visit(id) {
+      if (!id || visited[id]) return false;
+      visited[id] = true;
+      var indicator = byId[id];
+      var source = indicator && normalizeIndicatorSource(indicator.source);
+      if (!source || source.kind !== 'indicator') return false;
+      if (source.indicatorId === sourceIndicatorId) return true;
+      return visit(source.indicatorId);
+    }
+    return visit(indicatorId);
+  };
+
+  Chart.prototype.paneIdForIndicatorSource = function (source, fallbackPaneId, indicatorType) {
+    source = normalizeIndicatorSource(source);
+    if (source.kind === 'indicator') {
+      var sourceIndicator = this.document.indicators.filter(function (indicator) {
+        return indicator.id === source.indicatorId;
+      })[0];
+      return sourceIndicator ? sourceIndicator.paneId : fallbackPaneId;
+    }
+    var definition = Indicators[indicatorType];
+    return definition && definition.defaultPanePolicy === 'source' ? 'price' : fallbackPaneId;
+  };
+
   Chart.prototype.updateIndicatorSettings = function (indicatorId, settings) {
     var indicator = this.document.indicators.filter(function (item) { return item.id === indicatorId; })[0];
     if (!indicator) return false;
     settings = settings || {};
+    if (settings.source) {
+      var source = normalizeIndicatorSource(settings.source);
+      if (source.kind !== 'indicator' || (source.indicatorId !== indicator.id && !this.indicatorDependsOn(source.indicatorId, indicator.id))) {
+        indicator.source = source;
+        var nextPaneId = this.paneIdForIndicatorSource(source, indicator.paneId, indicator.type);
+        if (nextPaneId && nextPaneId !== indicator.paneId) {
+          indicator.paneId = nextPaneId;
+          this.document.drawings.forEach(function (drawing) {
+            if (drawing.ownerStudyId === indicatorId) drawing.paneId = nextPaneId;
+          });
+        }
+      }
+    }
     if (settings.inputs) {
       indicator.inputs = merge({}, indicator.inputs || {}, sanitizeIndicatorInputs(settings.inputs));
     }
@@ -3027,10 +3117,16 @@
     var length = indicator.inputs && indicator.inputs.length != null ? indicator.inputs.length : '';
     var opacity = style.opacity == null ? 1 : style.opacity;
     var isVolume = indicator.type === 'VOLUME';
+    var sourceSelect = isVolume ? '' : [
+      '<label>Source<select data-sce-popup-field="source">',
+      this.indicatorSourceOptionsHtml(indicator.id),
+      '</select></label>'
+    ].join('');
     var controls = isVolume ? [
       '<label>Opacity<input type="number" min="0.05" max="1" step="0.05" data-sce-popup-field="opacity" value="', escapeHtml(opacity), '"></label>'
     ] : [
       '<label>Period<input type="number" min="1" max="1000" data-sce-popup-field="length" value="', escapeHtml(length), '"></label>',
+      sourceSelect,
       '<label>Output<input type="text" readonly data-sce-popup-field="output" value="', escapeHtml(output), '"></label>',
       '<label>Color<div class="sce-color-control">',
       '<button type="button" class="sce-color-swatch" data-sce-popup-action="toggle-color" style="background:', escapeHtml(style.color || '#2563eb'), '" aria-label="Choose color"></button>',
@@ -3064,7 +3160,52 @@
     this.settingsPopup.dataset.output = output;
     delete this.settingsPopup.dataset.drawingId;
     this.bindSettingsPopup();
-    this.positionSettingsPopup(pointer, 286, isVolume ? 176 : 324);
+    this.positionSettingsPopup(pointer, 286, isVolume ? 176 : 368);
+  };
+
+  Chart.prototype.indicatorSourceOptions = function (indicatorId) {
+    var options = PRICE_SOURCE_FIELDS.map(function (item) {
+      return {
+        key: 'price:' + item.field,
+        label: item.label,
+        source: { kind: 'price', field: item.field },
+        paneId: 'price'
+      };
+    });
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.id === indicatorId || this.indicatorDependsOn(indicator.id, indicatorId)) return;
+      var result = this.indicatorResults[indicator.id];
+      var render = result && result.render || [];
+      render.forEach(function (renderItem) {
+        if (renderItem.type === 'level') return;
+        var output = renderItem.output || 'value';
+        options.push({
+          key: 'indicator:' + indicator.id + ':' + output,
+          label: indicatorLegendName(indicator, output),
+          source: { kind: 'indicator', indicatorId: indicator.id, output: output },
+          paneId: indicator.paneId
+        });
+      });
+    }, this);
+    return options;
+  };
+
+  Chart.prototype.indicatorSourceOptionsHtml = function (indicatorId) {
+    var indicator = this.document.indicators.filter(function (item) { return item.id === indicatorId; })[0];
+    var selectedKey = sourceKey(indicator && indicator.source);
+    return this.indicatorSourceOptions(indicatorId).map(function (option) {
+      return '<option value="' + escapeHtml(option.key) + '"' + (option.key === selectedKey ? ' selected' : '') + '>' + escapeHtml(option.label) + '</option>';
+    }).join('');
+  };
+
+  Chart.prototype.sourceFromKey = function (key) {
+    var text = String(key || '');
+    if (text.indexOf('indicator:') === 0) {
+      var parts = text.split(':');
+      if (parts[1]) return normalizeIndicatorSource({ kind: 'indicator', indicatorId: parts[1], output: parts[2] || 'value' });
+    }
+    if (text.indexOf('price:') === 0) return normalizeIndicatorSource({ kind: 'price', field: text.split(':')[1] || 'close' });
+    return normalizeIndicatorSource({ kind: 'price', field: 'close' });
   };
 
   Chart.prototype.bindSettingsPopup = function () {
@@ -3104,6 +3245,7 @@
     var lineWidth = this.settingsPopup.querySelector('[data-sce-popup-field="lineWidth"]');
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="lineStyle"]');
     var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="opacity"]');
+    var source = this.settingsPopup.querySelector('[data-sce-popup-field="source"]');
     var style = {};
     style[output] = {};
     if (color) style[output].color = color.value;
@@ -3111,6 +3253,7 @@
     if (lineStyle) style[output].lineStyle = lineStyle.value;
     if (opacity) style[output].opacity = Number(opacity.value);
     this.updateIndicatorSettings(indicatorId, {
+      source: source ? this.sourceFromKey(source.value) : null,
       inputs: length && length.value ? { length: Number(length.value) } : {},
       styles: style
     });
