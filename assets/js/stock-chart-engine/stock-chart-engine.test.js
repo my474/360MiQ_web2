@@ -1233,6 +1233,15 @@ const snapPoint = chart.valueFromPoint({
 assert.strictEqual(snapPoint.time, snapBar.time);
 assert.strictEqual(snapPoint.value, snapBar.close);
 assert.strictEqual(chart.toggleDrawingMagnetMode(), false);
+chart.startDrawing('signpost');
+chart.handleCanvasClick({
+  clientX: chart.xForTime(snapBar.time + 500, priceRectForSnap),
+  clientY: chart.yForValue(snapBar.high + 0.01, priceRectForSnap, chart.paneRange('price'))
+});
+const snappedSignpost = chart.getDrawingById(chart.selectedDrawingId);
+assert.strictEqual(snappedSignpost.type, 'signpost');
+assert.strictEqual(snappedSignpost.points[0].time, snapBar.time);
+assert.strictEqual(snappedSignpost.points[0].value, snapBar.high);
 chart.selectedDrawingId = registryShapeId;
 assert.strictEqual(chart.moveDrawingZOrder(registryShapeId, 'front'), true);
 assert.strictEqual(chart.setAllDrawingsLocked(true), true);

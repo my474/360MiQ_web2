@@ -3912,7 +3912,8 @@
       }
       return;
     }
-    var point = this.valueFromEvent(event);
+    var forceMagnet = this.pendingDrawing && normalizeDrawingType(this.pendingDrawing.type) === 'signpost';
+    var point = this.valueFromEvent(event, { forceMagnet: forceMagnet });
     if (!point) return;
     if (this.pendingDrawing.paneId && point.paneId !== this.pendingDrawing.paneId) return;
     if (!this.pendingDrawing.paneId) this.pendingDrawing.paneId = point.paneId;
@@ -4841,12 +4842,13 @@
     };
   };
 
-  Chart.prototype.valueFromEvent = function (event) {
+  Chart.prototype.valueFromEvent = function (event, options) {
     var point = this.pointerFromEvent(event);
-    return this.valueFromPoint(point);
+    return this.valueFromPoint(point, null, options);
   };
 
-  Chart.prototype.valueFromPoint = function (point, forcedPaneId) {
+  Chart.prototype.valueFromPoint = function (point, forcedPaneId, options) {
+    options = options || {};
     for (var i = 0; i < this.paneRects.length; i += 1) {
       var rect = this.paneRects[i];
       var inPane = point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
@@ -4857,14 +4859,14 @@
           time: Math.round(this.timeForX(point.x, rect)),
           value: this.valueForY(point.y, rect, range)
         };
-        return this.snapValuePoint(valuePoint);
+        return this.snapValuePoint(valuePoint, options.forceMagnet);
       }
     }
     return null;
   };
 
-  Chart.prototype.snapValuePoint = function (point) {
-    if (!point || !this.document.settings.magnetMode || point.paneId !== 'price' || !this.bars.length) return point;
+  Chart.prototype.snapValuePoint = function (point, forceMagnet) {
+    if (!point || (!forceMagnet && !this.document.settings.magnetMode) || point.paneId !== 'price' || !this.bars.length) return point;
     var bar = this.barNearTime(point.time);
     if (!bar) return point;
     var values = [bar.open, bar.high, bar.low, bar.close];
