@@ -393,6 +393,43 @@ chart.toolbar.dispatchEvent({
 });
 const zoomAfterNestedClick = chart.visibleIndexRange();
 assert.ok(zoomAfterNestedClick.to - zoomAfterNestedClick.from < zoomBeforeNestedClick.to - zoomBeforeNestedClick.from);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="full-browser"') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="fullscreen"') !== -1);
+const fullBrowserButtonForTest = new FakeElement('button');
+fullBrowserButtonForTest.setAttribute('data-sce-action', 'full-browser');
+const fullBrowserSvgForTest = new FakeElement('svg');
+fullBrowserButtonForTest.appendChild(fullBrowserSvgForTest);
+chart.toolbar.appendChild(fullBrowserButtonForTest);
+chart.toolbar.dispatchEvent({
+  type: 'click',
+  target: fullBrowserSvgForTest,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+assert.strictEqual(chart.fullBrowserMode, true);
+assert.ok((chart.root.className || '').split(/\s+/).includes('sce-root-full-browser'));
+assert.strictEqual(fullBrowserButtonForTest.getAttribute('aria-pressed'), 'true');
+const fullBrowserEscape = {
+  key: 'Escape',
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.handleDocumentKeyDown(fullBrowserEscape);
+assert.strictEqual(fullBrowserEscape.defaultPrevented, true);
+assert.strictEqual(chart.fullBrowserMode, false);
+assert.strictEqual((chart.root.className || '').split(/\s+/).includes('sce-root-full-browser'), false);
+chart.root.requestFullscreen = function requestFullscreenForTest() {
+  global.document.fullscreenElement = chart.root;
+};
+global.document.exitFullscreen = function exitFullscreenForTest() {
+  global.document.fullscreenElement = null;
+};
+chart.toggleFullscreenMode();
+assert.strictEqual(chart.isFullscreenActive(), true);
+chart.toggleFullscreenMode();
+assert.strictEqual(chart.isFullscreenActive(), false);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-stock-info-link') !== -1);
 assert.strictEqual(chart.stockInfoHref(), 'stockinfo?code=TEST');
 const stockInfoLink = chart.toolbar.querySelector('[data-sce-stock-info-link]');

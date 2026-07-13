@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <link rel="stylesheet" href="assets/css/inlinehelp.css">
     <link rel="stylesheet" href="assets/css/help-tip2.css">
-    <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css?v=20260713.4">
+    <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css?v=20260713.5">
     
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -1061,8 +1061,8 @@ window.__TOOL_PAGE_CONFIG = {
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
 <script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
-<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.25"></script>
-<script src="assets/js/pages/tool-stock-chart.js?v=20260713.27"></script>
+<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.26"></script>
+<script src="assets/js/pages/tool-stock-chart.js?v=20260713.28"></script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->

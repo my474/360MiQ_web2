@@ -1919,12 +1919,14 @@
     this.panState = null;
     this.suppressNextClick = false;
     this.autosaveTimer = null;
+    this.fullBrowserMode = false;
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
     this.resizeListener = this.resize.bind(this);
     this.keydownListener = this.handleDocumentKeyDown.bind(this);
     this.documentPointerDownListener = this.handleDocumentPointerDown.bind(this);
     this.drawingMenuPositionListener = this.positionDrawingToolMenus.bind(this);
+    this.fullscreenChangeListener = this.handleFullscreenChange.bind(this);
     this.initDom();
     this.bindDom();
     this.compute();
@@ -1985,6 +1987,8 @@
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-in" title="Zoom in" aria-label="Zoom in">', paneControlIconSvg('zoom-in'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-out" title="Zoom out" aria-label="Zoom out">', paneControlIconSvg('zoom-out'), '</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
+      '<button type="button" class="sce-toolbar-icon-button" data-sce-action="full-browser" title="Full browser" aria-label="Full browser" aria-pressed="false">', paneControlIconSvg('full-browser'), '</button>',
+      '<button type="button" class="sce-toolbar-icon-button" data-sce-action="fullscreen" title="Full screen" aria-label="Full screen" aria-pressed="false">', paneControlIconSvg('fullscreen'), '</button>',
       '<details class="sce-share-picker" data-sce-share-picker>',
       '<summary aria-label="Share chart">', paneControlIconSvg('share'), '<span>Share</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-share-menu" role="menu">',
@@ -2068,6 +2072,8 @@
         self.draw();
         self.emitChange('range:fit', { visibleRange: clone(self.document.visibleRange) });
       }
+      if (action === 'full-browser') self.toggleFullBrowserMode();
+      if (action === 'fullscreen') self.toggleFullscreenMode();
       if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
       if (action === 'theme') self.toggleTheme();
     });
@@ -2206,11 +2212,14 @@
       document.addEventListener('keydown', this.keydownListener);
       document.addEventListener('mousedown', this.documentPointerDownListener);
       document.addEventListener('touchstart', this.documentPointerDownListener);
+      document.addEventListener('fullscreenchange', this.fullscreenChangeListener);
+      document.addEventListener('webkitfullscreenchange', this.fullscreenChangeListener);
     }
   };
 
   Chart.prototype.destroy = function () {
     this.destroyed = true;
+    this.setFullBrowserMode(false);
     window.removeEventListener('resize', this.resizeListener);
     window.removeEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.removeEventListener('themechange', this.themeListener);
@@ -2218,6 +2227,8 @@
       document.removeEventListener('keydown', this.keydownListener);
       document.removeEventListener('mousedown', this.documentPointerDownListener);
       document.removeEventListener('touchstart', this.documentPointerDownListener);
+      document.removeEventListener('fullscreenchange', this.fullscreenChangeListener);
+      document.removeEventListener('webkitfullscreenchange', this.fullscreenChangeListener);
     }
     clearTimeout(this.autosaveTimer);
     this.container.innerHTML = '';
@@ -2225,6 +2236,11 @@
 
   Chart.prototype.handleDocumentKeyDown = function (event) {
     if (event.key !== 'Escape') return;
+    if (this.fullBrowserMode) {
+      event.preventDefault();
+      this.setFullBrowserMode(false);
+      return;
+    }
     if (this.settingsPopup && !this.settingsPopup.hasAttribute('hidden')) {
       event.preventDefault();
       this.closeIndicatorSettingsPopup();
@@ -2633,6 +2649,72 @@
     this.draw();
     this.emitChange('symbol:info', { symbolInfo: clone(this.document.symbolInfo) });
     return this.document.symbolInfo;
+  };
+
+  Chart.prototype.setFullBrowserMode = function (enabled) {
+    var active = !!enabled;
+    if (this.fullBrowserMode === active) {
+      this.updateToolbar();
+      return active;
+    }
+    this.fullBrowserMode = active;
+    this.root.classList.toggle('sce-root-full-browser', active);
+    toggleGlobalClass('sce-chart-full-browser-open', active);
+    this.closeToolbarMenus();
+    this.closeDrawingToolMenus();
+    this.closeIndicatorSettingsPopup();
+    this.updateToolbar();
+    this.resize();
+    this.emitChange('view:full-browser', { active: active });
+    return active;
+  };
+
+  Chart.prototype.toggleFullBrowserMode = function () {
+    if (!this.fullBrowserMode && this.isFullscreenActive()) {
+      this.exitFullscreenMode();
+    }
+    return this.setFullBrowserMode(!this.fullBrowserMode);
+  };
+
+  Chart.prototype.isFullscreenActive = function () {
+    var fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || null;
+    return fullscreenElement === this.root;
+  };
+
+  Chart.prototype.toggleFullscreenMode = function () {
+    if (this.isFullscreenActive()) return this.exitFullscreenMode();
+    this.setFullBrowserMode(false);
+    var request = this.root.requestFullscreen || this.root.webkitRequestFullscreen;
+    if (!request) {
+      this.setFullBrowserMode(true);
+      return Promise.resolve(false);
+    }
+    var result = request.call(this.root);
+    if (result && result.catch) {
+      return result.catch(function () {
+        this.setFullBrowserMode(true);
+        return false;
+      }.bind(this));
+    }
+    this.handleFullscreenChange();
+    return Promise.resolve(true);
+  };
+
+  Chart.prototype.exitFullscreenMode = function () {
+    var exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (!exit) {
+      this.handleFullscreenChange();
+      return Promise.resolve(false);
+    }
+    var result = exit.call(document);
+    if (result && result.catch) return result.catch(function () { return false; });
+    this.handleFullscreenChange();
+    return Promise.resolve(true);
+  };
+
+  Chart.prototype.handleFullscreenChange = function () {
+    this.updateToolbar();
+    this.resize();
   };
 
   Chart.prototype.updateBar = function (bar) {
@@ -4247,6 +4329,23 @@
     if (themeButton) themeButton.textContent = this.document.theme === 'dark' ? 'Light' : 'Dark';
     var logButton = this.toolbar.querySelector('[data-sce-action="log"]');
     if (logButton) logButton.textContent = 'Log: ' + this.paneScaleMode(this.activePaneId()).toUpperCase();
+    var fullBrowserButton = this.toolbar.querySelector('[data-sce-action="full-browser"]');
+    if (fullBrowserButton) {
+      var fullBrowserLabel = this.fullBrowserMode ? 'Restore browser view' : 'Full browser';
+      fullBrowserButton.setAttribute('aria-pressed', this.fullBrowserMode ? 'true' : 'false');
+      fullBrowserButton.setAttribute('title', fullBrowserLabel);
+      fullBrowserButton.setAttribute('aria-label', fullBrowserLabel);
+      fullBrowserButton.innerHTML = paneControlIconSvg(this.fullBrowserMode ? 'minimize' : 'full-browser');
+    }
+    var fullscreenButton = this.toolbar.querySelector('[data-sce-action="fullscreen"]');
+    if (fullscreenButton) {
+      var fullscreenActive = this.isFullscreenActive();
+      var fullscreenLabel = fullscreenActive ? 'Exit full screen' : 'Full screen';
+      fullscreenButton.setAttribute('aria-pressed', fullscreenActive ? 'true' : 'false');
+      fullscreenButton.setAttribute('title', fullscreenLabel);
+      fullscreenButton.setAttribute('aria-label', fullscreenLabel);
+      fullscreenButton.innerHTML = paneControlIconSvg(fullscreenActive ? 'minimize' : 'fullscreen');
+    }
     this.updateDrawingUtilityButtons();
   };
 
@@ -6704,6 +6803,12 @@
     return false;
   }
 
+  function toggleGlobalClass(className, enabled) {
+    [document.documentElement, document.body].forEach(function (element) {
+      if (element && element.classList) element.classList.toggle(className, enabled);
+    });
+  }
+
   function paneControlIconSvg(icon) {
     var common = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
     var paths = {
@@ -6717,6 +6822,8 @@
       copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
       'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
       'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>',
+      'full-browser': '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/>',
+      fullscreen: '<path d="M8 4H4v4"/><path d="M16 4h4v4"/><path d="M20 16v4h-4"/><path d="M8 20H4v-4"/>',
       share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6 15.4 6.4"/><path d="m8.6 13.4 6.8 4.2"/>',
       magnet: '<path d="M7 5v7a5 5 0 0 0 10 0V5"/><path d="M7 5h4"/><path d="M13 5h4"/><path d="M7 9h4"/><path d="M13 9h4"/>',
       repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
