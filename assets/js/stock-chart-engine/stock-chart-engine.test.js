@@ -169,7 +169,7 @@ class FakeCanvas extends FakeElement {
         canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha, fillStyle: this.fillStyle });
       },
       fillText(text, x, y) {
-        canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha });
+        canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha, fillStyle: this.fillStyle });
       },
       lineTo(x, y) {
         canvas.commands.push({ type: 'lineTo', x, y, alpha: this.globalAlpha });
@@ -255,6 +255,20 @@ function formatTestNumber(value) {
   return value.toFixed(2);
 }
 
+function trimTestFixed(value, decimals) {
+  const text = Number(value).toFixed(decimals).replace(/\.?0+$/, '');
+  return text === '-0' ? '0' : text;
+}
+
+function formatTestChangeNumber(value) {
+  const abs = Math.abs(value);
+  if (abs >= 1000000000) return `${trimTestFixed(value / 1000000000, 2)}B`;
+  if (abs >= 1000000) return `${trimTestFixed(value / 1000000, 2)}M`;
+  if (abs >= 1000) return `${trimTestFixed(value / 1000, 2)}K`;
+  if (abs < 1 && abs > 0) return trimTestFixed(value, 4);
+  return trimTestFixed(value, 2);
+}
+
 function formatTestDate(time) {
   const date = new Date(time * 1000);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -264,7 +278,7 @@ function formatTestPriceLegend(chart, bar) {
   const previous = chart.previousBarForTime(bar.time);
   const change = previous && previous.close ? bar.close - previous.close : null;
   const percent = previous && previous.close ? (change / previous.close) * 100 : null;
-  const suffix = change == null || !Number.isFinite(change) || !Number.isFinite(percent) ? '' : ` ${change >= 0 ? '+' : ''}${formatTestNumber(change)} (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`;
+  const suffix = change == null || !Number.isFinite(change) || !Number.isFinite(percent) ? '' : ` ${change >= 0 ? '+' : ''}${formatTestChangeNumber(change)} (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`;
   return `${formatTestDate(bar.time)}  O ${formatTestNumber(bar.open)} H ${formatTestNumber(bar.high)} L ${formatTestNumber(bar.low)} C ${formatTestNumber(bar.close)}${suffix}`;
 }
 
@@ -878,7 +892,8 @@ assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="
 const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);
-assert.ok(paneLegendTexts.some((text) => /^\d{4}-\d{2}-\d{2}  O .* C .* \([+-]\d+\.\d%\)$/.test(text)));
+assert.ok(paneLegendTexts.some((text) => /^\d{4}-\d{2}-\d{2}  O .* C .*$/.test(text)));
+assert.ok(paneLegendTexts.some((text) => /^ [+-][0-9.]+(?:K|M|B)? \([+-]\d+\.\d%\)$/.test(text)));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('RSI (14) ') === 0));
 assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
@@ -925,7 +940,10 @@ const expectedRsiLegendLabel = chart.indicatorLegendItems(rsiPaneRectForCrosshai
 chart.canvas.commands = [];
 chart.draw();
 const crosshairLegendTexts = chart.canvas.commands.filter((command) => command.type === 'fillText').map((command) => command.text);
-assert.ok(crosshairLegendTexts.includes(expectedCrosshairPriceLabel));
+const crosshairBaseLabel = expectedCrosshairPriceLabel.replace(/ [+-][0-9.]+(?:K|M|B)? \([+-][0-9.]+%\)$/, '');
+const crosshairChangeLabel = expectedCrosshairPriceLabel.slice(crosshairBaseLabel.length);
+assert.ok(crosshairLegendTexts.includes(crosshairBaseLabel));
+assert.ok(crosshairLegendTexts.includes(crosshairChangeLabel));
 assert.ok(!crosshairLegendTexts.includes(latestPriceLabel));
 assert.ok(crosshairLegendTexts.includes(expectedRsiLegendLabel));
 chart.canvas.commands = [];
@@ -937,6 +955,22 @@ crosshairPaneRects.forEach((rect) => {
 });
 assert.strictEqual(chart.canvas.commands.filter((command) => command.type === 'lineTo' && command.y === chart.pointer.y && command.x !== crosshairX).length, 1);
 chart.pointer = null;
+const originalBarsForPriceLegend = chart.bars;
+const originalVisibleRangeForPriceLegend = chart.document.visibleRange;
+chart.bars = [
+  { time: 1000, open: 100, high: 101, low: 99, close: 100.69, volume: 1000 },
+  { time: 2000, open: 100.1, high: 101, low: 99, close: 100.3, volume: 1000 }
+];
+chart.document.visibleRange = { from: 1000, to: 2000 };
+chart.canvas.commands = [];
+chart.drawPaneLegend({ paneId: 'price', x: 0, y: 0, width: 500, height: 120 }, null, chart.theme());
+const negativeChangeText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === ' -0.39 (-0.4%)');
+assert.ok(negativeChangeText);
+assert.strictEqual(chart.pricePercentChangeLabel(chart.bars[1]), ' -0.39 (-0.4%)');
+assert.strictEqual(chart.priceLegendColor(chart.bars[1], chart.theme()), chart.theme().down);
+assert.strictEqual(negativeChangeText.fillStyle, chart.theme().down);
+chart.bars = originalBarsForPriceLegend;
+chart.document.visibleRange = originalVisibleRangeForPriceLegend;
 const volumePaneId = chart.document.indicators.find((indicator) => indicator.id === volumePaneIndicatorId).paneId;
 assert.notStrictEqual(volumePaneId, 'price');
 assert.strictEqual(chart.removeIndicator(volumePaneIndicatorId), true);

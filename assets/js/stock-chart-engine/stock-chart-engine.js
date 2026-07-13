@@ -4973,9 +4973,14 @@
     if (rect.paneId === 'price') {
       var bar = this.barNearTime(legendTime);
       if (bar) {
-        var priceLabel = formatDate(bar.time) + '  O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close) + this.pricePercentChangeLabel(bar);
-        ctx.fillStyle = bar.close >= bar.open ? theme.up : theme.down;
+        var priceLabel = formatDate(bar.time) + '  O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close);
+        var changeInfo = this.priceChangeInfo(bar);
+        ctx.fillStyle = this.priceLegendColor(bar, theme);
         ctx.fillText(priceLabel, legendX, y);
+        if (changeInfo) {
+          ctx.fillStyle = changeInfo.change >= 0 ? theme.up : theme.down;
+          ctx.fillText(changeInfo.label, legendX + approximateTextWidth(priceLabel), y);
+        }
         y += 18;
         legendRows += 1;
       }
@@ -5190,13 +5195,29 @@
   };
 
   Chart.prototype.pricePercentChangeLabel = function (bar) {
+    var changeInfo = this.priceChangeInfo(bar);
+    return changeInfo ? changeInfo.label : '';
+  };
+
+  Chart.prototype.priceChangeInfo = function (bar) {
     var previous = bar ? this.previousBarForTime(bar.time) : null;
-    if (!previous || !previous.close) return '';
+    if (!previous || !previous.close) return null;
     var change = bar.close - previous.close;
     var percent = (change / previous.close) * 100;
-    if (!Number.isFinite(change) || !Number.isFinite(percent)) return '';
+    if (!Number.isFinite(change) || !Number.isFinite(percent)) return null;
     var sign = change >= 0 ? '+' : '';
-    return ' ' + sign + formatNumber(change) + ' (' + (percent >= 0 ? '+' : '') + percent.toFixed(1) + '%)';
+    return {
+      change: change,
+      percent: percent,
+      label: ' ' + sign + formatChangeNumber(change) + ' (' + (percent >= 0 ? '+' : '') + percent.toFixed(1) + '%)'
+    };
+  };
+
+  Chart.prototype.priceLegendColor = function (bar, theme) {
+    if (!bar) return theme.text;
+    var previous = this.previousBarForTime(bar.time);
+    var referenceClose = previous && previous.close != null ? previous.close : bar.open;
+    return bar.close >= referenceClose ? theme.up : theme.down;
   };
 
   Chart.prototype.indicatorLegendItems = function (paneId, time, theme) {
@@ -6905,6 +6926,20 @@
     if (abs >= 1000) return (value / 1000).toFixed(2) + 'K';
     if (abs < 1 && abs > 0) return value.toFixed(4);
     return value.toFixed(2);
+  }
+
+  function trimFixed(value, decimals) {
+    var text = Number(value).toFixed(decimals).replace(/\.?0+$/, '');
+    return text === '-0' ? '0' : text;
+  }
+
+  function formatChangeNumber(value) {
+    var abs = Math.abs(value);
+    if (abs >= 1000000000) return trimFixed(value / 1000000000, 2) + 'B';
+    if (abs >= 1000000) return trimFixed(value / 1000000, 2) + 'M';
+    if (abs >= 1000) return trimFixed(value / 1000, 2) + 'K';
+    if (abs < 1 && abs > 0) return trimFixed(value, 4);
+    return trimFixed(value, 2);
   }
 
   function contrastTextColor(color) {
