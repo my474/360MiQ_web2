@@ -199,33 +199,33 @@
       ['vline', 'Vertical line', 'trend', 'vline', 1, ['vertical_line']],
       ['crossline', 'Crossline', 'trend', 'crossline', 1],
       ['parallel_channel', 'Parallel channel', 'trend', 'channel', 3],
-      ['regression_trend', 'Regression trend', 'trend', 'channel', 2],
-      ['flat_top_bottom', 'Flat top/bottom', 'trend', 'channel', 3],
-      ['disjoint_channel', 'Disjoint channel', 'trend', 'channel', 4],
+      ['regression_trend', 'Regression trend', 'trend', 'regressionTrend', 2],
+      ['flat_top_bottom', 'Flat top/bottom', 'trend', 'flatTopBottom', 3],
+      ['disjoint_channel', 'Disjoint channel', 'trend', 'disjointChannel', 4],
       ['anchored_vwap', 'Anchored VWAP', 'trend', 'vwapAnchor', 1],
       ['fib_retracement', 'Fib retracement', 'fibonacci', 'fibRetracement', 2],
       ['trend_based_fib_extension', 'Trend-based fib extension', 'fibonacci', 'fibExtension', 3],
       ['pitchfork', 'Pitchfork', 'fibonacci', 'pitchfork', 3],
-      ['schiff_pitchfork', 'Schiff pitchfork', 'fibonacci', 'pitchfork', 3],
-      ['modified_schiff_pitchfork', 'Modified Schiff pitchfork', 'fibonacci', 'pitchfork', 3],
-      ['inside_pitchfork', 'Inside pitchfork', 'fibonacci', 'pitchfork', 3],
+      ['schiff_pitchfork', 'Schiff pitchfork', 'fibonacci', 'schiffPitchfork', 3],
+      ['modified_schiff_pitchfork', 'Modified Schiff pitchfork', 'fibonacci', 'modifiedSchiffPitchfork', 3],
+      ['inside_pitchfork', 'Inside pitchfork', 'fibonacci', 'insidePitchfork', 3],
       ['fib_channel', 'Fib channel', 'fibonacci', 'fibChannel', 3],
       ['fib_time_zone', 'Fib time zone', 'fibonacci', 'timeZones', 2],
       ['gann_box', 'Gann box', 'fibonacci', 'gannBox', 2],
       ['gann_square_fixed', 'Gann square fixed', 'fibonacci', 'gannSquareFixed', 2],
       ['gann_square', 'Gann square', 'fibonacci', 'gannSquare', 2],
-      ['gann_fan', 'Gann fan', 'fibonacci', 'fan', 2],
-      ['fib_speed_resistance_fan', 'Fib speed resistance fan', 'fibonacci', 'fan', 2],
-      ['trend_based_fib_time', 'Trend-based fib time', 'fibonacci', 'timeZones', 3],
+      ['gann_fan', 'Gann fan', 'fibonacci', 'gannFan', 2],
+      ['fib_speed_resistance_fan', 'Fib speed resistance fan', 'fibonacci', 'fibFan', 2],
+      ['trend_based_fib_time', 'Trend-based fib time', 'fibonacci', 'trendFibTime', 3],
       ['fib_circles', 'Fib circles', 'fibonacci', 'circles', 2],
-      ['pitchfan', 'Pitchfan', 'fibonacci', 'fan', 3],
+      ['pitchfan', 'Pitchfan', 'fibonacci', 'pitchFan', 3],
       ['fib_spiral', 'Fib spiral', 'fibonacci', 'spiral', 2],
       ['fib_speed_resistance_arcs', 'Fib speed resistance arcs', 'fibonacci', 'arcs', 2],
       ['fib_wedge', 'Fib wedge', 'fibonacci', 'wedge', 3],
-      ['brush', 'Brush', 'geometric', 'path', 2],
-      ['highlighter', 'Highlighter', 'geometric', 'path', 2],
+      ['brush', 'Brush', 'geometric', 'brush', 2],
+      ['highlighter', 'Highlighter', 'geometric', 'highlighter', 2],
       ['rectangle', 'Rectangle', 'geometric', 'rectangle', 2],
-      ['circle', 'Circle', 'geometric', 'ellipse', 2],
+      ['circle', 'Circle', 'geometric', 'circle', 2],
       ['ellipse', 'Ellipse', 'geometric', 'ellipse', 2],
       ['path', 'Path', 'geometric', 'path', 2],
       ['curve', 'Curve', 'geometric', 'curve', 3],
@@ -235,13 +235,13 @@
       ['arc', 'Arc', 'geometric', 'arc', 3],
       ['double_curve', 'Double curve', 'geometric', 'doubleCurve', 4],
       ['text', 'Text', 'annotation', 'text', 1],
-      ['note', 'Note', 'annotation', 'text', 1],
-      ['anchored_note', 'Anchored note', 'annotation', 'text', 1, ['anchored_text']],
-      ['signpost', 'Signpost', 'annotation', 'callout', 1],
+      ['note', 'Note', 'annotation', 'note', 1],
+      ['anchored_note', 'Anchored note', 'annotation', 'anchoredNote', 1, ['anchored_text']],
+      ['signpost', 'Signpost', 'annotation', 'signpost', 1],
       ['callout', 'Callout', 'annotation', 'callout', 2],
-      ['comment', 'Comment', 'annotation', 'callout', 1],
+      ['comment', 'Comment', 'annotation', 'comment', 1],
       ['price_label', 'Price label', 'annotation', 'priceLabel', 1],
-      ['price_note', 'Price note', 'annotation', 'priceLabel', 1],
+      ['price_note', 'Price note', 'annotation', 'priceNote', 1],
       ['arrow_marker', 'Arrow marker', 'annotation', 'marker', 1],
       ['arrow_mark_left', 'Arrow mark left', 'annotation', 'markerLeft', 1],
       ['arrow_mark_right', 'Arrow mark right', 'annotation', 'markerRight', 1],
@@ -251,7 +251,7 @@
       ['xabcd_pattern', 'XABCD pattern', 'pattern', 'pattern', 5],
       ['cypher_pattern', 'Cypher pattern', 'pattern', 'pattern', 5],
       ['abcd_pattern', 'ABCD pattern', 'pattern', 'pattern', 4],
-      ['triangle_pattern', 'Triangle pattern', 'pattern', 'polygon', 3],
+      ['triangle_pattern', 'Triangle pattern', 'pattern', 'trianglePattern', 3],
       ['three_drives_pattern', 'Three drives pattern', 'pattern', 'pattern', 6],
       ['head_and_shoulders', 'Head and shoulders', 'pattern', 'pattern', 5],
       ['elliott_impulse_wave', 'Elliott impulse wave (12345)', 'pattern', 'numberedWave', 5, ['elliot_impulse_wave', 'elliott_impulse_wave_12345', 'elliot_impulse_wave_12345']],
@@ -260,7 +260,7 @@
       ['elliott_correction_wave', 'Elliott correction wave (ABC)', 'pattern', 'letteredWave', 3, ['elliot_correction_wave', 'elliott_correction_wave_abc', 'elliot_correction_wave_abc']],
       ['elliott_double_combo_wave', 'Elliott double combo wave (WXY)', 'pattern', 'letteredWave', 3, ['elliot_double_combo_wave']],
       ['cyclic_lines', 'Cyclic lines', 'pattern', 'cyclicLines', 2],
-      ['time_cycles', 'Time cycles', 'pattern', 'cyclicLines', 2],
+      ['time_cycles', 'Time cycles', 'pattern', 'timeCycles', 2],
       ['sine_line', 'Sine line', 'pattern', 'sine', 2],
       ['long_position', 'Long position', 'measurement', 'positionLong', 2],
       ['short_position', 'Short position', 'measurement', 'positionShort', 2],
@@ -272,9 +272,9 @@
       ['ghost_feed', 'Ghost feed', 'measurement', 'ghostFeed', 2],
       ['sector', 'Sector', 'measurement', 'sector', 3],
       ['fixed_range_volume_profile', 'Fixed range volume profile', 'measurement', 'volumeProfile', 2],
-      ['icon', 'Icon', 'icon', 'marker', 1],
-      ['sticker', 'Sticker', 'sticker', 'marker', 1],
-      ['emoji', 'Emoji', 'emoji', 'text', 1]
+      ['icon', 'Icon', 'icon', 'iconMarker', 1],
+      ['sticker', 'Sticker', 'sticker', 'stickerMarker', 1],
+      ['emoji', 'Emoji', 'emoji', 'emoji', 1]
     ];
     var tools = {};
     specs.forEach(function (spec) {
@@ -322,31 +322,53 @@
       vline: '<path d="M12 3v18"/><path d="M8 5h8"/><path d="M8 19h8"/>',
       crossline: '<path d="M12 3v18"/><path d="M3 12h18"/>',
       channel: '<path d="M4 17L18 7"/><path d="M6 21L20 11"/>',
+      regressionTrend: '<path d="M4 17L20 7"/><path d="M5 12L19 2"/><path d="M6 22L20 12"/>',
+      flatTopBottom: '<path d="M4 8h16"/><path d="M4 16h16"/><path d="M6 8v8"/><path d="M18 8v8"/>',
+      disjointChannel: '<path d="M4 16l7-6"/><path d="M13 18l7-8"/><path d="M11 10l2 8"/>',
       vwapAnchor: '<path d="M12 4v16"/><path d="M6 10c4-4 8 8 12 0"/><circle cx="12" cy="4" r="2"/>',
       fibRetracement: '<path d="M5 5h14"/><path d="M5 9h14"/><path d="M5 12h14"/><path d="M5 15h14"/><path d="M5 19h14"/>',
       fibExtension: '<path d="M4 17l5-10 5 6"/><path d="M13 8h8"/><path d="M13 12h8"/><path d="M13 16h8"/>',
       pitchfork: '<path d="M5 19L19 5"/><path d="M9 19l10-10"/><path d="M3 15l10-10"/>',
+      schiffPitchfork: '<path d="M7 19L19 5"/><path d="M10 19l9-9"/><path d="M5 15l9-9"/><path d="M5 19h4"/>',
+      modifiedSchiffPitchfork: '<path d="M8 18L19 5"/><path d="M11 19l8-9"/><path d="M6 15l8-9"/><path d="M5 19l4-4"/>',
+      insidePitchfork: '<path d="M8 18L19 5"/><path d="M12 18l7-8"/><path d="M7 14l7-8"/><path d="M8 18l4-4"/>',
       fibChannel: '<path d="M4 18L19 8"/><path d="M6 21L21 11"/><path d="M5 20L20 10"/><path d="M5 17L20 7"/>',
       timeZones: '<path d="M5 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/><path d="M21 4v16"/>',
+      trendFibTime: '<path d="M4 18l6-8"/><path d="M10 4v16"/><path d="M14 4v16"/><path d="M20 4v16"/>',
       gridBox: '<rect x="4" y="5" width="16" height="14"/><path d="M9 5v14"/><path d="M15 5v14"/><path d="M4 10h16"/><path d="M4 15h16"/>',
       fan: '<path d="M4 19L20 5"/><path d="M4 19l16-1"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
+      gannFan: '<path d="M4 19L20 5"/><path d="M4 19h16"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
+      fibFan: '<path d="M4 19L20 7"/><path d="M4 19L20 10"/><path d="M4 19L20 13"/><path d="M4 19L20 16"/>',
+      pitchFan: '<path d="M4 19L20 5"/><path d="M4 19l16-4"/><path d="M4 19l16-9"/><path d="M12 6l8 9"/>',
       circles: '<circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8"/>',
       spiral: '<path d="M12 12c3-1 3 3 0 4-5 1-8-4-5-8 4-6 14-3 14 5"/>',
       arcs: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M8 18a4 4 0 0 1 8 0"/>',
       wedge: '<path d="M4 18L20 6"/><path d="M4 18l16-1"/><path d="M8 16h10"/>',
       path: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/>',
+      brush: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/><path d="M16 18l4 2"/>',
+      highlighter: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/><path d="M5 20h14"/>',
       rectangle: '<rect x="5" y="6" width="14" height="12"/>',
       ellipse: '<ellipse cx="12" cy="12" rx="8" ry="5"/>',
+      circle: '<circle cx="12" cy="12" r="7"/>',
       curve: '<path d="M4 17c5-12 10 12 16-5"/>',
       polyline: '<path d="M4 17l5-8 5 5 6-8"/>',
       polygon: '<path d="M5 18l7-12 7 12z"/>',
+      trianglePattern: '<path d="M5 18l7-12 7 12z"/><path d="M7 20h10"/>',
       rotatedRectangle: '<path d="M8 4l12 6-4 10-12-6z"/>',
       arc: '<path d="M5 17a8 8 0 0 1 14 0"/><path d="M5 17h3"/><path d="M16 17h3"/>',
       doubleCurve: '<path d="M4 9c5-6 11 6 16 0"/><path d="M4 16c5-6 11 6 16 0"/>',
       text: '<path d="M5 6h14"/><path d="M12 6v12"/><path d="M8 18h8"/>',
+      emoji: '<circle cx="12" cy="12" r="8"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M8 14c2 3 6 3 8 0"/>',
+      note: '<path d="M5 5h12l2 2v12H5z"/><path d="M17 5v4h4"/><path d="M8 13h8"/>',
+      anchoredNote: '<path d="M5 19l5-5"/><path d="M10 5h9v9h-9z"/><path d="M12 10h5"/>',
       callout: '<path d="M5 6h14v9H9l-4 4z"/>',
+      signpost: '<path d="M7 20V5"/><path d="M7 6h12l-3 3 3 3H7"/>',
+      comment: '<path d="M5 6h14v9H9l-4 4z"/><path d="M8 10h8"/>',
       priceLabel: '<path d="M4 8h11l5 4-5 4H4z"/><path d="M8 12h5"/>',
+      priceNote: '<path d="M4 8h11l5 4-5 4H4z"/><path d="M8 11h6"/><path d="M8 14h4"/>',
       marker: '<path d="M12 4l7 16H5z"/>',
+      iconMarker: '<rect x="6" y="6" width="12" height="12"/><path d="M9 12h6"/><path d="M12 9v6"/>',
+      stickerMarker: '<path d="M6 5h10l3 3v11H6z"/><path d="M16 5v4h4"/><path d="M9 14h6"/>',
       markerLeft: '<path d="M5 12l10-7v14z"/><path d="M15 12h5"/>',
       markerRight: '<path d="M19 12L9 5v14z"/><path d="M4 12h5"/>',
       markerUp: '<path d="M12 5l7 10H5z"/><path d="M12 15v4"/>',
@@ -356,6 +378,7 @@
       numberedWave: '<path d="M3 17l5-8 4 5 4-8 5 11"/><path d="M6 20h2"/><path d="M12 20h2"/><path d="M18 20h2"/>',
       letteredWave: '<path d="M3 17l5-8 4 5 4-8 5 11"/><path d="M5 21l1-3 1 3"/><path d="M13 18v3"/><path d="M12 18h3"/>',
       cyclicLines: '<path d="M5 4v16"/><path d="M12 4v16"/><path d="M19 4v16"/><path d="M5 18c3-4 4-4 7 0s4 4 7 0"/>',
+      timeCycles: '<path d="M5 4v16"/><path d="M12 4v16"/><path d="M19 4v16"/><path d="M5 18c3-5 4-5 7 0s4 5 7 0"/>',
       sine: '<path d="M3 12c3-8 6 8 9 0s6-8 9 0"/>',
       positionLong: '<rect x="5" y="5" width="14" height="14"/><path d="M5 12h14"/><path d="M12 16V8"/><path d="M8 12l4-4 4 4"/>',
       positionShort: '<rect x="5" y="5" width="14" height="14"/><path d="M5 12h14"/><path d="M12 8v8"/><path d="M8 12l4 4 4-4"/>',
@@ -4951,8 +4974,8 @@
       }
     }
 
-    if (kind === 'rectangle' || kind === 'gridBox' || kind === 'gannBox' || kind === 'gannSquare' || kind === 'gannSquareFixed' || kind === 'rotatedRectangle' || kind === 'ellipse' ||
-      kind === 'polygon' || kind === 'channel' || kind === 'fibChannel' || kind === 'wedge' ||
+    if (kind === 'rectangle' || kind === 'gridBox' || kind === 'gannBox' || kind === 'gannSquare' || kind === 'gannSquareFixed' || kind === 'rotatedRectangle' || kind === 'ellipse' || kind === 'circle' ||
+      kind === 'polygon' || kind === 'channel' || kind === 'regressionTrend' || kind === 'flatTopBottom' || kind === 'disjointChannel' || kind === 'fibChannel' || kind === 'wedge' ||
       kind.indexOf('position') === 0 || kind === 'dateRange' || kind === 'priceRange' || kind === 'datePriceRange' ||
       kind === 'barsPattern' || kind === 'ghostFeed' || kind === 'volumeProfile') {
       return pointerInBounds(pointer, bounds, tolerance);
@@ -4965,7 +4988,9 @@
       return distanceToSegment(pointer, { x: leftX, y: lineYAtX(points[0], points[1], leftX) }, { x: rightX, y: lineYAtX(points[0], points[1], rightX) }) <= tolerance;
     }
 
-    if (kind === 'fibRetracement' || kind === 'fibExtension' || kind === 'timeZones' || kind === 'cyclicLines' || kind === 'fan') {
+    if (kind === 'fibRetracement' || kind === 'fibExtension' || kind === 'timeZones' || kind === 'trendFibTime' || kind === 'cyclicLines' || kind === 'timeCycles' ||
+      kind === 'fan' || kind === 'gannFan' || kind === 'fibFan' || kind === 'pitchFan' ||
+      kind === 'pitchfork' || kind === 'schiffPitchfork' || kind === 'modifiedSchiffPitchfork' || kind === 'insidePitchfork') {
       return pointerInBounds(pointer, bounds, Math.max(tolerance, 18));
     }
 
@@ -6002,17 +6027,36 @@
       drawEllipseApprox(ctx, point(0), point(1));
       ctx.fill();
       ctx.stroke();
+    } else if (kind === 'circle' && point(1)) {
+      drawCircleApprox(ctx, point(0), point(1));
+      ctx.fill();
+      ctx.stroke();
     } else if (kind === 'text' && point(0)) {
       ctx.fillStyle = style.color;
       ctx.fillText(drawing.text || tool.name, point(0).x, point(0).y);
+    } else if (kind === 'emoji' && point(0)) {
+      ctx.fillStyle = style.color;
+      ctx.font = '18px sans-serif';
+      ctx.fillText(drawing.text || ':)', point(0).x, point(0).y);
+    } else if (kind === 'note' && point(0)) {
+      drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, theme.background, false);
+    } else if (kind === 'anchoredNote' && point(0)) {
+      drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, theme.background, true);
     } else if (kind === 'priceLabel' && point(0)) {
       var label = drawing.text || formatNumber(rawPoints[0] && rawPoints[0].value != null ? rawPoints[0].value : point(0).value);
       drawTag(ctx, label, point(0), style.color, theme.background);
+    } else if (kind === 'priceNote' && point(0)) {
+      var noteLabel = drawing.text || formatNumber(rawPoints[0] && rawPoints[0].value != null ? rawPoints[0].value : point(0).value);
+      drawPriceNote(ctx, noteLabel, point(0), style.color, theme.background);
     } else if (kind === 'callout' && point(0)) {
       var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
       drawLine(ctx, point(0), target);
       drawTag(ctx, drawing.text || tool.name, target, style.color, theme.background);
-    } else if (kind.indexOf('marker') === 0 || kind === 'flag') {
+    } else if (kind === 'signpost' && point(0)) {
+      drawSignpost(ctx, drawing.text || tool.name, point(0), style.color, theme.background);
+    } else if (kind === 'comment' && point(0)) {
+      drawCommentBubble(ctx, drawing.text || tool.name, point(0), style.color, theme.background);
+    } else if (kind.indexOf('marker') === 0 || kind === 'flag' || kind === 'iconMarker' || kind === 'stickerMarker') {
       drawMarker(ctx, point(0), kind, style.color);
       var markerText = markerDisplayText(drawing, tool);
       if (markerText) drawValueLabel(markerText, point(0));
@@ -6025,8 +6069,8 @@
       }
     } else if ((kind === 'ray' || kind === 'extendedLine') && point(1)) {
       drawProjectedLine(ctx, point(0), point(1), rect, kind === 'ray');
-    } else if (kind === 'channel' || kind === 'fibChannel' || kind === 'wedge') {
-      drawChannel(ctx, points, kind === 'fibChannel');
+    } else if (kind === 'channel' || kind === 'regressionTrend' || kind === 'flatTopBottom' || kind === 'disjointChannel' || kind === 'fibChannel' || kind === 'wedge') {
+      drawChannel(ctx, points, kind);
     } else if (kind === 'fibRetracement' && point(1)) {
       drawFibLevels(ctx, rect, point(0), point(1), style.color, false);
     } else if (kind === 'fibExtension' && point(2)) {
@@ -6035,10 +6079,14 @@
       drawFibLevels(ctx, rect, point(1), point(2), style.color, true);
     } else if (kind === 'timeZones' && point(1)) {
       drawTimeZones(ctx, rect, point(0), point(1), style.color);
-    } else if (kind === 'fan' && point(1)) {
-      drawFan(ctx, rect, point(0), point(1), style.color);
-    } else if (kind === 'pitchfork' && point(2)) {
-      drawPitchfork(ctx, rect, point(0), point(1), point(2));
+    } else if (kind === 'trendFibTime' && point(2)) {
+      drawTrendFibTime(ctx, rect, point(0), point(1), point(2), style.color);
+    } else if ((kind === 'fan' || kind === 'gannFan' || kind === 'fibFan') && point(1)) {
+      drawFan(ctx, rect, point(0), point(1), style.color, kind);
+    } else if (kind === 'pitchFan' && point(2)) {
+      drawPitchFan(ctx, rect, point(0), point(1), point(2), style.color);
+    } else if ((kind === 'pitchfork' || kind === 'schiffPitchfork' || kind === 'modifiedSchiffPitchfork' || kind === 'insidePitchfork') && point(2)) {
+      drawPitchfork(ctx, rect, point(0), point(1), point(2), kind);
     } else if (kind === 'circles' && point(1)) {
       drawFibCircles(ctx, point(0), point(1));
     } else if (kind === 'spiral' && point(1)) {
@@ -6054,18 +6102,24 @@
       drawPolyline(ctx, points, true);
       ctx.fill();
       ctx.stroke();
-    } else if (kind === 'polyline' || kind === 'path') {
-      if (drawing.type === 'highlighter') {
-        ctx.lineWidth = Math.max(8, (style.width || 2) * 4);
-      }
+    } else if (kind === 'trianglePattern') {
+      drawPolyline(ctx, points, true);
+      ctx.fill();
+      ctx.stroke();
+      drawPatternLabels(ctx, points, kind, style.color, drawing.type);
+    } else if (kind === 'polyline' || kind === 'path' || kind === 'brush' || kind === 'highlighter') {
+      if (kind === 'brush') ctx.lineWidth = Math.max(4, (style.width || 2) * 2);
+      if (kind === 'highlighter') ctx.lineWidth = Math.max(8, (style.width || 2) * 4);
       drawPolyline(ctx, points, false);
       ctx.stroke();
     } else if (kind === 'pattern' || kind === 'numberedWave' || kind === 'letteredWave') {
       drawPolyline(ctx, points, false);
       ctx.stroke();
-      drawPatternLabels(ctx, points, kind, style.color);
+      drawPatternLabels(ctx, points, kind, style.color, drawing.type);
     } else if (kind === 'cyclicLines' && point(1)) {
       drawCyclicLines(ctx, rect, point(0), point(1), style.color);
+    } else if (kind === 'timeCycles' && point(1)) {
+      drawTimeCycles(ctx, rect, point(0), point(1), style.color);
     } else if (kind === 'sine' && point(1)) {
       drawSineLine(ctx, point(0), point(1));
       ctx.stroke();
@@ -6362,6 +6416,21 @@
     ctx.closePath();
   }
 
+  function drawCircleApprox(ctx, a, b) {
+    var cx = (a.x + b.x) / 2;
+    var cy = (a.y + b.y) / 2;
+    var radius = Math.max(2, Math.min(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) / 2);
+    ctx.beginPath();
+    for (var i = 0; i <= 40; i += 1) {
+      var angle = Math.PI * 2 * i / 40;
+      var x = cx + Math.cos(angle) * radius;
+      var y = cy + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+  }
+
   function drawArcApprox(ctx, center, radius, startAngle, endAngle, steps) {
     ctx.beginPath();
     for (var i = 0; i <= steps; i += 1) {
@@ -6434,8 +6503,36 @@
     drawLine(ctx, { x: startX, y: lineYAtX(a, b, startX) }, { x: endX, y: lineYAtX(a, b, endX) });
   }
 
-  function drawChannel(ctx, points, fib) {
+  function drawChannel(ctx, points, kind) {
     if (points.length < 2) return;
+    if (kind === 'regressionTrend') {
+      var regressionOffset = perpendicularOffset(points[0], points[1], 34);
+      drawProjectedLine(ctx, points[0], points[1], { x: Math.min(points[0].x, points[1].x) - 2000, y: -10000, width: 4000, height: 20000 }, true);
+      drawLine(ctx, addPoint(points[0], regressionOffset), addPoint(points[1], regressionOffset));
+      drawLine(ctx, subtractPoint(points[0], regressionOffset), subtractPoint(points[1], regressionOffset));
+      return;
+    }
+    if (kind === 'flatTopBottom') {
+      var left = Math.min(points[0].x, points[1].x, points[2] ? points[2].x : points[1].x);
+      var right = Math.max(points[0].x, points[1].x, points[2] ? points[2].x : points[1].x);
+      var top = Math.min(points[0].y, points[1].y);
+      var bottom = Math.max(points[0].y, points[1].y);
+      drawPolyline(ctx, [{ x: left, y: top }, { x: right, y: top }, { x: right, y: bottom }, { x: left, y: bottom }], true);
+      ctx.fill();
+      ctx.stroke();
+      return;
+    }
+    if (kind === 'disjointChannel') {
+      if (points[3]) {
+        drawLine(ctx, points[0], points[1]);
+        drawLine(ctx, points[2], points[3]);
+        drawPolyline(ctx, [points[0], points[1], points[3], points[2]], true);
+        ctx.fill();
+      } else {
+        drawLine(ctx, points[0], points[1]);
+      }
+      return;
+    }
     drawLine(ctx, points[0], points[1]);
     var offset = points[2] ? { x: points[2].x - points[0].x, y: points[2].y - points[0].y } : { x: 0, y: -40 };
     var p2 = { x: points[0].x + offset.x, y: points[0].y + offset.y };
@@ -6443,7 +6540,7 @@
     drawLine(ctx, p2, p3);
     drawPolyline(ctx, [points[0], points[1], p3, p2], true);
     ctx.fill();
-    if (fib) {
+    if (kind === 'fibChannel') {
       [0.236, 0.382, 0.5, 0.618, 0.786].forEach(function (ratio) {
         drawLine(ctx,
           { x: points[0].x + offset.x * ratio, y: points[0].y + offset.y * ratio },
@@ -6451,6 +6548,21 @@
         );
       });
     }
+  }
+
+  function addPoint(point, offset) {
+    return { x: point.x + offset.x, y: point.y + offset.y };
+  }
+
+  function subtractPoint(point, offset) {
+    return { x: point.x - offset.x, y: point.y - offset.y };
+  }
+
+  function perpendicularOffset(a, b, size) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    var length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    return { x: -dy / length * size, y: dx / length * size };
   }
 
   function drawFibLevels(ctx, rect, a, b, color, extension) {
@@ -6483,6 +6595,22 @@
     });
   }
 
+  function drawTrendFibTime(ctx, rect, a, b, c, color) {
+    drawLine(ctx, a, b);
+    var step = Math.max(8, Math.abs(c.x - b.x));
+    var fib = [0, 0.382, 0.618, 1, 1.618, 2.618, 4.236, 6.854];
+    ctx.fillStyle = color;
+    fib.forEach(function (value) {
+      var x = b.x + step * value;
+      if (x > rect.x + rect.width) return;
+      ctx.beginPath();
+      ctx.moveTo(x, rect.y);
+      ctx.lineTo(x, rect.y + rect.height);
+      ctx.stroke();
+      ctx.fillText(String(value), x + 3, rect.y + 12);
+    });
+  }
+
   function drawCyclicLines(ctx, rect, a, b, color) {
     var step = Math.max(8, Math.abs(b.x - a.x));
     ctx.fillStyle = color;
@@ -6494,29 +6622,80 @@
     }
   }
 
-  function drawFan(ctx, rect, a, b, color) {
+  function drawTimeCycles(ctx, rect, a, b, color) {
+    var step = Math.max(8, Math.abs(b.x - a.x));
+    drawCyclicLines(ctx, rect, a, b, color);
+    ctx.fillStyle = color;
+    for (var x = a.x + step / 2; x <= rect.x + rect.width; x += step) {
+      drawArcApprox(ctx, { x: x, y: rect.y + rect.height }, step / 2, Math.PI, Math.PI * 2, 24);
+      ctx.stroke();
+    }
+  }
+
+  function drawFan(ctx, rect, a, b, color, kind) {
     var ratios = [0.25, 0.333, 0.5, 0.667, 1, 1.5, 2, 3];
+    if (kind === 'fibFan') ratios = [0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    if (kind === 'gannFan') ratios = [0.125, 0.25, 0.333, 0.5, 1, 2, 3, 4, 8];
     ctx.fillStyle = color;
     ratios.forEach(function (ratio) {
       var target = { x: b.x, y: a.y + (b.y - a.y) * ratio };
       drawProjectedLine(ctx, a, target, rect, true);
+      ctx.fillText(String(ratio), target.x + 3, target.y - 3);
     });
   }
 
-  function drawPitchfork(ctx, rect, a, b, c) {
+  function drawPitchFan(ctx, rect, a, b, c, color) {
+    var ratios = [0, 0.25, 0.5, 0.75, 1];
+    ctx.fillStyle = color;
+    ratios.forEach(function (ratio) {
+      var target = {
+        x: b.x + (c.x - b.x) * ratio,
+        y: b.y + (c.y - b.y) * ratio
+      };
+      drawProjectedLine(ctx, a, target, rect, true);
+    });
+    drawLine(ctx, b, c);
+  }
+
+  function drawPitchfork(ctx, rect, a, b, c, kind) {
+    var anchor = a;
+    if (kind === 'schiffPitchfork') anchor = { x: (a.x + midpoint(b, c).x) / 2, y: a.y };
+    if (kind === 'modifiedSchiffPitchfork') anchor = midpoint(a, midpoint(b, c));
+    if (kind === 'insidePitchfork') anchor = midpoint(a, midpoint(b, c));
     var forkMid = midpoint(b, c);
-    drawProjectedLine(ctx, a, forkMid, rect, true);
+    drawProjectedLine(ctx, anchor, forkMid, rect, true);
     var offsetB = { x: b.x - forkMid.x, y: b.y - forkMid.y };
     var offsetC = { x: c.x - forkMid.x, y: c.y - forkMid.y };
-    drawProjectedLine(ctx, { x: a.x + offsetB.x, y: a.y + offsetB.y }, b, rect, true);
-    drawProjectedLine(ctx, { x: a.x + offsetC.x, y: a.y + offsetC.y }, c, rect, true);
+    var upperStart = { x: anchor.x + offsetB.x, y: anchor.y + offsetB.y };
+    var lowerStart = { x: anchor.x + offsetC.x, y: anchor.y + offsetC.y };
+    if (kind === 'insidePitchfork') {
+      upperStart = midpoint(anchor, b);
+      lowerStart = midpoint(anchor, c);
+    }
+    drawProjectedLine(ctx, upperStart, b, rect, true);
+    drawProjectedLine(ctx, lowerStart, c, rect, true);
+    if (anchor !== a) drawLine(ctx, a, anchor);
   }
 
   function drawMarker(ctx, p, kind, color) {
     var size = 9;
     ctx.fillStyle = color;
     ctx.beginPath();
-    if (kind === 'markerLeft') {
+    if (kind === 'iconMarker') {
+      ctx.strokeRect(p.x - size, p.y - size, size * 2, size * 2);
+      ctx.moveTo(p.x - 5, p.y);
+      ctx.lineTo(p.x + 5, p.y);
+      ctx.moveTo(p.x, p.y - 5);
+      ctx.lineTo(p.x, p.y + 5);
+      ctx.stroke();
+      return;
+    } else if (kind === 'stickerMarker') {
+      ctx.fillRect(p.x - size, p.y - size, size * 2, size * 2);
+      ctx.strokeRect(p.x - size, p.y - size, size * 2, size * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(p.x + 1, p.y - size, size - 1, size - 1);
+      return;
+    } else if (kind === 'markerLeft') {
       ctx.moveTo(p.x - size, p.y);
       ctx.lineTo(p.x + size, p.y - size);
       ctx.lineTo(p.x + size, p.y + size);
@@ -6553,13 +6732,99 @@
     ctx.fillText(label, p.x + 7, p.y - 7);
   }
 
-  function drawPatternLabels(ctx, points, kind, color) {
-    var letters = ['A', 'B', 'C', 'D', 'E', 'W', 'X', 'Y', 'X', 'Z'];
+  function drawNoteBox(ctx, label, p, color, background, anchored) {
+    var target = anchored ? { x: p.x + 54, y: p.y - 42 } : p;
+    if (anchored) drawLine(ctx, p, target);
+    var width = Math.max(72, approximateTextWidth(label) + 18);
+    var height = 28;
+    ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
+    ctx.fillRect(target.x, target.y - height, width, height);
+    ctx.strokeRect(target.x, target.y - height, width, height);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(target.x + width - 10, target.y - height);
+    ctx.lineTo(target.x + width, target.y - height + 10);
+    ctx.lineTo(target.x + width - 10, target.y - height + 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.fillText(label, target.x + 8, target.y - 10);
+  }
+
+  function drawSignpost(ctx, label, p, color, background) {
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x, p.y - 38);
+    ctx.stroke();
+    drawTag(ctx, label, { x: p.x + 4, y: p.y - 24 }, color, background);
+  }
+
+  function drawCommentBubble(ctx, label, p, color, background) {
+    var width = Math.max(76, approximateTextWidth(label) + 18);
+    var height = 26;
+    ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
+    ctx.fillRect(p.x, p.y - height, width, height);
+    ctx.strokeRect(p.x, p.y - height, width, height);
+    ctx.beginPath();
+    ctx.moveTo(p.x + 12, p.y);
+    ctx.lineTo(p.x + 4, p.y + 10);
+    ctx.lineTo(p.x + 24, p.y);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.fillText(label, p.x + 8, p.y - 8);
+  }
+
+  function drawPriceNote(ctx, label, p, color, background) {
+    drawTag(ctx, label, p, color, background);
+    ctx.strokeStyle = background || '#fff';
+    ctx.beginPath();
+    ctx.moveTo(p.x + 8, p.y - 5);
+    ctx.lineTo(p.x + 44, p.y - 5);
+    ctx.moveTo(p.x + 8, p.y - 11);
+    ctx.lineTo(p.x + 34, p.y - 11);
+    ctx.stroke();
+  }
+
+  function patternLabelsForType(type, kind, pointCount) {
+    var key = normalizeDrawingType(type);
+    if (kind === 'numberedWave') return ['1', '2', '3', '4', '5'].slice(0, pointCount);
+    if (key === 'elliott_triangle_wave') return ['A', 'B', 'C', 'D', 'E'].slice(0, pointCount);
+    if (key === 'elliott_correction_wave') return ['A', 'B', 'C'].slice(0, pointCount);
+    if (key === 'elliott_double_combo_wave') return ['W', 'X', 'Y'].slice(0, pointCount);
+    if (key === 'elliott_triple_combo_wave') return ['W', 'X', 'Y', 'X', 'Z'].slice(0, pointCount);
+    if (key === 'abcd_pattern') return ['A', 'B', 'C', 'D'].slice(0, pointCount);
+    if (key === 'cypher_pattern') return ['X', 'A', 'B', 'C', 'D'].slice(0, pointCount);
+    if (key === 'xabcd_pattern') return ['X', 'A', 'B', 'C', 'D'].slice(0, pointCount);
+    if (key === 'head_and_shoulders') return ['LS', 'H', 'RS', 'NL', 'Break'].slice(0, pointCount);
+    if (key === 'three_drives_pattern') return ['1', 'A', '2', 'B', '3', 'C'].slice(0, pointCount);
+    return ['A', 'B', 'C', 'D', 'E', 'F'].slice(0, pointCount);
+  }
+
+  function patternNameForType(type) {
+    var key = normalizeDrawingType(type);
+    var names = {
+      xabcd_pattern: 'XABCD',
+      cypher_pattern: 'Cypher',
+      abcd_pattern: 'ABCD',
+      three_drives_pattern: '3 Drives',
+      head_and_shoulders: 'H&S',
+      triangle_pattern: 'Triangle'
+    };
+    return names[key] || '';
+  }
+
+  function drawPatternLabels(ctx, points, kind, color, type) {
+    var labels = patternLabelsForType(type, kind, points.length);
     ctx.fillStyle = color;
     points.forEach(function (point, index) {
-      var label = kind === 'numberedWave' ? String(index + 1) : letters[index] || String(index + 1);
+      var label = labels[index] || String(index + 1);
       ctx.fillText(label, point.x + 5, point.y - 5);
     });
+    var patternName = patternNameForType(type);
+    if (patternName && points.length > 1) {
+      ctx.fillText(patternName, midpoint(points[0], points[points.length - 1]).x + 5, midpoint(points[0], points[points.length - 1]).y + 14);
+    }
   }
 
   function drawSineLine(ctx, a, b) {
@@ -6743,7 +7008,7 @@
   function isEditableTextDrawing(drawing) {
     if (!drawing) return false;
     var kind = drawingToolDefinition(drawing.type).renderKind;
-    return kind === 'text' || kind === 'callout' || kind === 'priceLabel';
+    return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' || kind === 'signpost' || kind === 'comment' || kind === 'priceLabel' || kind === 'priceNote';
   }
 
   function nearestSeriesPoint(data, time) {

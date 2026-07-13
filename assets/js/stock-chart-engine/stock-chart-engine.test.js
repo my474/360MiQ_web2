@@ -190,7 +190,7 @@ class FakeCanvas extends FakeElement {
       setLineDash() {},
       setTransform() {},
       stroke() {
-        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha, strokeStyle: this.strokeStyle });
+        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha, strokeStyle: this.strokeStyle, lineWidth: this.lineWidth });
       },
       strokeRect(x, y, width, height) {
         canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha, strokeStyle: this.strokeStyle });
@@ -1249,6 +1249,13 @@ const measurementRenderPoints = [
   { time: data[data.length - 16].time, value: data[data.length - 16].close + 4 },
   { time: data[data.length - 8].time, value: data[data.length - 8].close - 2 }
 ];
+const measurementRenderFourPoints = measurementRenderPoints.concat([
+  { time: data[data.length - 4].time, value: data[data.length - 4].close + 1.5 }
+]);
+const measurementRenderSixPoints = measurementRenderFourPoints.concat([
+  { time: data[data.length - 3].time, value: data[data.length - 3].close - 1 },
+  { time: data[data.length - 2].time, value: data[data.length - 2].close + 2 }
+]);
 function renderMeasurementTool(type, points) {
   chart.canvas.commands = [];
   chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
@@ -1259,6 +1266,26 @@ function renderMeasurementTool(type, points) {
     style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
   });
   return chart.canvas.commands;
+}
+function renderSignature(type, points) {
+  return renderMeasurementTool(type, points).filter((command) => [
+    'fillRect',
+    'fillText',
+    'lineTo',
+    'moveTo',
+    'stroke',
+    'strokeRect'
+  ].includes(command.type)).map((command) => {
+    const output = { type: command.type };
+    ['text', 'x', 'y', 'width', 'height', 'lineWidth'].forEach((key) => {
+      if (command[key] != null) output[key] = typeof command[key] === 'number' ? Math.round(command[key]) : command[key];
+    });
+    return output;
+  });
+}
+function assertUniqueRenderSignatures(toolIds, points) {
+  const signatures = toolIds.map((toolId) => JSON.stringify(renderSignature(toolId, points)));
+  assert.strictEqual(new Set(signatures).size, signatures.length, `${toolIds.join(', ')} should not render identically`);
 }
 assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
 assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
@@ -1314,6 +1341,32 @@ assert.strictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareRect.h
 assert.strictEqual(Math.round(gannSquareFixedRect.width), Math.round(gannSquareFixedRect.height));
 assert.notStrictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareFixedRect.width));
 assert.ok(gannSquareFixedCommands.filter((command) => command.type === 'lineTo').length > gannSquareCommands.filter((command) => command.type === 'lineTo').length);
+assertUniqueRenderSignatures(['parallel_channel', 'regression_trend', 'flat_top_bottom', 'disjoint_channel'], measurementRenderFourPoints);
+assertUniqueRenderSignatures(['pitchfork', 'schiff_pitchfork', 'modified_schiff_pitchfork', 'inside_pitchfork'], measurementRenderPoints);
+assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
+assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
+assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));
+assertUniqueRenderSignatures(['text', 'note', 'anchored_note', 'signpost', 'callout', 'comment', 'price_label', 'price_note'], measurementRenderPoints);
+assertUniqueRenderSignatures(['brush', 'highlighter', 'path'], measurementRenderPoints);
+assertUniqueRenderSignatures(['triangle', 'triangle_pattern'], measurementRenderPoints);
+assertUniqueRenderSignatures(['arrow_marker', 'icon', 'sticker', 'emoji'], measurementRenderPoints);
+assertUniqueRenderSignatures(['xabcd_pattern', 'cypher_pattern', 'abcd_pattern', 'three_drives_pattern', 'head_and_shoulders'], measurementRenderSixPoints);
+assertUniqueRenderSignatures(['elliott_triangle_wave', 'elliott_triple_combo_wave', 'elliott_correction_wave', 'elliott_double_combo_wave'], measurementRenderSixPoints);
+const correctionLabels = renderMeasurementTool('elliott_correction_wave', measurementRenderPoints)
+  .filter((command) => command.type === 'fillText')
+  .map((command) => command.text);
+assert.deepStrictEqual(correctionLabels.slice(-3), ['A', 'B', 'C']);
+const doubleComboLabels = renderMeasurementTool('elliott_double_combo_wave', measurementRenderPoints)
+  .filter((command) => command.type === 'fillText')
+  .map((command) => command.text);
+assert.deepStrictEqual(doubleComboLabels.slice(-3), ['W', 'X', 'Y']);
+const cypherLabels = renderMeasurementTool('cypher_pattern', measurementRenderFourPoints.concat([
+  { time: data[data.length - 2].time, value: data[data.length - 2].close - 1 }
+]))
+  .filter((command) => command.type === 'fillText')
+  .map((command) => command.text);
+assert.ok(cypherLabels.includes('Cypher'));
+assert.deepStrictEqual(cypherLabels.filter((label) => ['X', 'A', 'B', 'C', 'D'].includes(label)).slice(0, 5), ['X', 'A', 'B', 'C', 'D']);
 
 Object.keys(StockChartEngine.drawingTools).forEach((toolId, toolIndex) => {
   const tool = StockChartEngine.drawingTools[toolId];
