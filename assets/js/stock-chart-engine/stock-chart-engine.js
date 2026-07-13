@@ -4981,7 +4981,27 @@
     if (kind === 'crossline' && points[0]) {
       return Math.abs(pointer.x - points[0].x) <= tolerance || Math.abs(pointer.y - points[0].y) <= tolerance;
     }
-    if (kind === 'text' || kind === 'priceLabel' || kind === 'callout' || kind === 'vwapAnchor' || kind.indexOf('marker') === 0 || kind === 'flag') {
+    if (kind === 'text') {
+      var textBounds = textDrawingBounds(drawing.text || tool.name, points[0]);
+      return pointerInBounds(pointer, textBounds, tolerance);
+    }
+    if (kind === 'note' || kind === 'anchoredNote') {
+      var noteHit = noteBoxGeometry(drawing.text || tool.name, points[0], kind === 'anchoredNote');
+      if (pointerInBounds(pointer, noteHit.bounds, tolerance)) return true;
+      return kind === 'anchoredNote' && distanceToSegment(pointer, points[0], noteHit.target) <= tolerance;
+    }
+    if (kind === 'comment') {
+      return pointerInBounds(pointer, commentBubbleGeometry(drawing.text || tool.name, points[0]).bounds, tolerance);
+    }
+    if (kind === 'priceLabel' || kind === 'priceNote') {
+      return pointerInBounds(pointer, tagGeometry(drawing.text || tool.name, points[0]).bounds, tolerance);
+    }
+    if (kind === 'callout') {
+      var calloutTarget = points[1] || { x: points[0].x + 56, y: points[0].y - 34 };
+      return pointerInBounds(pointer, tagGeometry(drawing.text || tool.name, calloutTarget).bounds, tolerance) ||
+        distanceToSegment(pointer, points[0], calloutTarget) <= tolerance;
+    }
+    if (kind === 'vwapAnchor' || kind.indexOf('marker') === 0 || kind === 'flag') {
       return pointer.x >= points[0].x - tolerance && pointer.x <= points[0].x + 130 && pointer.y >= points[0].y - 26 && pointer.y <= points[0].y + 14;
     }
     if (kind === 'signpost') {
@@ -6750,12 +6770,30 @@
   }
 
   function drawTag(ctx, label, p, color, background) {
-    var width = Math.max(52, approximateTextWidth(label) + 14);
-    var height = 22;
+    var geometry = tagGeometry(label, p);
     ctx.fillStyle = color;
-    ctx.fillRect(p.x, p.y - height, width, height);
+    ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
     ctx.fillStyle = background || '#fff';
     ctx.fillText(label, p.x + 7, p.y - 7);
+  }
+
+  function boundsFromRect(x, y, width, height) {
+    return { minX: x, maxX: x + width, minY: y, maxY: y + height };
+  }
+
+  function textDrawingBounds(label, p) {
+    var width = Math.max(10, approximateTextWidth(label));
+    return boundsFromRect(p.x, p.y - 18, width, 22);
+  }
+
+  function tagGeometry(label, p) {
+    var width = Math.max(52, approximateTextWidth(label) + 14);
+    var height = 22;
+    return {
+      width: width,
+      height: height,
+      bounds: boundsFromRect(p.x, p.y - height, width, height)
+    };
   }
 
   function roundedRectPath(ctx, x, y, width, height, radius) {
@@ -6774,22 +6812,33 @@
   }
 
   function drawNoteBox(ctx, label, p, color, background, anchored) {
-    var target = anchored ? { x: p.x + 54, y: p.y - 42 } : p;
+    var geometry = noteBoxGeometry(label, p, anchored);
+    var target = geometry.target;
     if (anchored) drawLine(ctx, p, target);
-    var width = Math.max(72, approximateTextWidth(label) + 18);
-    var height = 28;
     ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
-    ctx.fillRect(target.x, target.y - height, width, height);
-    ctx.strokeRect(target.x, target.y - height, width, height);
+    ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
+    ctx.strokeRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(target.x + width - 10, target.y - height);
-    ctx.lineTo(target.x + width, target.y - height + 10);
-    ctx.lineTo(target.x + width - 10, target.y - height + 10);
+    ctx.moveTo(target.x + geometry.width - 10, target.y - geometry.height);
+    ctx.lineTo(target.x + geometry.width, target.y - geometry.height + 10);
+    ctx.lineTo(target.x + geometry.width - 10, target.y - geometry.height + 10);
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = color;
     ctx.fillText(label, target.x + 8, target.y - 10);
+  }
+
+  function noteBoxGeometry(label, p, anchored) {
+    var target = anchored ? { x: p.x + 54, y: p.y - 42 } : p;
+    var width = Math.max(72, approximateTextWidth(label) + 18);
+    var height = 28;
+    return {
+      target: target,
+      width: width,
+      height: height,
+      bounds: boundsFromRect(target.x, target.y - height, width, height)
+    };
   }
 
   function signpostAnchorScreenPoint(chart, rawPoint, labelPoint, rect, range) {
@@ -6833,11 +6882,10 @@
   }
 
   function drawCommentBubble(ctx, label, p, color, background) {
-    var width = Math.max(76, approximateTextWidth(label) + 18);
-    var height = 26;
+    var geometry = commentBubbleGeometry(label, p);
     ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
-    ctx.fillRect(p.x, p.y - height, width, height);
-    ctx.strokeRect(p.x, p.y - height, width, height);
+    ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
+    ctx.strokeRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
     ctx.beginPath();
     ctx.moveTo(p.x + 12, p.y);
     ctx.lineTo(p.x + 4, p.y + 10);
@@ -6845,6 +6893,16 @@
     ctx.stroke();
     ctx.fillStyle = color;
     ctx.fillText(label, p.x + 8, p.y - 8);
+  }
+
+  function commentBubbleGeometry(label, p) {
+    var width = Math.max(76, approximateTextWidth(label) + 18);
+    var height = 26;
+    return {
+      width: width,
+      height: height,
+      bounds: boundsFromRect(p.x, p.y - height, width, height)
+    };
   }
 
   function drawPriceNote(ctx, label, p, color, background) {

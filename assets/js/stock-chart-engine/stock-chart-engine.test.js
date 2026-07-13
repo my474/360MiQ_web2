@@ -1145,6 +1145,28 @@ chart.handleCanvasDoubleClick({ clientX: textPoint.x, clientY: textPoint.y, prev
 assert.strictEqual(chart.settingsPopup.getAttribute('hidden'), null);
 assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-text');
 assert.strictEqual(chart.settingsPopup.dataset.drawingId, textDrawingId);
+assert.strictEqual(chart.hitTestDrawing({ x: textPoint.x + 82, y: textPoint.y - 8 }).drawing.id, textDrawingId);
+
+const noteHitId = chart.addDrawing('note', [
+  { time: data[data.length - 34].time, value: data[data.length - 34].close }
+], { paneId: 'price', text: 'Selectable note body' });
+const noteHitPoint = chart.drawingScreenPoints(chart.getDrawingById(noteHitId))[0];
+assert.strictEqual(chart.hitTestDrawing({ x: noteHitPoint.x + 88, y: noteHitPoint.y - 14 }).drawing.id, noteHitId);
+
+const textHitRect = chart.getPaneRect('price');
+const textHitRange = chart.paneRange('price');
+const stableTextHitValue = textHitRange.min + (textHitRange.max - textHitRange.min) * 0.35;
+const anchoredNoteHitId = chart.addDrawing('anchored_note', [
+  { time: data[data.length - 30].time, value: stableTextHitValue }
+], { paneId: 'price', text: 'Selectable anchored note' });
+const anchoredNoteHitPoint = chart.drawingScreenPoints(chart.getDrawingById(anchoredNoteHitId))[0];
+assert.strictEqual(chart.hitTestDrawing({ x: anchoredNoteHitPoint.x + 142, y: anchoredNoteHitPoint.y - 56 }).drawing.id, anchoredNoteHitId);
+
+const commentHitId = chart.addDrawing('comment', [
+  { time: data[data.length - 26].time, value: data[data.length - 26].close }
+], { paneId: 'price', text: 'Selectable comment' });
+const commentHitPoint = chart.drawingScreenPoints(chart.getDrawingById(commentHitId))[0];
+assert.strictEqual(chart.hitTestDrawing({ x: commentHitPoint.x + 74, y: commentHitPoint.y - 13 }).drawing.id, commentHitId);
 
 chart.startDrawing('note');
 const noteRect = chart.getPaneRect('price');
