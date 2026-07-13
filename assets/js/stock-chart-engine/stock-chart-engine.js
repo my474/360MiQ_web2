@@ -556,6 +556,12 @@
     return CHART_PERIODS[normalized].interval;
   }
 
+  function watermarkInterval(period, interval) {
+    var normalized = normalizePeriod(period || interval);
+    if (normalized === 'quarterly') return '1Q';
+    return periodInterval(normalized);
+  }
+
   function normalizeDateRangePreset(presetId) {
     var normalized = String(presetId || '').toLowerCase();
     for (var i = 0; i < DATE_RANGE_PRESETS.length; i += 1) {
@@ -4812,8 +4818,9 @@
   Chart.prototype.watermarkLines = function () {
     var info = normalizeSymbolInfo(this.document.symbolInfo, this.document.symbol);
     var code = info.code || String(this.document.symbol || '').trim();
+    var interval = watermarkInterval(this.document.settings && this.document.settings.period, this.document.interval);
     var lines = [];
-    if (code) lines.push({ text: code, kind: 'code' });
+    if (code) lines.push({ text: interval ? code + ' ' + interval : code, kind: 'code' });
     [info.name_en, info.name_tc].forEach(function (name) {
       if (!name) return;
       var duplicate = lines.some(function (line) {
