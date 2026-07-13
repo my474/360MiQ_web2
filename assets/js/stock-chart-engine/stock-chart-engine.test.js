@@ -457,6 +457,16 @@ chart.handlePointerMove({
 const yScaleZoomedInRange = chart.paneRange('price');
 assert.ok(yScaleZoomedInRange.max - yScaleZoomedInRange.min < yScaleZoomedOutRange.max - yScaleZoomedOutRange.min);
 chart.handlePointerUp();
+assert.ok(chart.paneManualRange('price'));
+chart.handleCanvasDoubleClick({
+  clientX: yScaleDragRect.scaleX + 12,
+  clientY: yScaleDragRect.y + yScaleDragRect.height / 2,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+assert.strictEqual(chart.paneManualRange('price'), null);
+chart.setPaneManualRange('price', yScaleZoomedInRange);
 chart.fitContent();
 assert.strictEqual(chart.paneManualRange('price'), null);
 
@@ -680,6 +690,7 @@ additionalIndicators.forEach((type) => {
 });
 
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
+chart.draw();
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
 const rsiLegendZone = chart.legendHitZones.find((zone) => zone.indicatorId === rsiId);
 chart.handlePointerMove({ clientX: rsiLegendZone.x + 4, clientY: rsiLegendZone.y + 4 });
@@ -760,6 +771,29 @@ assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
 assert.ok(!paneLegendTexts.includes('Volume'));
 assert.ok(!paneLegendTexts.includes('Relative Strength Index'));
+const originalIndicatorLegendItemsForLayout = chart.indicatorLegendItems;
+const originalLegendTimeForLayout = chart.legendTimeForPane;
+const originalBarNearTimeForLayout = chart.barNearTime;
+chart.indicatorLegendItems = function testIndicatorLegendItems() {
+  return [{ indicatorId: 'layout-volume', output: 'value', color: '#2563eb', label: 'VOLUME 1.00M' }];
+};
+chart.legendTimeForPane = function testLegendTimeForPane() {
+  return data[10].time;
+};
+chart.barNearTime = function testBarNearTime() {
+  return data[10];
+};
+chart.canvas.commands = [];
+chart.drawPaneLegend({ paneId: 'price', x: 0, y: 0, width: 500, height: 120 }, null, chart.theme());
+const priceLegendCommand = chart.canvas.commands.find((command) => command.type === 'fillText' && /^\d{4}-\d{2}-\d{2}  O /.test(command.text));
+const priceVolumeLegendCommand = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === 'VOLUME 1.00M');
+assert.ok(priceLegendCommand);
+assert.ok(priceVolumeLegendCommand);
+assert.strictEqual(priceVolumeLegendCommand.x, priceLegendCommand.x + 12);
+assert.ok(priceVolumeLegendCommand.y > priceLegendCommand.y);
+chart.indicatorLegendItems = originalIndicatorLegendItemsForLayout;
+chart.legendTimeForPane = originalLegendTimeForLayout;
+chart.barNearTime = originalBarNearTimeForLayout;
 const rsiPaneRectForCrosshair = chart.getPaneRect(chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId);
 const crosshairPaneRects = chart.paneRects.slice();
 const crosshairX = crosshairPaneRects[0].x + Math.round(crosshairPaneRects[0].width / 3);

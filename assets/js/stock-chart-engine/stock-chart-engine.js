@@ -3545,6 +3545,14 @@
   Chart.prototype.handleCanvasDoubleClick = function (event) {
     if (this.pendingDrawing) return;
     var pointer = this.pointerFromEvent(event);
+    var scaleDragHit = this.hitTestScaleDrag(pointer);
+    if (scaleDragHit) {
+      if (event.preventDefault) event.preventDefault();
+      this.setPaneManualRange(scaleDragHit.paneId, null);
+      this.draw();
+      this.emitChange('pane:y-scale-reset', { paneId: scaleDragHit.paneId });
+      return;
+    }
     var hit = this.hitTestDrawing(pointer);
     if (!hit) return;
     if (event.preventDefault) event.preventDefault();
@@ -4636,8 +4644,9 @@
 
   Chart.prototype.drawPaneLegend = function (rect, range, theme) {
     var ctx = this.ctx;
-    var x = rect.x + 10;
+    var legendX = rect.x + 10;
     var y = rect.y + 18;
+    var legendRows = 0;
     var legendTime = this.legendTimeForPane(rect);
     ctx.save();
     ctx.font = '12px sans-serif';
@@ -4648,13 +4657,15 @@
       if (bar) {
         var priceLabel = formatDate(bar.time) + '  O ' + formatNumber(bar.open) + ' H ' + formatNumber(bar.high) + ' L ' + formatNumber(bar.low) + ' C ' + formatNumber(bar.close) + this.pricePercentChangeLabel(bar);
         ctx.fillStyle = bar.close >= bar.open ? theme.up : theme.down;
-        ctx.fillText(priceLabel, x, y);
-        x += approximateTextWidth(priceLabel) + 14;
+        ctx.fillText(priceLabel, legendX, y);
+        y += 18;
+        legendRows += 1;
       }
     }
 
     this.indicatorLegendItems(rect.paneId, legendTime, theme).forEach(function (item) {
-      if (x > rect.x + rect.width - 80) return;
+      if (legendRows > 0 && y > rect.y + rect.height - 10) return;
+      var x = legendX;
       var itemWidth = approximateTextWidth(item.label) + 24;
       this.legendHitZones.push({
         x: x - 3,
@@ -4667,7 +4678,8 @@
       ctx.fillStyle = item.color;
       ctx.fillRect(x, y - 4, 8, 8);
       ctx.fillText(item.label, x + 12, y);
-      x += itemWidth + 4;
+      y += 18;
+      legendRows += 1;
     }, this);
     ctx.restore();
   };
