@@ -4979,7 +4979,7 @@
         ctx.fillText(priceLabel, legendX, y);
         if (changeInfo) {
           ctx.fillStyle = changeInfo.change >= 0 ? theme.up : theme.down;
-          ctx.fillText(changeInfo.label, legendX + approximateTextWidth(priceLabel), y);
+          ctx.fillText(changeInfo.label, legendX + textWidth(ctx, priceLabel), y);
         }
         y += 18;
         legendRows += 1;
@@ -6727,6 +6727,14 @@
 
   function approximateTextWidth(text) {
     return String(text || '').length * 7;
+  }
+
+  function textWidth(ctx, text) {
+    if (ctx && typeof ctx.measureText === 'function') {
+      var measured = ctx.measureText(String(text || ''));
+      if (measured && Number.isFinite(measured.width)) return measured.width;
+    }
+    return approximateTextWidth(text);
   }
 
   function fittedFontSize(text, maxWidth, preferredSize, minSize) {

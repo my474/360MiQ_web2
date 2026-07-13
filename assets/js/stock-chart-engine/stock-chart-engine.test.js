@@ -174,6 +174,9 @@ class FakeCanvas extends FakeElement {
       lineTo(x, y) {
         canvas.commands.push({ type: 'lineTo', x, y, alpha: this.globalAlpha });
       },
+      measureText(text) {
+        return { width: String(text || '').length * 6 };
+      },
       moveTo(x, y) {
         canvas.commands.push({ type: 'moveTo', x, y, alpha: this.globalAlpha });
       },
@@ -964,8 +967,11 @@ chart.bars = [
 chart.document.visibleRange = { from: 1000, to: 2000 };
 chart.canvas.commands = [];
 chart.drawPaneLegend({ paneId: 'price', x: 0, y: 0, width: 500, height: 120 }, null, chart.theme());
+const negativeBaseText = chart.canvas.commands.find((command) => command.type === 'fillText' && /^\d{4}-\d{2}-\d{2}  O .* C 100\.30$/.test(command.text));
 const negativeChangeText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === ' -0.39 (-0.4%)');
+assert.ok(negativeBaseText);
 assert.ok(negativeChangeText);
+assert.strictEqual(negativeChangeText.x, negativeBaseText.x + negativeBaseText.text.length * 6);
 assert.strictEqual(chart.pricePercentChangeLabel(chart.bars[1]), ' -0.39 (-0.4%)');
 assert.strictEqual(chart.priceLegendColor(chart.bars[1], chart.theme()), chart.theme().down);
 assert.strictEqual(negativeChangeText.fillStyle, chart.theme().down);
