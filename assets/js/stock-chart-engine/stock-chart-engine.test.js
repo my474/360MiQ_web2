@@ -1162,16 +1162,12 @@ const anchoredNoteHitId = chart.addDrawing('anchored_note', [
 const anchoredNoteHitPoint = chart.drawingScreenPoints(chart.getDrawingById(anchoredNoteHitId))[0];
 assert.strictEqual(chart.hitTestDrawing({ x: anchoredNoteHitPoint.x + 142, y: anchoredNoteHitPoint.y - 56 }).drawing.id, anchoredNoteHitId);
 
-const commentHitId = chart.addDrawing('comment', [
-  { time: data[data.length - 26].time, value: data[data.length - 26].close }
-], { paneId: 'price', text: 'Selectable comment' });
-const commentHitPoint = chart.drawingScreenPoints(chart.getDrawingById(commentHitId))[0];
-assert.strictEqual(chart.hitTestDrawing({ x: commentHitPoint.x + 74, y: commentHitPoint.y - 13 }).drawing.id, commentHitId);
-assert.strictEqual(StockChartEngine.drawingTools.comment.points, 2);
-const commentCalloutId = chart.addDrawing('comment', [
+assert.strictEqual(StockChartEngine.drawingTools.comment, undefined);
+assert.strictEqual(StockChartEngine.drawingTools.callout.points, 2);
+const commentCalloutId = chart.addDrawing('callout', [
   { time: data[data.length - 25].time, value: data[data.length - 25].close },
   { time: data[data.length - 23].time, value: data[data.length - 23].close - 3 }
-], { paneId: 'price', text: 'Comment callout' });
+], { paneId: 'price', text: 'Callout' });
 const commentCalloutDrawing = chart.getDrawingById(commentCalloutId);
 const commentCalloutPoints = chart.drawingScreenPoints(commentCalloutDrawing);
 const originalDrawingsForCommentCalloutHit = chart.document.drawings;
@@ -1433,7 +1429,7 @@ assertUniqueRenderSignatures(['pitchfork', 'schiff_pitchfork', 'modified_schiff_
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));
-assertUniqueRenderSignatures(['text', 'note', 'anchored_note', 'signpost', 'callout', 'comment', 'price_label', 'price_note'], measurementRenderPoints);
+assertUniqueRenderSignatures(['text', 'note', 'anchored_note', 'signpost', 'callout', 'price_label', 'price_note'], measurementRenderPoints);
 const noteCommands = renderMeasurementTool('note', measurementRenderPoints);
 assert.ok(noteCommands.some((command) => command.type === 'strokeRect'));
 const anchoredNoteCommands = renderMeasurementTool('anchored_note', measurementRenderPoints);
@@ -1473,9 +1469,6 @@ assert.strictEqual(chart.hitTestDrawing({
   y: (selectableSignpostAnchorY + selectableSignpostBubbleTop) / 2
 }).drawing, selectableSignpost);
 chart.document.drawings = originalDrawingsForSignpostHit;
-const commentCommands = renderMeasurementTool('comment', measurementRenderPoints);
-assert.ok(commentCommands.some((command) => command.type === 'strokeRect'));
-assert.ok(commentCommands.some((command) => command.type === 'lineTo'));
 chart.canvas.commands = [];
 chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
   id: 'legacy-note-shape',
@@ -1500,13 +1493,14 @@ assert.ok(chart.canvas.commands.some((command) => command.type === 'lineTo'));
 chart.canvas.commands = [];
 chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
   id: 'legacy-comment-shape',
-  type: 'callout',
+  type: 'comment',
   paneId: 'price',
   text: 'Comment',
-  points: measurementRenderPoints.slice(0, 1),
+  points: measurementRenderPoints.slice(0, 2),
   style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
 });
-assert.ok(chart.canvas.commands.some((command) => command.type === 'strokeRect'));
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect'));
+assert.ok(chart.canvas.commands.some((command) => command.type === 'lineTo'));
 chart.canvas.commands = [];
 chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
   id: 'legacy-signpost-shape',

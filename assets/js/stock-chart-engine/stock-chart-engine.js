@@ -239,7 +239,6 @@
       ['anchored_note', 'Anchored note', 'annotation', 'anchoredNote', 1, ['anchored_text']],
       ['signpost', 'Signpost', 'annotation', 'signpost', 1],
       ['callout', 'Callout', 'annotation', 'callout', 2],
-      ['comment', 'Comment', 'annotation', 'comment', 2],
       ['price_label', 'Price label', 'annotation', 'priceLabel', 1],
       ['price_note', 'Price note', 'annotation', 'priceNote', 1],
       ['arrow_marker', 'Arrow marker', 'annotation', 'marker', 1],
@@ -363,7 +362,6 @@
       anchoredNote: '<path d="M5 19l5-5"/><path d="M10 5h9v9h-9z"/><path d="M12 10h5"/>',
       callout: '<path d="M5 6h14v9H9l-4 4z"/>',
       signpost: '<path d="M7 20V5"/><path d="M7 6h12l-3 3 3 3H7"/>',
-      comment: '<path d="M5 6h14v9H9l-4 4z"/><path d="M8 10h8"/>',
       priceLabel: '<path d="M4 8h11l5 4-5 4H4z"/><path d="M8 12h5"/>',
       priceNote: '<path d="M4 8h11l5 4-5 4H4z"/><path d="M8 11h6"/><path d="M8 14h4"/>',
       marker: '<path d="M12 4l7 16H5z"/>',
@@ -4996,11 +4994,6 @@
       if (pointerInBounds(pointer, noteHit.bounds, tolerance)) return true;
       return kind === 'anchoredNote' && distanceToSegment(pointer, points[0], noteHit.target) <= tolerance;
     }
-    if (kind === 'comment') {
-      var commentHit = commentBubbleGeometry(drawing.text || tool.name, points[0], points[1]);
-      return pointerInBounds(pointer, commentHit.bounds, tolerance) ||
-        distanceToSegment(pointer, commentHit.connector, commentHit.target) <= tolerance;
-    }
     if (kind === 'priceLabel' || kind === 'priceNote') {
       return pointerInBounds(pointer, tagGeometry(drawing.text || tool.name, points[0]).bounds, tolerance);
     }
@@ -6108,8 +6101,6 @@
       drawTag(ctx, drawing.text || tool.name, target, style.color, theme.background);
     } else if (kind === 'signpost' && point(0)) {
       drawSignpost(ctx, drawing.text || tool.name, point(0), signpostAnchorScreenPoint(this, rawPoints[0], point(0), rect, range), style.color, theme.background);
-    } else if (kind === 'comment' && point(0)) {
-      drawCommentBubble(ctx, drawing.text || tool.name, point(0), point(1), style.color, theme.background);
     } else if (kind.indexOf('marker') === 0 || kind === 'flag' || kind === 'iconMarker' || kind === 'stickerMarker') {
       drawMarker(ctx, point(0), kind, style.color);
       var markerText = markerDisplayText(drawing, tool);
@@ -6889,46 +6880,6 @@
     ctx.fillText(label, geometry.bubbleX + 12, geometry.bubbleY + geometry.height / 2 + 4);
   }
 
-  function drawCommentBubble(ctx, label, p, target, color, background) {
-    var geometry = commentBubbleGeometry(label, p, target);
-    ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
-    ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
-    ctx.strokeRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
-    ctx.beginPath();
-    ctx.moveTo(geometry.connector.x, geometry.connector.y);
-    ctx.lineTo(geometry.target.x, geometry.target.y);
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fillText(label, p.x + 8, p.y - 8);
-  }
-
-  function commentBubbleGeometry(label, p, target) {
-    var width = Math.max(76, approximateTextWidth(label) + 18);
-    var height = 26;
-    var bounds = boundsFromRect(p.x, p.y - height, width, height);
-    target = target || { x: p.x + 4, y: p.y + 10 };
-    var centerX = bounds.minX + width / 2;
-    var centerY = bounds.minY + height / 2;
-    var connector;
-    if (target.y >= bounds.maxY) {
-      connector = { x: clamp(target.x, bounds.minX + 8, bounds.maxX - 8), y: bounds.maxY };
-    } else if (target.y <= bounds.minY) {
-      connector = { x: clamp(target.x, bounds.minX + 8, bounds.maxX - 8), y: bounds.minY };
-    } else if (target.x < centerX) {
-      connector = { x: bounds.minX, y: clamp(target.y, bounds.minY + 6, bounds.maxY - 6) };
-    } else {
-      connector = { x: bounds.maxX, y: clamp(target.y, bounds.minY + 6, bounds.maxY - 6) };
-    }
-    return {
-      width: width,
-      height: height,
-      bounds: bounds,
-      connector: connector,
-      target: target,
-      center: { x: centerX, y: centerY }
-    };
-  }
-
   function drawPriceNote(ctx, label, p, color, background) {
     drawTag(ctx, label, p, color, background);
     ctx.strokeStyle = background || '#fff';
@@ -7138,10 +7089,10 @@
     if (typeKey === 'long_position' || textKey === 'long_position') return 'positionLong';
     if (typeKey === 'short_position' || textKey === 'short_position') return 'positionShort';
     if (typeKey === 'position_forecast' || textKey === 'position_forecast') return 'positionForecast';
+    if (typeKey === 'comment') return 'callout';
     if ((typeKey === 'text' || kind === 'text') && textKey === 'note') return 'note';
     if ((typeKey === 'text' || kind === 'text') && textKey === 'anchored_note') return 'anchoredNote';
     if ((typeKey === 'callout' || kind === 'callout') && textKey === 'signpost') return 'signpost';
-    if ((typeKey === 'callout' || kind === 'callout') && textKey === 'comment') return 'comment';
     return kind;
   }
 
@@ -7166,7 +7117,7 @@
   function isEditableTextDrawing(drawing) {
     if (!drawing) return false;
     var kind = drawingToolDefinition(drawing.type).renderKind;
-    return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' || kind === 'signpost' || kind === 'comment' || kind === 'priceLabel' || kind === 'priceNote';
+    return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' || kind === 'signpost' || kind === 'priceLabel' || kind === 'priceNote';
   }
 
   function nearestSeriesPoint(data, time) {
