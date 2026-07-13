@@ -1241,7 +1241,8 @@ chart.handleCanvasClick({
 const snappedSignpost = chart.getDrawingById(chart.selectedDrawingId);
 assert.strictEqual(snappedSignpost.type, 'signpost');
 assert.strictEqual(snappedSignpost.points[0].time, snapBar.time);
-assert.strictEqual(snappedSignpost.points[0].value, snapBar.high);
+assert.ok(Math.abs(snappedSignpost.points[0].value - (snapBar.high + 0.01)) < 0.0000001);
+assert.strictEqual(snappedSignpost.points[0].anchorValue, snapBar.high);
 chart.selectedDrawingId = registryShapeId;
 assert.strictEqual(chart.moveDrawingZOrder(registryShapeId, 'front'), true);
 assert.strictEqual(chart.setAllDrawingsLocked(true), true);
@@ -1369,7 +1370,7 @@ const signpostAnchorPoint = chart.drawingScreenPoints({
   paneId: 'price',
   points: measurementRenderPoints.slice(0, 1)
 })[0];
-assert.ok(signpostCommands.some((command) => command.type === 'lineTo' && Math.round(command.x) === Math.round(signpostAnchorPoint.x) && command.y > signpostAnchorPoint.y));
+assert.ok(signpostCommands.some((command) => command.type === 'lineTo' && Math.round(command.x) === Math.round(signpostAnchorPoint.x) && command.y < signpostAnchorPoint.y));
 assert.ok(signpostCommands.some((command) => command.type === 'quadraticCurveTo'));
 assert.ok(signpostCommands.some((command) => command.type === 'fillText' && command.text === 'Signpost'));
 const commentCommands = renderMeasurementTool('comment', measurementRenderPoints);

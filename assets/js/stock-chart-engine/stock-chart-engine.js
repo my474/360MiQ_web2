@@ -3912,12 +3912,14 @@
       }
       return;
     }
-    var forceMagnet = this.pendingDrawing && normalizeDrawingType(this.pendingDrawing.type) === 'signpost';
-    var point = this.valueFromEvent(event, { forceMagnet: forceMagnet });
+    var forceSignpostSnap = this.pendingDrawing && normalizeDrawingType(this.pendingDrawing.type) === 'signpost';
+    var point = forceSignpostSnap ? this.signpostValueFromEvent(event) : this.valueFromEvent(event);
     if (!point) return;
     if (this.pendingDrawing.paneId && point.paneId !== this.pendingDrawing.paneId) return;
     if (!this.pendingDrawing.paneId) this.pendingDrawing.paneId = point.paneId;
-    this.pendingDrawing.points.push({ time: point.time, value: point.value });
+    var drawingPoint = { time: point.time, value: point.value };
+    if (point.anchorValue != null) drawingPoint.anchorValue = point.anchorValue;
+    this.pendingDrawing.points.push(drawingPoint);
     if (this.pendingDrawing.points.length >= this.pendingDrawing.requiredPoints) {
       var pending = this.pendingDrawing;
       var drawingId = this.addDrawing(pending.type, pending.points, {
@@ -4859,14 +4861,14 @@
           time: Math.round(this.timeForX(point.x, rect)),
           value: this.valueForY(point.y, rect, range)
         };
-        return this.snapValuePoint(valuePoint, options.forceMagnet);
+        return this.snapValuePoint(valuePoint, options.forceMagnet, options.disableMagnet);
       }
     }
     return null;
   };
 
-  Chart.prototype.snapValuePoint = function (point, forceMagnet) {
-    if (!point || (!forceMagnet && !this.document.settings.magnetMode) || point.paneId !== 'price' || !this.bars.length) return point;
+  Chart.prototype.snapValuePoint = function (point, forceMagnet, disableMagnet) {
+    if (!point || disableMagnet || (!forceMagnet && !this.document.settings.magnetMode) || point.paneId !== 'price' || !this.bars.length) return point;
     var bar = this.barNearTime(point.time);
     if (!bar) return point;
     var values = [bar.open, bar.high, bar.low, bar.close];
@@ -4880,6 +4882,19 @@
       }
     }
     return { paneId: point.paneId, time: bar.time, value: nearest };
+  };
+
+  Chart.prototype.signpostValueFromEvent = function (event) {
+    var clicked = this.valueFromEvent(event, { disableMagnet: true });
+    if (!clicked) return null;
+    var snapped = this.snapValuePoint(clicked, true);
+    if (!snapped) return clicked;
+    return {
+      paneId: clicked.paneId,
+      time: snapped.time,
+      value: clicked.value,
+      anchorValue: snapped.value
+    };
   };
 
   Chart.prototype.getDrawingById = function (drawingId) {
@@ -6055,7 +6070,7 @@
       drawLine(ctx, point(0), target);
       drawTag(ctx, drawing.text || tool.name, target, style.color, theme.background);
     } else if (kind === 'signpost' && point(0)) {
-      drawSignpost(ctx, drawing.text || tool.name, point(0), style.color, theme.background);
+      drawSignpost(ctx, drawing.text || tool.name, point(0), signpostAnchorScreenPoint(this, rawPoints[0], point(0), rect, range), style.color, theme.background);
     } else if (kind === 'comment' && point(0)) {
       drawCommentBubble(ctx, drawing.text || tool.name, point(0), style.color, theme.background);
     } else if (kind.indexOf('marker') === 0 || kind === 'flag' || kind === 'iconMarker' || kind === 'stickerMarker') {
@@ -6768,16 +6783,25 @@
     ctx.fillText(label, target.x + 8, target.y - 10);
   }
 
-  function drawSignpost(ctx, label, p, color, background) {
+  function signpostAnchorScreenPoint(chart, rawPoint, labelPoint, rect, range) {
+    if (rawPoint && rawPoint.anchorValue != null) {
+      var y = chart && typeof chart.yForValue === 'function' ? chart.yForValue(rawPoint.anchorValue, rect, range) : null;
+      if (y != null) return { x: labelPoint.x, y: y };
+    }
+    return { x: labelPoint.x, y: labelPoint.y - 30 };
+  }
+
+  function drawSignpost(ctx, label, p, anchor, color, background) {
     var width = Math.max(70, approximateTextWidth(label) + 24);
     var height = 30;
-    var gap = 30;
     var bubbleX = p.x - width / 2;
-    var bubbleY = p.y + gap;
+    var bubbleY = p.y - height / 2;
+    anchor = anchor || { x: p.x, y: bubbleY - 30 };
+    var stemEndY = anchor.y < bubbleY ? bubbleY : (anchor.y > bubbleY + height ? bubbleY + height : p.y);
     ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-    ctx.lineTo(p.x, bubbleY);
+    ctx.moveTo(p.x, anchor.y);
+    ctx.lineTo(p.x, stemEndY);
     ctx.stroke();
     ctx.fillStyle = background || '#fff';
     roundedRectPath(ctx, bubbleX, bubbleY, width, height, 7);
