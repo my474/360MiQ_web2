@@ -1167,6 +1167,38 @@ const commentHitId = chart.addDrawing('comment', [
 ], { paneId: 'price', text: 'Selectable comment' });
 const commentHitPoint = chart.drawingScreenPoints(chart.getDrawingById(commentHitId))[0];
 assert.strictEqual(chart.hitTestDrawing({ x: commentHitPoint.x + 74, y: commentHitPoint.y - 13 }).drawing.id, commentHitId);
+assert.strictEqual(StockChartEngine.drawingTools.comment.points, 2);
+const commentCalloutId = chart.addDrawing('comment', [
+  { time: data[data.length - 25].time, value: data[data.length - 25].close },
+  { time: data[data.length - 23].time, value: data[data.length - 23].close - 3 }
+], { paneId: 'price', text: 'Comment callout' });
+const commentCalloutDrawing = chart.getDrawingById(commentCalloutId);
+const commentCalloutPoints = chart.drawingScreenPoints(commentCalloutDrawing);
+const originalDrawingsForCommentCalloutHit = chart.document.drawings;
+chart.document.drawings = [commentCalloutDrawing];
+assert.strictEqual(chart.hitTestDrawing(commentCalloutPoints[1]).pointIndex, 1);
+assert.strictEqual(chart.hitTestDrawing({
+  x: commentCalloutPoints[1].x,
+  y: (commentCalloutPoints[0].y + commentCalloutPoints[1].y) / 2
+}).drawing.id, commentCalloutId);
+chart.document.drawings = originalDrawingsForCommentCalloutHit;
+chart.dragState = {
+  drawingId: commentCalloutId,
+  pointIndex: 1,
+  paneId: 'price',
+  startPointer: commentCalloutPoints[1],
+  startValue: chart.valueFromPoint(commentCalloutPoints[1], 'price'),
+  originalPoints: commentCalloutDrawing.points.map((point) => Object.assign({}, point)),
+  moved: false
+};
+const movedCommentTail = {
+  x: chart.xForTime(data[data.length - 22].time, textHitRect),
+  y: chart.yForValue(data[data.length - 22].close - 4, textHitRect, textHitRange)
+};
+chart.moveSelectedDrawing(movedCommentTail);
+assert.strictEqual(commentCalloutDrawing.points[0].time, chart.dragState.originalPoints[0].time);
+assert.notStrictEqual(commentCalloutDrawing.points[1].time, chart.dragState.originalPoints[1].time);
+chart.dragState = null;
 
 chart.startDrawing('note');
 const noteRect = chart.getPaneRect('price');

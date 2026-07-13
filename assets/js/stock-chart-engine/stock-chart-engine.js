@@ -239,7 +239,7 @@
       ['anchored_note', 'Anchored note', 'annotation', 'anchoredNote', 1, ['anchored_text']],
       ['signpost', 'Signpost', 'annotation', 'signpost', 1],
       ['callout', 'Callout', 'annotation', 'callout', 2],
-      ['comment', 'Comment', 'annotation', 'comment', 1],
+      ['comment', 'Comment', 'annotation', 'comment', 2],
       ['price_label', 'Price label', 'annotation', 'priceLabel', 1],
       ['price_note', 'Price note', 'annotation', 'priceNote', 1],
       ['arrow_marker', 'Arrow marker', 'annotation', 'marker', 1],
@@ -4997,7 +4997,9 @@
       return kind === 'anchoredNote' && distanceToSegment(pointer, points[0], noteHit.target) <= tolerance;
     }
     if (kind === 'comment') {
-      return pointerInBounds(pointer, commentBubbleGeometry(drawing.text || tool.name, points[0]).bounds, tolerance);
+      var commentHit = commentBubbleGeometry(drawing.text || tool.name, points[0], points[1]);
+      return pointerInBounds(pointer, commentHit.bounds, tolerance) ||
+        distanceToSegment(pointer, commentHit.connector, commentHit.target) <= tolerance;
     }
     if (kind === 'priceLabel' || kind === 'priceNote') {
       return pointerInBounds(pointer, tagGeometry(drawing.text || tool.name, points[0]).bounds, tolerance);
@@ -6107,7 +6109,7 @@
     } else if (kind === 'signpost' && point(0)) {
       drawSignpost(ctx, drawing.text || tool.name, point(0), signpostAnchorScreenPoint(this, rawPoints[0], point(0), rect, range), style.color, theme.background);
     } else if (kind === 'comment' && point(0)) {
-      drawCommentBubble(ctx, drawing.text || tool.name, point(0), style.color, theme.background);
+      drawCommentBubble(ctx, drawing.text || tool.name, point(0), point(1), style.color, theme.background);
     } else if (kind.indexOf('marker') === 0 || kind === 'flag' || kind === 'iconMarker' || kind === 'stickerMarker') {
       drawMarker(ctx, point(0), kind, style.color);
       var markerText = markerDisplayText(drawing, tool);
@@ -6887,27 +6889,43 @@
     ctx.fillText(label, geometry.bubbleX + 12, geometry.bubbleY + geometry.height / 2 + 4);
   }
 
-  function drawCommentBubble(ctx, label, p, color, background) {
-    var geometry = commentBubbleGeometry(label, p);
+  function drawCommentBubble(ctx, label, p, target, color, background) {
+    var geometry = commentBubbleGeometry(label, p, target);
     ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
     ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
     ctx.strokeRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
     ctx.beginPath();
-    ctx.moveTo(p.x + 12, p.y);
-    ctx.lineTo(p.x + 4, p.y + 10);
-    ctx.lineTo(p.x + 24, p.y);
+    ctx.moveTo(geometry.connector.x, geometry.connector.y);
+    ctx.lineTo(geometry.target.x, geometry.target.y);
     ctx.stroke();
     ctx.fillStyle = color;
     ctx.fillText(label, p.x + 8, p.y - 8);
   }
 
-  function commentBubbleGeometry(label, p) {
+  function commentBubbleGeometry(label, p, target) {
     var width = Math.max(76, approximateTextWidth(label) + 18);
     var height = 26;
+    var bounds = boundsFromRect(p.x, p.y - height, width, height);
+    target = target || { x: p.x + 4, y: p.y + 10 };
+    var centerX = bounds.minX + width / 2;
+    var centerY = bounds.minY + height / 2;
+    var connector;
+    if (target.y >= bounds.maxY) {
+      connector = { x: clamp(target.x, bounds.minX + 8, bounds.maxX - 8), y: bounds.maxY };
+    } else if (target.y <= bounds.minY) {
+      connector = { x: clamp(target.x, bounds.minX + 8, bounds.maxX - 8), y: bounds.minY };
+    } else if (target.x < centerX) {
+      connector = { x: bounds.minX, y: clamp(target.y, bounds.minY + 6, bounds.maxY - 6) };
+    } else {
+      connector = { x: bounds.maxX, y: clamp(target.y, bounds.minY + 6, bounds.maxY - 6) };
+    }
     return {
       width: width,
       height: height,
-      bounds: boundsFromRect(p.x, p.y - height, width, height)
+      bounds: bounds,
+      connector: connector,
+      target: target,
+      center: { x: centerX, y: centerY }
     };
   }
 
