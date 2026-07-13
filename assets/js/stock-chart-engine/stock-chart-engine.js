@@ -6732,6 +6732,21 @@
     ctx.fillText(label, p.x + 7, p.y - 7);
   }
 
+  function roundedRectPath(ctx, x, y, width, height, radius) {
+    radius = Math.max(0, Math.min(radius || 6, width / 2, height / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  }
+
   function drawNoteBox(ctx, label, p, color, background, anchored) {
     var target = anchored ? { x: p.x + 54, y: p.y - 42 } : p;
     if (anchored) drawLine(ctx, p, target);
@@ -6752,12 +6767,22 @@
   }
 
   function drawSignpost(ctx, label, p, color, background) {
+    var width = Math.max(70, approximateTextWidth(label) + 24);
+    var height = 30;
+    var gap = 30;
+    var bubbleX = p.x - width / 2;
+    var bubbleY = p.y + gap;
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
-    ctx.lineTo(p.x, p.y - 38);
+    ctx.lineTo(p.x, bubbleY);
     ctx.stroke();
-    drawTag(ctx, label, { x: p.x + 4, y: p.y - 24 }, color, background);
+    ctx.fillStyle = background || '#fff';
+    roundedRectPath(ctx, bubbleX, bubbleY, width, height, 7);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.fillText(label, bubbleX + 12, bubbleY + height / 2 + 4);
   }
 
   function drawCommentBubble(ctx, label, p, color, background) {

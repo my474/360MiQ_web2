@@ -180,7 +180,9 @@ class FakeCanvas extends FakeElement {
       moveTo(x, y) {
         canvas.commands.push({ type: 'moveTo', x, y, alpha: this.globalAlpha });
       },
-      quadraticCurveTo() {},
+      quadraticCurveTo(cpx, cpy, x, y) {
+        canvas.commands.push({ type: 'quadraticCurveTo', cpx, cpy, x, y, alpha: this.globalAlpha });
+      },
       restore() {
         this.globalAlpha = this._alphaStack.length ? this._alphaStack.pop() : 1;
       },
@@ -1353,8 +1355,14 @@ const anchoredNoteCommands = renderMeasurementTool('anchored_note', measurementR
 assert.ok(anchoredNoteCommands.some((command) => command.type === 'strokeRect'));
 assert.ok(anchoredNoteCommands.some((command) => command.type === 'lineTo'));
 const signpostCommands = renderMeasurementTool('signpost', measurementRenderPoints);
-assert.ok(signpostCommands.some((command) => command.type === 'fillRect'));
-assert.ok(signpostCommands.some((command) => command.type === 'lineTo'));
+const signpostAnchorPoint = chart.drawingScreenPoints({
+  type: 'signpost',
+  paneId: 'price',
+  points: measurementRenderPoints.slice(0, 1)
+})[0];
+assert.ok(signpostCommands.some((command) => command.type === 'lineTo' && Math.round(command.x) === Math.round(signpostAnchorPoint.x) && command.y > signpostAnchorPoint.y));
+assert.ok(signpostCommands.some((command) => command.type === 'quadraticCurveTo'));
+assert.ok(signpostCommands.some((command) => command.type === 'fillText' && command.text === 'Signpost'));
 const commentCommands = renderMeasurementTool('comment', measurementRenderPoints);
 assert.ok(commentCommands.some((command) => command.type === 'strokeRect'));
 assert.ok(commentCommands.some((command) => command.type === 'lineTo'));
@@ -1399,6 +1407,7 @@ chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), 
   style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
 });
 assert.ok(chart.canvas.commands.some((command) => command.type === 'lineTo'));
+assert.ok(chart.canvas.commands.some((command) => command.type === 'quadraticCurveTo'));
 assertUniqueRenderSignatures(['brush', 'highlighter', 'path'], measurementRenderPoints);
 assertUniqueRenderSignatures(['triangle', 'triangle_pattern'], measurementRenderPoints);
 assertUniqueRenderSignatures(['arrow_marker', 'icon', 'sticker', 'emoji'], measurementRenderPoints);
