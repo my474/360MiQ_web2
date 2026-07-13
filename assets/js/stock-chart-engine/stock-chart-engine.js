@@ -5295,14 +5295,20 @@
       height: rect.height,
       paneId: rect.paneId
     });
-    this.scaleHitZones.push({
+    var scaleModeHitZone = {
       x: rect.scaleX + 4,
       y: rect.y + 2,
       width: Math.max(42, approximateTextWidth(scaleModeLabel) + 8),
       height: 20,
       paneId: rect.paneId
-    });
+    };
+    this.scaleHitZones.push(scaleModeHitZone);
+    var scaleModeHovered = this.pointer &&
+      this.pointer.x >= scaleModeHitZone.x && this.pointer.x <= scaleModeHitZone.x + scaleModeHitZone.width &&
+      this.pointer.y >= scaleModeHitZone.y && this.pointer.y <= scaleModeHitZone.y + scaleModeHitZone.height;
+    ctx.font = (scaleModeHovered ? '700 ' : '') + '11px sans-serif';
     ctx.fillText(scaleModeLabel, rect.scaleX + 6, rect.y + 12);
+    ctx.font = '11px sans-serif';
     this.scaleTicks(rect, range, 5).forEach(function (tick) {
       ctx.fillText(formatNumber(tick.value), rect.scaleX + 6, tick.y);
     });

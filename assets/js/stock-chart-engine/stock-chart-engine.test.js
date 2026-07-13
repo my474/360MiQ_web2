@@ -169,7 +169,7 @@ class FakeCanvas extends FakeElement {
         canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha, fillStyle: this.fillStyle });
       },
       fillText(text, x, y) {
-        canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha, fillStyle: this.fillStyle });
+        canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha, fillStyle: this.fillStyle, font: this.font });
       },
       lineTo(x, y) {
         canvas.commands.push({ type: 'lineTo', x, y, alpha: this.globalAlpha });
@@ -557,6 +557,17 @@ assert.ok(chart.scaleHitZones.some((zone) => zone.paneId === 'price'));
 assert.strictEqual(chart.togglePaneScaleMode('price'), 'linear');
 assert.strictEqual(chart.paneScaleMode('price'), 'linear');
 chart.draw();
+let scaleModeText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === 'LINEAR');
+assert.ok(scaleModeText);
+assert.strictEqual(scaleModeText.font, '11px sans-serif');
+const scaleModeZone = chart.scaleHitZones.find((zone) => zone.paneId === 'price');
+chart.pointer = { x: scaleModeZone.x + 2, y: scaleModeZone.y + 2, pointerType: 'mouse' };
+chart.canvas.commands = [];
+chart.draw();
+scaleModeText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === 'LINEAR');
+assert.ok(scaleModeText);
+assert.strictEqual(scaleModeText.font, '700 11px sans-serif');
+chart.pointer = null;
 const yScaleDragRect = chart.getPaneRect('price');
 const yScaleStartRange = chart.paneRange('price');
 const yScaleStartSpan = yScaleStartRange.max - yScaleStartRange.min;
