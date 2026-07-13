@@ -1265,6 +1265,27 @@ assert.strictEqual(snappedSignpost.type, 'signpost');
 assert.strictEqual(snappedSignpost.points[0].time, snapBar.time);
 assert.ok(Math.abs(snappedSignpost.points[0].value - (snapBar.high + 0.01)) < 0.0000001);
 assert.strictEqual(snappedSignpost.points[0].anchorValue, snapBar.high);
+const snappedSignpostPoint = chart.drawingScreenPoints(snappedSignpost)[0];
+chart.dragState = {
+  drawingId: snappedSignpost.id,
+  pointIndex: null,
+  paneId: snappedSignpost.paneId,
+  startPointer: snappedSignpostPoint,
+  startValue: chart.valueFromPoint(snappedSignpostPoint, snappedSignpost.paneId),
+  originalPoints: snappedSignpost.points.map((point) => Object.assign({}, point)),
+  moved: false
+};
+chart.moveSelectedDrawing(snappedSignpostPoint);
+assert.strictEqual(snappedSignpost.points[0].anchorValue, snapBar.high);
+const movedSignpostBar = chart.bars[chart.bars.length - 8];
+const movedSignpostPointer = {
+  x: chart.xForTime(movedSignpostBar.time + 400, priceRectForSnap),
+  y: chart.yForValue(movedSignpostBar.low - 0.02, priceRectForSnap, chart.paneRange('price'))
+};
+chart.moveSelectedDrawing(movedSignpostPointer);
+assert.strictEqual(snappedSignpost.points[0].time, movedSignpostBar.time);
+assert.strictEqual(snappedSignpost.points[0].anchorValue, movedSignpostBar.low);
+chart.dragState = null;
 chart.selectedDrawingId = registryShapeId;
 assert.strictEqual(chart.moveDrawingZOrder(registryShapeId, 'front'), true);
 assert.strictEqual(chart.setAllDrawingsLocked(true), true);

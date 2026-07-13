@@ -4308,19 +4308,25 @@
     if (state.pointIndex != null && state.originalPoints[state.pointIndex]) {
       drawing.points = state.originalPoints.map(function (point, index) {
         if (index !== state.pointIndex) return point;
-        return {
-          time: Math.round(current.time),
-          value: current.value
-        };
-      });
+        return this.movedDrawingPoint(drawing, point, Math.round(current.time), current.value);
+      }, this);
       return;
     }
     drawing.points = state.originalPoints.map(function (point) {
-      return {
-        time: Math.round(point.time + deltaTime),
-        value: point.value + deltaValue
-      };
-    });
+      return this.movedDrawingPoint(drawing, point, Math.round(point.time + deltaTime), point.value + deltaValue);
+    }, this);
+  };
+
+  Chart.prototype.movedDrawingPoint = function (drawing, point, time, value) {
+    var next = merge({}, point, { time: time, value: value });
+    if (normalizeDrawingType(drawing && drawing.type) === 'signpost') {
+      var snapped = this.snapValuePoint({ paneId: drawing.paneId, time: time, value: value }, true);
+      if (snapped && snapped.value != null) {
+        next.time = snapped.time;
+        next.anchorValue = snapped.value;
+      }
+    }
+    return next;
   };
 
   Chart.prototype.setTheme = function (themeName) {
