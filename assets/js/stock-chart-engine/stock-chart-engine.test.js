@@ -878,6 +878,20 @@ const yAxisLabelY = chart.canvas.commands
   .map((command) => command.y);
 assert.deepStrictEqual(yAxisLabelY, yAxisTicks.map((tick) => tick.y));
 assert.ok(yAxisTicks.every((tick) => Math.abs(tick.value) >= 100 || Number.isInteger(tick.value)));
+chart.setPaneScaleMode('price', 'log');
+assert.deepStrictEqual(
+  chart.scaleTicks(yAxisTickRect, { min: 1, max: 1000 }, 5).map((tick) => tick.value),
+  [1000, 100, 10, 1]
+);
+assert.deepStrictEqual(
+  chart.scaleTicks(yAxisTickRect, { min: 420, max: 760 }, 5).map((tick) => tick.value),
+  [700, 600, 500]
+);
+assert.deepStrictEqual(
+  chart.scaleTicks(yAxisTickRect, { min: -100, max: 100 }, 5).map((tick) => tick.value),
+  [100, 10, 1, 0, -1, -10, -100]
+);
+chart.setPaneScaleMode('price', 'linear');
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);

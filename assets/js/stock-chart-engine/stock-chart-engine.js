@@ -473,6 +473,129 @@
     return values;
   }
 
+  function positiveLogTickValues(min, max, targetCount) {
+    min = Number(min);
+    max = Number(max);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || max <= 0) return [];
+    min = Math.max(min, Number.MIN_VALUE);
+    if (min > max) {
+      var swap = min;
+      min = max;
+      max = swap;
+    }
+    targetCount = Math.max(2, targetCount || 5);
+    var logMin = Math.log10(min);
+    var logMax = Math.log10(max);
+    var logSpan = logMax - logMin;
+    if (logSpan <= 0.35) return niceLinearTickValues(min, max, targetCount);
+    var multipliers = [1, 2, 5];
+    if (logSpan <= 1.15) multipliers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    else if (logSpan > 2.4) multipliers = [1];
+    var values = [];
+    var startPower = Math.floor(logMin) - 1;
+    var endPower = Math.ceil(logMax) + 1;
+    for (var power = startPower; power <= endPower; power += 1) {
+      var base = Math.pow(10, power);
+      multipliers.forEach(function (multiplier) {
+        var value = multiplier * base;
+        var tolerance = Math.max(Math.abs(value) * 0.0000001, 0.0000001);
+        if (value >= min - tolerance && value <= max + tolerance) values.push(roundLogTickValue(value));
+      });
+    }
+    values = uniqueSortedNumbers(values, function (a, b) { return a - b; });
+    if (values.length < 2 && multipliers.length !== 9) {
+      values = positiveLogTickValuesWithMultipliers(min, max, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    }
+    if (values.length > targetCount + 2) values = thinLogTickValues(values, targetCount);
+    return values;
+  }
+
+  function positiveLogTickValuesWithMultipliers(min, max, multipliers) {
+    var values = [];
+    var startPower = Math.floor(Math.log10(min)) - 1;
+    var endPower = Math.ceil(Math.log10(max)) + 1;
+    for (var power = startPower; power <= endPower; power += 1) {
+      var base = Math.pow(10, power);
+      multipliers.forEach(function (multiplier) {
+        var value = multiplier * base;
+        if (value >= min && value <= max) values.push(roundLogTickValue(value));
+      });
+    }
+    return uniqueSortedNumbers(values, function (a, b) { return a - b; });
+  }
+
+  function niceSignedLogTickValues(min, max, targetCount) {
+    var candidates = [];
+    if (min <= 0 && max >= 0) candidates.push(0);
+    var maxAbs = Math.max(Math.abs(min), Math.abs(max), 1);
+    var startPower = Math.floor(Math.log10(maxAbs)) - 2;
+    var endPower = Math.ceil(Math.log10(maxAbs)) + 1;
+    for (var power = startPower; power <= endPower; power += 1) {
+      [1, 2, 5].forEach(function (multiplier) {
+        var value = roundLogTickValue(multiplier * Math.pow(10, power));
+        if (value >= min && value <= max) candidates.push(value);
+        if (-value >= min && -value <= max) candidates.push(-value);
+      });
+    }
+    candidates = uniqueSortedNumbers(candidates, function (a, b) { return a - b; });
+    if (candidates.length > Math.max(3, targetCount + 2)) candidates = thinSignedLogTickValues(candidates, targetCount);
+    return candidates;
+  }
+
+  function niceLogTickValues(min, max, targetCount) {
+    min = Number(min);
+    max = Number(max);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return [];
+    if (min > max) {
+      var swap = min;
+      min = max;
+      max = swap;
+    }
+    if (min > 0) return positiveLogTickValues(min, max, targetCount);
+    return niceSignedLogTickValues(min, max, targetCount);
+  }
+
+  function roundLogTickValue(value) {
+    var abs = Math.abs(value);
+    if (abs >= 1000) return roundTickValue(value, 1);
+    if (abs >= 1) return roundTickValue(value, 0.01);
+    return roundTickValue(value, Math.pow(10, Math.floor(Math.log10(abs || 1)) - 2));
+  }
+
+  function uniqueSortedNumbers(values, sorter) {
+    return values.filter(function (value, index) {
+      return Number.isFinite(value) && values.indexOf(value) === index;
+    }).sort(sorter);
+  }
+
+  function thinLogTickValues(values, targetCount) {
+    var majorValues = values.filter(function (value) {
+      var log = Math.log10(value);
+      return Math.abs(log - Math.round(log)) < 0.0000001;
+    });
+    if (majorValues.length >= 2 && majorValues.length <= targetCount + 1) return majorValues;
+    var thinned = [];
+    var step = Math.ceil(values.length / Math.max(1, targetCount));
+    for (var i = 0; i < values.length; i += step) thinned.push(values[i]);
+    if (thinned[thinned.length - 1] !== values[values.length - 1]) thinned.push(values[values.length - 1]);
+    return thinned;
+  }
+
+  function thinSignedLogTickValues(values, targetCount) {
+    var keep = values.filter(function (value) {
+      if (value === 0) return true;
+      var abs = Math.abs(value);
+      var log = Math.log10(abs);
+      return Math.abs(log - Math.round(log)) < 0.0000001;
+    });
+    if (keep.length >= 2 && keep.length <= targetCount + 2) return keep;
+    var step = Math.ceil(values.length / Math.max(1, targetCount));
+    var thinned = [];
+    for (var i = 0; i < values.length; i += step) thinned.push(values[i]);
+    if (thinned.indexOf(0) === -1 && values.indexOf(0) !== -1) thinned.push(0);
+    return uniqueSortedNumbers(thinned, function (a, b) { return a - b; });
+  }
+
   function roundOutwardToStep(value, step, direction) {
     if (!Number.isFinite(value) || !Number.isFinite(step) || step <= 0) return value;
     var scaled = value / step;
@@ -5128,15 +5251,7 @@
       }
     }
 
-    var logTransform = null;
-    var logMin = null;
-    var logMax = null;
-    if (this.paneScaleMode(rect.paneId) === 'log') {
-      logTransform = logScaleTransform(range);
-      logMin = logTransform.value(range.min);
-      logMax = logTransform.value(range.max);
-    }
-    if (!logTransform) {
+    if (this.paneScaleMode(rect.paneId) !== 'log') {
       values = niceLinearTickValues(range.min, range.max, count).sort(function (a, b) {
         return b - a;
       });
@@ -5147,17 +5262,14 @@
       });
     }
 
-    var ticks = [];
-    for (var i = 0; i < count; i += 1) {
-      var ratio = count === 1 ? 0 : i / (count - 1);
-      var value = range.max - (range.max - range.min) * ratio;
-      if (logTransform && logMin != null && logMax != null) {
-        value = logTransform.inverse(logMax - (logMax - logMin) * ratio);
-      }
-      var y = this.yForValue(value, rect, range);
-      if (y != null) ticks.push({ value: value, y: y, index: i });
-    }
-    return ticks;
+    values = niceLogTickValues(range.min, range.max, count).sort(function (a, b) {
+      return b - a;
+    });
+    return values.map(function (value, index) {
+      return { value: value, y: this.yForValue(value, rect, range), index: index };
+    }, this).filter(function (tick) {
+      return tick.y != null;
+    });
   };
 
   Chart.prototype.pointerPaneRect = function () {
