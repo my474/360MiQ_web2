@@ -76,6 +76,10 @@
         };
     }
 
+    function hasStockNameMetadata(metadata) {
+        return !!(metadata && (metadata.name_en || metadata.name_tc));
+    }
+
     function applyStockMetadata(chart, code, preferred) {
         var metadata = rememberStockMetadata(stockMetadataForCode(code, preferred), code);
         if (chart && chart.setSymbolInfo) chart.setSymbolInfo(metadata);
@@ -215,6 +219,52 @@
                             return;
                         }
                         lastError = new Error(file + ' failed at ' + candidates[index] + ' with status ' + (xhr && xhr.status ? xhr.status : status || error || 'unknown') + '.');
+                        attempt(index + 1);
+                    }
+                });
+            }
+
+            attempt(0);
+        });
+    }
+
+    function requestStockMetadata(code) {
+        var normalizedCode = normalizeCode(code);
+        var cached = stockMetadataByCode[normalizedCode];
+        if (hasStockNameMetadata(cached)) return Promise.resolve(cached);
+
+        var candidates = endpointCandidates('db_autocomplete.php');
+        var lastError = null;
+        return new Promise(function (resolve) {
+            function attempt(index) {
+                if (index >= candidates.length) {
+                    if (lastError) console.warn(lastError);
+                    resolve(stockMetadataForCode(normalizedCode));
+                    return;
+                }
+
+                $.ajax({
+                    url: candidates[index],
+                    type: 'post',
+                    dataType: 'json',
+                    data: { search: normalizedCode, exchange: '' },
+                    timeout: 12000,
+                    success: function (data) {
+                        if (!Array.isArray(data)) {
+                            resolve(stockMetadataForCode(normalizedCode));
+                            return;
+                        }
+                        var exact = data.filter(function (item) {
+                            return normalizeCode(item && item.code) === normalizedCode;
+                        })[0];
+                        resolve(rememberStockMetadata(exact || data[0], normalizedCode));
+                    },
+                    error: function (xhr, status, error) {
+                        if (status === 'abort') {
+                            resolve(stockMetadataForCode(normalizedCode));
+                            return;
+                        }
+                        lastError = new Error('db_autocomplete.php failed at ' + candidates[index] + ' with status ' + (xhr && xhr.status ? xhr.status : status || error || 'unknown') + '.');
                         attempt(index + 1);
                     }
                 });
@@ -378,14 +428,15 @@
         }, 0);
     }
 
-    function applySharedLayout(code, payload, bars) {
+    function applySharedLayout(code, payload, bars, metadata) {
         renderChart(code, bars, {
             load: false,
             autosave: false,
-            skipStarterStudies: true
+            skipStarterStudies: true,
+            symbolInfo: metadata
         });
         stockChart.importLayout(layoutWithoutEmbeddedData(payload));
-        applyStockMetadata(stockChart, code, payload && payload.document && payload.document.symbolInfo);
+        applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo);
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
         sharedPreviewActive = true;
@@ -414,8 +465,13 @@
         if (activeDataRequest && activeDataRequest.readyState !== 4) activeDataRequest.abort();
         ensureEngineReady().then(function () {
             if (requestId !== dataSerial) return;
-            return requestBars(code).then(function (payload) {
+            return Promise.all([
+                requestBars(code),
+                requestStockMetadata(code)
+            ]).then(function (results) {
                 if (requestId !== dataSerial) return;
+                var payload = results[0];
+                symbolInfo = rememberStockMetadata(results[1] || symbolInfo, code);
                 renderChart(code, payload.bars, { symbolInfo: symbolInfo });
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
             });
@@ -437,8 +493,13 @@
         setStatus('Loading shared chart...', false);
 
         ensureEngineReady().then(function () {
-            return requestBars(code).then(function (response) {
-                applySharedLayout(code, payload, response.bars);
+            return Promise.all([
+                requestBars(code),
+                requestStockMetadata(code)
+            ]).then(function (results) {
+                var response = results[0];
+                var metadata = results[1];
+                applySharedLayout(code, payload, response.bars, metadata);
                 shareLayoutLoading = false;
                 return null;
             });
