@@ -73,6 +73,13 @@
 }
 
 .sce-title {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sce-interval-label {
   color: var(--sce-text);
   flex: 0 0 auto;
   font-size: 13px;
@@ -107,9 +114,9 @@
   font-weight: 700;
   height: 23px;
   justify-content: center;
-  padding: 3px 10px;
+  min-width: 48px;
+  padding: 3px 12px;
   text-decoration: none;
-  width: 126px;
 }
 
 .sce-toolbar .sce-stock-info-link[hidden] {

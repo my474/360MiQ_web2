@@ -2084,8 +2084,8 @@
     this.toolbar = document.createElement('div');
     this.toolbar.className = 'sce-toolbar';
     this.toolbar.innerHTML = [
-      '<span class="sce-title"></span>',
-      '<a class="sce-stock-info-link" data-sce-stock-info-link href="#" target="_blank" rel="noopener noreferrer" hidden>Stock Info</a>',
+      '<a class="sce-title sce-stock-info-link" data-sce-stock-info-link href="#" target="_blank" rel="noopener noreferrer" hidden></a>',
+      '<span class="sce-interval-label" data-sce-interval-label></span>',
       '<details class="sce-chart-type-picker" data-sce-chart-type-picker>',
       '<summary data-sce-chart-type-button aria-label="Chart type"></summary>',
       '<div class="sce-chart-type-menu">',
@@ -4440,16 +4440,22 @@
 
   Chart.prototype.updateToolbar = function () {
     var title = this.toolbar.querySelector('.sce-title');
-    if (title) title.textContent = this.document.symbol + ' ' + this.document.interval;
+    if (title) title.textContent = this.document.symbol;
+    var intervalLabel = this.toolbar.querySelector('[data-sce-interval-label]');
+    if (intervalLabel) intervalLabel.textContent = this.document.interval;
     var stockInfoLink = this.toolbar.querySelector('[data-sce-stock-info-link]');
     if (stockInfoLink) {
       var href = this.stockInfoHref();
       if (href) {
         stockInfoLink.href = href;
+        stockInfoLink.setAttribute('title', 'Open stock info for ' + this.document.symbol);
+        stockInfoLink.setAttribute('aria-label', 'Open stock info for ' + this.document.symbol);
         stockInfoLink.removeAttribute('hidden');
       } else {
         stockInfoLink.setAttribute('hidden', 'hidden');
         stockInfoLink.href = '#';
+        stockInfoLink.removeAttribute('title');
+        stockInfoLink.removeAttribute('aria-label');
       }
     }
     var chartType = this.toolbar.querySelector('[data-sce-chart-type]');

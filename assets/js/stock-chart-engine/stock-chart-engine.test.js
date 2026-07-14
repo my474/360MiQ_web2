@@ -53,18 +53,23 @@ class FakeElement {
   set innerHTML(value) {
     this._innerHTML = value;
     this.children = [];
-    if (value && value.indexOf('sce-title') !== -1) {
-      const title = new FakeElement('span');
-      title.className = 'sce-title';
-      this.appendChild(title);
-    }
     if (value && value.indexOf('data-sce-stock-info-link') !== -1) {
       const stockInfoLink = new FakeElement('a');
-      stockInfoLink.className = 'sce-stock-info-link';
+      stockInfoLink.className = 'sce-title sce-stock-info-link';
       stockInfoLink.setAttribute('data-sce-stock-info-link', '');
       stockInfoLink.setAttribute('href', '#');
       stockInfoLink.setAttribute('hidden', 'hidden');
       this.appendChild(stockInfoLink);
+    } else if (value && value.indexOf('sce-title') !== -1) {
+      const title = new FakeElement('span');
+      title.className = 'sce-title';
+      this.appendChild(title);
+    }
+    if (value && value.indexOf('data-sce-interval-label') !== -1) {
+      const intervalLabel = new FakeElement('span');
+      intervalLabel.className = 'sce-interval-label';
+      intervalLabel.setAttribute('data-sce-interval-label', '');
+      this.appendChild(intervalLabel);
     }
   }
 
@@ -455,6 +460,9 @@ assert.strictEqual(chart.stockInfoHref(), 'stockinfo?code=TEST');
 const stockInfoLink = chart.toolbar.querySelector('[data-sce-stock-info-link]');
 assert.strictEqual(stockInfoLink.href, 'stockinfo?code=TEST');
 assert.strictEqual(stockInfoLink.hasAttribute('hidden'), false);
+assert.strictEqual(stockInfoLink.textContent, 'TEST');
+assert.strictEqual(chart.toolbar.querySelector('[data-sce-interval-label]').textContent, '1D');
+assert.strictEqual(chart.toolbar.innerHTML.indexOf('>Stock Info<'), -1);
 chart.setSymbolInfo({
   code: 'TEST',
   name_en: 'Example Holdings',
