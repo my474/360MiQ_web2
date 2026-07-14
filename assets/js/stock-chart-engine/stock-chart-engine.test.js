@@ -1107,7 +1107,7 @@ assert.strictEqual(chart.removeIndicator(volumePaneIndicatorId), true);
 assert.ok(!chart.document.panes.some((pane) => pane.id === volumePaneId));
 const rsiPaneId = chart.document.indicators.find((indicator) => indicator.id === rsiId).paneId;
 assert.ok(chart.paneControlHitZones.some((zone) => zone.paneId === rsiPaneId && zone.action === 'maximize'));
-assert.ok(chart.paneControlsLayer.children.some((button) => button.innerHTML.indexOf('<svg') === 0));
+assert.ok(chart.paneControlsLayer.children.some((group) => group.className === 'sce-pane-control-group' && group.children.some((button) => button.innerHTML.indexOf('<svg') === 0)));
 const rsiPaneOriginalIndex = chart.document.panes.findIndex((pane) => pane.id === rsiPaneId);
 assert.ok(chart.movePaneUp(rsiPaneId));
 assert.strictEqual(chart.document.panes.findIndex((pane) => pane.id === rsiPaneId), rsiPaneOriginalIndex - 1);
@@ -1142,9 +1142,8 @@ assert.ok(chart.paneRects.length > 1);
 
 const temporaryPaneId = chart.addPane({ title: 'Temporary pane' });
 chart.draw();
-const closeButton = chart.paneControlsLayer.children.find((button) => {
-  return button.getAttribute('data-sce-pane-id') === temporaryPaneId && button.getAttribute('data-sce-pane-action') === 'close';
-});
+const temporaryPaneControls = chart.paneControlsLayer.children.find((group) => group.getAttribute('data-sce-pane-control-group') === temporaryPaneId);
+const closeButton = temporaryPaneControls && temporaryPaneControls.children.find((button) => button.getAttribute('data-sce-pane-action') === 'close');
 assert.ok(closeButton);
 assert.ok(closeButton.innerHTML.indexOf('<svg') === 0);
 chart.paneControlsLayer.dispatchEvent({ type: 'click', target: closeButton });

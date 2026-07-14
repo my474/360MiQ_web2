@@ -614,6 +614,20 @@
   z-index: 3;
 }
 
+.sce-pane-control-group {
+  display: flex;
+  gap: 4px;
+  opacity: 0.42;
+  pointer-events: auto;
+  position: absolute;
+  transition: opacity 120ms ease;
+}
+
+.sce-pane-control-group:hover,
+.sce-pane-control-group:focus-within {
+  opacity: 1;
+}
+
 .sce-pane-control-button {
   align-items: center;
   background: var(--sce-pane-control-bg);
@@ -626,8 +640,8 @@
   justify-content: center;
   padding: 0;
   pointer-events: auto;
-  position: absolute;
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+  position: relative;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .sce-pane-control-button svg {

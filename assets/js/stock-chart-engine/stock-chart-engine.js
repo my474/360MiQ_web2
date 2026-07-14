@@ -5397,7 +5397,18 @@
   Chart.prototype.renderPaneControlOverlays = function () {
     if (!this.paneControlsLayer) return;
     this.paneControlsLayer.innerHTML = '';
+    var groups = {};
     this.paneControlHitZones.forEach(function (zone) {
+      var group = groups[zone.paneId];
+      if (!group) {
+        group = document.createElement('div');
+        group.className = 'sce-pane-control-group';
+        group.setAttribute('data-sce-pane-control-group', zone.paneId);
+        group.style.left = zone.x + 'px';
+        group.style.top = zone.y + 'px';
+        this.paneControlsLayer.appendChild(group);
+        groups[zone.paneId] = group;
+      }
       var button = document.createElement('button');
       button.type = 'button';
       button.className = 'sce-pane-control-button';
@@ -5407,12 +5418,10 @@
       button.setAttribute('title', zone.label);
       button.setAttribute('aria-disabled', zone.disabled ? 'true' : 'false');
       if (zone.disabled) button.setAttribute('disabled', 'disabled');
-      button.style.left = zone.x + 'px';
-      button.style.top = zone.y + 'px';
       button.style.width = zone.width + 'px';
       button.style.height = zone.height + 'px';
       button.innerHTML = paneControlIconSvg(zone.icon);
-      this.paneControlsLayer.appendChild(button);
+      group.appendChild(button);
     }, this);
   };
 
