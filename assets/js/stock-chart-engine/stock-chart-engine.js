@@ -348,7 +348,7 @@
       fibRetracement: '<path d="M5 5h14"/><path d="M5 9h14"/><path d="M5 12h14"/><path d="M5 15h14"/><path d="M5 19h14"/>',
       fibExtension: '<path d="M4 17l5-10 5 6"/><path d="M13 8h8"/><path d="M13 12h8"/><path d="M13 16h8"/>',
       pitchfork: '<path d="M4 20 12 12"/><path d="M10 5 21 0"/><path d="M14 17 23 12"/><path d="M10 5 14 17"/>',
-      schiffPitchfork: '<path d="M4 20v-7" stroke-dasharray="2 2"/><path d="M4 13 12 10"/><path d="M10 4 21 0"/><path d="M14 16 23 12"/><path d="M10 4 14 16"/>',
+      schiffPitchfork: '<path d="M3 21v-8" stroke-dasharray="2 2"/><path d="M3 21 10 5 16 15"/><path d="M3 13 22 7"/><path d="M10 5 22 1"/><path d="M16 15 22 13"/><path d="M13 10 22 7"/>',
       modifiedSchiffPitchfork: '<path d="M4 20 8 12" stroke-dasharray="2 2"/><path d="M8 12 13 10"/><path d="M11 4 22 0"/><path d="M15 16 23 12"/><path d="M11 4 15 16"/>',
       insidePitchfork: '<path d="M3 20 10 5 16 15"/><path d="M6.5 12.5 16 15"/><path d="M10 5 22 8"/><path d="M16 15 22 16.5"/><path d="M13 10 22 12.25"/>',
       fibChannel: '<path d="M4 18L19 8"/><path d="M6 21L21 11"/><path d="M5 20L20 10"/><path d="M5 17L20 7"/>',
@@ -7140,7 +7140,7 @@
     fillChannel();
     drawLine(ctx, a, b);
     drawLine(ctx, b, c);
-    drawLine(ctx, a, c);
+    if (kind !== 'schiffPitchfork') drawLine(ctx, a, c);
     project(outerOne);
     project(outerTwo);
     project(between(outerOne, outerTwo, 0.25));

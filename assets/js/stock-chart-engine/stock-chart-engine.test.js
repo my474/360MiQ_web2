@@ -1621,6 +1621,8 @@ assert.ok(commandIncludesPoint(standardPitchforkCommands, 'moveTo', pitchforkC))
 const schiffHandleStart = { x: pitchforkA.x, y: (pitchforkA.y + pitchforkB.y) / 2 };
 const schiffPitchforkCommands = renderMeasurementTool('schiff_pitchfork');
 assert.ok(commandIncludesPoint(schiffPitchforkCommands, 'moveTo', schiffHandleStart));
+assert.ok(commandIncludesPoint(schiffPitchforkCommands, 'lineTo', pitchforkB));
+assert.ok(commandIncludesPoint(schiffPitchforkCommands, 'lineTo', pitchforkC));
 const modifiedSchiffHandleStart = { x: (pitchforkA.x + pitchforkB.x) / 2, y: (pitchforkA.y + pitchforkB.y) / 2 };
 const modifiedSchiffPitchforkCommands = renderMeasurementTool('modified_schiff_pitchfork');
 assert.ok(commandIncludesPoint(modifiedSchiffPitchforkCommands, 'moveTo', modifiedSchiffHandleStart));
@@ -1644,6 +1646,7 @@ assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerUpp
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerLower));
 assert.ok(insidePitchforkCommands.filter((command) => command.type === 'fill').length >= 2);
 assert.notStrictEqual(StockChartEngine.drawingTools.pitchfork.icon, StockChartEngine.drawingTools.schiff_pitchfork.icon);
+assert.ok(StockChartEngine.drawingTools.schiff_pitchfork.icon.indexOf('stroke-dasharray') !== -1);
 assert.notStrictEqual(StockChartEngine.drawingTools.schiff_pitchfork.icon, StockChartEngine.drawingTools.modified_schiff_pitchfork.icon);
 assert.notStrictEqual(StockChartEngine.drawingTools.modified_schiff_pitchfork.icon, StockChartEngine.drawingTools.inside_pitchfork.icon);
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
