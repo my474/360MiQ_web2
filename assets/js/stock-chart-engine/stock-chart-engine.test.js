@@ -1625,16 +1625,18 @@ const modifiedSchiffHandleStart = { x: (pitchforkA.x + pitchforkB.x) / 2, y: (pi
 const modifiedSchiffPitchforkCommands = renderMeasurementTool('modified_schiff_pitchfork');
 assert.ok(commandIncludesPoint(modifiedSchiffPitchforkCommands, 'moveTo', modifiedSchiffHandleStart));
 const insidePitchforkCommands = renderMeasurementTool('inside_pitchfork');
-const insideHandleMidpoint = { x: (pitchforkB.x + pitchforkC.x) / 2, y: (pitchforkB.y + pitchforkC.y) / 2 };
+const insideHandleMidpoint = { x: (pitchforkA.x + pitchforkB.x) / 2, y: (pitchforkA.y + pitchforkB.y) / 2 };
 const insideMedianEnd = {
   x: measurementRenderRect.x + measurementRenderRect.width,
-  y: pitchforkA.y + (insideHandleMidpoint.y - pitchforkA.y) * ((measurementRenderRect.x + measurementRenderRect.width - pitchforkA.x) / (insideHandleMidpoint.x - pitchforkA.x))
+  y: insideHandleMidpoint.y + (pitchforkC.y - insideHandleMidpoint.y) * ((measurementRenderRect.x + measurementRenderRect.width - insideHandleMidpoint.x) / (pitchforkC.x - insideHandleMidpoint.x))
 };
-const insideInnerUpper = { x: insideHandleMidpoint.x + (pitchforkB.x - insideHandleMidpoint.x) * 0.5, y: insideHandleMidpoint.y + (pitchforkB.y - insideHandleMidpoint.y) * 0.5 };
-const insideInnerLower = { x: insideHandleMidpoint.x + (pitchforkC.x - insideHandleMidpoint.x) * 0.5, y: insideHandleMidpoint.y + (pitchforkC.y - insideHandleMidpoint.y) * 0.5 };
+const insideChannelMidpoint = { x: (pitchforkB.x + pitchforkC.x) / 2, y: (pitchforkB.y + pitchforkC.y) / 2 };
+const insideInnerUpper = { x: insideChannelMidpoint.x + (pitchforkB.x - insideChannelMidpoint.x) * 0.5, y: insideChannelMidpoint.y + (pitchforkB.y - insideChannelMidpoint.y) * 0.5 };
+const insideInnerLower = { x: insideChannelMidpoint.x + (pitchforkC.x - insideChannelMidpoint.x) * 0.5, y: insideChannelMidpoint.y + (pitchforkC.y - insideChannelMidpoint.y) * 0.5 };
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkA));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkB));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkC));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideHandleMidpoint));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'lineTo', insideMedianEnd));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerUpper));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerLower));

@@ -7149,10 +7149,13 @@
   }
 
   function drawInsidePitchfork(ctx, rect, p0, p1, p2, style) {
-    var handleMidpoint = midpoint(p1, p2);
+    // Inside Pitchfork uses line C from the midpoint of P0/P1 through P2.
+    // Every channel rail must share line C's direction, not the Andrews median's.
+    var lineCStart = midpoint(p0, p1);
+    var channelMidpoint = midpoint(p1, p2);
     var direction = {
-      x: handleMidpoint.x - p0.x,
-      y: handleMidpoint.y - p0.y
+      x: p2.x - lineCStart.x,
+      y: p2.y - lineCStart.y
     };
     if (direction.x === 0 && direction.y === 0) direction.x = 1;
 
@@ -7168,12 +7171,12 @@
     function pairForRatio(ratio) {
       return {
         upper: {
-          x: handleMidpoint.x + (p1.x - handleMidpoint.x) * ratio,
-          y: handleMidpoint.y + (p1.y - handleMidpoint.y) * ratio
+          x: channelMidpoint.x + (p1.x - channelMidpoint.x) * ratio,
+          y: channelMidpoint.y + (p1.y - channelMidpoint.y) * ratio
         },
         lower: {
-          x: handleMidpoint.x + (p2.x - handleMidpoint.x) * ratio,
-          y: handleMidpoint.y + (p2.y - handleMidpoint.y) * ratio
+          x: channelMidpoint.x + (p2.x - channelMidpoint.x) * ratio,
+          y: channelMidpoint.y + (p2.y - channelMidpoint.y) * ratio
         }
       };
     }
@@ -7205,14 +7208,14 @@
     var outerPair = pairForRatio(outerRatio);
     var innerPair = pairForRatio(preferredInnerRatio);
 
-    // The red triangle is the three-pivot scaffold. The median starts at P0 and
-    // the two blue outer rails pass through P1 and P2 in parallel with it.
+    // The red triangle is the three-pivot scaffold. Line C begins at the P0/P1
+    // midpoint and reaches P2; the two blue outer rails pass through P1 and P2.
     ctx.save();
     ctx.strokeStyle = baseColor;
     drawLine(ctx, p0, p1);
     drawLine(ctx, p1, p2);
     drawLine(ctx, p0, p2);
-    drawProjectedLine(ctx, p0, handleMidpoint, rect, true);
+    drawProjectedLine(ctx, lineCStart, p2, rect, true);
     ctx.restore();
 
     fillBand(outerPair, outerColor, 0.16);
