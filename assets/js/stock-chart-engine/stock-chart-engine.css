@@ -940,6 +940,7 @@
   }
 
   .sce-recent-stocks-menu {
+    align-content: start;
     border-bottom: 0;
     border-left: 0;
     border-radius: 10px 10px 0 0;
@@ -952,6 +953,7 @@
     min-width: 0;
     position: fixed;
     right: 0;
+    top: auto;
     width: 100vw;
     z-index: 80;
   }
@@ -970,6 +972,8 @@
   }
 
   .sce-recent-stocks-list {
+    align-content: start;
+    grid-auto-rows: min-content;
     max-height: min(56vh, 420px);
   }
 
