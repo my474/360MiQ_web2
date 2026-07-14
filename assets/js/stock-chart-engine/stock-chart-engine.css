@@ -79,15 +79,6 @@
   white-space: nowrap;
 }
 
-.sce-interval-label {
-  color: var(--sce-text);
-  flex: 0 0 auto;
-  font-size: 13px;
-  font-weight: 700;
-  margin-right: 8px;
-  white-space: nowrap;
-}
-
 .sce-toolbar button,
 .sce-toolbar select,
 .sce-toolbar .sce-stock-info-link {
@@ -395,6 +386,13 @@
   border-color: rgba(96, 165, 250, 0.62);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
   color: #bfdbfe;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-toolbar select,
+.sce-root[data-sce-theme="dark"] .sce-toolbar select option {
+  background: #172033;
+  color: #f9fafb;
+  color-scheme: dark;
 }
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:hover,

@@ -2111,7 +2111,6 @@
     this.toolbar.className = 'sce-toolbar';
     this.toolbar.innerHTML = [
       '<a class="sce-title sce-stock-info-link" data-sce-stock-info-link href="#" target="_blank" rel="noopener noreferrer" hidden></a>',
-      '<span class="sce-interval-label" data-sce-interval-label></span>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">', paneControlIconSvg('undo'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="redo" title="Redo (Ctrl+Y / Cmd+Shift+Z)" aria-label="Redo">', paneControlIconSvg('redo'), '</button>',
       '<details class="sce-chart-type-picker" data-sce-chart-type-picker>',
@@ -4569,8 +4568,6 @@
   Chart.prototype.updateToolbar = function () {
     var title = this.toolbar.querySelector('.sce-title');
     if (title) title.textContent = this.document.symbol;
-    var intervalLabel = this.toolbar.querySelector('[data-sce-interval-label]');
-    if (intervalLabel) intervalLabel.textContent = this.document.interval;
     var stockInfoLink = this.toolbar.querySelector('[data-sce-stock-info-link]');
     if (stockInfoLink) {
       var href = this.stockInfoHref();

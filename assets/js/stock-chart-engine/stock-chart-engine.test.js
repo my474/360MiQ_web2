@@ -65,12 +65,6 @@ class FakeElement {
       title.className = 'sce-title';
       this.appendChild(title);
     }
-    if (value && value.indexOf('data-sce-interval-label') !== -1) {
-      const intervalLabel = new FakeElement('span');
-      intervalLabel.className = 'sce-interval-label';
-      intervalLabel.setAttribute('data-sce-interval-label', '');
-      this.appendChild(intervalLabel);
-    }
   }
 
   get innerHTML() {
@@ -516,7 +510,7 @@ const stockInfoLink = chart.toolbar.querySelector('[data-sce-stock-info-link]');
 assert.strictEqual(stockInfoLink.href, 'stockinfo?code=TEST');
 assert.strictEqual(stockInfoLink.hasAttribute('hidden'), false);
 assert.strictEqual(stockInfoLink.textContent, 'TEST');
-assert.strictEqual(chart.toolbar.querySelector('[data-sce-interval-label]').textContent, '1D');
+assert.strictEqual(chart.toolbar.querySelector('[data-sce-interval-label]'), null);
 assert.strictEqual(chart.toolbar.innerHTML.indexOf('>Stock Info<'), -1);
 chart.setSymbolInfo({
   code: 'TEST',
