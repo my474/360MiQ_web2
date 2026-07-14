@@ -2172,6 +2172,7 @@
       '<details class="sce-recent-stocks-picker" data-sce-recent-stocks-picker>',
       '<summary aria-label="Recent stocks" title="Recent stocks">', paneControlIconSvg('recent'), '<span>Recent</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-recent-stocks-menu" data-sce-recent-stocks-menu role="menu">',
+      '<div class="sce-recent-stocks-sheet-title">Recent stocks</div>',
       recentStocksHtml(this.options.recentStocks),
       '</div>',
       '</details>'
@@ -2233,6 +2234,11 @@
       if (shareButton) {
         if (event.preventDefault) event.preventDefault();
         self.handleShareAction(shareButton.getAttribute('data-sce-share-action'));
+        return;
+      }
+      var recentPickerBackdrop = closestAttribute(event.target, 'data-sce-recent-stocks-picker');
+      if (recentPickerBackdrop && event.target === recentPickerBackdrop) {
+        recentPickerBackdrop.removeAttribute('open');
         return;
       }
       var recentStockButton = closestAttribute(event.target, 'data-sce-recent-stock');
@@ -2455,6 +2461,14 @@
       event.preventDefault();
       this.setFullBrowserMode(false);
       return;
+    }
+    if (this.toolbar && this.toolbar.querySelector) {
+      var openedToolbarMenu = this.toolbar.querySelector('details[open]');
+      if (openedToolbarMenu) {
+        event.preventDefault();
+        openedToolbarMenu.removeAttribute('open');
+        return;
+      }
     }
     if (this.settingsPopup && !this.settingsPopup.hasAttribute('hidden')) {
       event.preventDefault();
