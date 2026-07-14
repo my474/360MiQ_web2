@@ -602,6 +602,38 @@ a.sectorperformance {
 a:hover.sectorperformance {
     color:yellow;
 }
+
+.stock-advanced-chart-link {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(35, 54, 86, 0.16);
+  color: #006bff;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  left: 8px;
+  line-height: 1;
+  padding: 7px 10px;
+  position: absolute;
+  text-decoration: none;
+  bottom: 6px;
+  z-index: 1001;
+}
+
+.stock-advanced-chart-link:hover,
+.stock-advanced-chart-link:focus {
+  background: #006bff;
+  border-color: #006bff;
+  color: #fff;
+  text-decoration: none;
+}
+
+.stock-advanced-chart-link i {
+  font-size: 11px;
+}
 </style>
 <style>
 .masonry-item {
@@ -978,6 +1010,12 @@ function adsBlocked(callback){
             </tr>
         </table>
         <img onclick="shareWithFacebook(window.location.href, stockcode, document.getElementById('stockname').textContent);" src="assets/img/facebook.png" style="float:right; height:22px; width: 22px; padding: 3px; position: absolute; top:0; right:0; z-index: 1000; cursor: pointer;" title="Share on Facebook"/>
+        <?php if ($stockcode != "") { ?>
+        <a class="stock-advanced-chart-link" href="tool.php?tab=3&amp;stockcode=<?php echo rawurlencode($stockcode); ?>#tab-3" target="_blank" rel="noopener" title="Open <?php echo htmlspecialchars($stockcode, ENT_QUOTES, 'UTF-8'); ?> in Advance Chart">
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+            <span>Advance Chart</span>
+        </a>
+        <?php } ?>
         <!--<img onclick="shareWithFacebook(window.location.href, stockcode, document.getElementById('stockname').textContent);" src="assets/img/FullScreen.png" style="float:right; height:36px; width: 36px; padding: 3px; position: absolute; bottom:0; left:0; z-index: 1000; cursor: pointer;" title="Full Technical Chart"/>-->
         <div id="stockrangecontainer" style="float:right; position: absolute; top:382px; right:2px; z-index: 1000;"></div>
     </div>
