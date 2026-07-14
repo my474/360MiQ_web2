@@ -1602,6 +1602,46 @@ assert.notStrictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareFix
 assert.ok(gannSquareFixedCommands.filter((command) => command.type === 'lineTo').length > gannSquareCommands.filter((command) => command.type === 'lineTo').length);
 assertUniqueRenderSignatures(['parallel_channel', 'regression_trend', 'flat_top_bottom', 'disjoint_channel'], measurementRenderFourPoints);
 assertUniqueRenderSignatures(['pitchfork', 'schiff_pitchfork', 'modified_schiff_pitchfork', 'inside_pitchfork'], measurementRenderPoints);
+function commandIncludesPoint(commands, type, point) {
+  return commands.some((command) => command.type === type && Math.abs(command.x - point.x) < 0.01 && Math.abs(command.y - point.y) < 0.01);
+}
+const pitchforkScreenPoints = chart.drawingScreenPoints({
+  type: 'pitchfork',
+  paneId: 'price',
+  points: measurementRenderPoints
+});
+const pitchforkA = pitchforkScreenPoints[0];
+const pitchforkB = pitchforkScreenPoints[1];
+const pitchforkC = pitchforkScreenPoints[2];
+const standardPitchforkCommands = renderMeasurementTool('pitchfork');
+assert.ok(standardPitchforkCommands.some((command) => command.type === 'fill'));
+assert.ok(commandIncludesPoint(standardPitchforkCommands, 'moveTo', pitchforkA));
+assert.ok(commandIncludesPoint(standardPitchforkCommands, 'moveTo', pitchforkB));
+assert.ok(commandIncludesPoint(standardPitchforkCommands, 'moveTo', pitchforkC));
+const schiffHandleStart = { x: pitchforkA.x, y: (pitchforkA.y + pitchforkB.y) / 2 };
+const schiffPitchforkCommands = renderMeasurementTool('schiff_pitchfork');
+assert.ok(commandIncludesPoint(schiffPitchforkCommands, 'moveTo', schiffHandleStart));
+const modifiedSchiffHandleStart = { x: (pitchforkA.x + pitchforkB.x) / 2, y: (pitchforkA.y + pitchforkB.y) / 2 };
+const modifiedSchiffPitchforkCommands = renderMeasurementTool('modified_schiff_pitchfork');
+assert.ok(commandIncludesPoint(modifiedSchiffPitchforkCommands, 'moveTo', modifiedSchiffHandleStart));
+const insidePitchforkCommands = renderMeasurementTool('inside_pitchfork');
+const insideHandleMidpoint = { x: (pitchforkB.x + pitchforkC.x) / 2, y: (pitchforkB.y + pitchforkC.y) / 2 };
+const insideMedianEnd = {
+  x: measurementRenderRect.x + measurementRenderRect.width,
+  y: pitchforkA.y + (insideHandleMidpoint.y - pitchforkA.y) * ((measurementRenderRect.x + measurementRenderRect.width - pitchforkA.x) / (insideHandleMidpoint.x - pitchforkA.x))
+};
+const insideInnerUpper = { x: insideHandleMidpoint.x + (pitchforkB.x - insideHandleMidpoint.x) * 0.5, y: insideHandleMidpoint.y + (pitchforkB.y - insideHandleMidpoint.y) * 0.5 };
+const insideInnerLower = { x: insideHandleMidpoint.x + (pitchforkC.x - insideHandleMidpoint.x) * 0.5, y: insideHandleMidpoint.y + (pitchforkC.y - insideHandleMidpoint.y) * 0.5 };
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkA));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkB));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkC));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'lineTo', insideMedianEnd));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerUpper));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerLower));
+assert.ok(insidePitchforkCommands.filter((command) => command.type === 'fill').length >= 2);
+assert.notStrictEqual(StockChartEngine.drawingTools.pitchfork.icon, StockChartEngine.drawingTools.schiff_pitchfork.icon);
+assert.notStrictEqual(StockChartEngine.drawingTools.schiff_pitchfork.icon, StockChartEngine.drawingTools.modified_schiff_pitchfork.icon);
+assert.notStrictEqual(StockChartEngine.drawingTools.modified_schiff_pitchfork.icon, StockChartEngine.drawingTools.inside_pitchfork.icon);
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));

@@ -347,10 +347,10 @@
       vwapAnchor: '<path d="M12 4v16"/><path d="M6 10c4-4 8 8 12 0"/><circle cx="12" cy="4" r="2"/>',
       fibRetracement: '<path d="M5 5h14"/><path d="M5 9h14"/><path d="M5 12h14"/><path d="M5 15h14"/><path d="M5 19h14"/>',
       fibExtension: '<path d="M4 17l5-10 5 6"/><path d="M13 8h8"/><path d="M13 12h8"/><path d="M13 16h8"/>',
-      pitchfork: '<path d="M5 19L19 5"/><path d="M9 19l10-10"/><path d="M3 15l10-10"/>',
-      schiffPitchfork: '<path d="M7 19L19 5"/><path d="M10 19l9-9"/><path d="M5 15l9-9"/><path d="M5 19h4"/>',
-      modifiedSchiffPitchfork: '<path d="M8 18L19 5"/><path d="M11 19l8-9"/><path d="M6 15l8-9"/><path d="M5 19l4-4"/>',
-      insidePitchfork: '<path d="M8 18L19 5"/><path d="M12 18l7-8"/><path d="M7 14l7-8"/><path d="M8 18l4-4"/>',
+      pitchfork: '<path d="M4 20 12 12"/><path d="M10 5 21 0"/><path d="M14 17 23 12"/><path d="M10 5 14 17"/>',
+      schiffPitchfork: '<path d="M4 20v-7" stroke-dasharray="2 2"/><path d="M4 13 12 10"/><path d="M10 4 21 0"/><path d="M14 16 23 12"/><path d="M10 4 14 16"/>',
+      modifiedSchiffPitchfork: '<path d="M4 20 8 12" stroke-dasharray="2 2"/><path d="M8 12 13 10"/><path d="M11 4 22 0"/><path d="M15 16 23 12"/><path d="M11 4 15 16"/>',
+      insidePitchfork: '<path d="M4 20 9 12 15 15"/><path d="M13 5 22 8"/><path d="M9 12 20 15"/><path d="M11 9 21 12"/>',
       fibChannel: '<path d="M4 18L19 8"/><path d="M6 21L21 11"/><path d="M5 20L20 10"/><path d="M5 17L20 7"/>',
       timeZones: '<path d="M5 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/><path d="M21 4v16"/>',
       trendFibTime: '<path d="M4 18l6-8"/><path d="M10 4v16"/><path d="M14 4v16"/><path d="M20 4v16"/>',
@@ -3706,9 +3706,15 @@
     var width = style.width || 2;
     var lineStyle = normalizeLineStyle(style.lineStyle);
     var opacity = style.opacity == null ? 1 : style.opacity;
+    var isInsidePitchfork = drawingRenderKind(drawing, tool) === 'insidePitchfork';
+    var insideRatios = normalizeInsidePitchforkRatios(style.insideRatios).join(', ');
     pointer = pointer || this.drawingTextPopupPoint(drawing);
     var textControls = canEditText
       ? ['<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>'].join('')
+      : '';
+    var insidePitchforkControls = isInsidePitchfork
+      ? '<label>Channel ratios<input type="text" data-sce-popup-field="insidePitchforkRatios" value="' + escapeHtml(insideRatios) + '" aria-describedby="sce-inside-pitchfork-ratios-help"></label>' +
+        '<p id="sce-inside-pitchfork-ratios-help" class="sce-settings-help">Use values from 0 to 1, such as 0.382, 0.5, 0.618, 1.</p>'
       : '';
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title">',
@@ -3730,6 +3736,7 @@
       '<option value="dash"', lineStyle === 'dash' ? ' selected' : '', '>Dash</option>',
       '<option value="dot"', lineStyle === 'dot' ? ' selected' : '', '>Dot</option>',
       '</select></label>',
+      insidePitchforkControls,
       '<div class="sce-settings-actions">',
       '<button type="button" data-sce-popup-action="send-back">Send back</button>',
       '<button type="button" data-sce-popup-action="bring-front">Bring front</button>',
@@ -3745,7 +3752,7 @@
     delete this.settingsPopup.dataset.indicatorId;
     delete this.settingsPopup.dataset.output;
     this.bindDrawingSettingsPopup();
-    this.positionSettingsPopup(pointer, 306, canEditText ? 376 : 304);
+    this.positionSettingsPopup(pointer, 306, (canEditText ? 376 : 304) + (isInsidePitchfork ? 66 : 0));
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
     if (field && field.focus) {
       field.focus();
@@ -3817,13 +3824,16 @@
     var width = this.settingsPopup.querySelector('[data-sce-popup-field="drawingWidth"]');
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="drawingLineStyle"]');
     var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="drawingOpacity"]');
+    var insideRatios = this.settingsPopup.querySelector('[data-sce-popup-field="insidePitchforkRatios"]');
     if (textField) this.updateDrawingText(drawingId, textField.value);
-    this.updateDrawingStyle(drawingId, {
+    var stylePatch = {
       color: color ? color.value : null,
       width: width ? Number(width.value) : 2,
       lineStyle: lineStyle ? lineStyle.value : 'solid',
       opacity: opacity ? Number(opacity.value) : 1
-    });
+    };
+    if (insideRatios) stylePatch.insideRatios = normalizeInsidePitchforkRatios(insideRatios.value);
+    this.updateDrawingStyle(drawingId, stylePatch);
     this.closeIndicatorSettingsPopup();
   };
 
@@ -3843,6 +3853,10 @@
       return indicator.id === options.ownerStudyId;
     })[0] : null;
     var baseStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {});
+    if (type === 'inside_pitchfork') {
+      if (!baseStyle.color) baseStyle.color = '#ef4444';
+      baseStyle.insideRatios = normalizeInsidePitchforkRatios(baseStyle.insideRatios);
+    }
     if (baseStyle.color && !(options.style && options.style.fill)) {
       baseStyle.fill = colorWithAlpha(baseStyle.color, 0.14) || baseStyle.fill;
     }
@@ -4040,6 +4054,10 @@
     type = normalizeDrawingType(type);
     var tool = drawingToolDefinition(type);
     var pendingStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {});
+    if (type === 'inside_pitchfork') {
+      if (!pendingStyle.color) pendingStyle.color = '#ef4444';
+      pendingStyle.insideRatios = normalizeInsidePitchforkRatios(pendingStyle.insideRatios);
+    }
     if (pendingStyle.color && !(options.style && options.style.fill)) {
       pendingStyle.fill = colorWithAlpha(pendingStyle.color, 0.14) || pendingStyle.fill;
     }
@@ -6487,7 +6505,7 @@
     } else if (kind === 'pitchFan' && point(2)) {
       drawPitchFan(ctx, rect, point(0), point(1), point(2), style.color);
     } else if ((kind === 'pitchfork' || kind === 'schiffPitchfork' || kind === 'modifiedSchiffPitchfork' || kind === 'insidePitchfork') && point(2)) {
-      drawPitchfork(ctx, rect, point(0), point(1), point(2), kind);
+      drawPitchfork(ctx, rect, point(0), point(1), point(2), kind, style);
     } else if (kind === 'circles' && point(1)) {
       drawFibCircles(ctx, point(0), point(1));
     } else if (kind === 'spiral' && point(1)) {
@@ -7058,24 +7076,160 @@
     drawLine(ctx, b, c);
   }
 
-  function drawPitchfork(ctx, rect, a, b, c, kind) {
-    var anchor = a;
-    if (kind === 'schiffPitchfork') anchor = { x: (a.x + midpoint(b, c).x) / 2, y: a.y };
-    if (kind === 'modifiedSchiffPitchfork') anchor = midpoint(a, midpoint(b, c));
-    if (kind === 'insidePitchfork') anchor = midpoint(a, midpoint(b, c));
-    var forkMid = midpoint(b, c);
-    drawProjectedLine(ctx, anchor, forkMid, rect, true);
-    var offsetB = { x: b.x - forkMid.x, y: b.y - forkMid.y };
-    var offsetC = { x: c.x - forkMid.x, y: c.y - forkMid.y };
-    var upperStart = { x: anchor.x + offsetB.x, y: anchor.y + offsetB.y };
-    var lowerStart = { x: anchor.x + offsetC.x, y: anchor.y + offsetC.y };
+  function drawPitchfork(ctx, rect, a, b, c, kind, style) {
     if (kind === 'insidePitchfork') {
-      upperStart = midpoint(anchor, b);
-      lowerStart = midpoint(anchor, c);
+      drawInsidePitchfork(ctx, rect, a, b, c, style || {});
+      return;
     }
-    drawProjectedLine(ctx, upperStart, b, rect, true);
-    drawProjectedLine(ctx, lowerStart, c, rect, true);
-    if (anchor !== a) drawLine(ctx, a, anchor);
+    var outerOne;
+    var outerTwo;
+    var median;
+    var direction;
+
+    if (kind === 'insidePitchfork') {
+      // The inside variant uses the midpoint of P1/P2 through P3 as one outer line.
+      // The other outer line runs through P2; the median is exactly between the two.
+      outerOne = midpoint(a, b);
+      direction = { x: c.x - outerOne.x, y: c.y - outerOne.y };
+      outerTwo = b;
+      median = midpoint(outerOne, outerTwo);
+    } else {
+      var handleStart = a;
+      if (kind === 'schiffPitchfork') {
+        // Schiff shifts the handle by half the P1/P2 price distance, retaining P1's time.
+        handleStart = { x: a.x, y: (a.y + b.y) / 2 };
+      } else if (kind === 'modifiedSchiffPitchfork') {
+        // Modified Schiff shifts the handle halfway towards P2 in both time and price.
+        handleStart = midpoint(a, b);
+      }
+      var baseMidpoint = midpoint(b, c);
+      direction = { x: baseMidpoint.x - handleStart.x, y: baseMidpoint.y - handleStart.y };
+      outerOne = b;
+      outerTwo = c;
+      median = handleStart;
+    }
+
+    function lineTarget(start) {
+      return { x: start.x + direction.x, y: start.y + direction.y };
+    }
+
+    function project(start) {
+      drawProjectedLine(ctx, start, lineTarget(start), rect, true);
+    }
+
+    function between(left, right, ratio) {
+      return {
+        x: left.x + (right.x - left.x) * ratio,
+        y: left.y + (right.y - left.y) * ratio
+      };
+    }
+
+    function fillChannel() {
+      var endX = rect.x + rect.width;
+      var firstEnd = { x: endX, y: lineYAtX(outerOne, lineTarget(outerOne), endX) };
+      var secondEnd = { x: endX, y: lineYAtX(outerTwo, lineTarget(outerTwo), endX) };
+      ctx.beginPath();
+      ctx.moveTo(outerOne.x, outerOne.y);
+      ctx.lineTo(outerTwo.x, outerTwo.y);
+      ctx.lineTo(secondEnd.x, secondEnd.y);
+      ctx.lineTo(firstEnd.x, firstEnd.y);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    fillChannel();
+    drawLine(ctx, a, b);
+    drawLine(ctx, b, c);
+    drawLine(ctx, a, c);
+    project(outerOne);
+    project(outerTwo);
+    project(between(outerOne, outerTwo, 0.25));
+    project(between(outerOne, outerTwo, 0.75));
+    project(median);
+  }
+
+  function drawInsidePitchfork(ctx, rect, p0, p1, p2, style) {
+    var handleMidpoint = midpoint(p1, p2);
+    var direction = {
+      x: handleMidpoint.x - p0.x,
+      y: handleMidpoint.y - p0.y
+    };
+    if (direction.x === 0 && direction.y === 0) direction.x = 1;
+
+    var baseColor = style.color || '#ef4444';
+    var outerColor = '#2563eb';
+    var innerColor = '#009688';
+    var ratios = normalizeInsidePitchforkRatios(style.insideRatios);
+    var outerRatio = ratios[ratios.length - 1];
+    var preferredInnerRatio = ratios.reduce(function (nearest, ratio) {
+      return Math.abs(ratio - 0.5) < Math.abs(nearest - 0.5) ? ratio : nearest;
+    }, ratios[0]);
+
+    function pairForRatio(ratio) {
+      return {
+        upper: {
+          x: handleMidpoint.x + (p1.x - handleMidpoint.x) * ratio,
+          y: handleMidpoint.y + (p1.y - handleMidpoint.y) * ratio
+        },
+        lower: {
+          x: handleMidpoint.x + (p2.x - handleMidpoint.x) * ratio,
+          y: handleMidpoint.y + (p2.y - handleMidpoint.y) * ratio
+        }
+      };
+    }
+
+    function target(start) {
+      return { x: start.x + direction.x, y: start.y + direction.y };
+    }
+
+    function project(start) {
+      drawProjectedLine(ctx, start, target(start), rect, true);
+    }
+
+    function fillBand(pair, color, alpha) {
+      var endX = rect.x + rect.width;
+      var upperEnd = { x: endX, y: lineYAtX(pair.upper, target(pair.upper), endX) };
+      var lowerEnd = { x: endX, y: lineYAtX(pair.lower, target(pair.lower), endX) };
+      ctx.save();
+      ctx.fillStyle = colorWithAlpha(color, alpha) || style.fill;
+      ctx.beginPath();
+      ctx.moveTo(pair.upper.x, pair.upper.y);
+      ctx.lineTo(pair.lower.x, pair.lower.y);
+      ctx.lineTo(lowerEnd.x, lowerEnd.y);
+      ctx.lineTo(upperEnd.x, upperEnd.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    var outerPair = pairForRatio(outerRatio);
+    var innerPair = pairForRatio(preferredInnerRatio);
+
+    // The red triangle is the three-pivot scaffold. The median starts at P0 and
+    // the two blue outer rails pass through P1 and P2 in parallel with it.
+    ctx.save();
+    ctx.strokeStyle = baseColor;
+    drawLine(ctx, p0, p1);
+    drawLine(ctx, p1, p2);
+    drawLine(ctx, p0, p2);
+    drawProjectedLine(ctx, p0, handleMidpoint, rect, true);
+    ctx.restore();
+
+    fillBand(outerPair, outerColor, 0.16);
+    if (preferredInnerRatio < outerRatio) fillBand(innerPair, innerColor, 0.2);
+
+    ctx.save();
+    ctx.strokeStyle = outerColor;
+    project(outerPair.upper);
+    project(outerPair.lower);
+    ctx.strokeStyle = innerColor;
+    ratios.forEach(function (ratio) {
+      if (ratio === outerRatio) return;
+      var pair = pairForRatio(ratio);
+      project(pair.upper);
+      project(pair.lower);
+    });
+    ctx.restore();
   }
 
   function drawMarker(ctx, p, kind, color) {
@@ -7723,8 +7877,26 @@
     if (output.width != null) output.width = clamp(Number(output.width) || 1, 1, 16);
     if (output.lineStyle != null) output.lineStyle = normalizeLineStyle(output.lineStyle);
     if (output.opacity != null) output.opacity = normalizeOpacity(output.opacity, 1);
+    if (output.insideRatios != null) output.insideRatios = normalizeInsidePitchforkRatios(output.insideRatios);
     delete output.lineWidth;
     return output;
+  }
+
+  function normalizeInsidePitchforkRatios(value) {
+    var values = Array.isArray(value) ? value : String(value == null ? '0.5, 1' : value).split(/[,\s]+/);
+    var seen = {};
+    var ratios = values.map(function (entry) {
+      return Number(entry);
+    }).filter(function (ratio) {
+      if (!Number.isFinite(ratio) || ratio <= 0 || ratio > 1) return false;
+      var key = String(Math.round(ratio * 1000000) / 1000000);
+      if (seen[key]) return false;
+      seen[key] = true;
+      return true;
+    }).sort(function (left, right) {
+      return left - right;
+    });
+    return ratios.length ? ratios : [0.5, 1];
   }
 
   function normalizeOpacity(value, fallback) {
