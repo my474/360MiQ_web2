@@ -5252,12 +5252,17 @@
     ctx.fillStyle = theme.paneBackground;
     ctx.fillRect(rect.x, rect.y, rect.width + rect.scaleWidth, rect.height);
     this.drawGrid(rect, range, theme);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(rect.x, rect.y, rect.width, rect.height);
+    ctx.clip();
     if (rect.paneId === 'price') this.drawPriceWatermark(rect, theme);
     if (rect.paneId === 'price') this.drawPriceVolumeOverlays(rect, theme);
     if (rect.paneId === 'price') this.drawPriceSeries(rect, range, theme);
     this.drawIndicators(rect, range, theme);
     this.drawDrawings(rect, range, theme);
     this.drawPendingDrawing(rect, range, theme);
+    ctx.restore();
     this.drawScale(rect, range, theme);
     this.drawPaneLegend(rect, range, theme);
     this.drawPaneControls(rect, theme);

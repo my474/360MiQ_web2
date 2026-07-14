@@ -179,6 +179,9 @@ class FakeCanvas extends FakeElement {
       moveTo(x, y) {
         canvas.commands.push({ type: 'moveTo', x, y, alpha: this.globalAlpha });
       },
+      rect(x, y, width, height) {
+        canvas.commands.push({ type: 'rect', x, y, width, height, alpha: this.globalAlpha });
+      },
       quadraticCurveTo(cpx, cpy, x, y) {
         canvas.commands.push({ type: 'quadraticCurveTo', cpx, cpy, x, y, alpha: this.globalAlpha });
       },
@@ -187,6 +190,9 @@ class FakeCanvas extends FakeElement {
       },
       save() {
         this._alphaStack.push(this.globalAlpha);
+      },
+      clip() {
+        canvas.commands.push({ type: 'clip', alpha: this.globalAlpha });
       },
       setLineDash() {},
       setTransform() {},
@@ -1115,6 +1121,7 @@ assert.ok(chart.movePaneDown(rsiPaneId));
 assert.strictEqual(chart.document.panes.findIndex((pane) => pane.id === rsiPaneId), rsiPaneOriginalIndex);
 
 chart.draw();
+assert.ok(chart.canvas.commands.filter((command) => command.type === 'clip').length >= chart.paneRects.length);
 const resizeZone = chart.paneResizeHitZones.find((zone) => zone.upperPaneId === 'price' || zone.lowerPaneId === 'price');
 assert.ok(resizeZone);
 chart.handlePointerMove({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 5 });
