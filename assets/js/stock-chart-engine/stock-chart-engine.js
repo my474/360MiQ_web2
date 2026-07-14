@@ -2064,7 +2064,7 @@
     this.document = migrateDocument(options.document || (options.load !== false ? this.storage.load(this.layoutId) : null) || createDefaultDocument(options));
     this.sourceBars = normalizeBars(options.data || []);
     this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
-    this.document.theme = this.document.theme || getThemeName(options.theme);
+    this.document.theme = options.theme ? getThemeName(options.theme) : (this.document.theme || getThemeName());
     this.indicatorResults = {};
     this.paneRects = [];
     this.legendHitZones = [];

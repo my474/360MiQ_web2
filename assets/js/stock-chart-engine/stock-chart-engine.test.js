@@ -1713,4 +1713,16 @@ darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'l
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'light');
 darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'dark');
+const persistedLightDocument = darkChart.serialize();
+persistedLightDocument.theme = 'light';
+const siteThemedChart = new StockChartEngine.Chart('#chart', {
+  data,
+  document: persistedLightDocument,
+  theme: 'dark',
+  load: false,
+  autosave: false
+});
+assert.strictEqual(siteThemedChart.document.theme, 'dark');
+assert.strictEqual(siteThemedChart.root.getAttribute('data-sce-theme'), 'dark');
+siteThemedChart.destroy();
 darkChart.destroy();

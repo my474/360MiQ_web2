@@ -429,7 +429,8 @@
             layoutId: layoutId,
             storagePrefix: STOCK_CHART_STORAGE_PREFIX,
             load: shouldLoadStoredLayout,
-            autosave: options.autosave !== false
+            autosave: options.autosave !== false,
+            theme: currentThemeName()
         });
         applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
