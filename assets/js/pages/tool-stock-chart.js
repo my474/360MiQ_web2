@@ -123,7 +123,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260713.42';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260714.3';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -441,6 +441,7 @@
     }
 
     function applySharedLayout(code, payload, bars, metadata) {
+        var savedLayoutExists = hasStoredLayout(escapeLayoutId(code));
         renderChart(code, bars, {
             load: false,
             autosave: false,
@@ -451,6 +452,16 @@
         applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo);
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
+        if (!savedLayoutExists) {
+            stockChart.options.autosave = true;
+            stockChart.document.settings.autosave = true;
+            stockChart.save();
+            stockChart.scheduleAutosave();
+            sharedPreviewActive = false;
+            setSharedSaveVisible(false);
+            setStatus('Shared layout saved for ' + code + '.', false);
+            return;
+        }
         sharedPreviewActive = true;
         setSharedSaveVisible(true);
         setStatus('Shared chart preview. Click Save Layout to replace your saved ' + code + ' layout.', false);
