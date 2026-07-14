@@ -639,6 +639,20 @@ a:hover.sectorperformance {
 .stock-advanced-chart-link i {
   font-size: 10px;
 }
+
+[data-theme="dark"] .stock-advanced-chart-link {
+  background: #1e2b43;
+  border-color: rgba(96, 165, 250, 0.62);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  color: #bfdbfe;
+}
+
+[data-theme="dark"] .stock-advanced-chart-link:hover,
+[data-theme="dark"] .stock-advanced-chart-link:focus {
+  background: #2563eb;
+  border-color: #60a5fa;
+  color: #fff;
+}
 </style>
 <style>
 .masonry-item {

@@ -391,10 +391,10 @@
 }
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar .sce-stock-info-link {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(96, 165, 250, 0.42);
+  background: #1e2b43;
+  border-color: rgba(96, 165, 250, 0.62);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
-  color: #006bff;
+  color: #bfdbfe;
 }
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar button:hover,
@@ -422,8 +422,8 @@
 
 .sce-root[data-sce-theme="dark"] .sce-toolbar .sce-stock-info-link:hover,
 .sce-root[data-sce-theme="dark"] .sce-toolbar .sce-stock-info-link:focus {
-  background: #006bff;
-  border-color: #006bff;
+  background: #2563eb;
+  border-color: #60a5fa;
   color: #fff;
 }
 
