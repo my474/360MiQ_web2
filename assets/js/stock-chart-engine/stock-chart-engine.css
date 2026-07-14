@@ -249,9 +249,10 @@
 
 .sce-indicator-menu {
   gap: 6px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   max-height: min(430px, calc(100vh - 120px));
   min-width: 320px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .sce-indicator-menu input {
@@ -273,6 +274,10 @@
 .sce-indicator-list {
   display: grid;
   gap: 3px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 2px;
 }
 
 .sce-chart-type-menu button,
