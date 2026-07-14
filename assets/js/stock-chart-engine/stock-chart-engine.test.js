@@ -1664,8 +1664,9 @@ assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerUpp
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerLower));
 assert.ok(insidePitchforkCommands.filter((command) => command.type === 'fill').length >= 2);
 assert.notStrictEqual(StockChartEngine.drawingTools.pitchfork.icon, StockChartEngine.drawingTools.schiff_pitchfork.icon);
-assert.ok(StockChartEngine.drawingTools.pitchfork.icon.indexOf('M3 21 22 7') !== -1);
-assert.ok(StockChartEngine.drawingTools.pitchfork.icon.indexOf('M3 21 10 5') === -1);
+assert.ok(StockChartEngine.drawingTools.pitchfork.icon.indexOf('M5 4 10 15') !== -1);
+assert.ok(StockChartEngine.drawingTools.pitchfork.icon.indexOf('M2 21 22 8') !== -1);
+assert.ok(StockChartEngine.drawingTools.pitchfork.icon.indexOf('M2 21 5 4') === -1);
 assert.ok(StockChartEngine.drawingTools.schiff_pitchfork.icon.indexOf('stroke-dasharray') !== -1);
 assert.notStrictEqual(StockChartEngine.drawingTools.schiff_pitchfork.icon, StockChartEngine.drawingTools.modified_schiff_pitchfork.icon);
 assert.ok(StockChartEngine.drawingTools.modified_schiff_pitchfork.icon.indexOf('M3 21 6.5 13') !== -1);
