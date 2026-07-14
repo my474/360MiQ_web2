@@ -825,6 +825,46 @@ assert.ok(chart.visibleIndexRange().from >= panStart.from);
 chart.fitContent();
 chart.draw();
 
+const originalDrawingsForViewportRange = chart.document.drawings;
+chart.document.drawings = [];
+chart.setVisibleIndexRange(30, 50);
+const priceRangeWithoutViewportDrawings = chart.paneRange('price');
+chart.document.drawings = [{
+  id: 'offscreen-drawing-range-test',
+  type: 'trendline',
+  paneId: 'price',
+  visible: true,
+  points: [
+    { time: chart.bars[2].time, value: 1000000 },
+    { time: chart.bars[4].time, value: 1000000 }
+  ]
+}];
+assert.deepStrictEqual(chart.paneRange('price'), priceRangeWithoutViewportDrawings);
+chart.document.drawings = [{
+  id: 'hidden-drawing-range-test',
+  type: 'trendline',
+  paneId: 'price',
+  visible: false,
+  points: [
+    { time: chart.bars[40].time, value: 1000000 },
+    { time: chart.bars[41].time, value: 1000000 }
+  ]
+}];
+assert.deepStrictEqual(chart.paneRange('price'), priceRangeWithoutViewportDrawings);
+chart.document.drawings = [{
+  id: 'crossing-drawing-range-test',
+  type: 'trendline',
+  paneId: 'price',
+  visible: true,
+  points: [
+    { time: chart.bars[20].time, value: 1000000 },
+    { time: chart.bars[60].time, value: 1000000 }
+  ]
+}];
+assert.ok(chart.paneRange('price').max > priceRangeWithoutViewportDrawings.max * 10);
+chart.document.drawings = originalDrawingsForViewportRange;
+chart.fitContent();
+
 const panesBeforeVolumeOverlay = chart.document.panes.length;
 const priceRangeBeforeVolumeOverlay = chart.paneRange('price');
 const volumeOverlayId = chart.addIndicator('VOLUME');

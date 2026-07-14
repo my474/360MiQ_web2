@@ -4882,9 +4882,9 @@
       });
     });
     this.document.drawings.forEach(function (drawing) {
-      if (drawing.paneId !== paneId) return;
-      drawing.points.forEach(function (point) {
-        if (point.value != null) values.push(point.value);
+      if (drawing.paneId !== paneId || drawing.visible === false) return;
+      drawingRangeValuesForVisibleViewport(drawing, visible).forEach(function (value) {
+        values.push(value);
       });
     });
     if (!values.length) return manualRange || { min: 0, max: 1 };
@@ -7220,6 +7220,88 @@
 
   function pointerInBounds(pointer, bounds, tolerance) {
     return pointer.x >= bounds.minX - tolerance && pointer.x <= bounds.maxX + tolerance && pointer.y >= bounds.minY - tolerance && pointer.y <= bounds.maxY + tolerance;
+  }
+
+  function drawingRangeValuesForVisibleViewport(drawing, visibleBars) {
+    var points = (drawing && drawing.points || []).filter(function (point) {
+      return point && Number.isFinite(Number(point.time)) && Number.isFinite(Number(point.value));
+    }).map(function (point) {
+      return { time: Number(point.time), value: Number(point.value) };
+    });
+    if (!points.length) return [];
+    if (!visibleBars || !visibleBars.length) {
+      return points.map(function (point) { return point.value; });
+    }
+
+    var visibleStart = visibleBars[0].time;
+    var visibleEnd = visibleBars[visibleBars.length - 1].time;
+    var tool = drawingToolDefinition(drawing.type);
+    var kind = drawingRenderKind(drawing, tool);
+
+    function pointIsVisible(point) {
+      return point.time >= visibleStart && point.time <= visibleEnd;
+    }
+
+    function pointSpanIntersectsViewport() {
+      var minTime = points[0].time;
+      var maxTime = points[0].time;
+      points.forEach(function (point) {
+        minTime = Math.min(minTime, point.time);
+        maxTime = Math.max(maxTime, point.time);
+      });
+      return maxTime >= visibleStart && minTime <= visibleEnd;
+    }
+
+    function segmentValueAtTime(a, b, time) {
+      if (a.time === b.time) return a.value;
+      var ratio = (time - a.time) / (b.time - a.time);
+      return a.value + (b.value - a.value) * ratio;
+    }
+
+    if (kind === 'vline' || kind === 'timeZones' || kind === 'cyclicLines' || kind === 'timeCycles') {
+      return [];
+    }
+    if (kind === 'hline' || kind === 'crossline') return [points[0].value];
+    if (kind === 'horizontalRay') return points[0].time <= visibleEnd ? [points[0].value] : [];
+
+    var wholeShapeKinds = [
+      'rectangle', 'gridBox', 'gannBox', 'gannSquare', 'gannSquareFixed', 'rotatedRectangle', 'ellipse', 'circle',
+      'polygon', 'trianglePattern', 'channel', 'regressionTrend', 'flatTopBottom', 'disjointChannel', 'fibChannel',
+      'wedge', 'fibRetracement', 'fibExtension', 'fan', 'gannFan', 'fibFan', 'pitchFan', 'pitchfork',
+      'schiffPitchfork', 'modifiedSchiffPitchfork', 'insidePitchfork', 'positionLong', 'positionShort',
+      'positionForecast', 'datePriceRange', 'priceRange', 'barsPattern', 'ghostFeed', 'volumeProfile', 'sector'
+    ];
+    if (wholeShapeKinds.indexOf(kind) !== -1) {
+      return pointSpanIntersectsViewport() ? points.map(function (point) { return point.value; }) : [];
+    }
+
+    if (kind === 'ray' || kind === 'extendedLine') {
+      if (points.length < 2) return pointIsVisible(points[0]) ? [points[0].value] : [];
+      var rayStart = kind === 'ray' ? Math.max(points[0].time, visibleStart) : visibleStart;
+      var rayEnd = visibleEnd;
+      if (kind === 'ray' && rayEnd < points[0].time) return [];
+      return [segmentValueAtTime(points[0], points[1], rayStart), segmentValueAtTime(points[0], points[1], rayEnd)];
+    }
+
+    if (points.length === 1) return pointIsVisible(points[0]) ? [points[0].value] : [];
+
+    var values = [];
+    points.forEach(function (point) {
+      if (pointIsVisible(point)) values.push(point.value);
+    });
+    for (var i = 0; i < points.length - 1; i += 1) {
+      var a = points[i];
+      var b = points[i + 1];
+      var segmentStart = Math.min(a.time, b.time);
+      var segmentEnd = Math.max(a.time, b.time);
+      if (segmentEnd < visibleStart || segmentStart > visibleEnd) continue;
+      var left = Math.max(segmentStart, visibleStart);
+      var right = Math.min(segmentEnd, visibleEnd);
+      values.push(segmentValueAtTime(a, b, left), segmentValueAtTime(a, b, right));
+    }
+    return values.filter(function (value) {
+      return Number.isFinite(value);
+    });
   }
 
   function drawingToolDefinition(type) {
