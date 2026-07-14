@@ -358,6 +358,51 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     grid-template-columns: 92px minmax(0, 1fr);
 }
 
+.sheet-content .sheet-choice-item {
+    font-weight: 600 !important;
+}
+
+.sheet-content .sheet-choice-item span,
+.sheet-content .sheet-indicator-item span {
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    margin-top: 3px;
+    opacity: 0.78;
+}
+
+.sheet-content .sheet-indicator-item {
+    display: grid;
+    gap: 4px 12px;
+    grid-template-columns: 76px minmax(0, 1fr);
+}
+
+.sheet-content .sheet-indicator-item strong {
+    grid-row: span 2;
+}
+
+.sheet-search-wrap {
+    background: inherit;
+    padding: 0 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.sheet-search-input {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    color: inherit;
+    font: inherit;
+    padding: 11px 13px;
+    width: 100%;
+}
+
+.sheet-choice-list {
+    overflow-y: auto;
+}
+
 .sheet-stock-item strong,
 .sheet-stock-item span {
     overflow: hidden;
@@ -3090,27 +3135,58 @@ window.openProjectBottomSheet = function(options) {
 
     header.innerText = options.title || 'Menu';
     content.innerHTML = '';
-    (Array.isArray(options.items) ? options.items : []).forEach(function(item) {
+    const items = Array.isArray(options.items) ? options.items : [];
+    const list = document.createElement('div');
+    list.className = 'sheet-choice-list';
+    if (options.searchable) {
+        const searchWrap = document.createElement('div');
+        searchWrap.className = 'sheet-search-wrap';
+        const search = document.createElement('input');
+        search.type = 'search';
+        search.className = 'sheet-search-input';
+        search.placeholder = options.searchPlaceholder || 'Search';
+        search.setAttribute('aria-label', search.placeholder);
+        search.addEventListener('input', function() {
+            const query = String(search.value || '').trim().toLowerCase();
+            Array.prototype.forEach.call(list.children, function(button) {
+                button.hidden = !!query && String(button.getAttribute('data-sheet-search') || '').indexOf(query) === -1;
+            });
+        });
+        searchWrap.appendChild(search);
+        content.appendChild(searchWrap);
+    }
+    items.forEach(function(item) {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'sheet-stock-item';
-        const code = document.createElement('strong');
-        const name = document.createElement('span');
-        code.textContent = item.code || item.label || '';
-        name.textContent = item.name || item.description || '';
-        button.appendChild(code);
-        button.appendChild(name);
+        const hasSecondaryText = !!(item.name || item.description);
+        button.className = item.className || (item.code ? 'sheet-stock-item' : 'sheet-choice-item');
+        button.setAttribute('data-sheet-search', String(item.search || [item.code, item.label, item.name, item.description].filter(Boolean).join(' ')).toLowerCase());
+        const primary = document.createElement(item.code ? 'strong' : 'span');
+        primary.textContent = item.code || item.label || '';
+        button.appendChild(primary);
+        if (hasSecondaryText) {
+            const secondary = document.createElement('span');
+            secondary.textContent = item.name || item.description || '';
+            button.appendChild(secondary);
+        }
+        if (item.name && item.description) {
+            const detail = document.createElement('span');
+            detail.className = 'sheet-choice-detail';
+            detail.textContent = item.description;
+            button.appendChild(detail);
+        }
         button.addEventListener('click', function() {
             closeSheet();
             if (typeof options.onSelect === 'function') options.onSelect(item);
         });
-        content.appendChild(button);
+        list.appendChild(button);
     });
-    if (!content.children.length) {
+    content.appendChild(list);
+    if (!items.length) {
         const empty = document.createElement('div');
         empty.className = 'sheet-content-empty';
         empty.textContent = options.emptyText || 'Nothing to show';
-        content.appendChild(empty);
+        list.appendChild(empty);
     }
 
     overlay.classList.add('show');

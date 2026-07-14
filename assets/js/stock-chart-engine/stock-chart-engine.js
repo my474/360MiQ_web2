@@ -2118,7 +2118,7 @@
       '<a class="sce-title sce-stock-info-link" data-sce-stock-info-link href="#" target="_blank" rel="noopener noreferrer" hidden></a>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">', paneControlIconSvg('undo'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="redo" title="Redo (Ctrl+Y / Cmd+Shift+Z)" aria-label="Redo">', paneControlIconSvg('redo'), '</button>',
-      '<details class="sce-chart-type-picker" data-sce-chart-type-picker>',
+      '<details class="sce-chart-type-picker" data-sce-chart-type-picker data-sce-mobile-picker="chart-type">',
       '<summary data-sce-chart-type-button aria-label="Chart type"></summary>',
       '<div class="sce-chart-type-menu">',
       '<button type="button" data-sce-chart-type-option="candlestick">', chartTypeIconSvg('candlestick'), '<span>Candlestick</span></button>',
@@ -2137,7 +2137,7 @@
       '<option value="area">Area</option>',
       '<option value="baseline">Baseline</option>',
       '</select>',
-      '<details class="sce-period-picker" data-sce-period-picker>',
+      '<details class="sce-period-picker" data-sce-period-picker data-sce-mobile-picker="period">',
       '<summary data-sce-chart-period-button aria-label="Chart period"></summary>',
       '<div class="sce-period-menu" role="menu">',
       chartPeriodButtonsHtml(),
@@ -2150,13 +2150,13 @@
       '<option value="quarterly">Quarterly</option>',
       '<option value="yearly">Yearly</option>',
       '</select>',
-      '<details class="sce-date-range-picker" data-sce-date-range-picker>',
+      '<details class="sce-date-range-picker" data-sce-date-range-picker data-sce-mobile-picker="date-range">',
       '<summary data-sce-date-range-button aria-label="Date range"></summary>',
       '<div class="sce-date-range-menu" data-sce-date-ranges role="menu">',
       dateRangeButtonsHtml('data-sce-date-range'),
       '</div>',
       '</details>',
-      '<details class="sce-indicator-picker" data-sce-indicator-picker>',
+      '<details class="sce-indicator-picker" data-sce-indicator-picker data-sce-mobile-picker="indicators">',
       '<summary aria-label="Indicators"><span>Indicators</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-indicator-menu" role="menu">',
       '<input type="search" data-sce-indicator-search placeholder="Search indicators" aria-label="Search indicators">',
@@ -2171,7 +2171,7 @@
       '<button type="button" data-sce-action="fit">Fit</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="full-browser" title="Full browser" aria-label="Full browser" aria-pressed="false">', paneControlIconSvg('full-browser'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="fullscreen" title="Full screen" aria-label="Full screen" aria-pressed="false">', paneControlIconSvg('fullscreen'), '</button>',
-      '<details class="sce-share-picker" data-sce-share-picker>',
+      '<details class="sce-share-picker" data-sce-share-picker data-sce-mobile-picker="share">',
       '<summary aria-label="Share chart">', paneControlIconSvg('share'), '<span>Share</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-share-menu" role="menu">',
       '<button type="button" data-sce-share-action="share-chart">Share Chart</button>',
@@ -2179,7 +2179,7 @@
       '<div class="sce-share-status" data-sce-share-status aria-live="polite"></div>',
       '</div>',
       '</details>',
-      '<details class="sce-recent-stocks-picker" data-sce-recent-stocks-picker>',
+      '<details class="sce-recent-stocks-picker" data-sce-recent-stocks-picker data-sce-mobile-picker="recent-stocks">',
       '<summary data-sce-recent-stocks-button aria-label="Recent stocks" title="Recent stocks">', paneControlIconSvg('recent'), '<span>Recent</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-recent-stocks-menu" data-sce-recent-stocks-menu role="menu">',
       '<div class="sce-recent-stocks-sheet-title">Recent stocks</div>',
@@ -2216,8 +2216,9 @@
   Chart.prototype.bindDom = function () {
     var self = this;
     this.toolbar.addEventListener('click', function (event) {
-      var recentStocksButton = closestAttribute(event.target, 'data-sce-recent-stocks-button');
-      if (recentStocksButton && self.isMobileViewport() && self.openRecentStocksInProjectSheet()) {
+      var mobilePicker = closestAttribute(event.target, 'data-sce-mobile-picker');
+      if (mobilePicker && self.isMobileViewport() && self.openToolbarPickerInProjectSheet(mobilePicker.getAttribute('data-sce-mobile-picker'))) {
+        mobilePicker.removeAttribute('open');
         if (event.preventDefault) event.preventDefault();
         return;
       }
@@ -4770,6 +4771,74 @@
           self.selectRecentStock(stock && stock.code);
         }
       });
+    }, 0);
+    return true;
+  };
+
+  Chart.prototype.openToolbarPickerInProjectSheet = function (picker) {
+    if (!this.isMobileViewport()) return false;
+    if (picker === 'recent-stocks') return this.openRecentStocksInProjectSheet();
+    if (typeof window === 'undefined' || typeof window.openProjectBottomSheet !== 'function') return false;
+    var self = this;
+    var options = null;
+    if (picker === 'chart-type') {
+      var chartTypes = ['candlestick', 'heikin_ashi', 'bar', 'line', 'area', 'baseline'];
+      options = {
+        title: 'Chart type',
+        items: chartTypes.map(function (type) {
+          return { label: chartTypeLabel(type), value: type };
+        }),
+        onSelect: function (item) { self.setChartType(item && item.value); }
+      };
+    } else if (picker === 'period') {
+      options = {
+        title: 'Timeframe',
+        items: Object.keys(CHART_PERIODS).map(function (period) {
+          return { label: CHART_PERIODS[period].label, value: period };
+        }),
+        onSelect: function (item) { self.setPeriod(item && item.value); }
+      };
+    } else if (picker === 'date-range') {
+      options = {
+        title: 'Date range',
+        items: DATE_RANGE_PRESETS.map(function (preset) {
+          return { label: preset.label, value: preset.id };
+        }),
+        onSelect: function (item) { self.setDateRangePreset(item && item.value); }
+      };
+    } else if (picker === 'indicators') {
+      options = {
+        title: 'Indicators',
+        searchable: true,
+        searchPlaceholder: 'Search indicators',
+        items: Object.keys(Indicators).sort(function (left, right) {
+          return (Indicators[left].name || left).localeCompare(Indicators[right].name || right);
+        }).map(function (type) {
+          var definition = Indicators[type] || {};
+          return {
+            code: type,
+            name: definition.name || type,
+            description: definition.category || 'Indicator',
+            value: type,
+            className: 'sheet-indicator-item',
+            search: [type, definition.name, definition.category].join(' ')
+          };
+        }),
+        onSelect: function (item) { self.addIndicatorFromMenu(item && item.value); }
+      };
+    } else if (picker === 'share') {
+      options = {
+        title: 'Share chart',
+        items: [
+          { label: 'Share Chart', value: 'share-chart' },
+          { label: 'Copy Share URL', value: 'copy-share-url' }
+        ],
+        onSelect: function (item) { self.handleShareAction(item && item.value); }
+      };
+    }
+    if (!options) return false;
+    window.setTimeout(function () {
+      window.openProjectBottomSheet(options);
     }, 0);
     return true;
   };

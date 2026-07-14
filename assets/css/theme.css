@@ -265,8 +265,20 @@
 }
 
 [data-theme="dark"] .sheet-content .sheet-stock-item span {
-  color: #d1d5db;
-  opacity: 1;
+    color: #d1d5db;
+    opacity: 1;
+}
+
+[data-theme="dark"] .sheet-content .sheet-choice-item span,
+[data-theme="dark"] .sheet-content .sheet-indicator-item span {
+    color: #d1d5db;
+    opacity: 1;
+}
+
+[data-theme="dark"] .sheet-search-input {
+    background: #141b2e;
+    border-color: #3a4763;
+    color: #f3f4f6;
 }
 
 [data-theme="dark"] .chatbot__input {
