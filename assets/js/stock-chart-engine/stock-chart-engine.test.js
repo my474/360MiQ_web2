@@ -1672,6 +1672,9 @@ assert.ok(StockChartEngine.drawingTools.schiff_pitchfork.icon.indexOf('stroke-da
 assert.notStrictEqual(StockChartEngine.drawingTools.schiff_pitchfork.icon, StockChartEngine.drawingTools.modified_schiff_pitchfork.icon);
 assert.ok(StockChartEngine.drawingTools.modified_schiff_pitchfork.icon.indexOf('M3 21 6.5 13') !== -1);
 assert.notStrictEqual(StockChartEngine.drawingTools.modified_schiff_pitchfork.icon, StockChartEngine.drawingTools.inside_pitchfork.icon);
+assert.strictEqual((StockChartEngine.drawingTools.pitchfan.icon.match(/<path/g) || []).length, 6);
+assert.ok(StockChartEngine.drawingTools.pitchfan.icon.indexOf('M3 19 22 2') !== -1);
+assert.ok(StockChartEngine.drawingTools.pitchfan.icon.indexOf('M11 8 14 19') !== -1);
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));
