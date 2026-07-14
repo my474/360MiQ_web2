@@ -878,7 +878,7 @@ select optgroup {
                         <ul class="nav nav-tabs panel-heading not-selectable">
                             <li class="nav-item"><a class="nav-link active mynav-link" id="race-tab" data-bs-toggle="tab" data-bs-target="#race" role="tab" data-toggle="tab" href="#tab-1">Race</a></li>
                             <li class="nav-item"><a class="nav-link mynav-link" id="chartcomposer-tab" data-bs-toggle="tab" data-bs-target="#chartcomposer" role="tab" data-toggle="tab" href="#tab-2">Chart Composer&nbsp;<span class="new-badge">NEW</span><span class="sr-only new">(new feature)</span></a></li>
-                            <li class="nav-item"><a class="nav-link mynav-link" id="stockchart-tab" data-bs-toggle="tab" data-bs-target="#tab-3" role="tab" data-toggle="tab" href="#tab-3">Advance Chart</a></li>
+                            <li class="nav-item"><a class="nav-link mynav-link" id="stockchart-tab" data-bs-toggle="tab" data-bs-target="#tab-3" role="tab" data-toggle="tab" href="#tab-3">Advanced Chart</a></li>
                         </ul>
                         
                         <!-- Tab Navigation -->
@@ -1016,7 +1016,7 @@ select optgroup {
                             </div>
 
                             <div class="tab-pane" role="tabpanel" id="tab-3">
-                                <h2 class="sr-only">Advance Chart - Interactive Technical Analysis Chart</h2>
+                                <h2 class="sr-only">Advanced Chart - Interactive Technical Analysis Chart</h2>
                                 <div class="text-center" style="margin: 15px 0;"><!--<a href="#"><img src="assets/img/Ad_h.png"></a>--></div>
                                 <div class="stock-chart-tool-shell">
                                     <div class="stock-chart-search-card">

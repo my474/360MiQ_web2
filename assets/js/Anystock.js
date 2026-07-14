@@ -124,7 +124,7 @@ function anystock(data, stockcode, stockname, longMAperiod, stockcontainer, stoc
     label.hAlign("left");
     label.fontFamily("Montserrat");
     label.fontSize(10);
-    label.text("360MiQ.com");
+    label.text("");
 
     var labelstockcode = chart.label(1);
     //labelstockcode.padding(5, 5, 5, 5);
