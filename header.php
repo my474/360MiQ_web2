@@ -54,8 +54,10 @@
       </li>
       <li class="nav-item <?php echo (isset($page) && $page == 'tool' ? 'active' : ''); ?>">
         <a class="nav-link" href="tool">Tool
-            <span class="new-badge">new</span>
-            <span class="sr-only new">(new feature)</span>
+            <span class="new-badge-group" data-new-badge-start="2026-07-14">
+                <span class="timed-new-badge">NEW</span>
+                <span class="sr-only">(new feature)</span>
+            </span>
         </a>
       </li>
       <li class="nav-item">
@@ -181,7 +183,8 @@ $(document).on('click', '.color-item', function(event) {
 }
 
 /* Menu styles */
-.new-badge {
+.new-badge,
+.timed-new-badge {
     display: inline-block;
     margin-left: -2px; /* Reduced from 8px to bring closer to "Chart" */
     padding: 1px 3px; /* Slightly adjusted for rotation */
@@ -349,18 +352,13 @@ window.onload = function () {
         img.ondragstart = function() { return false; };
     }
     
-    // remove NEW badge after 90 days
-    const badge = document.querySelector('.new-badge');
-    const srOnly = document.querySelector('.sr-only.new');
-    const startDate = new Date('2025-05-16'); // Badge added on May 16, 2025
     const currentDate = new Date();
-    const daysDiff = (currentDate - startDate) / (1000 * 60 * 60 * 24); // Days since start
-
-    if (daysDiff >= 90) {
-        if (badge) badge.remove(); // Remove "New" badge
-        if (srOnly) srOnly.remove(); // Remove screen reader text
-        //console.log('New badge and sr-only.new removed: 90 days elapsed');
-    }
+    document.querySelectorAll('[data-new-badge-start]').forEach(function (badge) {
+        const startDate = new Date(badge.getAttribute('data-new-badge-start') + 'T00:00:00');
+        if (!Number.isNaN(startDate.getTime()) && currentDate >= new Date(startDate.getTime() + 90 * 24 * 60 * 60 * 1000)) {
+            badge.remove();
+        }
+    });
     
      // ********** this is set and change in header.php. Obfuscating it to random name will break the code. Manually match the Obfuscated name both here and in header.php *****
     isSubmitted = false;

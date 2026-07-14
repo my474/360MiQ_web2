@@ -877,8 +877,8 @@ select optgroup {
                     <div class="panel panel-default" style="margin:5px 0 0;">
                         <ul class="nav nav-tabs panel-heading not-selectable">
                             <li class="nav-item"><a class="nav-link active mynav-link" id="race-tab" data-bs-toggle="tab" data-bs-target="#race" role="tab" data-toggle="tab" href="#tab-1">Race</a></li>
-                            <li class="nav-item"><a class="nav-link mynav-link" id="chartcomposer-tab" data-bs-toggle="tab" data-bs-target="#chartcomposer" role="tab" data-toggle="tab" href="#tab-2">Chart Composer&nbsp;<span class="new-badge">NEW</span><span class="sr-only new">(new feature)</span></a></li>
-                            <li class="nav-item"><a class="nav-link mynav-link" id="stockchart-tab" data-bs-toggle="tab" data-bs-target="#tab-3" role="tab" data-toggle="tab" href="#tab-3">Advanced Chart</a></li>
+                            <li class="nav-item"><a class="nav-link mynav-link" id="chartcomposer-tab" data-bs-toggle="tab" data-bs-target="#chartcomposer" role="tab" data-toggle="tab" href="#tab-2">Chart Composer</a></li>
+                            <li class="nav-item"><a class="nav-link mynav-link" id="stockchart-tab" data-bs-toggle="tab" data-bs-target="#tab-3" role="tab" data-toggle="tab" href="#tab-3">Advanced Chart <span class="new-badge-group" data-new-badge-start="2026-07-14"><span class="timed-new-badge">NEW</span><span class="sr-only">(new feature)</span></span></a></li>
                         </ul>
                         
                         <!-- Tab Navigation -->
