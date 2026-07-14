@@ -256,8 +256,17 @@
 
 [data-theme="dark"] .sheet-content a,
 [data-theme="dark"] .sheet-content button {
-  color: var(--text-sheet-content);
+  color: var(--text-sheet-content) !important;
   border-bottom: 1px solid var(--border-sheet-content);
+}
+
+[data-theme="dark"] .sheet-content .sheet-stock-item {
+  color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] .sheet-content .sheet-stock-item span {
+  color: #d1d5db;
+  opacity: 1;
 }
 
 [data-theme="dark"] .chatbot__input {
