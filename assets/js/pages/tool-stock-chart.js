@@ -2,6 +2,8 @@
     'use strict';
 
     var STOCK_CHART_STORAGE_PREFIX = '360miq-tool-stock-chart';
+    var RECENT_STOCKS_STORAGE_KEY = STOCK_CHART_STORAGE_PREFIX + ':recent-stocks';
+    var RECENT_STOCKS_LIMIT = 12;
     var activeAutocompleteRequest = null;
     var autocompleteSerial = 0;
     var activeDataRequest = null;
@@ -86,6 +88,34 @@
         };
     }
 
+    function recentStocks() {
+        try {
+            var saved = JSON.parse(window.localStorage.getItem(RECENT_STOCKS_STORAGE_KEY) || '[]');
+            if (!Array.isArray(saved)) return [];
+            return saved.map(function (item) {
+                return stockMetadataForCode(item && item.code, item);
+            }).filter(function (item) {
+                return isValidCode(item.code);
+            }).slice(0, RECENT_STOCKS_LIMIT);
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function recordRecentStock(code, metadata) {
+        var entry = stockMetadataForCode(code, metadata);
+        if (!isValidCode(entry.code)) return;
+        var next = [entry].concat(recentStocks().filter(function (item) {
+            return item.code !== entry.code;
+        })).slice(0, RECENT_STOCKS_LIMIT);
+        try {
+            window.localStorage.setItem(RECENT_STOCKS_STORAGE_KEY, JSON.stringify(next));
+        } catch (error) {
+            return;
+        }
+        if (stockChart && stockChart.setRecentStocks) stockChart.setRecentStocks(next);
+    }
+
     function hasStockNameMetadata(metadata) {
         return !!(metadata && (metadata.name_en || metadata.name_tc));
     }
@@ -123,7 +153,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260714.3';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260714.6';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -430,7 +460,11 @@
             storagePrefix: STOCK_CHART_STORAGE_PREFIX,
             load: shouldLoadStoredLayout,
             autosave: options.autosave !== false,
-            theme: currentThemeName()
+            theme: currentThemeName(),
+            recentStocks: recentStocks(),
+            onRecentStockSelect: function (stock) {
+                if (stock && stock.code) loadStockChart(stock.code, stock);
+            }
         });
         applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
@@ -452,6 +486,7 @@
         applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo);
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
+        recordRecentStock(code, metadata || payload && payload.document && payload.document.symbolInfo);
         if (!savedLayoutExists) {
             stockChart.options.autosave = true;
             stockChart.document.settings.autosave = true;
@@ -501,6 +536,7 @@
                     symbolInfo: symbolInfo,
                     resetHistory: isNewSymbol
                 });
+                recordRecentStock(code, symbolInfo);
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
             });
         }).catch(function (error) {

@@ -296,6 +296,7 @@ const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
 const data = StockChartEngine.createDemoData(90);
+const recentStockSelections = [];
 const demoCandleStyles = data.slice(1).reduce((counts, bar, index) => {
   const previousClose = data[index].close;
   if (bar.close >= bar.open && bar.close >= previousClose) counts.greenHollow += 1;
@@ -313,7 +314,11 @@ const chart = new StockChartEngine.Chart('#chart', {
   symbol: 'TEST',
   interval: '1D',
   load: false,
-  autosave: false
+  autosave: false,
+  recentStocks: [{ code: 'SPY', name_en: 'SPDR S&P 500 ETF Trust' }],
+  onRecentStockSelect(stock) {
+    recentStockSelections.push(stock);
+  }
 });
 assert.strictEqual(chart.autosaveTimer, null);
 chart.emitChange('autosave-disabled-check', {});
@@ -457,6 +462,22 @@ assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom out"><svg') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stocks-picker') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stock="SPY"') !== -1);
+const recentStockButtonForTest = new FakeElement('button');
+recentStockButtonForTest.setAttribute('data-sce-recent-stock', 'SPY');
+chart.toolbar.appendChild(recentStockButtonForTest);
+chart.toolbar.dispatchEvent({
+  type: 'click',
+  target: recentStockButtonForTest,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+assert.strictEqual(recentStockSelections.length, 1);
+assert.strictEqual(recentStockSelections[0].code, 'SPY');
+chart.setRecentStocks([{ code: 'QQQ', name_en: 'Invesco QQQ Trust' }]);
+assert.ok(chart.options.recentStocks.some((stock) => stock.code === 'QQQ'));
 const zoomButtonForNestedClick = new FakeElement('button');
 zoomButtonForNestedClick.setAttribute('data-sce-action', 'zoom-in');
 const zoomSvgForNestedClick = new FakeElement('svg');
