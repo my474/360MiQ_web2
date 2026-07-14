@@ -1010,12 +1010,10 @@ function adsBlocked(callback){
             </tr>
         </table>
         <img onclick="shareWithFacebook(window.location.href, stockcode, document.getElementById('stockname').textContent);" src="assets/img/facebook.png" style="float:right; height:22px; width: 22px; padding: 3px; position: absolute; top:0; right:0; z-index: 1000; cursor: pointer;" title="Share on Facebook"/>
-        <?php if ($stockcode != "") { ?>
-        <a class="stock-advanced-chart-link" href="tool.php?tab=3&amp;stockcode=<?php echo rawurlencode($stockcode); ?>#tab-3" target="_blank" rel="noopener" title="Open <?php echo htmlspecialchars($stockcode, ENT_QUOTES, 'UTF-8'); ?> in Advance Chart">
+        <a class="stock-advanced-chart-link" href="tool.php?tab=3&amp;stockcode=<?php echo rawurlencode($stockcode); ?>#tab-3" target="_blank" rel="noopener" title="Open Advance Chart" onclick="this.href='tool.php?tab=3&amp;stockcode='+encodeURIComponent(typeof stockcode !== 'undefined' && stockcode ? stockcode : <?php echo json_encode($stockcode, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>)+'#tab-3';">
             <i class="fas fa-chart-line" aria-hidden="true"></i>
             <span>Advance Chart</span>
         </a>
-        <?php } ?>
         <!--<img onclick="shareWithFacebook(window.location.href, stockcode, document.getElementById('stockname').textContent);" src="assets/img/FullScreen.png" style="float:right; height:36px; width: 36px; padding: 3px; position: absolute; bottom:0; left:0; z-index: 1000; cursor: pointer;" title="Full Technical Chart"/>-->
         <div id="stockrangecontainer" style="float:right; position: absolute; top:382px; right:2px; z-index: 1000;"></div>
     </div>
