@@ -1117,6 +1117,12 @@ assert.strictEqual(chart.document.panes.findIndex((pane) => pane.id === rsiPaneI
 chart.draw();
 const resizeZone = chart.paneResizeHitZones.find((zone) => zone.upperPaneId === 'price' || zone.lowerPaneId === 'price');
 assert.ok(resizeZone);
+chart.handlePointerMove({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 5 });
+assert.strictEqual(chart.canvas.style.cursor, 'ns-resize');
+assert.deepStrictEqual(chart.hoverPaneResize, {
+  upperPaneId: resizeZone.upperPaneId,
+  lowerPaneId: resizeZone.lowerPaneId
+});
 const upperPaneBeforeResize = chart.document.panes.find((pane) => pane.id === resizeZone.upperPaneId).height;
 chart.handlePointerDown({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 5 });
 chart.handlePointerMove({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 45 });

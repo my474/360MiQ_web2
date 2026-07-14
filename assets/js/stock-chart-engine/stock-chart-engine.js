@@ -2072,6 +2072,7 @@
     this.scaleDragHitZones = [];
     this.paneControlHitZones = [];
     this.paneResizeHitZones = [];
+    this.hoverPaneResize = null;
     this.pointer = null;
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
@@ -2359,6 +2360,7 @@
       self.handlePointerUp();
       self.pointer = null;
       self.hoverDrawingId = null;
+      self.hoverPaneResize = null;
       self.draw();
     });
     this.canvas.addEventListener('click', function (event) {
@@ -4164,6 +4166,7 @@
     if (this.tapState && distance(this.pointer, this.tapState.startPointer) > 5) this.tapState.moved = true;
     if (this.pendingDrawing) {
       this.hoverDrawingId = null;
+      this.hoverPaneResize = null;
       this.canvas.style.cursor = 'crosshair';
       this.draw();
       return;
@@ -4190,8 +4193,13 @@
       return;
     }
     var hit = this.hitTestDrawing(this.pointer);
+    var paneResizeHit = this.hitTestPaneResize(this.pointer);
     this.hoverDrawingId = hit ? hit.drawing.id : null;
-    if (this.hitTestPaneResize(this.pointer)) this.canvas.style.cursor = 'ns-resize';
+    this.hoverPaneResize = paneResizeHit ? {
+      upperPaneId: paneResizeHit.upperPaneId,
+      lowerPaneId: paneResizeHit.lowerPaneId
+    } : null;
+    if (paneResizeHit) this.canvas.style.cursor = 'ns-resize';
     else if (this.hitTestPaneControl(this.pointer)) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestLegend(this.pointer)) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestScaleMode(this.pointer)) this.canvas.style.cursor = 'pointer';
@@ -4208,6 +4216,11 @@
         lowerPaneId: this.paneResizeState.lowerPaneId
       };
       this.paneResizeState = null;
+      var hoverPaneResize = this.hitTestPaneResize(pointer);
+      this.hoverPaneResize = hoverPaneResize ? {
+        upperPaneId: hoverPaneResize.upperPaneId,
+        lowerPaneId: hoverPaneResize.lowerPaneId
+      } : null;
       this.tapState = null;
       this.canvas.style.cursor = 'crosshair';
       this.emitChange('pane:resize', resized);
@@ -4272,6 +4285,7 @@
     this.tapState = null;
     this.dragState = null;
     this.paneResizeState = null;
+    this.hoverPaneResize = null;
     this.yScaleDragState = null;
     this.panState = null;
     this.suppressNextClick = false;
@@ -4357,6 +4371,10 @@
       upperHeight: upperPane.height || 180,
       lowerHeight: lowerPane.height || 180,
       docPerPixel: totalDocHeight / totalScreenHeight
+    };
+    this.hoverPaneResize = {
+      upperPaneId: zone.upperPaneId,
+      lowerPaneId: zone.lowerPaneId
     };
     this.canvas.style.cursor = 'ns-resize';
     return true;
@@ -5416,14 +5434,21 @@
         upperHeight: upper.height,
         lowerHeight: lower.height
       });
-      ctx.strokeStyle = theme.border;
+      var isActive = (this.hoverPaneResize && this.hoverPaneResize.upperPaneId === upper.paneId && this.hoverPaneResize.lowerPaneId === lower.paneId) || (this.paneResizeState && this.paneResizeState.upperPaneId === upper.paneId && this.paneResizeState.lowerPaneId === lower.paneId);
+      ctx.strokeStyle = isActive ? theme.drawing : theme.border;
+      ctx.lineWidth = isActive ? 2 : 1;
+      if (isActive) {
+        ctx.shadowColor = theme.drawing;
+        ctx.shadowBlur = 10;
+      }
       ctx.beginPath();
       ctx.moveTo(upper.x, Math.round(y) + 0.5);
       ctx.lineTo(upper.x + upper.width + upper.scaleWidth, Math.round(y) + 0.5);
       ctx.stroke();
-      ctx.fillStyle = theme.mutedText;
-      ctx.globalAlpha = 0.55;
-      ctx.fillRect(upper.x + upper.width / 2 - 14, y - 1, 28, 2);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = isActive ? theme.drawing : theme.mutedText;
+      ctx.globalAlpha = isActive ? 0.95 : 0.55;
+      ctx.fillRect(upper.x + upper.width / 2 - 16, y - (isActive ? 1.5 : 1), 32, isActive ? 3 : 2);
     }
     ctx.restore();
   };
