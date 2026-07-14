@@ -608,18 +608,23 @@ a:hover.sectorperformance {
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(0, 123, 255, 0.3);
   border-radius: 999px;
+  bottom: 2px;
+  box-sizing: border-box;
   box-shadow: 0 6px 16px rgba(35, 54, 86, 0.16);
   color: #006bff;
   display: inline-flex;
   font-size: 12px;
   font-weight: 700;
-  gap: 6px;
+  gap: 4px;
+  height: 28px;
+  justify-content: center;
   left: 8px;
   line-height: 1;
-  padding: 7px 10px;
+  padding: 5px 8px;
   position: absolute;
   text-decoration: none;
-  bottom: 6px;
+  white-space: nowrap;
+  width: 136px;
   z-index: 1001;
 }
 
@@ -1010,7 +1015,7 @@ function adsBlocked(callback){
             </tr>
         </table>
         <img onclick="shareWithFacebook(window.location.href, stockcode, document.getElementById('stockname').textContent);" src="assets/img/facebook.png" style="float:right; height:22px; width: 22px; padding: 3px; position: absolute; top:0; right:0; z-index: 1000; cursor: pointer;" title="Share on Facebook"/>
-        <a class="stock-advanced-chart-link" href="tool.php?tab=3&amp;stockcode=<?php echo rawurlencode($stockcode); ?>#tab-3" target="_blank" rel="noopener" title="Open Advance Chart" onclick="this.href='tool.php?tab=3&amp;stockcode='+encodeURIComponent(typeof stockcode !== 'undefined' && stockcode ? stockcode : <?php echo json_encode($stockcode, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>)+'#tab-3';">
+        <a class="stock-advanced-chart-link" href="tool.php?tab=3&amp;stockcode=<?php echo rawurlencode($stockcode); ?>#tab-3" target="_blank" rel="noopener" title="Open Advance Chart" onclick="var code=(typeof stockcode !== 'undefined' && stockcode) ? stockcode : <?php echo json_encode($stockcode, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>; this.href='tool.php?tab=3&stockcode='+encodeURIComponent(code)+'#tab-3';">
             <i class="fas fa-chart-line" aria-hidden="true"></i>
             <span>Advance Chart</span>
         </a>
