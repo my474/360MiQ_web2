@@ -142,6 +142,7 @@
 }
 
 .sce-chart-type-picker,
+.sce-period-picker,
 .sce-indicator-picker,
 .sce-share-picker,
 .sce-recent-stocks-picker {
@@ -149,6 +150,7 @@
 }
 
 .sce-chart-type-picker summary,
+.sce-period-picker summary,
 .sce-date-range-picker summary,
 .sce-indicator-picker summary,
 .sce-share-picker summary,
@@ -172,6 +174,14 @@
 
 .sce-date-range-picker {
   position: relative;
+}
+
+.sce-period-picker {
+  position: relative;
+}
+
+.sce-period-picker summary {
+  min-width: 112px;
 }
 
 .sce-date-range-picker summary {
@@ -206,6 +216,7 @@
 }
 
 .sce-chart-type-picker summary::-webkit-details-marker,
+.sce-period-picker summary::-webkit-details-marker,
 .sce-date-range-picker summary::-webkit-details-marker,
 .sce-indicator-picker summary::-webkit-details-marker,
 .sce-share-picker summary::-webkit-details-marker,
@@ -216,6 +227,9 @@
 .sce-chart-type-picker[open] summary,
 .sce-chart-type-picker summary:hover,
 .sce-chart-type-picker summary:focus,
+.sce-period-picker[open] summary,
+.sce-period-picker summary:hover,
+.sce-period-picker summary:focus,
 .sce-date-range-picker[open] summary,
 .sce-date-range-picker summary:hover,
 .sce-date-range-picker summary:focus,
@@ -233,6 +247,7 @@
 }
 
 .sce-chart-type-menu,
+.sce-period-menu,
 .sce-date-range-menu,
 .sce-indicator-menu,
 .sce-share-menu,
@@ -255,6 +270,10 @@
   left: auto;
   min-width: 184px;
   right: 0;
+}
+
+.sce-period-menu {
+  min-width: 112px;
 }
 
 .sce-share-menu {
@@ -334,6 +353,7 @@
 }
 
 .sce-chart-type-menu button,
+.sce-period-menu button,
 .sce-date-range-menu button,
 .sce-indicator-menu button,
 .sce-share-menu button,
@@ -431,6 +451,7 @@
 }
 
 .sce-chart-type-menu button.is-selected,
+.sce-period-menu button.is-selected,
 .sce-date-range-menu button.is-selected {
   border-color: #2563eb;
 }
@@ -450,6 +471,7 @@
 }
 
 .sce-chart-type-picker[open] .sce-chart-type-chevron,
+.sce-period-picker[open] .sce-chart-type-chevron,
 .sce-date-range-picker[open] .sce-chart-type-chevron,
 .sce-indicator-picker[open] .sce-chart-type-chevron,
 .sce-share-picker[open] .sce-chart-type-chevron,
@@ -495,6 +517,9 @@
 .sce-root[data-sce-theme="dark"] .sce-chart-type-picker[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-picker summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-picker summary:focus,
+.sce-root[data-sce-theme="dark"] .sce-period-picker[open] summary,
+.sce-root[data-sce-theme="dark"] .sce-period-picker summary:hover,
+.sce-root[data-sce-theme="dark"] .sce-period-picker summary:focus,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker[open] summary,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-date-range-picker summary:focus,
@@ -508,6 +533,7 @@
 .sce-root[data-sce-theme="dark"] .sce-recent-stocks-picker summary:hover,
 .sce-root[data-sce-theme="dark"] .sce-recent-stocks-picker summary:focus,
 .sce-root[data-sce-theme="dark"] .sce-chart-type-menu button.is-selected,
+.sce-root[data-sce-theme="dark"] .sce-period-menu button.is-selected,
 .sce-root[data-sce-theme="dark"] .sce-date-range-menu button.is-selected,
 .sce-root[data-sce-theme="dark"] .sce-indicator-menu input:focus {
   border-color: #60a5fa;

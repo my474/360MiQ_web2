@@ -462,6 +462,20 @@ assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-in"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom in"><svg') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-action="zoom-out"') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('aria-label="Zoom out"><svg') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-period-picker') !== -1);
+assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-period-option="weekly"') !== -1);
+const periodOptionForTest = new FakeElement('button');
+periodOptionForTest.setAttribute('data-sce-period-option', 'weekly');
+chart.toolbar.appendChild(periodOptionForTest);
+chart.toolbar.dispatchEvent({
+  type: 'click',
+  target: periodOptionForTest,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+});
+assert.strictEqual(chart.document.settings.period, 'weekly');
+chart.setPeriod('daily');
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stocks-picker') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stock="SPY"') !== -1);
 const recentStockButtonForTest = new FakeElement('button');

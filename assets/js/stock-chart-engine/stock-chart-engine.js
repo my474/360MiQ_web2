@@ -720,6 +720,10 @@
     return CHART_PERIODS[normalized].interval;
   }
 
+  function chartPeriodLabel(period) {
+    return CHART_PERIODS[normalizePeriod(period)].label;
+  }
+
   function watermarkInterval(period, interval) {
     var normalized = normalizePeriod(period || interval);
     if (normalized === 'quarterly') return '1Q';
@@ -2133,7 +2137,13 @@
       '<option value="area">Area</option>',
       '<option value="baseline">Baseline</option>',
       '</select>',
-      '<select class="sce-chart-period" data-sce-chart-period aria-label="Chart period">',
+      '<details class="sce-period-picker" data-sce-period-picker>',
+      '<summary data-sce-chart-period-button aria-label="Chart period"></summary>',
+      '<div class="sce-period-menu" role="menu">',
+      chartPeriodButtonsHtml(),
+      '</div>',
+      '</details>',
+      '<select class="sce-chart-period" data-sce-chart-period aria-label="Chart period" hidden>',
       '<option value="daily">Daily</option>',
       '<option value="weekly">Weekly</option>',
       '<option value="monthly">Monthly</option>',
@@ -2212,6 +2222,14 @@
         self.setChartType(chartTypeOption.getAttribute('data-sce-chart-type-option'));
         var picker = closestAttribute(chartTypeOption, 'data-sce-chart-type-picker');
         if (picker) picker.removeAttribute('open');
+        return;
+      }
+      var periodOption = closestAttribute(event.target, 'data-sce-period-option');
+      if (periodOption) {
+        if (event.preventDefault) event.preventDefault();
+        self.setPeriod(periodOption.getAttribute('data-sce-period-option'));
+        var periodPicker = closestAttribute(periodOption, 'data-sce-period-picker');
+        if (periodPicker) periodPicker.removeAttribute('open');
         return;
       }
       var dateRangeButton = closestAttribute(event.target, 'data-sce-date-range');
@@ -4649,6 +4667,17 @@
     }
     var chartPeriod = this.toolbar.querySelector('[data-sce-chart-period]');
     if (chartPeriod) chartPeriod.value = this.document.settings.period;
+    var chartPeriodButton = this.toolbar.querySelector('[data-sce-chart-period-button]');
+    if (chartPeriodButton) {
+      chartPeriodButton.innerHTML = '<span>' + escapeHtml(chartPeriodLabel(this.document.settings.period)) + '</span>' + chartTypeChevronSvg();
+    }
+    if (this.toolbar.querySelectorAll) {
+      Array.prototype.forEach.call(this.toolbar.querySelectorAll('[data-sce-period-option]'), function (button) {
+        var selected = button.getAttribute('data-sce-period-option') === this.document.settings.period;
+        button.classList.toggle('is-selected', selected);
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      }, this);
+    }
     var dateRangeButton = this.toolbar.querySelector('[data-sce-date-range-button]');
     if (dateRangeButton) {
       dateRangeButton.innerHTML = '<span>Range</span><strong>' + dateRangeLabel(this.document.settings.dateRangePreset) + '</strong>' + chartTypeChevronSvg();
@@ -7785,6 +7814,12 @@
   function dateRangeButtonsHtml(attributeName) {
     return DATE_RANGE_PRESETS.map(function (preset) {
       return '<button type="button" ' + attributeName + '="' + escapeHtml(preset.id) + '" aria-pressed="false">' + escapeHtml(preset.label) + '</button>';
+    }).join('');
+  }
+
+  function chartPeriodButtonsHtml() {
+    return Object.keys(CHART_PERIODS).map(function (period) {
+      return '<button type="button" data-sce-period-option="' + escapeHtml(period) + '" role="menuitem">' + escapeHtml(CHART_PERIODS[period].label) + '</button>';
     }).join('');
   }
 
