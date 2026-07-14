@@ -358,7 +358,7 @@
       fan: '<path d="M4 19L20 5"/><path d="M4 19l16-1"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
       gannFan: '<path d="M4 19L20 5"/><path d="M4 19h16"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
       fibFan: '<path d="M4 19L20 7"/><path d="M4 19L20 10"/><path d="M4 19L20 13"/><path d="M4 19L20 16"/>',
-      pitchFan: '<path d="M3 19 22 2"/><path d="M3 19 22 7"/><path d="M3 19 22 12"/><path d="M3 19 22 17"/><path d="M3 19 22 22"/><path d="M11 8 14 19"/>',
+      pitchFan: '<path d="M3 19 22 2"/><path d="M3 19 22 7"/><path d="M3 19 22 12"/><path d="M3 19 22 17"/><path d="M3 19 22 22"/><path d="M11 12 14 17"/>',
       circles: '<circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8"/>',
       spiral: '<path d="M12 12c3-1 3 3 0 4-5 1-8-4-5-8 4-6 14-3 14 5"/>',
       arcs: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M8 18a4 4 0 0 1 8 0"/>',
