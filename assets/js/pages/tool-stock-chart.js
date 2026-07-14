@@ -39,6 +39,16 @@
         button.hidden = !visible;
     }
 
+    function closeStockAutocomplete() {
+        var $input = $('#toolStockChartCode');
+        autocompleteSerial += 1;
+        if (activeAutocompleteRequest && activeAutocompleteRequest.readyState !== 4) {
+            activeAutocompleteRequest.abort();
+        }
+        activeAutocompleteRequest = null;
+        if ($input.length && $input.autocomplete) $input.autocomplete('close');
+    }
+
     function cleanMetadataText(value) {
         return String(value || '').trim();
     }
@@ -423,6 +433,7 @@
         });
         applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
+        if (options.resetHistory && stockChart.resetHistory) stockChart.resetHistory();
         setTimeout(function () {
             if (stockChart && stockChart.resize) stockChart.resize();
         }, 0);
@@ -446,8 +457,10 @@
 
     function loadStockChart(rawCode, metadata) {
         var code = normalizeCode(rawCode);
+        var isNewSymbol = code !== currentCode;
         var input = document.getElementById('toolStockChartCode');
         if (input) input.value = code;
+        closeStockAutocomplete();
         var symbolInfo = rememberStockMetadata(metadata, code);
         sharedPreviewActive = false;
         setSharedSaveVisible(false);
@@ -472,7 +485,10 @@
                 if (requestId !== dataSerial) return;
                 var payload = results[0];
                 symbolInfo = rememberStockMetadata(results[1] || symbolInfo, code);
-                renderChart(code, payload.bars, { symbolInfo: symbolInfo });
+                renderChart(code, payload.bars, {
+                    symbolInfo: symbolInfo,
+                    resetHistory: isNewSymbol
+                });
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
             });
         }).catch(function (error) {
@@ -487,6 +503,7 @@
         var code = codeFromLayoutPayload(payload);
         var input = document.getElementById('toolStockChartCode');
         if (input) input.value = code;
+        closeStockAutocomplete();
         currentCode = code;
         shareLayoutApplied = true;
         shareLayoutLoading = true;
