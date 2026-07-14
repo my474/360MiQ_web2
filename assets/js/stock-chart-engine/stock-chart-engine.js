@@ -3706,14 +3706,15 @@
     var width = style.width || 2;
     var lineStyle = normalizeLineStyle(style.lineStyle);
     var opacity = style.opacity == null ? 1 : style.opacity;
-    var isInsidePitchfork = drawingRenderKind(drawing, tool) === 'insidePitchfork';
-    var insideRatios = normalizeInsidePitchforkRatios(style.insideRatios).join(', ');
+    var drawingKind = drawingRenderKind(drawing, tool);
+    var hasPitchforkChannels = drawingKind === 'insidePitchfork' || drawingKind === 'schiffPitchfork';
+    var channelRatios = normalizeInsidePitchforkRatios(style.channelRatios != null ? style.channelRatios : style.insideRatios).join(', ');
     pointer = pointer || this.drawingTextPopupPoint(drawing);
     var textControls = canEditText
       ? ['<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>'].join('')
       : '';
-    var insidePitchforkControls = isInsidePitchfork
-      ? '<label>Channel ratios<input type="text" data-sce-popup-field="insidePitchforkRatios" value="' + escapeHtml(insideRatios) + '" aria-describedby="sce-inside-pitchfork-ratios-help"></label>' +
+    var pitchforkChannelControls = hasPitchforkChannels
+      ? '<label>Channel ratios<input type="text" data-sce-popup-field="pitchforkChannelRatios" value="' + escapeHtml(channelRatios) + '" aria-describedby="sce-inside-pitchfork-ratios-help"></label>' +
         '<p id="sce-inside-pitchfork-ratios-help" class="sce-settings-help">Use values from 0 to 1, such as 0.382, 0.5, 0.618, 1.</p>'
       : '';
     this.settingsPopup.innerHTML = [
@@ -3736,7 +3737,7 @@
       '<option value="dash"', lineStyle === 'dash' ? ' selected' : '', '>Dash</option>',
       '<option value="dot"', lineStyle === 'dot' ? ' selected' : '', '>Dot</option>',
       '</select></label>',
-      insidePitchforkControls,
+      pitchforkChannelControls,
       '<div class="sce-settings-actions">',
       '<button type="button" data-sce-popup-action="send-back">Send back</button>',
       '<button type="button" data-sce-popup-action="bring-front">Bring front</button>',
@@ -3752,7 +3753,7 @@
     delete this.settingsPopup.dataset.indicatorId;
     delete this.settingsPopup.dataset.output;
     this.bindDrawingSettingsPopup();
-    this.positionSettingsPopup(pointer, 306, (canEditText ? 376 : 304) + (isInsidePitchfork ? 66 : 0));
+    this.positionSettingsPopup(pointer, 306, (canEditText ? 376 : 304) + (hasPitchforkChannels ? 66 : 0));
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
     if (field && field.focus) {
       field.focus();
@@ -3824,7 +3825,7 @@
     var width = this.settingsPopup.querySelector('[data-sce-popup-field="drawingWidth"]');
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="drawingLineStyle"]');
     var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="drawingOpacity"]');
-    var insideRatios = this.settingsPopup.querySelector('[data-sce-popup-field="insidePitchforkRatios"]');
+    var channelRatios = this.settingsPopup.querySelector('[data-sce-popup-field="pitchforkChannelRatios"]');
     if (textField) this.updateDrawingText(drawingId, textField.value);
     var stylePatch = {
       color: color ? color.value : null,
@@ -3832,7 +3833,7 @@
       lineStyle: lineStyle ? lineStyle.value : 'solid',
       opacity: opacity ? Number(opacity.value) : 1
     };
-    if (insideRatios) stylePatch.insideRatios = normalizeInsidePitchforkRatios(insideRatios.value);
+    if (channelRatios) stylePatch.channelRatios = normalizeInsidePitchforkRatios(channelRatios.value);
     this.updateDrawingStyle(drawingId, stylePatch);
     this.closeIndicatorSettingsPopup();
   };
@@ -3853,9 +3854,9 @@
       return indicator.id === options.ownerStudyId;
     })[0] : null;
     var baseStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {});
-    if (type === 'inside_pitchfork') {
+    if (type === 'inside_pitchfork' || type === 'schiff_pitchfork') {
       if (!baseStyle.color) baseStyle.color = '#ef4444';
-      baseStyle.insideRatios = normalizeInsidePitchforkRatios(baseStyle.insideRatios);
+      baseStyle.channelRatios = normalizeInsidePitchforkRatios(baseStyle.channelRatios != null ? baseStyle.channelRatios : baseStyle.insideRatios);
     }
     if (baseStyle.color && !(options.style && options.style.fill)) {
       baseStyle.fill = colorWithAlpha(baseStyle.color, 0.14) || baseStyle.fill;
@@ -4054,9 +4055,9 @@
     type = normalizeDrawingType(type);
     var tool = drawingToolDefinition(type);
     var pendingStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {});
-    if (type === 'inside_pitchfork') {
+    if (type === 'inside_pitchfork' || type === 'schiff_pitchfork') {
       if (!pendingStyle.color) pendingStyle.color = '#ef4444';
-      pendingStyle.insideRatios = normalizeInsidePitchforkRatios(pendingStyle.insideRatios);
+      pendingStyle.channelRatios = normalizeInsidePitchforkRatios(pendingStyle.channelRatios != null ? pendingStyle.channelRatios : pendingStyle.insideRatios);
     }
     if (pendingStyle.color && !(options.style && options.style.fill)) {
       pendingStyle.fill = colorWithAlpha(pendingStyle.color, 0.14) || pendingStyle.fill;
@@ -7081,6 +7082,10 @@
       drawInsidePitchfork(ctx, rect, a, b, c, style || {});
       return;
     }
+    if (kind === 'schiffPitchfork') {
+      drawSchiffPitchfork(ctx, rect, a, b, c, style || {});
+      return;
+    }
     var outerOne;
     var outerTwo;
     var median;
@@ -7095,10 +7100,7 @@
       median = midpoint(outerOne, outerTwo);
     } else {
       var handleStart = a;
-      if (kind === 'schiffPitchfork') {
-        // Schiff shifts the handle by half the P1/P2 price distance, retaining P1's time.
-        handleStart = { x: a.x, y: (a.y + b.y) / 2 };
-      } else if (kind === 'modifiedSchiffPitchfork') {
+      if (kind === 'modifiedSchiffPitchfork') {
         // Modified Schiff shifts the handle halfway towards P2 in both time and price.
         handleStart = midpoint(a, b);
       }
@@ -7140,7 +7142,7 @@
     fillChannel();
     drawLine(ctx, a, b);
     drawLine(ctx, b, c);
-    if (kind !== 'schiffPitchfork') drawLine(ctx, a, c);
+    drawLine(ctx, a, c);
     project(outerOne);
     project(outerTwo);
     project(between(outerOne, outerTwo, 0.25));
@@ -7152,7 +7154,6 @@
     // Inside Pitchfork uses line C from the midpoint of P0/P1 through P2.
     // Every channel rail must share line C's direction, not the Andrews median's.
     var lineCStart = midpoint(p0, p1);
-    var channelMidpoint = midpoint(p1, p2);
     var direction = {
       x: p2.x - lineCStart.x,
       y: p2.y - lineCStart.y
@@ -7160,9 +7161,44 @@
     if (direction.x === 0 && direction.y === 0) direction.x = 1;
 
     var baseColor = style.color || '#ef4444';
+
+    // The red pivot scaffold stops at P1/P2. Line C connects the midpoint of
+    // P0/P1 to P2 and defines the direction for every channel rail.
+    ctx.save();
+    ctx.strokeStyle = baseColor;
+    drawLine(ctx, p0, p1);
+    drawLine(ctx, p1, p2);
+    drawLine(ctx, lineCStart, p2);
+    ctx.restore();
+
+    drawColorizedPitchforkChannel(ctx, rect, p1, p2, direction, style);
+  }
+
+  function drawSchiffPitchfork(ctx, rect, p0, p1, p2, style) {
+    var p3 = { x: p0.x, y: (p0.y + p1.y) / 2 };
+    var channelMidpoint = midpoint(p1, p2);
+    var direction = {
+      x: channelMidpoint.x - p3.x,
+      y: channelMidpoint.y - p3.y
+    };
+    if (direction.x === 0 && direction.y === 0) direction.x = 1;
+
+    ctx.save();
+    ctx.strokeStyle = style.color || '#ef4444';
+    drawLine(ctx, p0, p1);
+    drawLine(ctx, p1, p2);
+    drawLine(ctx, p3, channelMidpoint);
+    ctx.restore();
+
+    drawColorizedPitchforkChannel(ctx, rect, p1, p2, direction, style);
+  }
+
+  function drawColorizedPitchforkChannel(ctx, rect, p1, p2, direction, style) {
+    var channelMidpoint = midpoint(p1, p2);
+    var baseColor = style.color || '#ef4444';
     var outerColor = '#2563eb';
     var innerColor = '#009688';
-    var ratios = normalizeInsidePitchforkRatios(style.insideRatios);
+    var ratios = normalizeInsidePitchforkRatios(style.channelRatios != null ? style.channelRatios : style.insideRatios);
     var outerRatio = ratios[ratios.length - 1];
     var preferredInnerRatio = ratios.reduce(function (nearest, ratio) {
       return Math.abs(ratio - 0.5) < Math.abs(nearest - 0.5) ? ratio : nearest;
@@ -7207,16 +7243,6 @@
 
     var outerPair = pairForRatio(outerRatio);
     var innerPair = pairForRatio(preferredInnerRatio);
-
-    // The red pivot scaffold stops at P1/P2. Line C connects the midpoint of
-    // P0/P1 to P2 and defines the direction for every channel rail.
-    ctx.save();
-    ctx.strokeStyle = baseColor;
-    drawLine(ctx, p0, p1);
-    drawLine(ctx, p1, p2);
-    drawLine(ctx, lineCStart, p2);
-    ctx.restore();
-
     fillBand(outerPair, outerColor, 0.16);
     if (preferredInnerRatio < outerRatio) fillBand(innerPair, innerColor, 0.2);
 
@@ -7882,6 +7908,7 @@
     if (output.lineStyle != null) output.lineStyle = normalizeLineStyle(output.lineStyle);
     if (output.opacity != null) output.opacity = normalizeOpacity(output.opacity, 1);
     if (output.insideRatios != null) output.insideRatios = normalizeInsidePitchforkRatios(output.insideRatios);
+    if (output.channelRatios != null) output.channelRatios = normalizeInsidePitchforkRatios(output.channelRatios);
     delete output.lineWidth;
     return output;
   }
