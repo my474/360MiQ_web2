@@ -1015,7 +1015,7 @@ function adsBlocked(callback){
             </tr>
         </table>
         <img onclick="shareWithFacebook(window.location.href, stockcode, document.getElementById('stockname').textContent);" src="assets/img/facebook.png" style="float:right; height:22px; width: 22px; padding: 3px; position: absolute; top:0; right:0; z-index: 1000; cursor: pointer;" title="Share on Facebook"/>
-        <a class="stock-advanced-chart-link" href="tool?stockcode=<?php echo rawurlencode($stockcode); ?>&amp;tab=3" target="_blank" rel="noopener" title="Open Advance Chart" onclick="var code=(typeof stockcode !== 'undefined' && stockcode) ? stockcode : <?php echo json_encode($stockcode, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>; this.href='tool?stockcode='+encodeURIComponent(String(code || '').trim())+'&tab=3';">
+        <a id="stockAdvancedChartLink" class="stock-advanced-chart-link" href="tool?stockcode=<?php echo rawurlencode($stockcode); ?>&amp;tab=3" target="_blank" rel="noopener" title="Open Advance Chart">
             <i class="fas fa-chart-line" aria-hidden="true"></i>
             <span>Advance Chart</span>
         </a>
@@ -1993,6 +1993,54 @@ window.__STOCKINFO_PAGE_CONFIG = {
 </script>
 <script src="assets/js/ValuationBands.js?v=20260625.1"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
+<script>
+(function () {
+    function currentStockCode() {
+        if (typeof stockcode !== "undefined" && stockcode) {
+            return String(stockcode).trim();
+        }
+        if (window.__STOCKINFO_PAGE_CONFIG && window.__STOCKINFO_PAGE_CONFIG.stockcode) {
+            return String(window.__STOCKINFO_PAGE_CONFIG.stockcode).trim();
+        }
+        var params = new URLSearchParams(window.location.search);
+        var paramCode = params.get("stockcode") || params.get("code");
+        if (paramCode) {
+            return paramCode.trim();
+        }
+        var stockNameLink = document.querySelector("#stockname a");
+        if (stockNameLink && stockNameLink.textContent) {
+            return stockNameLink.textContent.trim();
+        }
+        var stockName = document.getElementById("stockname");
+        if (stockName && stockName.textContent) {
+            return stockName.textContent.split("●")[0].trim();
+        }
+        return "";
+    }
+
+    function syncAdvancedChartLink() {
+        var link = document.getElementById("stockAdvancedChartLink");
+        if (!link) {
+            return "";
+        }
+        var code = currentStockCode();
+        link.href = code ? "tool?stockcode=" + encodeURIComponent(code) + "&tab=3" : "tool?tab=3";
+        return code;
+    }
+
+    syncAdvancedChartLink();
+    window.setTimeout(syncAdvancedChartLink, 0);
+    window.setTimeout(syncAdvancedChartLink, 500);
+    ["click", "contextmenu", "focusin", "mouseenter", "pointerdown"].forEach(function (eventName) {
+        document.addEventListener(eventName, function (event) {
+            var link = event.target.closest ? event.target.closest("#stockAdvancedChartLink") : null;
+            if (link) {
+                syncAdvancedChartLink();
+            }
+        }, true);
+    });
+})();
+</script>
 <script src="assets/js/price-display-page-hooks.js?v=20260625.2"></script>
 <script>
 document.querySelectorAll('.mirrorscan-stockcode').forEach(function (element) {
