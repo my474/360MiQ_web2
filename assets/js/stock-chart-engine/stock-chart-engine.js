@@ -350,7 +350,7 @@
       pitchfork: '<path d="M4 20 12 12"/><path d="M10 5 21 0"/><path d="M14 17 23 12"/><path d="M10 5 14 17"/>',
       schiffPitchfork: '<path d="M4 20v-7" stroke-dasharray="2 2"/><path d="M4 13 12 10"/><path d="M10 4 21 0"/><path d="M14 16 23 12"/><path d="M10 4 14 16"/>',
       modifiedSchiffPitchfork: '<path d="M4 20 8 12" stroke-dasharray="2 2"/><path d="M8 12 13 10"/><path d="M11 4 22 0"/><path d="M15 16 23 12"/><path d="M11 4 15 16"/>',
-      insidePitchfork: '<path d="M4 20 9 12 15 15"/><path d="M13 5 22 8"/><path d="M9 12 20 15"/><path d="M11 9 21 12"/>',
+      insidePitchfork: '<path d="M3 20 10 5 16 15"/><path d="M6.5 12.5 16 15"/><path d="M10 5 22 8"/><path d="M16 15 22 16.5"/><path d="M13 10 22 12.25"/>',
       fibChannel: '<path d="M4 18L19 8"/><path d="M6 21L21 11"/><path d="M5 20L20 10"/><path d="M5 17L20 7"/>',
       timeZones: '<path d="M5 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/><path d="M21 4v16"/>',
       trendFibTime: '<path d="M4 18l6-8"/><path d="M10 4v16"/><path d="M14 4v16"/><path d="M20 4v16"/>',
