@@ -1202,14 +1202,6 @@ function adsBlocked(callback){
                         <span>
                             The 10-Day Trend Forecast extends the recent closing-price trend forward by ten trading days using a time-series forecasting calculation. The vertical divider separates historical prices on the left from the projected path on the right.
                         </span>
-                        <ul style="padding-left: 20px; margin: 6px 0;">
-                            <li><strong>An upward forecast line</strong> indicates that the recent price trend points toward higher estimated prices.</li>
-                            <li><strong>A downward forecast line</strong> indicates that the recent trend points toward lower estimated prices.</li>
-                            <li><strong>A flatter line</strong> suggests limited directional movement in the trend captured by the model.</li>
-                        </ul>
-                        <span style="margin-top: 6px;">
-                            Use the range buttons to view the forecast beside different lengths of price history. Comparing the projected direction with the preceding trend can help show whether momentum is continuing, slowing or changing direction.
-                        </span>
                     </div>
                 </div>
             </div>
@@ -1264,9 +1256,8 @@ function adsBlocked(callback){
                 The Technical section summarizes the stock's price trend and momentum across daily and weekly timeframes. The Trend Gauge combines these signals into a cycle that moves through Up, Strong Up, Overbought, Correction, Down, Strong Down, Oversold and Rebound.
             </span>
             <ul style="padding-left: 20px; margin: 6px 0;">
-                <li><strong>The outer needle</strong> shows the stock's current Trend Gauge reading.</li>
-                <li><strong>The inner blue needle</strong>, when available, shows the median reading for the stock's industry.</li>
-                <li><strong>The written analysis</strong> highlights recent signals from price, moving averages, RSI, MACD and other trend measures used on the page.</li>
+                <li><strong>The Dark Grey needle</strong> shows the stock's current Trend Gauge reading.</li>
+                <li><strong>The Blue needle</strong>, when available, shows the median reading for the stock's industry.</li>
             </ul>
             <span style="margin-top: 6px;">
                 Moving clockwise around the gauge does not always mean that conditions are improving or worsening in a straight line. The gauge represents a market cycle: an advancing trend can become overbought and enter correction, while a declining trend can become oversold and begin rebounding.
