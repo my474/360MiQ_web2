@@ -103,6 +103,26 @@
     return value == null ? value : JSON.parse(JSON.stringify(value));
   }
 
+  function historyKey(doc) {
+    var snapshot = clone(doc || {});
+    delete snapshot.updatedAt;
+    return JSON.stringify(snapshot);
+  }
+
+  function isHistoryIgnoredChange(type) {
+    return [
+      'data',
+      'bar',
+      'drawing:start',
+      'drawing:cancel',
+      'restore',
+      'history:undo',
+      'history:redo',
+      'symbol:info',
+      'view:full-browser'
+    ].indexOf(type) !== -1;
+  }
+
   function merge(target) {
     var output = target || {};
     for (var i = 1; i < arguments.length; i += 1) {
@@ -2063,6 +2083,12 @@
     this.panState = null;
     this.suppressNextClick = false;
     this.autosaveTimer = null;
+    this.undoStack = [];
+    this.redoStack = [];
+    this.historyLimit = Math.max(1, toNumber(options.historyLimit, 100));
+    this.historyDocument = this.serialize();
+    this.historyDocumentKey = historyKey(this.historyDocument);
+    this.suppressHistoryRecording = false;
     this.fullBrowserMode = false;
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
@@ -2086,6 +2112,8 @@
     this.toolbar.innerHTML = [
       '<a class="sce-title sce-stock-info-link" data-sce-stock-info-link href="#" target="_blank" rel="noopener noreferrer" hidden></a>',
       '<span class="sce-interval-label" data-sce-interval-label></span>',
+      '<button type="button" class="sce-toolbar-icon-button" data-sce-action="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">', paneControlIconSvg('undo'), '</button>',
+      '<button type="button" class="sce-toolbar-icon-button" data-sce-action="redo" title="Redo (Ctrl+Y / Cmd+Shift+Z)" aria-label="Redo">', paneControlIconSvg('redo'), '</button>',
       '<details class="sce-chart-type-picker" data-sce-chart-type-picker>',
       '<summary data-sce-chart-type-button aria-label="Chart type"></summary>',
       '<div class="sce-chart-type-menu">',
@@ -2209,6 +2237,8 @@
       if (action === 'macd') self.addIndicator('MACD', { placement: 'new' });
       if (action === 'line') self.startDrawing('trendline');
       if (action === 'clear-drawings') self.removeAllShapes();
+      if (action === 'undo') self.undo();
+      if (action === 'redo') self.redo();
       if (action === 'zoom-in') self.zoomIn(0.5);
       if (action === 'zoom-out') self.zoomOut(0.5);
       if (action === 'fit') {
@@ -2379,6 +2409,27 @@
   };
 
   Chart.prototype.handleDocumentKeyDown = function (event) {
+    var key = String(event.key || '').toLowerCase();
+    var modifier = event.ctrlKey || event.metaKey;
+    var target = event.target;
+    var editable = target && (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT' ||
+      target.isContentEditable
+    );
+    if (modifier && !editable) {
+      if (key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        this.undo();
+        return;
+      }
+      if (key === 'y' || (key === 'z' && event.shiftKey)) {
+        event.preventDefault();
+        this.redo();
+        return;
+      }
+    }
     if (event.key !== 'Escape') return;
     if (this.fullBrowserMode) {
       event.preventDefault();
@@ -2436,15 +2487,90 @@
     var target = event && event.target;
     if (!elementContains(this.toolbar, target)) this.closeToolbarMenus();
     if (!elementContains(this.drawingToolsLayer, target)) this.closeDrawingToolMenus();
+    if (this.settingsPopup && !this.settingsPopup.hasAttribute('hidden') && !elementContains(this.settingsPopup, target)) {
+      this.closeIndicatorSettingsPopup();
+    }
   };
 
   Chart.prototype.on = function (eventName, handler) {
     return this.events.on(eventName, handler);
   };
 
+  Chart.prototype.resetHistory = function () {
+    this.undoStack = [];
+    this.redoStack = [];
+    this.historyDocument = this.serialize();
+    this.historyDocumentKey = historyKey(this.historyDocument);
+    this.updateToolbar();
+  };
+
+  Chart.prototype.recordHistoryCheckpoint = function (type) {
+    if (this.suppressHistoryRecording || isHistoryIgnoredChange(type)) {
+      this.historyDocument = this.serialize();
+      this.historyDocumentKey = historyKey(this.historyDocument);
+      return false;
+    }
+    var nextKey = historyKey(this.document);
+    if (nextKey === this.historyDocumentKey) return false;
+    if (this.historyDocument) this.undoStack.push(clone(this.historyDocument));
+    while (this.undoStack.length > this.historyLimit) this.undoStack.shift();
+    this.redoStack = [];
+    this.historyDocument = this.serialize();
+    this.historyDocumentKey = nextKey;
+    return true;
+  };
+
+  Chart.prototype.applyHistoryDocument = function (doc, type) {
+    this.suppressHistoryRecording = true;
+    this.closeIndicatorSettingsPopup();
+    this.pendingDrawing = null;
+    this.dragState = null;
+    this.tapState = null;
+    this.paneResizeState = null;
+    this.panState = null;
+    this.yScaleDragState = null;
+    this.selectedDrawingId = null;
+    this.hoverDrawingId = null;
+    this.document = migrateDocument(doc);
+    this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
+    this.compute();
+    this.resize();
+    this.historyDocument = this.serialize();
+    this.historyDocumentKey = historyKey(this.historyDocument);
+    this.emitChange(type || 'history:restore', {});
+    this.suppressHistoryRecording = false;
+    this.updateToolbar();
+    return true;
+  };
+
+  Chart.prototype.undo = function () {
+    if (!this.undoStack.length) {
+      this.updateToolbar();
+      return false;
+    }
+    var previous = this.undoStack.pop();
+    this.redoStack.push(this.serialize());
+    this.applyHistoryDocument(previous, 'history:undo');
+    return true;
+  };
+
+  Chart.prototype.redo = function () {
+    if (!this.redoStack.length) {
+      this.updateToolbar();
+      return false;
+    }
+    var next = this.redoStack.pop();
+    this.undoStack.push(this.serialize());
+    while (this.undoStack.length > this.historyLimit) this.undoStack.shift();
+    this.applyHistoryDocument(next, 'history:redo');
+    return true;
+  };
+
   Chart.prototype.emitChange = function (type, payload) {
     this.document.updatedAt = new Date().toISOString();
+    this.recordHistoryCheckpoint(type);
     this.events.emit('change', { type: type, payload: payload, document: this.serialize() });
+    this.updateToolbar();
     this.scheduleAutosave();
   };
 
@@ -2457,6 +2583,7 @@
     this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
     this.compute();
     this.resize();
+    this.resetHistory();
     this.emitChange('restore', {});
   };
 
@@ -3003,7 +3130,8 @@
     return next;
   };
 
-  Chart.prototype.addPane = function (pane) {
+  Chart.prototype.addPane = function (pane, options) {
+    options = options || {};
     var created = merge({
       id: uid('pane'),
       title: pane && pane.title ? pane.title : 'Indicator',
@@ -3018,7 +3146,7 @@
     created.manualRange = normalizeManualRange(created.manualRange);
     this.document.panes.push(created);
     this.resize();
-    this.emitChange('pane:add', created);
+    if (!options.silent) this.emitChange('pane:add', created);
     return created.id;
   };
 
@@ -3105,7 +3233,7 @@
     }
     var placement = options.placement || (definition && definition.defaultPanePolicy) || 'source';
     if (placement === 'new') {
-      return this.addPane({ title: definition ? definition.name : type });
+      return this.addPane({ title: definition ? definition.name : type }, { silent: true });
     }
     return 'price';
   };
@@ -4477,6 +4605,16 @@
     if (dateRangeButton) {
       dateRangeButton.innerHTML = '<span>Range</span><strong>' + dateRangeLabel(this.document.settings.dateRangePreset) + '</strong>' + chartTypeChevronSvg();
     }
+    var undoButton = this.toolbar.querySelector('[data-sce-action="undo"]');
+    if (undoButton) {
+      undoButton.disabled = !this.undoStack.length;
+      undoButton.setAttribute('aria-disabled', this.undoStack.length ? 'false' : 'true');
+    }
+    var redoButton = this.toolbar.querySelector('[data-sce-action="redo"]');
+    if (redoButton) {
+      redoButton.disabled = !this.redoStack.length;
+      redoButton.setAttribute('aria-disabled', this.redoStack.length ? 'false' : 'true');
+    }
     if (this.toolbar.querySelectorAll) {
       Array.prototype.forEach.call(this.toolbar.querySelectorAll('[data-sce-date-range]'), function (button) {
         var selected = button.getAttribute('data-sce-date-range') === this.document.settings.dateRangePreset;
@@ -4510,7 +4648,7 @@
 
   Chart.prototype.stockInfoHref = function () {
     var symbol = String(this.document && this.document.symbol || '').trim();
-    if (!symbol || !this.sourceBars || !this.sourceBars.length) return '';
+    if (!symbol) return '';
     return 'stockinfo?code=' + encodeURIComponent(symbol);
   };
 
@@ -7442,6 +7580,8 @@
       trash: '<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5"/><path d="M14 11v5"/>',
       download: '<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 20h14"/>',
       copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
+      undo: '<path d="M9 7H4v5"/><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6"/>',
+      redo: '<path d="M15 7h5v5"/><path d="M20 12a8 8 0 1 1-2.3-5.7L20 8.6"/>',
       'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
       'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>',
       'full-browser': '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/>',

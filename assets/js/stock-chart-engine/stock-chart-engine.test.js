@@ -331,6 +331,13 @@ chart.drawingToolsLayer.querySelectorAll = function queryOpenDrawingMenus(select
 chart.handleDocumentPointerDown({ target: new FakeElement('button') });
 assert.strictEqual(toolbarOpenDetail.hasAttribute('open'), false);
 assert.strictEqual(drawingOpenDetail.hasAttribute('open'), false);
+chart.settingsPopup.removeAttribute('hidden');
+const settingsInnerButton = new FakeElement('button');
+chart.settingsPopup.appendChild(settingsInnerButton);
+chart.handleDocumentPointerDown({ target: settingsInnerButton });
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), false);
+chart.handleDocumentPointerDown({ target: new FakeElement('button') });
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), true);
 const openedToolbarDetail = new FakeElement('details');
 const siblingToolbarDetail = new FakeElement('details');
 openedToolbarDetail.setAttribute('open', 'open');
@@ -355,6 +362,54 @@ const periodSelectForFocus = new FakeElement('select');
 chart.toolbar.appendChild(periodSelectForFocus);
 chart.closeToolbarMenusForTarget(periodSelectForFocus);
 assert.strictEqual(chartTypeDetailForSelectFocus.hasAttribute('open'), false);
+const historyPaneCount = chart.document.panes.length;
+const historyIndicatorId = chart.addIndicator('RSI', { placement: 'new' });
+assert.ok(chart.document.indicators.some((indicator) => indicator.id === historyIndicatorId));
+assert.strictEqual(chart.document.panes.length, historyPaneCount + 1);
+assert.strictEqual(chart.undo(), true);
+assert.strictEqual(chart.document.indicators.some((indicator) => indicator.id === historyIndicatorId), false);
+assert.strictEqual(chart.document.panes.length, historyPaneCount);
+assert.strictEqual(chart.redo(), true);
+assert.ok(chart.document.indicators.some((indicator) => indicator.id === historyIndicatorId));
+assert.strictEqual(chart.undo(), true);
+const keyboardDrawingId = chart.addDrawing('trendline', [
+  { time: chart.bars[0].time, value: chart.bars[0].close },
+  { time: chart.bars[1].time, value: chart.bars[1].close }
+]);
+assert.ok(chart.getDrawingById(keyboardDrawingId));
+const undoEvent = {
+  key: 'z',
+  ctrlKey: true,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.handleDocumentKeyDown(undoEvent);
+assert.strictEqual(undoEvent.defaultPrevented, true);
+assert.strictEqual(chart.getDrawingById(keyboardDrawingId), null);
+const redoEvent = {
+  key: 'z',
+  metaKey: true,
+  shiftKey: true,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.handleDocumentKeyDown(redoEvent);
+assert.strictEqual(redoEvent.defaultPrevented, true);
+assert.ok(chart.getDrawingById(keyboardDrawingId));
+assert.strictEqual(chart.undo(), true);
+const ctrlYRedoEvent = {
+  key: 'y',
+  ctrlKey: true,
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.handleDocumentKeyDown(ctrlYRedoEvent);
+assert.strictEqual(ctrlYRedoEvent.defaultPrevented, true);
+assert.ok(chart.getDrawingById(keyboardDrawingId));
+assert.strictEqual(chart.undo(), true);
 const drawingMenuForPosition = new FakeElement('div');
 drawingMenuForPosition.getBoundingClientRect = function getMenuRect() {
   return { width: 360, height: 240 };
@@ -496,7 +551,7 @@ assert.ok(watermarkText.includes('TEST 1Q'));
 chart.setPeriod('daily');
 const originalSourceBarsForStockInfo = chart.sourceBars;
 chart.sourceBars = [];
-assert.strictEqual(chart.stockInfoHref(), '');
+assert.strictEqual(chart.stockInfoHref(), 'stockinfo?code=TEST');
 chart.sourceBars = originalSourceBarsForStockInfo;
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-indicator-picker') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-indicator-search') !== -1);

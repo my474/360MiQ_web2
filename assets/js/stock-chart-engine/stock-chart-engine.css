@@ -127,6 +127,12 @@
   cursor: pointer;
 }
 
+.sce-toolbar button:disabled,
+.sce-toolbar button[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.38;
+}
+
 .sce-toolbar .sce-toolbar-icon-button {
   align-items: center;
   display: inline-flex;
