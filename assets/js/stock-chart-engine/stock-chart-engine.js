@@ -2309,6 +2309,7 @@
       var actionButton = closestAttribute(event.target, 'data-sce-action');
       if (!actionButton) return;
       if (event.preventDefault) event.preventDefault();
+      self.closeDrawingToolMenus();
       var drawingAction = actionButton.getAttribute('data-sce-action');
       if (drawingAction === 'toggle-magnet') self.toggleDrawingMagnetMode();
       if (drawingAction === 'toggle-stay-drawing') self.toggleStayInDrawingMode();
