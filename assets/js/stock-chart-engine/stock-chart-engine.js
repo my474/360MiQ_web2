@@ -347,9 +347,9 @@
       vwapAnchor: '<path d="M12 4v16"/><path d="M6 10c4-4 8 8 12 0"/><circle cx="12" cy="4" r="2"/>',
       fibRetracement: '<path d="M5 5h14"/><path d="M5 9h14"/><path d="M5 12h14"/><path d="M5 15h14"/><path d="M5 19h14"/>',
       fibExtension: '<path d="M4 17l5-10 5 6"/><path d="M13 8h8"/><path d="M13 12h8"/><path d="M13 16h8"/>',
-      pitchfork: '<path d="M4 20 12 12"/><path d="M10 5 21 0"/><path d="M14 17 23 12"/><path d="M10 5 14 17"/>',
+      pitchfork: '<path d="M3 21 10 5 16 15"/><path d="M3 21 22 8"/><path d="M10 5 22 1"/><path d="M16 15 22 13"/><path d="M13 10 22 7"/>',
       schiffPitchfork: '<path d="M3 21v-8" stroke-dasharray="2 2"/><path d="M3 21 10 5 16 15"/><path d="M3 13 22 7"/><path d="M10 5 22 1"/><path d="M16 15 22 13"/><path d="M13 10 22 7"/>',
-      modifiedSchiffPitchfork: '<path d="M4 20 8 12" stroke-dasharray="2 2"/><path d="M8 12 13 10"/><path d="M11 4 22 0"/><path d="M15 16 23 12"/><path d="M11 4 15 16"/>',
+      modifiedSchiffPitchfork: '<path d="M3 21 6.5 13" stroke-dasharray="2 2"/><path d="M3 21 10 5 16 15"/><path d="M6.5 13 22 7"/><path d="M10 5 22 1"/><path d="M16 15 22 13"/><path d="M13 10 22 7"/>',
       insidePitchfork: '<path d="M3 20 10 5 16 15"/><path d="M6.5 12.5 16 15"/><path d="M10 5 22 8"/><path d="M16 15 22 16.5"/><path d="M13 10 22 12.25"/>',
       fibChannel: '<path d="M4 18L19 8"/><path d="M6 21L21 11"/><path d="M5 20L20 10"/><path d="M5 17L20 7"/>',
       timeZones: '<path d="M5 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/><path d="M21 4v16"/>',
@@ -3707,7 +3707,7 @@
     var lineStyle = normalizeLineStyle(style.lineStyle);
     var opacity = style.opacity == null ? 1 : style.opacity;
     var drawingKind = drawingRenderKind(drawing, tool);
-    var hasPitchforkChannels = drawingKind === 'insidePitchfork' || drawingKind === 'schiffPitchfork';
+    var hasPitchforkChannels = drawingKind === 'pitchfork' || drawingKind === 'schiffPitchfork' || drawingKind === 'modifiedSchiffPitchfork' || drawingKind === 'insidePitchfork';
     var channelRatios = normalizeInsidePitchforkRatios(style.channelRatios != null ? style.channelRatios : style.insideRatios).join(', ');
     pointer = pointer || this.drawingTextPopupPoint(drawing);
     var textControls = canEditText
@@ -3854,7 +3854,7 @@
       return indicator.id === options.ownerStudyId;
     })[0] : null;
     var baseStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {});
-    if (type === 'inside_pitchfork' || type === 'schiff_pitchfork') {
+    if (type === 'pitchfork' || type === 'schiff_pitchfork' || type === 'modified_schiff_pitchfork' || type === 'inside_pitchfork') {
       if (!baseStyle.color) baseStyle.color = '#ef4444';
       baseStyle.channelRatios = normalizeInsidePitchforkRatios(baseStyle.channelRatios != null ? baseStyle.channelRatios : baseStyle.insideRatios);
     }
@@ -4055,7 +4055,7 @@
     type = normalizeDrawingType(type);
     var tool = drawingToolDefinition(type);
     var pendingStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {});
-    if (type === 'inside_pitchfork' || type === 'schiff_pitchfork') {
+    if (type === 'pitchfork' || type === 'schiff_pitchfork' || type === 'modified_schiff_pitchfork' || type === 'inside_pitchfork') {
       if (!pendingStyle.color) pendingStyle.color = '#ef4444';
       pendingStyle.channelRatios = normalizeInsidePitchforkRatios(pendingStyle.channelRatios != null ? pendingStyle.channelRatios : pendingStyle.insideRatios);
     }
@@ -7086,6 +7086,10 @@
       drawSchiffPitchfork(ctx, rect, a, b, c, style || {});
       return;
     }
+    if (kind === 'pitchfork' || kind === 'modifiedSchiffPitchfork') {
+      drawColorizedPitchfork(ctx, rect, a, b, c, kind, style || {});
+      return;
+    }
     var outerOne;
     var outerTwo;
     var median;
@@ -7188,6 +7192,26 @@
     drawLine(ctx, p0, p1);
     drawLine(ctx, p1, p2);
     drawLine(ctx, p3, channelMidpoint);
+    ctx.restore();
+
+    drawColorizedPitchforkChannel(ctx, rect, p1, p2, direction, style);
+  }
+
+  function drawColorizedPitchfork(ctx, rect, p0, p1, p2, kind, style) {
+    var origin = kind === 'modifiedSchiffPitchfork' ? midpoint(p0, p1) : p0;
+    var channelMidpoint = midpoint(p1, p2);
+    var direction = {
+      x: channelMidpoint.x - origin.x,
+      y: channelMidpoint.y - origin.y
+    };
+    if (direction.x === 0 && direction.y === 0) direction.x = 1;
+
+    ctx.save();
+    ctx.strokeStyle = style.color || '#ef4444';
+    drawLine(ctx, p0, p1);
+    drawLine(ctx, p1, p2);
+    drawLine(ctx, p0, p2);
+    drawLine(ctx, origin, channelMidpoint);
     ctx.restore();
 
     drawColorizedPitchforkChannel(ctx, rect, p1, p2, direction, style);
