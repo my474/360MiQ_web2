@@ -1626,18 +1626,20 @@ const modifiedSchiffPitchforkCommands = renderMeasurementTool('modified_schiff_p
 assert.ok(commandIncludesPoint(modifiedSchiffPitchforkCommands, 'moveTo', modifiedSchiffHandleStart));
 const insidePitchforkCommands = renderMeasurementTool('inside_pitchfork');
 const insideHandleMidpoint = { x: (pitchforkA.x + pitchforkB.x) / 2, y: (pitchforkA.y + pitchforkB.y) / 2 };
-const insideMedianEnd = {
-  x: measurementRenderRect.x + measurementRenderRect.width,
-  y: insideHandleMidpoint.y + (pitchforkC.y - insideHandleMidpoint.y) * ((measurementRenderRect.x + measurementRenderRect.width - insideHandleMidpoint.x) / (pitchforkC.x - insideHandleMidpoint.x))
-};
 const insideChannelMidpoint = { x: (pitchforkB.x + pitchforkC.x) / 2, y: (pitchforkB.y + pitchforkC.y) / 2 };
+const insideChannelMiddleEnd = {
+  x: measurementRenderRect.x + measurementRenderRect.width,
+  y: insideChannelMidpoint.y + (pitchforkC.y - insideHandleMidpoint.y) * ((measurementRenderRect.x + measurementRenderRect.width - insideChannelMidpoint.x) / (pitchforkC.x - insideHandleMidpoint.x))
+};
 const insideInnerUpper = { x: insideChannelMidpoint.x + (pitchforkB.x - insideChannelMidpoint.x) * 0.5, y: insideChannelMidpoint.y + (pitchforkB.y - insideChannelMidpoint.y) * 0.5 };
 const insideInnerLower = { x: insideChannelMidpoint.x + (pitchforkC.x - insideChannelMidpoint.x) * 0.5, y: insideChannelMidpoint.y + (pitchforkC.y - insideChannelMidpoint.y) * 0.5 };
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkA));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkB));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', pitchforkC));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideHandleMidpoint));
-assert.ok(commandIncludesPoint(insidePitchforkCommands, 'lineTo', insideMedianEnd));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'lineTo', pitchforkC));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideChannelMidpoint));
+assert.ok(commandIncludesPoint(insidePitchforkCommands, 'lineTo', insideChannelMiddleEnd));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerUpper));
 assert.ok(commandIncludesPoint(insidePitchforkCommands, 'moveTo', insideInnerLower));
 assert.ok(insidePitchforkCommands.filter((command) => command.type === 'fill').length >= 2);

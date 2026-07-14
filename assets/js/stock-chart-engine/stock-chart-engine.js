@@ -7208,14 +7208,13 @@
     var outerPair = pairForRatio(outerRatio);
     var innerPair = pairForRatio(preferredInnerRatio);
 
-    // The red triangle is the three-pivot scaffold. Line C begins at the P0/P1
-    // midpoint and reaches P2; the two blue outer rails pass through P1 and P2.
+    // The red pivot scaffold stops at P1/P2. Line C connects the midpoint of
+    // P0/P1 to P2 and defines the direction for every channel rail.
     ctx.save();
     ctx.strokeStyle = baseColor;
     drawLine(ctx, p0, p1);
     drawLine(ctx, p1, p2);
-    drawLine(ctx, p0, p2);
-    drawProjectedLine(ctx, lineCStart, p2, rect, true);
+    drawLine(ctx, lineCStart, p2);
     ctx.restore();
 
     fillBand(outerPair, outerColor, 0.16);
@@ -7232,6 +7231,8 @@
       project(pair.upper);
       project(pair.lower);
     });
+    ctx.strokeStyle = baseColor;
+    project(channelMidpoint);
     ctx.restore();
   }
 
