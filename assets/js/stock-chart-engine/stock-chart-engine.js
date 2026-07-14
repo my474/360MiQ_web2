@@ -7210,7 +7210,6 @@
     ctx.strokeStyle = style.color || '#ef4444';
     if (kind !== 'pitchfork') drawLine(ctx, p0, p1);
     drawLine(ctx, p1, p2);
-    if (kind !== 'pitchfork') drawLine(ctx, p0, p2);
     drawLine(ctx, origin, channelMidpoint);
     ctx.restore();
 
