@@ -2180,7 +2180,7 @@
       '</div>',
       '</details>',
       '<details class="sce-recent-stocks-picker" data-sce-recent-stocks-picker>',
-      '<summary aria-label="Recent stocks" title="Recent stocks">', paneControlIconSvg('recent'), '<span>Recent</span>', chartTypeChevronSvg(), '</summary>',
+      '<summary data-sce-recent-stocks-button aria-label="Recent stocks" title="Recent stocks">', paneControlIconSvg('recent'), '<span>Recent</span>', chartTypeChevronSvg(), '</summary>',
       '<div class="sce-recent-stocks-menu" data-sce-recent-stocks-menu role="menu">',
       '<div class="sce-recent-stocks-sheet-title">Recent stocks</div>',
       recentStocksHtml(this.options.recentStocks),
@@ -2216,6 +2216,11 @@
   Chart.prototype.bindDom = function () {
     var self = this;
     this.toolbar.addEventListener('click', function (event) {
+      var recentStocksButton = closestAttribute(event.target, 'data-sce-recent-stocks-button');
+      if (recentStocksButton && self.isMobileViewport() && self.openRecentStocksInProjectSheet()) {
+        if (event.preventDefault) event.preventDefault();
+        return;
+      }
       var chartTypeOption = closestAttribute(event.target, 'data-sce-chart-type-option');
       if (chartTypeOption) {
         if (event.preventDefault) event.preventDefault();
@@ -2263,11 +2268,7 @@
       if (recentStockButton) {
         if (event.preventDefault) event.preventDefault();
         var recentStockCode = recentStockButton.getAttribute('data-sce-recent-stock');
-        var recentStocks = Array.isArray(self.options.recentStocks) ? self.options.recentStocks : [];
-        var recentStock = recentStocks.filter(function (stock) {
-          return stock && String(stock.code || '').toUpperCase() === String(recentStockCode || '').toUpperCase();
-        })[0] || { code: recentStockCode };
-        if (typeof self.options.onRecentStockSelect === 'function') self.options.onRecentStockSelect(clone(recentStock));
+        self.selectRecentStock(recentStockCode);
         var recentPicker = closestAttribute(recentStockButton, 'data-sce-recent-stocks-picker');
         if (recentPicker) recentPicker.removeAttribute('open');
         return;
@@ -4733,6 +4734,44 @@
     this.options.recentStocks = Array.isArray(stocks) ? clone(stocks) : [];
     var menu = this.toolbar && this.toolbar.querySelector ? this.toolbar.querySelector('[data-sce-recent-stocks-menu]') : null;
     if (menu) menu.innerHTML = recentStocksHtml(this.options.recentStocks);
+  };
+
+  Chart.prototype.isMobileViewport = function () {
+    return typeof window !== 'undefined' && Number(window.innerWidth) <= 880;
+  };
+
+  Chart.prototype.selectRecentStock = function (code) {
+    var recentStocks = Array.isArray(this.options.recentStocks) ? this.options.recentStocks : [];
+    var normalizedCode = String(code || '').toUpperCase();
+    var recentStock = recentStocks.filter(function (stock) {
+      return stock && String(stock.code || '').toUpperCase() === normalizedCode;
+    })[0] || { code: code };
+    if (typeof this.options.onRecentStockSelect === 'function') this.options.onRecentStockSelect(clone(recentStock));
+  };
+
+  Chart.prototype.openRecentStocksInProjectSheet = function () {
+    if (typeof window === 'undefined' || typeof window.openProjectBottomSheet !== 'function') return false;
+    var self = this;
+    var stocks = (Array.isArray(this.options.recentStocks) ? this.options.recentStocks : []).map(function (stock) {
+      var names = [stock && stock.name_tc, stock && stock.name_en].filter(function (name, index, values) {
+        return name && values.indexOf(name) === index;
+      }).join(' \u2022 ');
+      return {
+        code: stock && stock.code,
+        name: names || 'Load chart'
+      };
+    });
+    window.setTimeout(function () {
+      window.openProjectBottomSheet({
+        title: 'Recent stocks',
+        items: stocks,
+        emptyText: 'No recent stocks',
+        onSelect: function (stock) {
+          self.selectRecentStock(stock && stock.code);
+        }
+      });
+    }, 0);
+    return true;
   };
 
   Chart.prototype.filterIndicatorMenu = function (query) {

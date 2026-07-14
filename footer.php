@@ -268,7 +268,7 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 200010;
+    z-index: 300000;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -283,7 +283,7 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     left: 0;
     width: 100%;
     background: #fff;
-    z-index: 200020;
+    z-index: 300010;
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -330,16 +330,44 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     flex-direction: column;
 }
 
-.sheet-content a {
+.sheet-content a,
+.sheet-content button {
     padding: 16px 20px;
     color: #555 !important;
     text-decoration: none;
     font-size: 16px;
     font-weight: 500 !important;
     border-bottom: 1px solid #f5f5f5;
+    background: transparent;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
 }
-.sheet-content a:last-child {
+.sheet-content a:last-child,
+.sheet-content button:last-child {
     border-bottom: none;
+}
+
+.sheet-content .sheet-stock-item {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 92px minmax(0, 1fr);
+}
+
+.sheet-stock-item strong,
+.sheet-stock-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sheet-stock-item span {
+    font-size: 14px;
+    opacity: 0.82;
 }
 
 .chatbot__header {
@@ -3051,6 +3079,45 @@ function closeSheet() {
     document.querySelectorAll('.bottom-nav-item').forEach(p => p.classList.remove('menu-open'));
     document.body.style.overflow = '';
 }
+
+window.openProjectBottomSheet = function(options) {
+    options = options || {};
+    const sheet = document.getElementById('bottom-sheet');
+    const overlay = document.getElementById('sheet-overlay');
+    const content = document.getElementById('sheet-content');
+    const header = document.getElementById('sheet-header');
+    if (!sheet || !overlay || !content || !header) return false;
+
+    header.innerText = options.title || 'Menu';
+    content.innerHTML = '';
+    (Array.isArray(options.items) ? options.items : []).forEach(function(item) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'sheet-stock-item';
+        const code = document.createElement('strong');
+        const name = document.createElement('span');
+        code.textContent = item.code || item.label || '';
+        name.textContent = item.name || item.description || '';
+        button.appendChild(code);
+        button.appendChild(name);
+        button.addEventListener('click', function() {
+            closeSheet();
+            if (typeof options.onSelect === 'function') options.onSelect(item);
+        });
+        content.appendChild(button);
+    });
+    if (!content.children.length) {
+        const empty = document.createElement('div');
+        empty.className = 'sheet-content-empty';
+        empty.textContent = options.emptyText || 'Nothing to show';
+        content.appendChild(empty);
+    }
+
+    overlay.classList.add('show');
+    sheet.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    return true;
+};
 
 // Close sheet on click outside (overlay already handles it via onclick)
 document.addEventListener('click', function(e) {

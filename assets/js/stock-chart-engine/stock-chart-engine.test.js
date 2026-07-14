@@ -478,6 +478,17 @@ assert.strictEqual(chart.document.settings.period, 'weekly');
 chart.setPeriod('daily');
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stocks-picker') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stock="SPY"') !== -1);
+let projectSheetOptions = null;
+global.window.openProjectBottomSheet = (options) => {
+  projectSheetOptions = options;
+  return true;
+};
+global.window.setTimeout = (callback) => callback();
+assert.strictEqual(chart.openRecentStocksInProjectSheet(), true);
+assert.strictEqual(projectSheetOptions.title, 'Recent stocks');
+assert.strictEqual(projectSheetOptions.items[0].code, 'SPY');
+projectSheetOptions.onSelect({ code: 'SPY' });
+assert.strictEqual(recentStockSelections.length, 1);
 const recentStockButtonForTest = new FakeElement('button');
 recentStockButtonForTest.setAttribute('data-sce-recent-stock', 'SPY');
 chart.toolbar.appendChild(recentStockButtonForTest);
@@ -488,7 +499,7 @@ chart.toolbar.dispatchEvent({
     this.defaultPrevented = true;
   }
 });
-assert.strictEqual(recentStockSelections.length, 1);
+assert.strictEqual(recentStockSelections.length, 2);
 assert.strictEqual(recentStockSelections[0].code, 'SPY');
 chart.setRecentStocks([{ code: 'QQQ', name_en: 'Invesco QQQ Trust' }]);
 assert.ok(chart.options.recentStocks.some((stock) => stock.code === 'QQQ'));

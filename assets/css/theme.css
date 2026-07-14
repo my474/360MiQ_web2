@@ -254,7 +254,8 @@
   background: var(--bg-bottom-sheet);
 }
 
-[data-theme="dark"] .sheet-content a {
+[data-theme="dark"] .sheet-content a,
+[data-theme="dark"] .sheet-content button {
   color: var(--text-sheet-content);
   border-bottom: 1px solid var(--border-sheet-content);
 }
