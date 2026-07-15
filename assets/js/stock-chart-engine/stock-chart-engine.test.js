@@ -1710,7 +1710,7 @@ assert.ok(StockChartEngine.drawingTools.pitchfan.icon.indexOf('M3 19 22 2') !== 
 assert.ok(StockChartEngine.drawingTools.pitchfan.icon.indexOf('M11 12 14 17') !== -1);
 assert.ok(StockChartEngine.drawingTools.gann_box.icon.indexOf('width="16" height="12"') !== -1);
 assert.ok(StockChartEngine.drawingTools.gann_square.icon.indexOf('width="16" height="16"') !== -1);
-assert.ok(StockChartEngine.drawingTools.gann_square_fixed.icon.indexOf('M6 4v16') !== -1);
+assert.ok(StockChartEngine.drawingTools.gann_square_fixed.icon.indexOf('x="7" y="7" width="10" height="10"') !== -1);
 assert.notStrictEqual(StockChartEngine.drawingTools.gann_box.icon, StockChartEngine.drawingTools.gann_square.icon);
 assert.notStrictEqual(StockChartEngine.drawingTools.gann_square.icon, StockChartEngine.drawingTools.gann_square_fixed.icon);
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
