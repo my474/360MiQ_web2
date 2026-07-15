@@ -1633,6 +1633,10 @@ assert.strictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareRect.h
 assert.strictEqual(Math.round(gannSquareFixedRect.width), Math.round(gannSquareFixedRect.height));
 assert.notStrictEqual(Math.round(gannSquareRect.width), Math.round(gannSquareFixedRect.width));
 assert.ok(gannSquareFixedCommands.filter((command) => command.type === 'lineTo').length > gannSquareCommands.filter((command) => command.type === 'lineTo').length);
+const fibWedgeCommands = renderMeasurementTool('fib_wedge', measurementRenderPoints.slice(0, 3));
+assert.ok(fibWedgeCommands.filter((command) => command.type === 'quadraticCurveTo').length >= 12);
+assert.ok(fibWedgeCommands.filter((command) => command.type === 'fill').length >= 6);
+assert.deepStrictEqual(fibWedgeCommands.filter((command) => command.type === 'fillText').map((command) => command.text), ['0.236', '0.382', '0.5', '0.618', '0.786', '1']);
 assertUniqueRenderSignatures(['parallel_channel', 'regression_trend', 'flat_top_bottom', 'disjoint_channel'], measurementRenderFourPoints);
 assertUniqueRenderSignatures(['pitchfork', 'schiff_pitchfork', 'modified_schiff_pitchfork', 'inside_pitchfork'], measurementRenderPoints);
 function commandIncludesPoint(commands, type, point) {
@@ -1713,6 +1717,8 @@ assert.ok(StockChartEngine.drawingTools.gann_square.icon.indexOf('width="16" hei
 assert.ok(StockChartEngine.drawingTools.gann_square_fixed.icon.indexOf('x="7" y="7" width="10" height="10"') !== -1);
 assert.notStrictEqual(StockChartEngine.drawingTools.gann_box.icon, StockChartEngine.drawingTools.gann_square.icon);
 assert.notStrictEqual(StockChartEngine.drawingTools.gann_square.icon, StockChartEngine.drawingTools.gann_square_fixed.icon);
+assert.strictEqual((StockChartEngine.drawingTools.fib_wedge.icon.match(/<path/g) || []).length, 6);
+assert.ok(StockChartEngine.drawingTools.fib_wedge.icon.indexOf('Q') !== -1);
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));

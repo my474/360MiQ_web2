@@ -365,7 +365,7 @@
       circles: '<circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8"/>',
       spiral: '<path d="M12 12c3-1 3 3 0 4-5 1-8-4-5-8 4-6 14-3 14 5"/>',
       arcs: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M8 18a4 4 0 0 1 8 0"/>',
-      wedge: '<path d="M4 18L20 6"/><path d="M4 18l16-1"/><path d="M8 16h10"/>',
+      wedge: '<path d="M4 18L20 5"/><path d="M4 18L20 20"/><path d="M7 16Q12 11 19 8"/><path d="M8 17Q14 13 19 11"/><path d="M9 17Q15 15 19 14"/><path d="M10 18Q16 16 19 16"/>',
       path: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/>',
       brush: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/><path d="M16 18l4 2"/>',
       highlighter: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/><path d="M5 20h14"/>',
@@ -6656,7 +6656,9 @@
       }
     } else if ((kind === 'ray' || kind === 'extendedLine') && point(1)) {
       drawProjectedLine(ctx, point(0), point(1), rect, kind === 'ray');
-    } else if (kind === 'channel' || kind === 'regressionTrend' || kind === 'flatTopBottom' || kind === 'disjointChannel' || kind === 'fibChannel' || kind === 'wedge') {
+    } else if (kind === 'wedge' && point(2)) {
+      drawFibWedge(ctx, point(0), point(1), point(2), style.color, style.fill);
+    } else if (kind === 'channel' || kind === 'regressionTrend' || kind === 'flatTopBottom' || kind === 'disjointChannel' || kind === 'fibChannel') {
       drawChannel(ctx, points, kind);
     } else if (kind === 'fibRetracement' && point(1)) {
       drawFibLevels(ctx, rect, point(0), point(1), style.color, false);
@@ -7066,6 +7068,88 @@
     var end = Math.atan2(c.y - center.y, c.x - center.x);
     drawArcApprox(ctx, center, radius, start, end, 32);
     ctx.stroke();
+  }
+
+  function fibWedgeArcGeometry(p0, p1, p2, ratio) {
+    var start = {
+      x: p0.x + (p1.x - p0.x) * ratio,
+      y: p0.y + (p1.y - p0.y) * ratio
+    };
+    var end = {
+      x: p0.x + (p2.x - p0.x) * ratio,
+      y: p0.y + (p2.y - p0.y) * ratio
+    };
+    var startAngle = Math.atan2(start.y - p0.y, start.x - p0.x);
+    var endAngle = Math.atan2(end.y - p0.y, end.x - p0.x);
+    var sweep = endAngle - startAngle;
+    while (sweep > Math.PI) sweep -= Math.PI * 2;
+    while (sweep < -Math.PI) sweep += Math.PI * 2;
+    var halfSweep = Math.max(0.12, Math.abs(sweep) / 2);
+    var radius = Math.max(distance(p0, start), distance(p0, end));
+    var controlRadius = radius / Math.max(0.25, Math.cos(halfSweep));
+    var controlAngle = startAngle + sweep / 2;
+    return {
+      start: start,
+      end: end,
+      control: {
+        x: p0.x + Math.cos(controlAngle) * controlRadius,
+        y: p0.y + Math.sin(controlAngle) * controlRadius
+      }
+    };
+  }
+
+  function drawFibWedgeArc(ctx, arc) {
+    ctx.beginPath();
+    ctx.moveTo(arc.start.x, arc.start.y);
+    ctx.quadraticCurveTo(arc.control.x, arc.control.y, arc.end.x, arc.end.y);
+  }
+
+  function drawFibWedgeBand(ctx, inner, outer, fill) {
+    ctx.save();
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(inner.start.x, inner.start.y);
+    if (inner.control) {
+      ctx.quadraticCurveTo(inner.control.x, inner.control.y, inner.end.x, inner.end.y);
+    } else {
+      ctx.lineTo(inner.end.x, inner.end.y);
+    }
+    ctx.lineTo(outer.end.x, outer.end.y);
+    ctx.quadraticCurveTo(outer.control.x, outer.control.y, outer.start.x, outer.start.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFibWedge(ctx, p0, p1, p2, color, fallbackFill) {
+    var ratios = [0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    var ratioColors = ['#ef4444', '#f59e0b', '#4caf50', '#009688', '#06b6d4', '#808080'];
+    var arcs = ratios.map(function (ratio) {
+      return fibWedgeArcGeometry(p0, p1, p2, ratio);
+    });
+    var origin = { start: p0, end: p0, control: null };
+
+    arcs.forEach(function (arc, index) {
+      drawFibWedgeBand(ctx, index === 0 ? origin : arcs[index - 1], arc,
+        colorWithAlpha(ratioColors[index], 0.16) || fallbackFill);
+    });
+
+    ctx.strokeStyle = color;
+    drawLine(ctx, p0, p1);
+    drawLine(ctx, p0, p2);
+    arcs.forEach(function (arc, index) {
+      ctx.strokeStyle = ratioColors[index];
+      drawFibWedgeArc(ctx, arc);
+      ctx.stroke();
+      var labelT = 0.58;
+      var oneMinusT = 1 - labelT;
+      var labelPoint = {
+        x: oneMinusT * oneMinusT * arc.start.x + 2 * oneMinusT * labelT * arc.control.x + labelT * labelT * arc.end.x,
+        y: oneMinusT * oneMinusT * arc.start.y + 2 * oneMinusT * labelT * arc.control.y + labelT * labelT * arc.end.y
+      };
+      ctx.fillStyle = ratioColors[index];
+      ctx.fillText(String(ratios[index]), labelPoint.x + 4, labelPoint.y - 4);
+    });
   }
 
   function rotatedRectanglePoints(a, b, c) {
