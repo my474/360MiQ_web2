@@ -836,6 +836,29 @@
     });
   }
 
+  function normalizeComparisonSymbol(symbol) {
+    return String(symbol || '').trim().toUpperCase();
+  }
+
+  function relativeStrengthSeries(primaryBars, benchmarkBars, mode) {
+    var benchmarkByTime = {};
+    normalizeBars(benchmarkBars).forEach(function (bar) {
+      if (bar.close > 0) benchmarkByTime[bar.time] = bar.close;
+    });
+    var firstRatio = null;
+    return normalizeBars(primaryBars).map(function (bar) {
+      var benchmarkClose = benchmarkByTime[bar.time];
+      if (!(bar.close > 0) || !(benchmarkClose > 0)) return null;
+      var ratio = bar.close / benchmarkClose;
+      if (!(ratio > 0) || !Number.isFinite(ratio)) return null;
+      if (firstRatio == null) firstRatio = ratio;
+      return {
+        time: bar.time,
+        value: mode === 'ratio' ? ratio : (ratio / firstRatio) * 100
+      };
+    }).filter(Boolean);
+  }
+
   function priceSourceValue(bar, field) {
     if (!bar) return null;
     if (field === 'hl2') return (toNumber(bar.high, 0) + toNumber(bar.low, 0)) / 2;
@@ -1166,6 +1189,20 @@
           { output: 'level70', type: 'level', value: 70 },
           { output: 'level30', type: 'level', value: 30 }
         ]);
+      }
+    },
+    RELATIVE_STRENGTH: {
+      id: 'Relative Strength',
+      name: 'Relative Strength',
+      category: 'Performance',
+      defaultPanePolicy: 'new',
+      defaultInputs: { benchmark: 'SPY', mode: 'rebased' },
+      defaultStyles: { value: { color: null, lineWidth: 2 } },
+      compute: function (context, indicator) {
+        var input = merge({}, this.defaultInputs, indicator.inputs);
+        var benchmark = normalizeComparisonSymbol(input.benchmark);
+        var value = relativeStrengthSeries(context.bars, context.comparisonBars[benchmark] || [], input.mode);
+        return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'line' }]);
       }
     },
     MACD: {
@@ -2025,8 +2062,8 @@
     return sorted;
   }
 
-  function computeIndicatorGraph(bars, indicators) {
-    var context = { bars: bars, indicatorResults: {} };
+  function computeIndicatorGraph(bars, indicators, comparisonBars) {
+    var context = { bars: bars, comparisonBars: comparisonBars || {}, indicatorResults: {} };
     topoSortIndicators(indicators).forEach(function (indicator) {
       var definition = Indicators[indicator.type];
       if (!definition) return;
@@ -2068,6 +2105,12 @@
     this.document = migrateDocument(options.document || (options.load !== false ? this.storage.load(this.layoutId) : null) || createDefaultDocument(options));
     this.sourceBars = normalizeBars(options.data || []);
     this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
+    this.comparisonSourceBars = {};
+    this.comparisonBars = {};
+    Object.keys(options.comparisonData || {}).forEach(function (symbol) {
+      this.comparisonSourceBars[normalizeComparisonSymbol(symbol)] = normalizeBars(options.comparisonData[symbol]);
+    }, this);
+    this.refreshComparisonBars();
     this.document.theme = options.theme ? getThemeName(options.theme) : (this.document.theme || getThemeName());
     this.indicatorResults = {};
     this.paneRects = [];
@@ -2648,6 +2691,7 @@
   Chart.prototype.restore = function (doc) {
     this.document = migrateDocument(doc);
     this.bars = aggregateBars(this.sourceBars, this.document.settings.period);
+    this.refreshComparisonBars();
     this.compute();
     this.resize();
     this.resetHistory();
@@ -2978,6 +3022,56 @@
     this.emitChange('data', { barCount: this.bars.length, sourceBarCount: this.sourceBars.length });
   };
 
+  Chart.prototype.refreshComparisonBars = function () {
+    var period = this.document && this.document.settings ? this.document.settings.period : 'daily';
+    this.comparisonBars = {};
+    Object.keys(this.comparisonSourceBars || {}).forEach(function (symbol) {
+      this.comparisonBars[symbol] = aggregateBars(this.comparisonSourceBars[symbol], period);
+    }, this);
+  };
+
+  Chart.prototype.setComparisonData = function (symbol, bars) {
+    var benchmark = normalizeComparisonSymbol(symbol);
+    var normalizedBars = normalizeBars(bars);
+    if (!benchmark || !normalizedBars.length) return false;
+    this.comparisonSourceBars[benchmark] = normalizedBars;
+    this.refreshComparisonBars();
+    this.compute();
+    this.draw();
+    this.emitChange('comparison:data', { symbol: benchmark, barCount: normalizedBars.length });
+    return true;
+  };
+
+  Chart.prototype.loadComparisonSymbol = function (symbol) {
+    var self = this;
+    var benchmark = normalizeComparisonSymbol(symbol);
+    if (!benchmark) return Promise.reject(new Error('Enter a benchmark symbol.'));
+    if (benchmark === normalizeComparisonSymbol(this.document.symbol)) {
+      this.setComparisonData(benchmark, this.sourceBars);
+      return Promise.resolve({ symbol: benchmark, bars: clone(this.sourceBars) });
+    }
+    if (this.comparisonSourceBars[benchmark]) return Promise.resolve({ symbol: benchmark, bars: clone(this.comparisonSourceBars[benchmark]) });
+    if (typeof this.options.onComparisonSymbolLoad !== 'function') return Promise.reject(new Error('Benchmark loading is unavailable.'));
+    return Promise.resolve(this.options.onComparisonSymbolLoad(benchmark)).then(function (payload) {
+      var bars = Array.isArray(payload) ? payload : payload && payload.bars;
+      if (!self.setComparisonData(benchmark, bars)) throw new Error('No benchmark history was returned for ' + benchmark + '.');
+      return { symbol: benchmark, bars: bars };
+    });
+  };
+
+  Chart.prototype.loadRequiredComparisonSymbols = function () {
+    var self = this;
+    var symbols = {};
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.type !== 'RELATIVE_STRENGTH') return;
+      var symbol = normalizeComparisonSymbol(indicator.inputs && indicator.inputs.benchmark);
+      if (symbol) symbols[symbol] = true;
+    });
+    return Promise.all(Object.keys(symbols).map(function (symbol) {
+      return self.loadComparisonSymbol(symbol);
+    }));
+  };
+
   Chart.prototype.setSymbolInfo = function (info) {
     var normalized = normalizeSymbolInfo(info, this.document.symbol);
     if (normalized.code) this.document.symbol = normalized.code;
@@ -3081,6 +3175,7 @@
     this.document.settings.period = nextPeriod;
     this.document.interval = periodInterval(nextPeriod);
     this.bars = aggregateBars(this.sourceBars, nextPeriod);
+    this.refreshComparisonBars();
     this.compute();
     this.fitContent();
     this.draw();
@@ -3326,6 +3421,11 @@
     this.compute();
     this.draw();
     this.emitChange('indicator:add', indicator);
+    if (type === 'RELATIVE_STRENGTH') {
+      this.loadComparisonSymbol(indicator.inputs.benchmark).catch(function (error) {
+        console.warn('Unable to load Relative Strength benchmark:', error);
+      });
+    }
     return id;
   };
 
@@ -3545,16 +3645,28 @@
     var length = indicator.inputs && indicator.inputs.length != null ? indicator.inputs.length : '';
     var opacity = style.opacity == null ? 1 : style.opacity;
     var isVolume = indicator.type === 'VOLUME';
-    var sourceSelect = isVolume ? '' : [
+    var isRelativeStrength = indicator.type === 'RELATIVE_STRENGTH';
+    var sourceSelect = isVolume || isRelativeStrength ? '' : [
       '<label>Source<select data-sce-popup-field="source">',
       this.indicatorSourceOptionsHtml(indicator.id),
       '</select></label>'
     ].join('');
-    var controls = isVolume ? [
-      '<label>Opacity<input type="number" min="0.05" max="1" step="0.05" data-sce-popup-field="opacity" value="', escapeHtml(opacity), '"></label>'
+    var studyInputs = isRelativeStrength ? [
+      '<label>Benchmark<div class="sce-popup-inline-control">',
+      '<input type="text" spellcheck="false" autocomplete="off" data-sce-popup-field="benchmark" value="', escapeHtml(normalizeComparisonSymbol(indicator.inputs && indicator.inputs.benchmark) || 'SPY'), '">',
+      '<button type="button" data-sce-popup-action="load-benchmark">Load</button>',
+      '</div><span class="sce-popup-status" data-sce-benchmark-status></span></label>',
+      '<label>Mode<select data-sce-popup-field="relativeStrengthMode">',
+      '<option value="rebased"', indicator.inputs && indicator.inputs.mode === 'ratio' ? '' : ' selected', '>Rebased (100)</option>',
+      '<option value="ratio"', indicator.inputs && indicator.inputs.mode === 'ratio' ? ' selected' : '', '>Price ratio</option>',
+      '</select></label>'
     ] : [
       '<label>Period<input type="number" min="1" max="1000" data-sce-popup-field="length" value="', escapeHtml(length), '"></label>',
-      sourceSelect,
+      sourceSelect
+    ];
+    var controls = isVolume ? [
+      '<label>Opacity<input type="number" min="0.05" max="1" step="0.05" data-sce-popup-field="opacity" value="', escapeHtml(opacity), '"></label>'
+    ] : studyInputs.concat([
       '<label>Output<input type="text" readonly data-sce-popup-field="output" value="', escapeHtml(output), '"></label>',
       '<label>Color<div class="sce-color-control">',
       '<button type="button" class="sce-color-swatch" data-sce-popup-action="toggle-color" style="background:', escapeHtml(style.color || '#2563eb'), '" aria-label="Choose color"></button>',
@@ -3570,7 +3682,7 @@
       '<option value="dash"', normalizeLineStyle(style.lineStyle) === 'dash' ? ' selected' : '', '>Dash</option>',
       '<option value="dot"', normalizeLineStyle(style.lineStyle) === 'dot' ? ' selected' : '', '>Dot</option>',
       '</select></label>'
-    ];
+    ]);
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title">',
       '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
@@ -3588,7 +3700,7 @@
     this.settingsPopup.dataset.output = output;
     delete this.settingsPopup.dataset.drawingId;
     this.bindSettingsPopup();
-    this.positionSettingsPopup(pointer, 286, isVolume ? 176 : 368);
+    this.positionSettingsPopup(pointer, 286, isVolume ? 176 : (isRelativeStrength ? 396 : 368));
   };
 
   Chart.prototype.indicatorSourceOptions = function (indicatorId) {
@@ -3644,6 +3756,7 @@
       if (action === 'toggle-color') self.togglePopupColorPalette();
       if (action === 'pick-color') self.pickPopupColor(event.target.getAttribute('data-sce-color'));
       if (action === 'close') self.closeIndicatorSettingsPopup();
+      if (action === 'load-benchmark') self.loadRelativeStrengthBenchmarkFromPopup();
       if (action === 'remove') {
         self.removeIndicator(self.settingsPopup.dataset.indicatorId);
         self.closeIndicatorSettingsPopup();
@@ -3674,18 +3787,55 @@
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="lineStyle"]');
     var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="opacity"]');
     var source = this.settingsPopup.querySelector('[data-sce-popup-field="source"]');
+    var benchmark = this.settingsPopup.querySelector('[data-sce-popup-field="benchmark"]');
+    var relativeStrengthMode = this.settingsPopup.querySelector('[data-sce-popup-field="relativeStrengthMode"]');
     var style = {};
     style[output] = {};
     if (color) style[output].color = color.value;
     if (lineWidth) style[output].lineWidth = Number(lineWidth.value);
     if (lineStyle) style[output].lineStyle = lineStyle.value;
     if (opacity) style[output].opacity = Number(opacity.value);
+    var inputs = length && length.value ? { length: Number(length.value) } : {};
+    if (benchmark) inputs.benchmark = normalizeComparisonSymbol(benchmark.value);
+    if (relativeStrengthMode) inputs.mode = relativeStrengthMode.value === 'ratio' ? 'ratio' : 'rebased';
     this.updateIndicatorSettings(indicatorId, {
       source: source ? this.sourceFromKey(source.value) : null,
-      inputs: length && length.value ? { length: Number(length.value) } : {},
+      inputs: inputs,
       styles: style
     });
+    if (benchmark) {
+      this.loadComparisonSymbol(benchmark.value).catch(function (error) {
+        console.warn('Unable to load Relative Strength benchmark:', error);
+      });
+    }
     this.closeIndicatorSettingsPopup();
+  };
+
+  Chart.prototype.loadRelativeStrengthBenchmarkFromPopup = function () {
+    var indicatorId = this.settingsPopup.dataset.indicatorId;
+    var benchmark = this.settingsPopup.querySelector('[data-sce-popup-field="benchmark"]');
+    var mode = this.settingsPopup.querySelector('[data-sce-popup-field="relativeStrengthMode"]');
+    var status = this.settingsPopup.querySelector('[data-sce-benchmark-status]');
+    var button = this.settingsPopup.querySelector('[data-sce-popup-action="load-benchmark"]');
+    var symbol = normalizeComparisonSymbol(benchmark && benchmark.value);
+    if (!symbol) {
+      if (status) status.textContent = 'Enter a benchmark symbol.';
+      return;
+    }
+    if (benchmark) benchmark.value = symbol;
+    if (button) button.disabled = true;
+    if (status) status.textContent = 'Loading ' + symbol + '...';
+    var self = this;
+    this.loadComparisonSymbol(symbol).then(function (result) {
+      self.updateIndicatorSettings(indicatorId, {
+        inputs: { benchmark: symbol, mode: mode && mode.value === 'ratio' ? 'ratio' : 'rebased' }
+      });
+      if (status) status.textContent = result.bars.length + ' bars loaded.';
+    }).catch(function (error) {
+      if (status) status.textContent = error && error.message ? error.message : 'Unable to load benchmark.';
+    }).then(function () {
+      if (button) button.disabled = false;
+    });
   };
 
   Chart.prototype.togglePopupColorPalette = function () {
@@ -4575,7 +4725,7 @@
   };
 
   Chart.prototype.compute = function () {
-    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators);
+    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars);
   };
 
   Chart.prototype.fitContent = function () {
@@ -7810,6 +7960,7 @@
     var inputs = indicator.inputs || {};
     var name = definition ? definition.id : indicator.type;
     if (indicator.type === 'VOLUME') return 'VOLUME';
+    if (indicator.type === 'RELATIVE_STRENGTH') return 'RS (' + (normalizeComparisonSymbol(inputs.benchmark) || 'SPY') + ')';
     if (inputs.length) name += ' (' + inputs.length + ')';
     if (indicator.type === 'MACD') {
       if (output === 'signal') return 'MACD Signal';

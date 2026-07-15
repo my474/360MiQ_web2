@@ -1009,6 +1009,31 @@ additionalIndicators.forEach((type) => {
   assert.ok(Object.keys(result.outputs).length > 0, `${type} should expose outputs`);
 });
 
+const relativeStrengthPrimaryBars = [
+  { time: 100, open: 10, high: 10, low: 10, close: 10, volume: 1 },
+  { time: 200, open: 11, high: 11, low: 11, close: 11, volume: 1 },
+  { time: 300, open: 12, high: 12, low: 12, close: 12, volume: 1 },
+  { time: 400, open: 13, high: 13, low: 13, close: 13, volume: 1 }
+];
+const relativeStrengthBenchmarkBars = [
+  { time: 100, open: 2, high: 2, low: 2, close: 2, volume: 1 },
+  { time: 300, open: 3, high: 3, low: 3, close: 3, volume: 1 },
+  { time: 400, open: 0, high: 0, low: 0, close: 0, volume: 1 }
+];
+const relativeStrengthResult = StockChartEngine.computeIndicatorGraph(relativeStrengthPrimaryBars, [{
+  id: 'test-relative-strength',
+  type: 'RELATIVE_STRENGTH',
+  paneId: 'relative-strength',
+  inputs: { benchmark: 'spy', mode: 'rebased' },
+  styles: {},
+  visible: true
+}], { SPY: relativeStrengthBenchmarkBars })['test-relative-strength'];
+assert.ok(StockChartEngine.Indicators.RELATIVE_STRENGTH);
+assert.deepStrictEqual(relativeStrengthResult.outputs.value, [
+  { time: 100, value: 100 },
+  { time: 300, value: 80 }
+]);
+
 const rsiId = chart.addIndicator('RSI', { placement: 'new' });
 chart.draw();
 assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));

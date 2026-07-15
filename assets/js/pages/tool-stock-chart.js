@@ -153,7 +153,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260714.9';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260715.19';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -462,11 +462,21 @@
             autosave: options.autosave !== false,
             theme: currentThemeName(),
             recentStocks: recentStocks(),
+            onComparisonSymbolLoad: function (benchmark) {
+                return requestBars(benchmark).then(function (payload) {
+                    return payload.bars;
+                });
+            },
             onRecentStockSelect: function (stock) {
                 if (stock && stock.code) loadStockChart(stock.code, stock);
             }
         });
         applyStockMetadata(stockChart, code, options.symbolInfo);
+        if (stockChart.loadRequiredComparisonSymbols) {
+            stockChart.loadRequiredComparisonSymbols().catch(function (error) {
+                console.warn('Unable to restore Relative Strength benchmark:', error);
+            });
+        }
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         if (options.resetHistory && stockChart.resetHistory) stockChart.resetHistory();
         setTimeout(function () {
