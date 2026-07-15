@@ -365,7 +365,7 @@
       circles: '<circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8"/>',
       spiral: '<path d="M12 12c3-1 3 3 0 4-5 1-8-4-5-8 4-6 14-3 14 5"/>',
       arcs: '<path d="M5 18a7 7 0 0 1 14 0"/><path d="M8 18a4 4 0 0 1 8 0"/>',
-      wedge: '<path d="M4 18L20 5"/><path d="M4 18L20 20"/><path d="M7 16Q12 11 19 8"/><path d="M8 17Q14 13 19 11"/><path d="M9 17Q15 15 19 14"/><path d="M10 18Q16 16 19 16"/>',
+      wedge: '<path d="M4 19L20 4"/><path d="M4 19L20 21"/><path d="M6 17Q10 15 9 19"/><path d="M8 15Q15 11 13 20"/><path d="M10 13Q20 8 17 20"/><path d="M12 11Q24 5 20 21"/>',
       path: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/>',
       brush: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/><path d="M16 18l4 2"/>',
       highlighter: '<path d="M4 16c4-8 7 5 11-3 2-4 4-3 5-1"/><path d="M5 20h14"/>',
