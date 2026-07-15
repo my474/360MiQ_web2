@@ -1029,6 +1029,7 @@ const relativeStrengthResult = StockChartEngine.computeIndicatorGraph(relativeSt
   visible: true
 }], { SPY: relativeStrengthBenchmarkBars })['test-relative-strength'];
 assert.ok(StockChartEngine.Indicators.RELATIVE_STRENGTH);
+assert.strictEqual(StockChartEngine.Indicators.RELATIVE_STRENGTH.menuCode, 'RS');
 assert.deepStrictEqual(relativeStrengthResult.outputs.value, [
   { time: 100, value: 100 },
   { time: 300, value: 80 }
@@ -1707,6 +1708,11 @@ assert.notStrictEqual(StockChartEngine.drawingTools.modified_schiff_pitchfork.ic
 assert.strictEqual((StockChartEngine.drawingTools.pitchfan.icon.match(/<path/g) || []).length, 6);
 assert.ok(StockChartEngine.drawingTools.pitchfan.icon.indexOf('M3 19 22 2') !== -1);
 assert.ok(StockChartEngine.drawingTools.pitchfan.icon.indexOf('M11 12 14 17') !== -1);
+assert.ok(StockChartEngine.drawingTools.gann_box.icon.indexOf('width="16" height="12"') !== -1);
+assert.ok(StockChartEngine.drawingTools.gann_square.icon.indexOf('width="16" height="16"') !== -1);
+assert.ok(StockChartEngine.drawingTools.gann_square_fixed.icon.indexOf('M6 4v16') !== -1);
+assert.notStrictEqual(StockChartEngine.drawingTools.gann_box.icon, StockChartEngine.drawingTools.gann_square.icon);
+assert.notStrictEqual(StockChartEngine.drawingTools.gann_square.icon, StockChartEngine.drawingTools.gann_square_fixed.icon);
 assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'], measurementRenderPoints);
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));

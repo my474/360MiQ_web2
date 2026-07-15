@@ -153,7 +153,7 @@
             }
 
             var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260715.19';
+            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260715.20';
             script.async = false;
             script.setAttribute('data-tool-stock-chart-engine', 'true');
             script.onload = function () {
@@ -442,6 +442,33 @@
         }
     }
 
+    function relativeStrengthSnapshots(chart) {
+        if (!chart || !chart.document || !Array.isArray(chart.document.indicators)) return [];
+        return chart.document.indicators.filter(function (indicator) {
+            return indicator && indicator.type === 'RELATIVE_STRENGTH';
+        }).map(function (indicator) {
+            return {
+                inputs: JSON.parse(JSON.stringify(indicator.inputs || {})),
+                styles: JSON.parse(JSON.stringify(indicator.styles || {})),
+                visible: indicator.visible !== false
+            };
+        });
+    }
+
+    function restoreRelativeStrengthSnapshots(chart, snapshots) {
+        if (!chart || !snapshots.length || !chart.document || chart.document.indicators.some(function (indicator) {
+            return indicator.type === 'RELATIVE_STRENGTH';
+        })) return;
+        snapshots.forEach(function (snapshot) {
+            chart.addIndicator('RELATIVE_STRENGTH', {
+                placement: 'new',
+                inputs: snapshot.inputs,
+                styles: snapshot.styles,
+                visible: snapshot.visible
+            });
+        });
+    }
+
     function renderChart(code, bars, options) {
         options = options || {};
         var container = document.getElementById('toolStockChart');
@@ -449,6 +476,7 @@
         var layoutId = escapeLayoutId(code);
         var shouldLoadStoredLayout = options.load !== false;
         var layoutExisted = shouldLoadStoredLayout && hasStoredLayout(layoutId);
+        var carriedRelativeStrength = options.preserveRelativeStrength === false ? [] : relativeStrengthSnapshots(stockChart);
 
         if (stockChart && stockChart.destroy) stockChart.destroy();
         stockChart = new StockChartEngine.Chart(container, {
@@ -472,12 +500,13 @@
             }
         });
         applyStockMetadata(stockChart, code, options.symbolInfo);
+        if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
+        restoreRelativeStrengthSnapshots(stockChart, carriedRelativeStrength);
         if (stockChart.loadRequiredComparisonSymbols) {
             stockChart.loadRequiredComparisonSymbols().catch(function (error) {
                 console.warn('Unable to restore Relative Strength benchmark:', error);
             });
         }
-        if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         if (options.resetHistory && stockChart.resetHistory) stockChart.resetHistory();
         setTimeout(function () {
             if (stockChart && stockChart.resize) stockChart.resize();
@@ -490,12 +519,18 @@
             load: false,
             autosave: false,
             skipStarterStudies: true,
+            preserveRelativeStrength: false,
             symbolInfo: metadata
         });
         stockChart.importLayout(layoutWithoutEmbeddedData(payload));
         applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo);
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
+        if (stockChart.loadRequiredComparisonSymbols) {
+            stockChart.loadRequiredComparisonSymbols().catch(function (error) {
+                console.warn('Unable to load shared Relative Strength benchmark:', error);
+            });
+        }
         recordRecentStock(code, metadata || payload && payload.document && payload.document.symbolInfo);
         if (!savedLayoutExists) {
             stockChart.options.autosave = true;

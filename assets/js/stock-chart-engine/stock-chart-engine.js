@@ -355,6 +355,9 @@
       timeZones: '<path d="M5 4v16"/><path d="M9 4v16"/><path d="M14 4v16"/><path d="M21 4v16"/>',
       trendFibTime: '<path d="M4 18l6-8"/><path d="M10 4v16"/><path d="M14 4v16"/><path d="M20 4v16"/>',
       gridBox: '<rect x="4" y="5" width="16" height="14"/><path d="M9 5v14"/><path d="M15 5v14"/><path d="M4 10h16"/><path d="M4 15h16"/>',
+      gannBox: '<rect x="4" y="6" width="16" height="12"/><path d="M8 6v12"/><path d="M12 6v12"/><path d="M16 6v12"/><path d="M4 9h16"/><path d="M4 12h16"/><path d="M4 15h16"/><path d="M4 6l16 12"/><path d="M4 18 20 6"/><path d="M12 6v12"/><path d="M4 12h16"/>',
+      gannSquare: '<rect x="4" y="4" width="16" height="16"/><path d="M8 4v16"/><path d="M12 4v16"/><path d="M16 4v16"/><path d="M4 8h16"/><path d="M4 12h16"/><path d="M4 16h16"/><path d="M4 4l16 16"/><path d="M4 20 20 4"/><path d="M12 4v16"/><path d="M4 12h16"/>',
+      gannSquareFixed: '<rect x="4" y="4" width="16" height="16"/><path d="M6 4v16"/><path d="M8 4v16"/><path d="M10 4v16"/><path d="M12 4v16"/><path d="M14 4v16"/><path d="M16 4v16"/><path d="M18 4v16"/><path d="M4 6h16"/><path d="M4 8h16"/><path d="M4 10h16"/><path d="M4 12h16"/><path d="M4 14h16"/><path d="M4 16h16"/><path d="M4 18h16"/><path d="M4 4l16 16"/><path d="M4 20 20 4"/><path d="M12 4v16"/><path d="M4 12h16"/>',
       fan: '<path d="M4 19L20 5"/><path d="M4 19l16-1"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
       gannFan: '<path d="M4 19L20 5"/><path d="M4 19h16"/><path d="M4 19L20 12"/><path d="M4 19l7-15"/>',
       fibFan: '<path d="M4 19L20 7"/><path d="M4 19L20 10"/><path d="M4 19L20 13"/><path d="M4 19L20 16"/>',
@@ -1194,6 +1197,7 @@
     RELATIVE_STRENGTH: {
       id: 'Relative Strength',
       name: 'Relative Strength',
+      menuCode: 'RS',
       category: 'Performance',
       defaultPanePolicy: 'new',
       defaultInputs: { benchmark: 'SPY', mode: 'rebased' },
@@ -4998,7 +5002,7 @@
         }).map(function (type) {
           var definition = Indicators[type] || {};
           return {
-            code: type,
+            code: definition.menuCode || type,
             name: definition.name || type,
             description: definition.category || 'Indicator',
             value: type,
@@ -8331,12 +8335,13 @@
       return (leftDefinition.name || left).localeCompare(rightDefinition.name || right);
     }).map(function (type) {
       var definition = Indicators[type] || {};
+      var code = definition.menuCode || type;
       var category = definition.category || 'Indicator';
       var name = definition.name || type;
-      var search = [type, name, category].join(' ').toLowerCase();
+      var search = [type, code, name, category].join(' ').toLowerCase();
       return [
         '<button type="button" data-sce-indicator-option="', escapeHtml(type), '" data-sce-indicator-search="', escapeHtml(search), '" role="menuitem">',
-        '<strong>', escapeHtml(type), '</strong>',
+        '<strong>', escapeHtml(code), '</strong>',
         '<span>', escapeHtml(name), '</span>',
         '<em>', escapeHtml(category), '</em>',
         '</button>'
