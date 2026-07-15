@@ -2333,7 +2333,14 @@
     }, true);
     this.toolbar.addEventListener('toggle', function (event) {
       if (!event.target || event.target.tagName !== 'DETAILS') return;
-      if (event.target.hasAttribute('open')) self.closeSiblingDetailsMenus(self.toolbar, event.target);
+      if (event.target.hasAttribute('open')) {
+        self.closeSiblingDetailsMenus(self.toolbar, event.target);
+        if (event.target.hasAttribute('data-sce-indicator-picker')) {
+          setTimeout(function () {
+            self.focusIndicatorMenuSearch();
+          }, 0);
+        }
+      }
     }, true);
     this.toolbar.addEventListener('mousedown', function (event) {
       self.closeToolbarMenusForTarget(event.target);
@@ -2518,6 +2525,11 @@
 
   Chart.prototype.closeToolbarMenus = function () {
     this.closeDetailsMenus(this.toolbar);
+  };
+
+  Chart.prototype.focusIndicatorMenuSearch = function () {
+    var search = this.toolbar && this.toolbar.querySelector ? this.toolbar.querySelector('[data-sce-indicator-search]') : null;
+    if (search && typeof search.focus === 'function') search.focus();
   };
 
   Chart.prototype.closeToolbarMenusForTarget = function (target) {

@@ -478,6 +478,13 @@ assert.strictEqual(chart.document.settings.period, 'weekly');
 chart.setPeriod('daily');
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stocks-picker') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stock="SPY"') !== -1);
+const indicatorSearchForFocusTest = new FakeElement('input');
+indicatorSearchForFocusTest.setAttribute('data-sce-indicator-search', '');
+let indicatorSearchFocusCount = 0;
+indicatorSearchForFocusTest.focus = () => { indicatorSearchFocusCount += 1; };
+chart.toolbar.appendChild(indicatorSearchForFocusTest);
+chart.focusIndicatorMenuSearch();
+assert.strictEqual(indicatorSearchFocusCount, 1);
 let projectSheetOptions = null;
 global.window.openProjectBottomSheet = (options) => {
   projectSheetOptions = options;
