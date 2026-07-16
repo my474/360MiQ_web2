@@ -5,6 +5,7 @@
   --sce-pane-control-border: rgba(209, 213, 219, 0.9);
   --sce-latest-bg: rgba(37, 99, 235, 0.92);
   --sce-latest-border: rgba(30, 64, 175, 0.9);
+  --sce-latest-glow: rgba(37, 99, 235, 0.48);
   --sce-text: #111827;
   --sce-muted: #6b7280;
   border: 1px solid var(--sce-border);
@@ -27,6 +28,7 @@
   --sce-pane-control-border: rgba(55, 65, 81, 0.9);
   --sce-latest-bg: rgba(37, 99, 235, 0.94);
   --sce-latest-border: rgba(147, 197, 253, 0.9);
+  --sce-latest-glow: rgba(96, 165, 250, 0.72);
   --sce-text: #f9fafb;
   --sce-muted: #cbd5e1;
   color-scheme: dark;
@@ -598,6 +600,36 @@
 .sce-latest-marker svg {
   height: 14px;
   width: 14px;
+}
+
+.sce-latest-marker.sce-latest-marker-pulse {
+  animation: sce-latest-marker-pulse 2.4s ease-in-out 1 both;
+}
+
+@keyframes sce-latest-marker-pulse {
+  0%, 24%, 48%, 72% {
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.22);
+    opacity: 0.58;
+    transform: scale(1);
+  }
+
+  12%, 36%, 60% {
+    box-shadow: 0 0 0 3px var(--sce-latest-glow), 0 0 18px var(--sce-latest-glow);
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  100% {
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.22);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sce-latest-marker.sce-latest-marker-pulse {
+    animation: none;
+  }
 }
 
 .sce-latest-marker:hover,

@@ -2128,6 +2128,7 @@
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
     this.pendingDrawing = null;
+    this.latestMarkerVisible = false;
     this.dragState = null;
     this.yScaleDragState = null;
     this.tapState = null;
@@ -5637,6 +5638,14 @@
     if (!this.latestMarker) return;
     var range = this.visibleIndexRange();
     var isBehindLatest = this.bars.length > 0 && range.to < this.bars.length - 1;
+    if (isBehindLatest && !this.latestMarkerVisible) {
+      this.latestMarker.classList.remove('sce-latest-marker-pulse');
+      void this.latestMarker.offsetWidth;
+      this.latestMarker.classList.add('sce-latest-marker-pulse');
+    } else if (!isBehindLatest) {
+      this.latestMarker.classList.remove('sce-latest-marker-pulse');
+    }
+    this.latestMarkerVisible = isBehindLatest;
     this.latestMarker.hidden = !isBehindLatest;
     this.latestMarker.setAttribute('aria-hidden', isBehindLatest ? 'false' : 'true');
   };
