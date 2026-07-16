@@ -2248,7 +2248,7 @@
     this.latestMarker.setAttribute('title', 'Go to latest bar');
     this.latestMarker.setAttribute('aria-label', 'Go to latest bar');
     this.latestMarker.hidden = true;
-    this.latestMarker.innerHTML = paneControlIconSvg('latest') + '<span>Latest</span>';
+    this.latestMarker.innerHTML = paneControlIconSvg('latest');
     this.paneControlsLayer = document.createElement('div');
     this.paneControlsLayer.className = 'sce-pane-controls-layer';
     this.paneControlsLayer.setAttribute('aria-hidden', 'false');

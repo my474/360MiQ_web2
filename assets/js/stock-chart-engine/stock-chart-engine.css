@@ -575,19 +575,18 @@
   align-items: center;
   background: var(--sce-latest-bg);
   border: 1px solid var(--sce-latest-border);
-  border-radius: 999px;
-  bottom: 34px;
-  box-shadow: 0 7px 18px rgba(15, 23, 42, 0.22);
+  border-radius: 5px;
+  bottom: 3px;
+  box-shadow: 0 3px 9px rgba(15, 23, 42, 0.22);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
-  font: 700 12px/1 Arial, Helvetica, sans-serif;
-  gap: 4px;
   justify-content: center;
-  min-height: 28px;
-  padding: 5px 9px 5px 7px;
+  height: 22px;
+  padding: 2px;
   position: absolute;
-  right: 12px;
+  right: 6px;
+  width: 26px;
   transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
   z-index: 6;
 }
@@ -597,8 +596,8 @@
 }
 
 .sce-latest-marker svg {
-  height: 15px;
-  width: 15px;
+  height: 14px;
+  width: 14px;
 }
 
 .sce-latest-marker:hover,
