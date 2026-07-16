@@ -2242,6 +2242,13 @@
     this.settingsPopup = document.createElement('div');
     this.settingsPopup.className = 'sce-settings-popup';
     this.settingsPopup.setAttribute('hidden', 'hidden');
+    this.latestMarker = document.createElement('button');
+    this.latestMarker.className = 'sce-latest-marker';
+    this.latestMarker.type = 'button';
+    this.latestMarker.setAttribute('title', 'Go to latest bar');
+    this.latestMarker.setAttribute('aria-label', 'Go to latest bar');
+    this.latestMarker.hidden = true;
+    this.latestMarker.innerHTML = paneControlIconSvg('latest') + '<span>Latest</span>';
     this.paneControlsLayer = document.createElement('div');
     this.paneControlsLayer.className = 'sce-pane-controls-layer';
     this.paneControlsLayer.setAttribute('aria-hidden', 'false');
@@ -2252,6 +2259,7 @@
     this.canvasWrap.appendChild(this.settingsPopup);
     this.canvasWrap.appendChild(this.paneControlsLayer);
     this.canvasWrap.appendChild(this.drawingToolsLayer);
+    this.canvasWrap.appendChild(this.latestMarker);
     this.root.appendChild(this.toolbar);
     this.root.appendChild(this.canvasWrap);
     this.container.innerHTML = '';
@@ -2430,6 +2438,10 @@
         action: button.getAttribute('data-sce-pane-action'),
         disabled: button.getAttribute('aria-disabled') === 'true'
       });
+    });
+    this.latestMarker.addEventListener('click', function (event) {
+      if (event.preventDefault) event.preventDefault();
+      self.goToLatest();
     });
 
     this.canvas.addEventListener('mousedown', function (event) {
@@ -3249,6 +3261,19 @@
     this.setVisibleIndexRange(range.from + barDelta, range.to + barDelta);
     this.draw();
     this.emitChange('range:scroll', { barDelta: barDelta, visibleRange: clone(this.document.visibleRange) });
+    return true;
+  };
+
+  Chart.prototype.goToLatest = function () {
+    if (!this.bars.length) return false;
+    var range = this.visibleIndexRange();
+    var count = Math.max(1, range.to - range.from + 1);
+    var minVisible = Math.min(this.bars.length, Math.max(2, this.options.minVisibleBars || 8));
+    count = clamp(count, minVisible, this.bars.length);
+    this.document.settings.dateRangePreset = null;
+    this.setVisibleIndexRange(this.bars.length - count, this.bars.length - 1);
+    this.draw();
+    this.emitChange('range:latest', { visibleRange: clone(this.document.visibleRange) });
     return true;
   };
 
@@ -5605,6 +5630,15 @@
     this.renderPaneControlOverlays();
     this.drawTimeAxis(theme);
     this.drawCrosshair(theme);
+    this.updateLatestMarker();
+  };
+
+  Chart.prototype.updateLatestMarker = function () {
+    if (!this.latestMarker) return;
+    var range = this.visibleIndexRange();
+    var isBehindLatest = this.bars.length > 0 && range.to < this.bars.length - 1;
+    this.latestMarker.hidden = !isBehindLatest;
+    this.latestMarker.setAttribute('aria-hidden', isBehindLatest ? 'false' : 'true');
   };
 
   Chart.prototype.drawPane = function (rect, theme, paneIndex) {
@@ -8354,6 +8388,7 @@
       copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
       undo: '<path d="m9 14-5-5 5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v1"/>',
       redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0-5 5v1"/>',
+      latest: '<path d="M4 12h15"/><path d="m14 6 6 6-6 6"/>',
       'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
       'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>',
       'full-browser': '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/>',

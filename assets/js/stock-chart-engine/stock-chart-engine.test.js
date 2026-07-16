@@ -898,6 +898,14 @@ chart.handlePointerUp();
 assert.ok(chart.visibleIndexRange().from >= panStart.from);
 chart.fitContent();
 chart.draw();
+assert.strictEqual(chart.latestMarker.hidden, true);
+chart.setVisibleIndexRange(0, chart.bars.length - 3);
+chart.draw();
+assert.strictEqual(chart.latestMarker.hidden, false);
+assert.strictEqual(chart.latestMarker.getAttribute('aria-label'), 'Go to latest bar');
+assert.strictEqual(chart.goToLatest(), true);
+assert.strictEqual(chart.visibleIndexRange().to, chart.bars.length - 1);
+assert.strictEqual(chart.latestMarker.hidden, true);
 
 const originalDrawingsForViewportRange = chart.document.drawings;
 chart.document.drawings = [];

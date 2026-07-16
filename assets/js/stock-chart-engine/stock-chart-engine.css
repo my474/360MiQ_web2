@@ -3,6 +3,8 @@
   --sce-panel: #f8fafc;
   --sce-pane-control-bg: rgba(248, 250, 252, 0.92);
   --sce-pane-control-border: rgba(209, 213, 219, 0.9);
+  --sce-latest-bg: rgba(37, 99, 235, 0.92);
+  --sce-latest-border: rgba(30, 64, 175, 0.9);
   --sce-text: #111827;
   --sce-muted: #6b7280;
   border: 1px solid var(--sce-border);
@@ -23,6 +25,8 @@
   --sce-panel: #172033;
   --sce-pane-control-bg: rgba(23, 32, 51, 0.92);
   --sce-pane-control-border: rgba(55, 65, 81, 0.9);
+  --sce-latest-bg: rgba(37, 99, 235, 0.94);
+  --sce-latest-border: rgba(147, 197, 253, 0.9);
   --sce-text: #f9fafb;
   --sce-muted: #cbd5e1;
   color-scheme: dark;
@@ -565,6 +569,44 @@
 
 .sce-canvas.sce-crosshair-drawing {
   cursor: copy;
+}
+
+.sce-latest-marker {
+  align-items: center;
+  background: var(--sce-latest-bg);
+  border: 1px solid var(--sce-latest-border);
+  border-radius: 999px;
+  bottom: 34px;
+  box-shadow: 0 7px 18px rgba(15, 23, 42, 0.22);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: 700 12px/1 Arial, Helvetica, sans-serif;
+  gap: 4px;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 9px 5px 7px;
+  position: absolute;
+  right: 12px;
+  transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  z-index: 6;
+}
+
+.sce-latest-marker[hidden] {
+  display: none;
+}
+
+.sce-latest-marker svg {
+  height: 15px;
+  width: 15px;
+}
+
+.sce-latest-marker:hover,
+.sce-latest-marker:focus-visible {
+  background: #1d4ed8;
+  box-shadow: 0 9px 22px rgba(15, 23, 42, 0.3);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .sce-drawing-tools-layer {
