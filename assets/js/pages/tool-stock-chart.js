@@ -51,6 +51,73 @@
         if ($input.length && $input.autocomplete) $input.autocomplete('close');
     }
 
+    function barDateKey(value) {
+        return String(value == null ? '' : value).substring(0, 10);
+    }
+
+    function visibleDateRangeForChart(chart) {
+        if (!chart || !Array.isArray(chart.bars) || !chart.bars.length) return null;
+        var savedRange = chart.document && chart.document.visibleRange;
+        if (savedRange && savedRange.from != null && savedRange.to != null) {
+            var savedFrom = barDateKey(savedRange.from);
+            var savedTo = barDateKey(savedRange.to);
+            if (savedFrom && savedTo) return { from: savedFrom, to: savedTo };
+        }
+        if (chart.visibleIndexRange) {
+            var range = chart.visibleIndexRange();
+            if (range && range.from >= 0 && range.to >= range.from) {
+                return {
+                    from: barDateKey(chart.bars[range.from].time),
+                    to: barDateKey(chart.bars[range.to].time)
+                };
+            }
+        }
+        return null;
+    }
+
+    function applyVisibleDateRange(chart, dateRange) {
+        if (!chart || !dateRange || !Array.isArray(chart.bars) || !chart.bars.length) return false;
+        var bars = chart.bars;
+        var from = barDateKey(dateRange.from);
+        var to = barDateKey(dateRange.to);
+        if (!from || !to) return false;
+        if (from > to) {
+            var swapped = from;
+            from = to;
+            to = swapped;
+        }
+
+        var firstDate = barDateKey(bars[0].time);
+        var lastDate = barDateKey(bars[bars.length - 1].time);
+        if (to < firstDate || from > lastDate) {
+            if (chart.fitContent) chart.fitContent();
+            if (chart.draw) chart.draw();
+            return false;
+        }
+
+        var fromIndex = 0;
+        var toIndex = bars.length - 1;
+        for (var i = 0; i < bars.length; i += 1) {
+            if (barDateKey(bars[i].time) >= from) {
+                fromIndex = i;
+                break;
+            }
+        }
+        for (var j = bars.length - 1; j >= 0; j -= 1) {
+            if (barDateKey(bars[j].time) <= to) {
+                toIndex = j;
+                break;
+            }
+        }
+        if (toIndex < fromIndex) return false;
+
+        if (chart.setVisibleIndexRange) chart.setVisibleIndexRange(fromIndex, toIndex);
+        else chart.document.visibleRange = { from: bars[fromIndex].time, to: bars[toIndex].time };
+        if (chart.document && chart.document.settings) chart.document.settings.dateRangePreset = null;
+        if (chart.draw) chart.draw();
+        return true;
+    }
+
     function cleanMetadataText(value) {
         return String(value || '').trim();
     }
@@ -502,6 +569,7 @@
         applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         restoreRelativeStrengthSnapshots(stockChart, carriedRelativeStrength);
+        if (options.visibleRange) applyVisibleDateRange(stockChart, options.visibleRange);
         if (stockChart.loadRequiredComparisonSymbols) {
             stockChart.loadRequiredComparisonSymbols().catch(function (error) {
                 console.warn('Unable to restore Relative Strength benchmark:', error);
@@ -550,6 +618,7 @@
     function loadStockChart(rawCode, metadata) {
         var code = normalizeCode(rawCode);
         var isNewSymbol = code !== currentCode;
+        var previousVisibleDateRange = isNewSymbol ? visibleDateRangeForChart(stockChart) : null;
         var input = document.getElementById('toolStockChartCode');
         if (input) input.value = code;
         closeStockAutocomplete();
@@ -579,7 +648,8 @@
                 symbolInfo = rememberStockMetadata(results[1] || symbolInfo, code);
                 renderChart(code, payload.bars, {
                     symbolInfo: symbolInfo,
-                    resetHistory: isNewSymbol
+                    resetHistory: isNewSymbol,
+                    visibleRange: previousVisibleDateRange
                 });
                 recordRecentStock(code, symbolInfo);
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
@@ -717,8 +787,9 @@
         });
 
         $input.on('keydown', function (event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' || event.which === 13) {
                 event.preventDefault();
+                closeStockAutocomplete();
                 loadStockChart(this.value);
             }
         });
