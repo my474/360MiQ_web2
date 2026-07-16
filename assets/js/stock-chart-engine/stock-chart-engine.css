@@ -603,7 +603,7 @@
 }
 
 .sce-latest-marker.sce-latest-marker-pulse {
-  animation: sce-latest-marker-pulse 5.4s ease-in-out 1 both;
+  animation: sce-latest-marker-pulse 8.4s ease-in-out 1 both;
 }
 
 @keyframes sce-latest-marker-pulse {
