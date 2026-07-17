@@ -946,6 +946,11 @@
   white-space: pre-wrap;
 }
 
+.sce-pine-window [data-sce-pine-inputs] {
+  display: grid;
+  gap: 8px;
+}
+
 .sce-settings-popup .sce-pine-checkbox {
   align-items: center;
   display: flex;

@@ -3817,17 +3817,7 @@
           title: title,
           inputs: indicator && indicator.inputs && indicator.inputs.pineValues || {}
         });
-        inputControls = (preview.inputs || []).map(function (input) {
-          var value = input.value == null ? '' : input.value;
-          if (input.type === 'bool') {
-            return '<label class="sce-pine-checkbox"><input type="checkbox" data-sce-pine-input="' + escapeHtml(input.id) + '"' + (value ? ' checked' : '') + '> ' + escapeHtml(input.title) + '</label>';
-          }
-          var inputType = input.type === 'color' ? 'color' : (input.type === 'int' || input.type === 'float' ? 'number' : 'text');
-          var constraints = input.type === 'int' || input.type === 'float'
-            ? ' min="' + escapeHtml(input.min == null ? '' : input.min) + '" max="' + escapeHtml(input.max == null ? '' : input.max) + '" step="' + escapeHtml(input.step == null ? (input.type === 'int' ? '1' : '0.01') : input.step) + '"'
-            : '';
-          return '<label>' + escapeHtml(input.title) + '<input type="' + inputType + '" data-sce-pine-input="' + escapeHtml(input.id) + '" value="' + escapeHtml(value) + '"' + constraints + '></label>';
-        }).join('');
+        inputControls = this.pineInputControlsHtml(preview.inputs || []);
       } catch (error) {
         inputControls = '<div class="sce-pine-status">Enter a valid script to see its inputs.</div>';
       }
@@ -3845,12 +3835,15 @@
       '<div class="sce-pine-window-body">',
       '<label>Name<input type="text" data-sce-pine-field="title" value="', escapeHtml(title), '"></label>',
       '<label>Script<textarea class="sce-pine-editor" data-sce-pine-field="code" spellcheck="false" autocapitalize="off" autocomplete="off">', escapeHtml(code), '</textarea></label>',
-      inputControls,
+      '<div data-sce-pine-inputs>', inputControls, '</div>',
       '<div class="sce-pine-status" data-sce-pine-status aria-live="polite">Supports indicator(), plot(), hline(), ta.*, math.*, and input.* controls.</div>',
       '<div class="sce-settings-actions">',
       indicator ? '<button type="button" data-sce-popup-action="remove">Remove</button>' : '',
+      '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device">Load</button>',
+      '<button type="button" data-sce-popup-action="save-pine" title="Save Pine Script to your device">Save</button>',
       '<button type="button" data-sce-popup-action="run-pine">Run</button>',
       '</div>',
+      '<input type="file" data-sce-pine-file-input accept=".pine,.txt,text/plain" hidden>',
       '</div>',
       '<div class="sce-pine-resize-handle" data-sce-pine-resize title="Resize Pine Script window" aria-hidden="true"></div>'
     ].join('');
@@ -3866,6 +3859,108 @@
     this.positionPineScriptWindow(pointer);
     var field = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
     if (field && field.focus) field.focus();
+  };
+
+  Chart.prototype.pineInputControlsHtml = function (inputs) {
+    return (Array.isArray(inputs) ? inputs : []).map(function (input) {
+      var value = input.value == null ? '' : input.value;
+      if (input.type === 'bool') {
+        return '<label class="sce-pine-checkbox"><input type="checkbox" data-sce-pine-input="' + escapeHtml(input.id) + '"' + (value ? ' checked' : '') + '> ' + escapeHtml(input.title) + '</label>';
+      }
+      var inputType = input.type === 'color' ? 'color' : (input.type === 'int' || input.type === 'float' ? 'number' : 'text');
+      var constraints = input.type === 'int' || input.type === 'float'
+        ? ' min="' + escapeHtml(input.min == null ? '' : input.min) + '" max="' + escapeHtml(input.max == null ? '' : input.max) + '" step="' + escapeHtml(input.step == null ? (input.type === 'int' ? '1' : '0.01') : input.step) + '"'
+        : '';
+      return '<label>' + escapeHtml(input.title) + '<input type="' + inputType + '" data-sce-pine-input="' + escapeHtml(input.id) + '" value="' + escapeHtml(value) + '"' + constraints + '></label>';
+    }).join('');
+  };
+
+  Chart.prototype.pineScriptFileName = function (title) {
+    var base = String(title || 'custom-pine').trim()
+      .replace(/[^a-z0-9._-]+/gi, '-')
+      .replace(/^-+|-+$/g, '') || 'custom-pine';
+    return /\.pine$/i.test(base) ? base : base + '.pine';
+  };
+
+  Chart.prototype.refreshPineScriptInputs = function () {
+    if (!this.settingsPopup) return;
+    var runtime = pineRuntime();
+    var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+    var inputContainer = this.settingsPopup.querySelector('[data-sce-pine-inputs]');
+    if (!runtime || typeof runtime.run !== 'function' || !codeField || !inputContainer) return;
+    try {
+      var preview = runtime.run(codeField.value, this.bars, {
+        title: titleField && titleField.value,
+        inputs: {}
+      });
+      inputContainer.innerHTML = this.pineInputControlsHtml(preview.inputs || []);
+    } catch (error) {
+      inputContainer.innerHTML = '<div class="sce-pine-status">Enter a valid script to see its inputs.</div>';
+    }
+  };
+
+  Chart.prototype.savePineScriptToFile = function () {
+    if (!this.settingsPopup) return false;
+    var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
+    if (!codeField || typeof document === 'undefined' || !document.createElement) return false;
+    var fileName = this.pineScriptFileName(titleField && titleField.value);
+    var BlobConstructor = typeof Blob !== 'undefined' ? Blob : (typeof window !== 'undefined' ? window.Blob : null);
+    var urlApi = typeof URL !== 'undefined' ? URL : (typeof window !== 'undefined' ? window.URL : null);
+    var link = document.createElement('a');
+    var objectUrl = null;
+    if (BlobConstructor && urlApi && urlApi.createObjectURL) {
+      objectUrl = urlApi.createObjectURL(new BlobConstructor([codeField.value], { type: 'text/plain;charset=utf-8' }));
+      link.href = objectUrl;
+    } else {
+      link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(codeField.value);
+    }
+    link.download = fileName;
+    link.setAttribute('aria-hidden', 'true');
+    link.style.display = 'none';
+    if (document.body && document.body.appendChild) document.body.appendChild(link);
+    if (typeof link.click === 'function') link.click();
+    if (link.parentNode && link.parentNode.removeChild) link.parentNode.removeChild(link);
+    if (objectUrl && urlApi.revokeObjectURL) {
+      setTimeout(function () { urlApi.revokeObjectURL(objectUrl); }, 0);
+    }
+    if (status) status.textContent = 'Saved ' + fileName + '.';
+    return true;
+  };
+
+  Chart.prototype.loadPineScriptFile = function (file) {
+    var self = this;
+    if (!file || !this.settingsPopup) return Promise.resolve(false);
+    var applyText = function (text) {
+      var codeField = self.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+      var titleField = self.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+      var status = self.settingsPopup.querySelector('[data-sce-pine-status]');
+      if (!codeField) return false;
+      codeField.value = String(text == null ? '' : text);
+      if (titleField && (!String(titleField.value || '').trim() || titleField.value === 'Custom Pine')) {
+        titleField.value = String(file.name || 'Custom Pine').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim() || 'Custom Pine';
+      }
+      self.refreshPineScriptInputs();
+      if (status) status.textContent = 'Loaded ' + String(file.name || 'Pine Script') + '. Review it, then click Run.';
+      return true;
+    };
+    var fail = function (error) {
+      var status = self.settingsPopup && self.settingsPopup.querySelector('[data-sce-pine-status]');
+      if (status) status.textContent = 'Could not load that Pine Script file.';
+      return false;
+    };
+    if (typeof file.text === 'function') return Promise.resolve().then(function () { return file.text(); }).then(applyText).catch(fail);
+    if (typeof FileReader !== 'undefined') {
+      return new Promise(function (resolve) {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(applyText(reader.result)); };
+        reader.onerror = function (error) { resolve(fail(error)); };
+        reader.readAsText(file);
+      });
+    }
+    return Promise.resolve(fail(new Error('File reading is unavailable.')));
   };
 
   Chart.prototype.resetPineWindowPresentation = function () {
@@ -3984,10 +4079,22 @@
       if (!action) return;
       if (action === 'close') self.closeIndicatorSettingsPopup();
       if (action === 'run-pine') self.applyPineScriptPopup();
+      if (action === 'save-pine') self.savePineScriptToFile();
+      if (action === 'load-pine') {
+        var fileInput = self.settingsPopup.querySelector('[data-sce-pine-file-input]');
+        if (fileInput) {
+          fileInput.value = '';
+          if (fileInput.click) fileInput.click();
+        }
+      }
       if (action === 'remove') {
         self.removeIndicator(self.settingsPopup.dataset.indicatorId);
         self.closeIndicatorSettingsPopup();
       }
+    };
+    var fileInput = this.settingsPopup.querySelector('[data-sce-pine-file-input]');
+    if (fileInput) fileInput.onchange = function () {
+      self.loadPineScriptFile(fileInput.files && fileInput.files[0]);
     };
     this.settingsPopup.onkeydown = function (event) {
       if (event.key === 'Escape') {
