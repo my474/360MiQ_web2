@@ -10553,7 +10553,7 @@
       redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0-5 5v1"/>',
       'font-increase': '<path d="M4 19 9 5l5 14"/><path d="M6 14h6"/><path d="M19 8v8"/><path d="M15 12h8"/>',
       'font-decrease': '<path d="M4 19 9 5l5 14"/><path d="M6 14h6"/><path d="M15 12h8"/>',
-      'font-reset': '<path d="M3 18 7.5 5h1L13 18"/><path d="M4.5 13h7"/><path d="M20 10a5.5 5.5 0 1 0 0 6"/><path d="M20 10h-4"/><path d="M20 10v4"/>',
+      'font-reset': '<path d="M2.8 19 7.3 5h1.4l4.5 14"/><path d="M4.4 13h7.2"/><circle cx="18.3" cy="17" r="3.2"/>',
       latest: '<path d="M4 12h15"/><path d="m14 6 6 6-6 6"/>',
       'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
       'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>',
