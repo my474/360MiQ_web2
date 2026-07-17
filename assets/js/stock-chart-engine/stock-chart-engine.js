@@ -1173,10 +1173,14 @@
     indicator.runtimeMetadata = result.metadata || {};
     indicator.runtimeInputs = result.inputs || [];
     indicator.runtimeWarnings = result.warnings || [];
+    indicator.runtimeAlerts = result.alertConditions || [];
     return {
       outputs: result.outputs || {},
       render: result.render || [],
       styles: outputStyles,
+      securityRequests: result.securityRequests || [],
+      alertConditions: result.alertConditions || [],
+      drawings: result.drawings || [],
       error: null
     };
   }
@@ -1184,17 +1188,18 @@
   function computePineScriptIndicator(context, indicator) {
     var runtime = pineRuntime();
     if (!runtime || typeof runtime.run !== 'function') {
-      return { outputs: {}, render: [], error: 'Pine Script runtime is not loaded.' };
+      return { outputs: {}, render: [], securityRequests: [], alertConditions: [], drawings: [], error: 'Pine Script runtime is not loaded.' };
     }
     var code = indicator.inputs && indicator.inputs.code;
     try {
       var result = runtime.run(code || '', context.bars, {
         title: indicator.inputs && indicator.inputs.title,
-        inputs: indicator.inputs && indicator.inputs.pineValues || {}
+        inputs: indicator.inputs && indicator.inputs.pineValues || {},
+        security: context.comparisonSourceBars || context.comparisonBars || {}
       });
       return pineIndicatorResultFromRuntime(indicator, result);
     } catch (error) {
-      return { outputs: {}, render: [], error: error && error.toString ? error.toString() : String(error) };
+      return { outputs: {}, render: [], securityRequests: [], alertConditions: [], drawings: [], error: error && error.toString ? error.toString() : String(error) };
     }
   }
 
@@ -2137,8 +2142,13 @@
     return sorted;
   }
 
-  function computeIndicatorGraph(bars, indicators, comparisonBars) {
-    var context = { bars: bars, comparisonBars: comparisonBars || {}, indicatorResults: {} };
+  function computeIndicatorGraph(bars, indicators, comparisonBars, comparisonSourceBars) {
+    var context = {
+      bars: bars,
+      comparisonBars: comparisonBars || {},
+      comparisonSourceBars: comparisonSourceBars || comparisonBars || {},
+      indicatorResults: {}
+    };
     topoSortIndicators(indicators).forEach(function (indicator) {
       var definition = Indicators[indicator.type];
       if (!definition) return;
@@ -2228,6 +2238,8 @@
     this.pineWorkerRequests = {};
     this.pineWorkerSequence = 0;
     this.pineComputeRevision = 0;
+    this.pineSecurityLoads = {};
+    this.pineSecurityErrors = {};
     this.pineWorkerDisabled = false;
     this.pineWorkerError = null;
     this.pineWorkerMessageListener = this.handlePineWorkerMessage.bind(this);
@@ -5208,7 +5220,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260717.3';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260717.4';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -5242,7 +5254,8 @@
           bars: clone(self.bars),
           options: {
             title: indicator.inputs && indicator.inputs.title,
-            inputs: clone(indicator.inputs && indicator.inputs.pineValues || {})
+            inputs: clone(indicator.inputs && indicator.inputs.pineValues || {}),
+            security: clone(self.comparisonSourceBars || self.comparisonBars || {})
           }
         });
       } catch (error) {
@@ -5290,9 +5303,34 @@
     }
   };
 
+  Chart.prototype.queuePineSecurityLoads = function () {
+    var self = this;
+    var requests = {};
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.type !== 'PINE_SCRIPT') return;
+      var result = self.indicatorResults[indicator.id];
+      (result && result.securityRequests || []).forEach(function (request) {
+        var symbol = normalizeComparisonSymbol(request && request.symbol);
+        if (symbol) requests[symbol] = request;
+      });
+    });
+    Object.keys(requests).forEach(function (symbol) {
+      if (self.comparisonBars[symbol] && self.comparisonBars[symbol].length) return;
+      if (self.pineSecurityLoads[symbol]) return;
+      self.pineSecurityLoads[symbol] = true;
+      self.loadComparisonSymbol(symbol).then(function () {
+        delete self.pineSecurityLoads[symbol];
+      }).catch(function (error) {
+        delete self.pineSecurityLoads[symbol];
+        self.pineSecurityErrors[symbol] = error && error.message ? error.message : String(error);
+      });
+    });
+  };
+
   Chart.prototype.compute = function () {
     this.pineComputeRevision += 1;
-    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars);
+    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars);
+    this.queuePineSecurityLoads();
     this.queuePineWorkerComputations();
   };
 
@@ -6538,7 +6576,7 @@
       var result = self.indicatorResults[indicator.id];
       if (!result) return;
       result.render.forEach(function (renderItem) {
-        if (indicator.paneId !== paneId || indicator.visible === false || renderItem.type === 'level') return;
+        if (indicator.paneId !== paneId || indicator.visible === false || ['level', 'fill', 'background', 'shape', 'char'].indexOf(renderItem.type) !== -1) return;
         var data = result.outputs[renderItem.output] || [];
         var valuePoint = nearestSeriesPoint(data, time);
         if (!valuePoint) return;
@@ -6653,7 +6691,7 @@
       var result = self.indicatorResults[indicator.id];
       if (!result) return;
       result.render.forEach(function (renderItem) {
-        if (renderItem.type === 'level') return;
+        if (['level', 'fill', 'background', 'shape', 'char'].indexOf(renderItem.type) !== -1) return;
         var data = result.outputs[renderItem.output] || [];
         var valuePoint = lastVisibleSeriesPoint(data, visibleStart, time);
         if (!valuePoint || valuePoint.value == null) return;
@@ -6925,14 +6963,25 @@
         var style = merge(defaultStyleForIndicator(theme, paletteIndex), {
           color: renderItem.color || null,
           lineWidth: renderItem.lineWidth || null,
-          opacity: renderItem.opacity == null ? null : renderItem.opacity
+          opacity: renderItem.opacity == null ? null : renderItem.opacity,
+          size: renderItem.size,
+          style: renderItem.style,
+          location: renderItem.location,
+          text: renderItem.text,
+          character: renderItem.character,
+          textColor: renderItem.textColor,
+          characterMode: renderItem.type === 'char'
         }, indicator.styles && indicator.styles[renderItem.output] || {});
         if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
-        if (renderItem.type === 'histogram') self.drawHistogram(rect, range, theme, data, style, false);
+        if (renderItem.type === 'fill') self.drawIndicatorFill(rect, range, theme, result.outputs[renderItem.firstOutput] || [], result.outputs[renderItem.secondOutput] || [], style);
+        else if (renderItem.type === 'background') self.drawIndicatorBackground(rect, theme, data, style);
+        else if (renderItem.type === 'shape' || renderItem.type === 'char') self.drawIndicatorShape(rect, range, theme, data, style);
+        else if (renderItem.type === 'histogram') self.drawHistogram(rect, range, theme, data, style, false);
         else if (renderItem.type === 'volume') self.drawHistogram(rect, range, theme, data, style, true);
         else self.drawLineSeries(rect, range, theme, data, style);
         paletteIndex += 1;
       });
+      self.drawPineDrawings(rect, range, theme, result.drawings || []);
     });
   };
 
@@ -7097,6 +7146,204 @@
       ctx.fillStyle = this.volumeColorForPoint(point, theme, volumeColorSource);
       ctx.fillRect(x - barWidth / 2, baseline - height, barWidth, height);
     }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawIndicatorFill = function (rect, range, theme, firstData, secondData, style) {
+    var first = {};
+    var second = {};
+    (firstData || []).forEach(function (point) { first[point.time] = point; });
+    (secondData || []).forEach(function (point) { second[point.time] = point; });
+    var points = this.visibleBars().map(function (bar) {
+      var upper = first[bar.time];
+      var lower = second[bar.time];
+      if (!upper || !lower || !Number.isFinite(Number(upper.value)) || !Number.isFinite(Number(lower.value))) return null;
+      var upperY = this.yForValue(upper.value, rect, range);
+      var lowerY = this.yForValue(lower.value, rect, range);
+      return upperY == null || lowerY == null ? null : { x: this.xForTime(bar.time, rect), upperY: upperY, lowerY: lowerY };
+    }, this).filter(Boolean);
+    if (points.length < 2) return;
+    var ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 0.16);
+    ctx.fillStyle = style.color || theme.indicatorPalette[0];
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].upperY);
+    points.forEach(function (point) { ctx.lineTo(point.x, point.upperY); });
+    points.slice().reverse().forEach(function (point) { ctx.lineTo(point.x, point.lowerY); });
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  };
+
+  Chart.prototype.drawIndicatorBackground = function (rect, theme, data, style) {
+    var visible = this.visibleBars();
+    if (!visible.length || !data || !data.length) return;
+    var points = {};
+    data.forEach(function (point) { points[point.time] = point; });
+    var spacing = rect.width / Math.max(1, visible.length);
+    var barWidth = Math.max(1, spacing + 1);
+    var ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 0.16);
+    visible.forEach(function (bar) {
+      var point = points[bar.time];
+      if (!point || !point.color) return;
+      ctx.fillStyle = point.color;
+      ctx.fillRect(this.xForTime(bar.time, rect) - barWidth / 2, rect.y, barWidth, rect.height);
+    }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawIndicatorShape = function (rect, range, theme, data, style) {
+    var visible = this.visibleBars();
+    if (!visible.length || !data || !data.length) return;
+    var barsByTime = {};
+    visible.forEach(function (bar) { barsByTime[bar.time] = bar; });
+    var spacing = rect.width / Math.max(1, visible.length);
+    var sizeMap = { tiny: 3, small: 4, normal: 6, large: 8, huge: 11 };
+    var size = sizeMap[style.size] || 6;
+    var ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
+    ctx.fillStyle = style.color || theme.indicatorPalette[0];
+    ctx.strokeStyle = style.color || theme.indicatorPalette[0];
+    ctx.lineWidth = Math.max(1, style.lineWidth || 1.5);
+    data.forEach(function (point) {
+      if (!point || !point.value || !Object.prototype.hasOwnProperty.call(barsByTime, point.time)) return;
+      var bar = barsByTime[point.time];
+      var location = style.location || 'abovebar';
+      var y;
+      if (location === 'absolute') y = this.yForValue(point.value, rect, range);
+      else if (location === 'top') y = rect.y + size + 2;
+      else if (location === 'bottom') y = rect.y + rect.height - size - 2;
+      else if (location === 'belowbar') y = this.yForValue(bar.low, rect, range) + size + 3;
+      else y = this.yForValue(bar.high, rect, range) - size - 3;
+      if (y == null || y < rect.y - size || y > rect.y + rect.height + size) return;
+      var x = this.xForTime(point.time, rect);
+      var shape = String(style.style || 'circle').toLowerCase();
+      ctx.beginPath();
+      if (shape === 'triangleup') {
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x - size, y + size);
+        ctx.lineTo(x + size, y + size);
+        ctx.closePath();
+        ctx.fill();
+      } else if (shape === 'triangledown') {
+        ctx.moveTo(x - size, y - size);
+        ctx.lineTo(x + size, y - size);
+        ctx.lineTo(x, y + size);
+        ctx.closePath();
+        ctx.fill();
+      } else if (shape === 'diamond') {
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + size, y);
+        ctx.lineTo(x, y + size);
+        ctx.lineTo(x - size, y);
+        ctx.closePath();
+        ctx.fill();
+      } else if (shape === 'square') {
+        ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      } else if (shape === 'cross' || shape === 'xcross') {
+        ctx.moveTo(x - size, y);
+        ctx.lineTo(x + size, y);
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x, y + size);
+        if (shape === 'xcross') {
+          ctx.moveTo(x - size, y - size);
+          ctx.lineTo(x + size, y + size);
+          ctx.moveTo(x + size, y - size);
+          ctx.lineTo(x - size, y + size);
+        }
+        ctx.stroke();
+      } else {
+        ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      }
+      var label = style.characterMode ? style.character : style.text;
+      if (label) {
+        ctx.fillStyle = style.textColor || style.color || theme.text;
+        ctx.font = Math.max(10, size * 2) + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(label), x, y - size - 8);
+        ctx.fillStyle = style.color || theme.indicatorPalette[0];
+      }
+    }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawPineDrawings = function (rect, range, theme, drawings) {
+    if (!drawings || !drawings.length) return;
+    var self = this;
+    var ctx = this.ctx;
+    function xForIndex(value) {
+      if (!Number.isFinite(Number(value))) return null;
+      var numeric = Number(value);
+      if (Math.abs(numeric) > 100000000) return self.xForTime(numeric, rect);
+      var index = clamp(Math.round(numeric), 0, Math.max(0, self.bars.length - 1));
+      return self.xForTime(self.bars[index] && self.bars[index].time, rect);
+    }
+    ctx.save();
+    drawings.forEach(function (drawing) {
+      var color = drawing.color || drawing.borderColor || theme.drawing;
+      if (drawing.type === 'line') {
+        var x1 = xForIndex(drawing.x1);
+        var x2 = xForIndex(drawing.x2);
+        var y1 = self.yForValue(drawing.y1, rect, range);
+        var y2 = self.yForValue(drawing.y2, rect, range);
+        if (x1 == null || x2 == null || y1 == null || y2 == null) return;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = drawing.width || 2;
+        ctx.setLineDash(lineDashForStyle(drawing.style || 'solid'));
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        return;
+      }
+      if (drawing.type === 'box') {
+        var left = xForIndex(drawing.left);
+        var right = xForIndex(drawing.right);
+        var top = self.yForValue(drawing.top, rect, range);
+        var bottom = self.yForValue(drawing.bottom, rect, range);
+        if (left == null || right == null || top == null || bottom == null) return;
+        var minX = Math.min(left, right);
+        var minY = Math.min(top, bottom);
+        var width = Math.abs(right - left);
+        var height = Math.abs(bottom - top);
+        ctx.fillStyle = drawing.background || colorWithAlpha(color, 0.12);
+        ctx.globalAlpha = 1;
+        ctx.fillRect(minX, minY, width, height);
+        ctx.strokeStyle = drawing.borderColor || color;
+        ctx.lineWidth = drawing.borderWidth || 2;
+        ctx.setLineDash(lineDashForStyle(drawing.borderStyle || 'solid'));
+        ctx.strokeRect(minX, minY, width, height);
+        if (drawing.text) {
+          ctx.fillStyle = drawing.textColor || theme.text;
+          ctx.font = '12px sans-serif';
+          ctx.fillText(drawing.text, minX + 6, minY + 14);
+        }
+        return;
+      }
+      if (drawing.type === 'label') {
+        var x = xForIndex(drawing.x);
+        var y = self.yForValue(drawing.y, rect, range);
+        if (x == null || y == null) return;
+        var text = String(drawing.text || '');
+        var width = Math.max(28, approximateTextWidth(text) + 14);
+        var height = 20;
+        var top = drawing.style === 'label_up' ? y : y - height;
+        ctx.fillStyle = drawing.color || theme.drawing;
+        ctx.fillRect(x - width / 2, top, width, height);
+        ctx.fillStyle = drawing.textColor || '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x, top + height / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+      }
+    });
     ctx.restore();
   };
 

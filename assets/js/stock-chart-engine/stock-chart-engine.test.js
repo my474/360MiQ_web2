@@ -376,6 +376,72 @@ const indexedFunctionPreview = PineScriptRuntime.run(`indicator("Indexed functio
 previous(value) => value[1]
 plot(previous(close))`, data);
 assert.strictEqual(indexedFunctionPreview.outputs.plot1.length, data.length - 1);
+const securityBars = data.filter((bar, index) => index % 3 === 0).map((bar) => ({
+  time: bar.time,
+  open: bar.open + 100,
+  high: bar.high + 100,
+  low: bar.low + 100,
+  close: bar.close + 100,
+  volume: bar.volume
+}));
+const securityPreview = PineScriptRuntime.run(`indicator("Security test")
+benchmark = request.security("SPY", "D", ta.sma(close, 2))
+plot(benchmark)`, data, { security: { SPY: securityBars } });
+assert.ok(securityPreview.outputs.plot1.length > 0);
+assert.strictEqual(securityPreview.securityRequests.length, 0);
+const weeklySecurityPreview = PineScriptRuntime.run(`indicator("Weekly security")
+plot(request.security("SPY", "W", close))`, data, { security: { SPY: data } });
+assert.ok(weeklySecurityPreview.outputs.plot1.length > 0);
+const missingSecurityPreview = PineScriptRuntime.run(`indicator("Missing security")
+plot(request.security("QQQ", "W", close))`, data);
+assert.deepStrictEqual(missingSecurityPreview.securityRequests, [{ symbol: 'QQQ', timeframe: 'W' }]);
+const advancedOutputPreview = PineScriptRuntime.run(`indicator("Advanced outputs")
+upper = plot(close, title="Upper")
+lower = plot(ta.sma(close, 3), title="Lower")
+fill(upper, lower, color=color.new(color.blue, 80))
+plotshape(close > open, style=shape.triangleup, location=location.belowbar, color=color.green, title="Up")
+plotchar(close < open, char="x", location=location.abovebar, color=color.red, title="Down")
+bgcolor(close > open ? color.new(color.green, 90) : na)
+alertcondition(close > open, title="Up bar", message="Up bar")`, data);
+assert.ok(advancedOutputPreview.render.some((item) => item.type === 'fill'));
+assert.ok(advancedOutputPreview.render.some((item) => item.type === 'shape'));
+assert.ok(advancedOutputPreview.render.some((item) => item.type === 'char'));
+assert.ok(advancedOutputPreview.render.some((item) => item.type === 'background'));
+assert.strictEqual(advancedOutputPreview.alertConditions[0].title, 'Up bar');
+const drawingOutputPreview = PineScriptRuntime.run(`indicator("Drawing outputs")
+label.new(bar_index, high, "Latest", style=label.style_label_down)
+line.new(bar_index - 3, low, bar_index, high, color=color.red, width=2, style=line.style_dashed)
+box.new(bar_index - 5, high, bar_index, low, bgcolor=color.new(color.blue, 90))`, data);
+assert.strictEqual(drawingOutputPreview.drawings.length, 3);
+assert.deepStrictEqual(drawingOutputPreview.drawings.map((drawing) => drawing.type), ['label', 'line', 'box']);
+const workerSecurityPreview = PineScriptRuntime.runInWorker({
+  source: `indicator("Worker security")
+plot(request.security("SPY", "W", close))`,
+  bars: data,
+  options: { security: { SPY: data } }
+});
+assert.strictEqual(workerSecurityPreview.ok, true);
+assert.ok(workerSecurityPreview.result.outputs.plot1.length > 0);
+assert.ok(PineScriptRuntime.limits.maxOperations >= 100000);
+assert.ok(PineScriptRuntime.limits.compileCacheSize >= 16);
+const blockFunctionPreview = PineScriptRuntime.run(`indicator("Block function")
+signal(source) =>
+    doubled = source * 2
+    if doubled > 200
+        return doubled
+    doubled
+plot(signal(close), title="Block signal")`, data);
+assert.strictEqual(blockFunctionPreview.plots[0].title, 'Block signal');
+assert.ok(blockFunctionPreview.outputs.plot1.length > 0);
+const loopFunctionPreview = PineScriptRuntime.run(`indicator("Loop function")
+total(source) =>
+    result = 0
+    for offset = 0 to 2
+        result := result + source[offset]
+    result
+plot(total(close), title="Three bar sum")`, data);
+assert.strictEqual(loopFunctionPreview.plots[0].title, 'Three bar sum');
+assert.ok(loopFunctionPreview.outputs.plot1.length > 0);
 assert.throws(() => PineScriptRuntime.run(`indicator("Recursive function")
 loop(value) => loop(value)
 plot(loop(close))`, data), /Function call depth exceeded/);
@@ -2052,6 +2118,17 @@ assert.ok(workerChart.pineWorker instanceof FakePineWorker);
 assert.ok(workerChart.pineWorker.url.indexOf('pine-script-worker.js') !== -1);
 assert.ok(workerChart.pineWorker.messages.length > 0);
 assert.strictEqual(workerChart.indicatorResults[workerIndicatorId].computeMode, 'worker');
+const workerAdvancedIndicatorId = workerChart.addIndicator('PINE_SCRIPT', {
+  placement: 'new',
+  inputs: {
+    code: `indicator("Worker drawings")
+plotshape(close > open, style=shape.triangleup, location=location.belowbar, color=color.green)
+label.new(bar_index, high, "Now")`,
+    title: 'Worker drawings'
+  }
+});
+assert.strictEqual(workerChart.indicatorResults[workerAdvancedIndicatorId].computeMode, 'worker');
+assert.ok(workerChart.indicatorResults[workerAdvancedIndicatorId].drawings.length === 1);
 const workerRequestCount = workerChart.pineWorker.messages.length;
 workerChart.setData(data.slice(0, 45));
 assert.ok(workerChart.pineWorker.messages.length > workerRequestCount);

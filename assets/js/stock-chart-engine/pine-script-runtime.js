@@ -14,11 +14,25 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.2.0';
+  var VERSION = '0.3.0';
   var MAX_SOURCE_LENGTH = 120000;
   var MAX_PLOTS = 64;
   var MAX_LOOPS = 1000;
   var MAX_FUNCTION_DEPTH = 32;
+  var MAX_SECURITY_REQUESTS = 32;
+  var MAX_OPERATIONS = 500000;
+  var COMPILE_CACHE_LIMIT = 32;
+  var compileCache = Object.create(null);
+  var compileCacheKeys = [];
+  var activeBudget = null;
+
+  function consumeBudget(amount, line) {
+    if (!activeBudget) return;
+    activeBudget.used += amount || 1;
+    if (activeBudget.used > activeBudget.max) {
+      throw new PineError('The script exceeded the maximum execution budget of ' + activeBudget.max + ' operations.', line || 1, 1);
+    }
+  }
 
   function PineError(message, line, column) {
     this.name = 'PineError';
@@ -77,6 +91,7 @@
     if (!Number.isFinite(index) || index < 0) return NaN;
     var key = String(index);
     if (!Object.prototype.hasOwnProperty.call(this.cache, key)) {
+      consumeBudget(1, 1);
       this.cache[key] = this.getter(index);
     }
     return this.cache[key];
@@ -92,6 +107,8 @@
     var line = 1;
     var column = 1;
     var length = source.length;
+    var lineStart = true;
+    var indentStack = [0];
     function push(type, value, tokenLine, tokenColumn) {
       tokens.push({ type: type, value: value, line: tokenLine, column: tokenColumn });
     }
@@ -104,9 +121,41 @@
       }
     }
     while (index < length) {
+      if (lineStart) {
+        var indentation = 0;
+        while (index < length && (source.charAt(index) === ' ' || source.charAt(index) === '\t')) {
+          indentation += source.charAt(index) === '\t' ? 4 : 1;
+          advance();
+        }
+        character = source.charAt(index);
+        if (character === '\n') {
+          push('newline', '\n', line, column);
+          advance();
+          lineStart = true;
+          continue;
+        }
+        if (character === '/' && source.charAt(index + 1) === '/') {
+          while (index < length && source.charAt(index) !== '\n') advance();
+          continue;
+        }
+        var currentIndent = indentStack[indentStack.length - 1];
+        if (indentation > currentIndent) {
+          indentStack.push(indentation);
+          push('indent', indentation, line, column);
+        } else if (indentation < currentIndent) {
+          while (indentStack.length > 1 && indentation < indentStack[indentStack.length - 1]) {
+            indentStack.pop();
+            push('dedent', indentation, line, column);
+          }
+          if (indentation !== indentStack[indentStack.length - 1]) {
+            throw new PineError('Inconsistent indentation.', line, column);
+          }
+        }
+        lineStart = false;
+      }
       var character = source.charAt(index);
       if (character === ' ' || character === '\t' || character === '\r') { advance(); continue; }
-      if (character === '\n') { push('newline', '\n', line, column); advance(); continue; }
+      if (character === '\n') { push('newline', '\n', line, column); advance(); lineStart = true; continue; }
       if (character === '/' && source.charAt(index + 1) === '/') {
         while (index < length && source.charAt(index) !== '\n') advance();
         continue;
@@ -163,6 +212,10 @@
       }
       throw new PineError('Unexpected character "' + character + '".', tokenLine, tokenColumn);
     }
+    while (indentStack.length > 1) {
+      indentStack.pop();
+      push('dedent', '', line, column);
+    }
     push('eof', '', line, column);
     return tokens;
   }
@@ -189,16 +242,80 @@
     var statements = [];
     this.skipNewlines();
     while (this.current().type !== 'eof') {
+      if (this.current().type === 'dedent') {
+        this.take();
+        continue;
+      }
       statements.push(this.parseStatement());
       while (this.match(';') || this.current().type === 'newline') this.take();
     }
     return statements;
   };
 
+  Parser.prototype.parseIndentedBlock = function () {
+    if (this.current().type === 'newline') this.take();
+    this.skipNewlines();
+    if (this.current().type !== 'indent') {
+      throw new PineError('Expected an indented block.', this.current().line, this.current().column);
+    }
+    this.take();
+    return this.parseBlockStatements();
+  };
+
+  Parser.prototype.parseBlockStatements = function () {
+    var statements = [];
+    this.skipNewlines();
+    while (this.current().type !== 'dedent' && this.current().type !== 'eof') {
+      statements.push(this.parseStatement());
+      while (this.match(';') || this.current().type === 'newline') this.take();
+      this.skipNewlines();
+    }
+    if (this.current().type === 'dedent') this.take();
+    return statements;
+  };
+
+  Parser.prototype.parseBlockBody = function (line, description) {
+    if (this.current().type !== 'newline') {
+      throw new PineError('Expected a new line after ' + description + '.', line, 1);
+    }
+    return this.parseIndentedBlock();
+  };
+
   Parser.prototype.parseStatement = function () {
     var token = this.current();
     var functionDeclaration = this.parseFunctionDeclaration();
     if (functionDeclaration) return functionDeclaration;
+    if (token.type === 'identifier' && token.value === 'if') {
+      this.take();
+      var test = this.parseExpression(0);
+      var consequent = this.parseBlockBody(token.line, 'if');
+      var alternate = null;
+      if (this.current().type === 'identifier' && this.current().value === 'else') {
+        this.take();
+        if (this.current().type === 'identifier' && this.current().value === 'if') alternate = [this.parseStatement()];
+        else alternate = this.parseBlockBody(token.line, 'else');
+      }
+      return { type: 'if', test: test, consequent: consequent, alternate: alternate, line: token.line };
+    }
+    if (token.type === 'identifier' && token.value === 'for') {
+      this.take();
+      var loopVariable = this.take();
+      if (!loopVariable || loopVariable.type !== 'identifier') throw new PineError('Expected a loop variable.', token.line, token.column);
+      this.expect('=');
+      var loopStart = this.parseExpression(0);
+      var rangeKeyword = this.take();
+      if (!rangeKeyword || rangeKeyword.type !== 'identifier' || rangeKeyword.value !== 'to') throw new PineError('Expected "to" in for loop.', rangeKeyword && rangeKeyword.line, rangeKeyword && rangeKeyword.column);
+      var loopEnd = this.parseExpression(0);
+      return { type: 'for', name: loopVariable.value, start: loopStart, end: loopEnd, body: this.parseBlockBody(token.line, 'for'), line: token.line };
+    }
+    if (token.type === 'identifier' && token.value === 'return') {
+      this.take();
+      return { type: 'return', expression: this.current().type === 'newline' ? null : this.parseExpression(0), line: token.line };
+    }
+    if (token.type === 'identifier' && token.value === 'break') {
+      this.take();
+      return { type: 'break', line: token.line };
+    }
     if (token.type === 'identifier' && token.value === 'var') {
       this.take();
       if (this.current().type === 'identifier' && ['int', 'float', 'bool', 'string', 'color'].indexOf(this.current().value) !== -1) this.take();
@@ -260,6 +377,15 @@
       return null;
     }
     this.take();
+    if (this.current().type === 'newline') {
+      return {
+        type: 'function',
+        name: name.value,
+        parameters: parameters,
+        body: this.parseIndentedBlock(),
+        line: name.line
+      };
+    }
     return {
       type: 'function',
       name: name.value,
@@ -417,6 +543,7 @@
   }
 
   function evaluate(node, env, index) {
+    consumeBudget(1, node && node.line);
     if (!node) return NaN;
     if (node.type === 'literal') return node.value;
     if (node.type === 'identifier') {
@@ -436,6 +563,10 @@
       return NaN;
     }
     if (node.type === 'call') {
+      if (node.callee && node.callee.type === 'member' && node.callee.object && node.callee.object.type === 'identifier' &&
+        node.callee.object.name === 'request' && node.callee.property === 'security' && typeof env.__requestSecurity === 'function') {
+        return env.__requestSecurity(node.args || [], env, index, node);
+      }
       var fn = evaluate(node.callee, env, index);
       return callFunction(fn, argumentMap(node.args, env, index), env, index, node.line);
     }
@@ -666,6 +797,24 @@
       ceil: function (args) { return mapSeries(args[0], Math.ceil); }
     };
     var color = { red: '#ef4444', green: '#16a34a', blue: '#2563eb', orange: '#d97706', purple: '#7c3aed', teal: '#0891b2', white: '#ffffff', black: '#111827' };
+    color.new = function (args) {
+      var value = String(args[0] == null ? '' : args[0]);
+      var transparency = Math.max(0, Math.min(100, asNumber(args[1])));
+      var match = value.match(/^#([0-9a-f]{6})$/i);
+      if (!match || !Number.isFinite(transparency)) return value;
+      var hex = match[1];
+      var red = parseInt(hex.slice(0, 2), 16);
+      var green = parseInt(hex.slice(2, 4), 16);
+      var blue = parseInt(hex.slice(4, 6), 16);
+      return 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (1 - transparency / 100) + ')';
+    };
+    color.rgb = function (args) {
+      var red = Math.max(0, Math.min(255, Math.round(asNumber(args[0]))));
+      var green = Math.max(0, Math.min(255, Math.round(asNumber(args[1]))));
+      var blue = Math.max(0, Math.min(255, Math.round(asNumber(args[2]))));
+      var transparency = args[3] == null ? 0 : Math.max(0, Math.min(100, asNumber(args[3])));
+      return 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + (1 - transparency / 100) + ')';
+    };
     var plotStyles = {
       style_line: 'line', style_histogram: 'histogram', style_columns: 'histogram', style_area: 'area',
       style_circles: 'line', style_cross: 'line'
@@ -681,6 +830,95 @@
     }, field);
   }
 
+  function seriesEnvironment(bars) {
+    var environment = {
+      open: baseSeries(bars, 'open'),
+      high: baseSeries(bars, 'high'),
+      low: baseSeries(bars, 'low'),
+      close: baseSeries(bars, 'close'),
+      volume: baseSeries(bars, 'volume'),
+      bar_index: new PineSeries(function (index) { return index; }, 'bar_index'),
+      time: new PineSeries(function (index) { return securityTime(bars[index], index); }, 'time')
+    };
+    environment.hl2 = binarySeries(environment.high, environment.low, function (high, low) { return (high + low) / 2; });
+    environment.hlc3 = new PineSeries(function (index) {
+      return (environment.high.get(index) + environment.low.get(index) + environment.close.get(index)) / 3;
+    }, 'hlc3');
+    environment.ohlc4 = new PineSeries(function (index) {
+      return (environment.open.get(index) + environment.high.get(index) + environment.low.get(index) + environment.close.get(index)) / 4;
+    }, 'ohlc4');
+    return environment;
+  }
+
+  function securityTime(bar, index) {
+    var time = bar && Number(bar.time);
+    return Number.isFinite(time) ? time : index;
+  }
+
+  function securityPeriod(timeframe) {
+    var normalized = String(timeframe == null ? '' : timeframe).trim().toUpperCase();
+    if (normalized === 'D' || normalized === '1D' || normalized === 'DAY' || normalized === 'DAILY') return 'daily';
+    if (normalized === 'W' || normalized === '1W' || normalized === 'WEEK' || normalized === 'WEEKLY') return 'weekly';
+    if (normalized === 'M' || normalized === '1M' || normalized === 'MONTH' || normalized === 'MONTHLY') return 'monthly';
+    if (normalized === 'Q' || normalized === '1Q' || normalized === '3M' || normalized === 'QUARTERLY') return 'quarterly';
+    if (normalized === 'Y' || normalized === '1Y' || normalized === 'YEAR' || normalized === 'YEARLY') return 'yearly';
+    return null;
+  }
+
+  function aggregateSecurityBars(bars, timeframe) {
+    var period = securityPeriod(timeframe);
+    if (!period || period === 'daily' || !bars.length) return bars;
+    var groups = [];
+    var groupMap = Object.create(null);
+    bars.forEach(function (bar, index) {
+      var date = new Date(securityTime(bar, index) * 1000);
+      var year = date.getUTCFullYear();
+      var month = date.getUTCMonth();
+      var day = date.getUTCDate();
+      var key;
+      if (period === 'weekly') {
+        var mondayOffset = (date.getUTCDay() + 6) % 7;
+        var monday = new Date(Date.UTC(year, month, day - mondayOffset));
+        key = 'w:' + monday.getUTCFullYear() + '-' + monday.getUTCMonth() + '-' + monday.getUTCDate();
+      } else if (period === 'monthly') key = 'm:' + year + '-' + month;
+      else if (period === 'quarterly') key = 'q:' + year + '-' + Math.floor(month / 3);
+      else key = 'y:' + year;
+      var group = groupMap[key];
+      if (!group) {
+        group = { time: bar.time, open: Number(bar.open), high: Number(bar.high), low: Number(bar.low), close: Number(bar.close), volume: Number(bar.volume) || 0 };
+        groupMap[key] = group;
+        groups.push(group);
+      } else {
+        group.high = Math.max(group.high, Number(bar.high));
+        group.low = Math.min(group.low, Number(bar.low));
+        group.close = Number(bar.close);
+        group.volume += Number(bar.volume) || 0;
+        group.time = bar.time;
+      }
+    });
+    return groups;
+  }
+
+  function alignSecuritySeries(source, sourceBars, targetBars) {
+    var times = sourceBars.map(securityTime);
+    return new PineSeries(function (targetIndex) {
+      var targetTime = securityTime(targetBars[targetIndex], targetIndex);
+      var low = 0;
+      var high = times.length - 1;
+      var match = -1;
+      while (low <= high) {
+        var middle = Math.floor((low + high) / 2);
+        if (times[middle] <= targetTime) {
+          match = middle;
+          low = middle + 1;
+        } else {
+          high = middle - 1;
+        }
+      }
+      return match < 0 ? NaN : valueAt(source, match);
+    }, source && source.label ? source.label + ':aligned' : 'security');
+  }
+
   function seriesToPoints(series, bars) {
     var points = [];
     for (var i = 0; i < bars.length; i += 1) {
@@ -690,15 +928,32 @@
     return points;
   }
 
+  function colorSeriesToPoints(series, bars) {
+    var points = [];
+    for (var i = 0; i < bars.length; i += 1) {
+      var value = valueAt(series, i);
+      if (typeof value === 'string' && value) points.push({ time: bars[i].time, value: 1, color: value });
+    }
+    return points;
+  }
+
   function compile(source) {
-    var statements = parse(source);
-    return { source: String(source == null ? '' : source), statements: statements };
+    source = String(source == null ? '' : source);
+    if (Object.prototype.hasOwnProperty.call(compileCache, source)) return compileCache[source];
+    var compiled = { source: source, statements: parse(source) };
+    compileCache[source] = compiled;
+    compileCacheKeys.push(source);
+    while (compileCacheKeys.length > COMPILE_CACHE_LIMIT) {
+      delete compileCache[compileCacheKeys.shift()];
+    }
+    return compiled;
   }
 
   function run(compiledOrSource, bars, options) {
     options = options || {};
     bars = Array.isArray(bars) ? bars : [];
     var compiled = typeof compiledOrSource === 'string' ? compile(compiledOrSource) : compiledOrSource;
+    activeBudget = { used: 0, max: MAX_OPERATIONS };
     var namespaces = createNamespaces();
     var inputDefinitions = [];
     var suppliedInputs = options.inputs || {};
@@ -729,17 +984,94 @@
     };
     var env = {
       open: baseSeries(bars, 'open'), high: baseSeries(bars, 'high'), low: baseSeries(bars, 'low'),
-      close: baseSeries(bars, 'close'), volume: baseSeries(bars, 'volume'), hl2: null, hlc3: null, ohlc4: null,
+      close: baseSeries(bars, 'close'), volume: baseSeries(bars, 'volume'), bar_index: null, time: null, hl2: null, hlc3: null, ohlc4: null,
       na: NaN, true: true, false: false, ta: namespaces.ta, math: namespaces.math, color: namespaces.color,
       plot: namespaces.plot, input: namespaces.input, display: { all: 'all', none: 'none' }
     };
     env.hl2 = binarySeries(env.high, env.low, function (high, low) { return (high + low) / 2; });
+    env.bar_index = new PineSeries(function (index) { return index; }, 'bar_index');
+    env.time = new PineSeries(function (index) { return securityTime(bars[index], index); }, 'time');
     env.hlc3 = new PineSeries(function (index) { return (env.high.get(index) + env.low.get(index) + env.close.get(index)) / 3; });
     env.ohlc4 = new PineSeries(function (index) { return (env.open.get(index) + env.high.get(index) + env.low.get(index) + env.close.get(index)) / 4; });
     var metadata = { title: options.title || 'Pine Script', overlay: false, shorttitle: null };
     var plots = [];
+    var shapePlots = [];
+    var fills = [];
+    var backgrounds = [];
+    var pineDrawings = [];
     var levels = [];
+    var alertConditions = [];
     var warnings = [];
+    var securityRequests = [];
+    var securityRequestKeys = Object.create(null);
+    var securitySeriesCache = Object.create(null);
+    var securityData = options.security || {};
+
+    function securityEntry(symbol) {
+      var keys = Object.keys(securityData);
+      var normalized = String(symbol || '').trim().toUpperCase();
+      for (var keyIndex = 0; keyIndex < keys.length; keyIndex += 1) {
+        if (String(keys[keyIndex]).trim().toUpperCase() === normalized) return securityData[keys[keyIndex]];
+      }
+      return null;
+    }
+
+    function securityBars(entry) {
+      if (Array.isArray(entry)) return entry;
+      if (entry && Array.isArray(entry.bars)) return entry.bars;
+      return [];
+    }
+
+    function rememberSecurityRequest(symbol, timeframe) {
+      var normalizedSymbol = String(symbol || '').trim().toUpperCase();
+      var normalizedTimeframe = String(timeframe == null ? '' : timeframe).trim() || 'chart';
+      if (!normalizedSymbol) return;
+      var key = normalizedSymbol + '|' + normalizedTimeframe;
+      if (securityRequestKeys[key]) return;
+      if (securityRequests.length >= MAX_SECURITY_REQUESTS) {
+        throw new PineError('The script exceeded the maximum of ' + MAX_SECURITY_REQUESTS + ' security requests.', 1, 1);
+      }
+      securityRequestKeys[key] = true;
+      securityRequests.push({ symbol: normalizedSymbol, timeframe: normalizedTimeframe });
+    }
+
+    function securityExpressionKey(symbol, timeframe, expression) {
+      var expressionText;
+      try { expressionText = JSON.stringify(expression); } catch (error) { expressionText = String(expression && expression.type || 'expression'); }
+      return String(symbol) + '|' + String(timeframe) + '|' + expressionText;
+    }
+
+    function requestSecurity(args, requestEnv, index) {
+      var symbolValue = args[0] ? evaluate(args[0].value, requestEnv, index) : '';
+      var timeframeValue = args[1] ? evaluate(args[1].value, requestEnv, index) : 'chart';
+      var symbol = String(valueAt(symbolValue, index) == null ? '' : valueAt(symbolValue, index)).trim().toUpperCase();
+      var timeframe = String(valueAt(timeframeValue, index) == null ? 'chart' : valueAt(timeframeValue, index)).trim() || 'chart';
+      var expressionArgument = args[2] || args.filter(function (arg) { return arg.name === 'expression'; })[0];
+      if (!expressionArgument) {
+        throw new PineError('request.security() requires an expression argument.', 1, 1);
+      }
+      var key = securityExpressionKey(symbol, timeframe, expressionArgument.value);
+      if (securitySeriesCache[key]) return securitySeriesCache[key];
+      var entry = securityEntry(symbol);
+      var sourceBars = aggregateSecurityBars(securityBars(entry), timeframe);
+      if (!sourceBars.length) {
+        rememberSecurityRequest(symbol, timeframe);
+        securitySeriesCache[key] = new PineSeries(function () { return NaN; }, 'security:' + symbol);
+        return securitySeriesCache[key];
+      }
+      var securityEnv = Object.create(env);
+      var securityFields = seriesEnvironment(sourceBars);
+      Object.keys(securityFields).forEach(function (field) {
+        securityEnv[field] = securityFields[field];
+      });
+      var expression = evaluate(expressionArgument.value, securityEnv, 0);
+      var sourceSeries = expression instanceof PineSeries ? expression : new PineSeries(function () { return expression; }, 'security:' + symbol);
+      securitySeriesCache[key] = alignSecuritySeries(sourceSeries, sourceBars, bars);
+      return securitySeriesCache[key];
+    }
+
+    env.request = { security: function () { return NaN; } };
+    env.__requestSecurity = requestSecurity;
     function named(args, key, fallback) { return args.named[key] == null ? fallback : args.named[key]; }
     function plotFunction(args) {
       if (plots.length >= MAX_PLOTS) throw new PineError('The script exceeded the maximum of ' + MAX_PLOTS + ' plots.');
@@ -757,16 +1089,142 @@
       if (Number.isFinite(value)) levels.push({ value: value, title: String(named(args, 'title', 'Level')), color: named(args, 'color', null) });
       return value;
     }
+    function shapePlotFunction(args, characterMode) {
+      if (plots.length + shapePlots.length >= MAX_PLOTS) throw new PineError('The script exceeded the maximum of ' + MAX_PLOTS + ' plots.');
+      var source = args[0];
+      var output = (characterMode ? 'char' : 'shape') + (shapePlots.length + 1);
+      shapePlots.push({
+        output: output,
+        source: source,
+        title: String(named(args, 'title', characterMode ? 'Plot char' : 'Plot shape') || (characterMode ? 'Plot char' : 'Plot shape')),
+        color: named(args, 'color', null),
+        textColor: named(args, 'textcolor', null),
+        style: named(args, 'style', characterMode ? 'char' : 'circle'),
+        location: named(args, 'location', 'abovebar'),
+        text: named(args, 'text', characterMode ? '' : ''),
+        character: named(args, 'char', characterMode ? '•' : ''),
+        size: named(args, 'size', 'normal'),
+        opacity: named(args, 'transp', null) == null ? 1 : Math.max(0.05, 1 - Number(named(args, 'transp', 0)) / 100),
+        characterMode: !!characterMode
+      });
+      return source;
+    }
+    function backgroundFunction(args) {
+      if (backgrounds.length >= MAX_PLOTS) throw new PineError('The script exceeded the maximum of ' + MAX_PLOTS + ' plots.');
+      backgrounds.push({
+        output: 'background' + (backgrounds.length + 1),
+        source: args[0],
+        title: 'Background',
+        opacity: named(args, 'transp', null) == null ? 0.16 : Math.max(0.02, 1 - Number(named(args, 'transp', 0)) / 100)
+      });
+      return args[0];
+    }
+    function fillFunction(args) {
+      if (fills.length >= MAX_PLOTS) throw new PineError('The script exceeded the maximum of ' + MAX_PLOTS + ' plots.');
+      fills.push({
+        output: 'fill' + (fills.length + 1),
+        first: args[0],
+        second: args[1],
+        color: named(args, 'color', null),
+        opacity: named(args, 'transp', null) == null ? 0.16 : Math.max(0.02, 1 - Number(named(args, 'transp', 0)) / 100),
+        title: String(named(args, 'title', 'Fill') || 'Fill')
+      });
+      return args[0];
+    }
+    function alertConditionFunction(args) {
+      alertConditions.push({
+        condition: args[0],
+        title: String(named(args, 'title', 'Alert condition') || 'Alert condition'),
+        message: String(named(args, 'message', '') || '')
+      });
+      return args[0];
+    }
+    function drawingArgument(args, name, position, index, fallback) {
+      var value = args.named[name] != null ? args.named[name] : args[position];
+      if (value == null) return fallback;
+      return valueAt(value, Math.max(0, bars.length - 1));
+    }
+    function labelNewFunction(args) {
+      pineDrawings.push({
+        type: 'label',
+        x: asNumber(drawingArgument(args, 'x', 0, 0, bars.length - 1)),
+        y: asNumber(drawingArgument(args, 'y', 1, 0, NaN)),
+        text: String(drawingArgument(args, 'text', 2, 0, '') || ''),
+        color: drawingArgument(args, 'color', 5, 0, '#2563eb'),
+        textColor: drawingArgument(args, 'textcolor', 6, 0, '#ffffff'),
+        style: drawingArgument(args, 'style', 4, 0, 'label_down'),
+        size: drawingArgument(args, 'size', 7, 0, 'normal')
+      });
+      return pineDrawings[pineDrawings.length - 1];
+    }
+    function lineNewFunction(args) {
+      pineDrawings.push({
+        type: 'line',
+        x1: asNumber(drawingArgument(args, 'x1', 0, 0, 0)),
+        y1: asNumber(drawingArgument(args, 'y1', 1, 0, NaN)),
+        x2: asNumber(drawingArgument(args, 'x2', 2, 0, bars.length - 1)),
+        y2: asNumber(drawingArgument(args, 'y2', 3, 0, NaN)),
+        color: drawingArgument(args, 'color', 6, 0, '#2563eb'),
+        width: Math.max(1, Math.min(8, Math.floor(asNumber(drawingArgument(args, 'width', 8, 0, 2))) || 2)),
+        style: drawingArgument(args, 'style', 7, 0, 'solid')
+      });
+      return pineDrawings[pineDrawings.length - 1];
+    }
+    function boxNewFunction(args) {
+      pineDrawings.push({
+        type: 'box',
+        left: asNumber(drawingArgument(args, 'left', 0, 0, 0)),
+        top: asNumber(drawingArgument(args, 'top', 1, 0, NaN)),
+        right: asNumber(drawingArgument(args, 'right', 2, 0, bars.length - 1)),
+        bottom: asNumber(drawingArgument(args, 'bottom', 3, 0, NaN)),
+        borderColor: drawingArgument(args, 'border_color', 4, 0, '#2563eb'),
+        borderWidth: Math.max(1, Math.min(8, Math.floor(asNumber(drawingArgument(args, 'border_width', 5, 0, 2))) || 2)),
+        borderStyle: drawingArgument(args, 'border_style', 6, 0, 'solid'),
+        background: drawingArgument(args, 'bgcolor', 7, 0, 'rgba(37, 99, 235, 0.12)'),
+        text: String(drawingArgument(args, 'text', 8, 0, '') || ''),
+        textColor: drawingArgument(args, 'text_color', 9, 0, '#111827')
+      });
+      return pineDrawings[pineDrawings.length - 1];
+    }
     function naFunction(args) { return !Number.isFinite(asNumber(valueAt(args[0], 0))) ? true : false; }
     env.__plot = plotFunction;
     env.__hline = hlineFunction;
     env.__na = naFunction;
-    env.plot = { style_line: 'line', style_histogram: 'histogram', style_columns: 'histogram', style_area: 'area' };
+    env.plot = function (args) { return plotFunction(args); };
+    env.plot.style_line = 'line';
+    env.plot.style_histogram = 'histogram';
+    env.plot.style_columns = 'histogram';
+    env.plot.style_area = 'area';
+    env.plot.style_circles = 'line';
+    env.plot.style_cross = 'line';
     env.hline = hlineFunction;
+    env.plotshape = function (args) { return shapePlotFunction(args, false); };
+    env.plotchar = function (args) { return shapePlotFunction(args, true); };
+    env.bgcolor = backgroundFunction;
+    env.fill = fillFunction;
+    env.alertcondition = alertConditionFunction;
+    env.label = { new: labelNewFunction, delete: function () { return true; } };
+    env.line = { new: lineNewFunction, delete: function () { return true; } };
+    env.box = { new: boxNewFunction, delete: function () { return true; } };
+    env.shape = { circle: 'circle', square: 'square', diamond: 'diamond', triangleup: 'triangleup', triangledown: 'triangledown', cross: 'cross', xcross: 'xcross' };
+    env.location = { abovebar: 'abovebar', belowbar: 'belowbar', top: 'top', bottom: 'bottom', absolute: 'absolute' };
+    env.size = { tiny: 'tiny', small: 'small', normal: 'normal', large: 'large', huge: 'huge' };
+    env.label.style_label_down = 'label_down';
+    env.label.style_label_up = 'label_up';
+    env.label.style_none = 'none';
+    env.line.style_solid = 'solid';
+    env.line.style_dashed = 'dash';
+    env.line.style_dotted = 'dot';
+    env.box.style_solid = 'solid';
+    env.box.style_dashed = 'dash';
+    env.box.style_dotted = 'dot';
+    env.xloc = { bar_index: 'bar_index', bar_time: 'bar_time' };
+    env.yloc = { price: 'price', abovebar: 'abovebar', belowbar: 'belowbar' };
+    env.extend = { none: 'none', left: 'left', right: 'right', both: 'both' };
     env.na = naFunction;
     var userFunctions = {};
     var functionDepth = 0;
-    var seriesIdentifiers = { open: true, high: true, low: true, close: true, volume: true, hl2: true, hlc3: true, ohlc4: true };
+    var seriesIdentifiers = { open: true, high: true, low: true, close: true, volume: true, bar_index: true, time: true, hl2: true, hlc3: true, ohlc4: true };
     function resolveFunctionSeries(value, barIndex) {
       if (!(value instanceof PineSeries)) return value;
       if (functionDepth >= MAX_FUNCTION_DEPTH) throw new PineError('Function call depth exceeded the maximum of ' + MAX_FUNCTION_DEPTH + '.', 1, 1);
@@ -782,11 +1240,102 @@
       if (node.type === 'identifier') return !!seriesIdentifiers[node.name];
       if (node.type === 'member') return expressionUsesSeries(node.object);
       if (node.type === 'index') return expressionUsesSeries(node.object) || expressionUsesSeries(node.index);
-      if (node.type === 'call') return expressionUsesSeries(node.callee) || (node.args || []).some(function (arg) { return expressionUsesSeries(arg.value); });
+      if (node.type === 'call') {
+        if (node.callee && node.callee.type === 'member' && node.callee.object && node.callee.object.type === 'identifier' &&
+          node.callee.object.name === 'request' && node.callee.property === 'security') return true;
+        return expressionUsesSeries(node.callee) || (node.args || []).some(function (arg) { return expressionUsesSeries(arg.value); });
+      }
       if (node.type === 'unary') return expressionUsesSeries(node.argument);
       if (node.type === 'conditional') return expressionUsesSeries(node.test) || expressionUsesSeries(node.consequent) || expressionUsesSeries(node.alternate);
       if (node.type === 'binary') return expressionUsesSeries(node.left) || expressionUsesSeries(node.right);
       return false;
+    }
+    function statementsUseSeries(statements) {
+      return (statements || []).some(function (statement) {
+        if (statement.type === 'assignment' || statement.type === 'tuple-assignment' || statement.type === 'return') return expressionUsesSeries(statement.expression);
+        if (statement.type === 'expression') return expressionUsesSeries(statement.expression);
+        if (statement.type === 'if') return expressionUsesSeries(statement.test) || statementsUseSeries(statement.consequent) || statementsUseSeries(statement.alternate);
+        if (statement.type === 'for') return expressionUsesSeries(statement.start) || expressionUsesSeries(statement.end) || statementsUseSeries(statement.body);
+        return false;
+      });
+    }
+    function executeStatements(statements, scope, index) {
+      var lastValue = NaN;
+      for (var statementIndex = 0; statementIndex < (statements || []).length; statementIndex += 1) {
+        var statement = statements[statementIndex];
+        if (statement.type === 'declaration') {
+          var declaration = statement.expression;
+          var declarationName = declaration.callee && declaration.callee.name;
+          if (declaration.type !== 'call' || ['indicator', 'study', 'strategy'].indexOf(declarationName) === -1) throw new PineError('Only indicator() declarations are supported in this release.', statement.line, 1);
+          var declarationArgs = argumentMap(declaration.args, scope, index);
+          metadata.title = String(declarationArgs.named.title || declarationArgs[0] || metadata.title);
+          metadata.shorttitle = declarationArgs.named.shorttitle || null;
+          metadata.overlay = declarationArgs.named.overlay === true;
+          continue;
+        }
+        if (statement.type === 'function') continue;
+        if (statement.type === 'assignment') {
+          lastValue = evaluate(statement.expression, scope, index);
+          scope[statement.name] = lastValue;
+          continue;
+        }
+        if (statement.type === 'tuple-assignment') {
+          var tupleValue = evaluate(statement.expression, scope, index);
+          if (!Array.isArray(tupleValue)) throw new PineError('The expression does not return a tuple.', statement.line, 1);
+          statement.names.forEach(function (name, tupleIndex) { scope[name] = tupleValue[tupleIndex]; });
+          lastValue = tupleValue[0];
+          continue;
+        }
+        if (statement.type === 'if') {
+          var condition = valueAt(evaluate(statement.test, scope, index), index);
+          var branchResult = executeStatements(condition ? statement.consequent : statement.alternate, scope, index);
+          if (branchResult.type === 'return' || branchResult.type === 'break') return branchResult;
+          lastValue = branchResult.value;
+          continue;
+        }
+        if (statement.type === 'for') {
+          var start = Math.floor(asNumber(valueAt(evaluate(statement.start, scope, index), index)));
+          var end = Math.floor(asNumber(valueAt(evaluate(statement.end, scope, index), index)));
+          if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+          var step = end >= start ? 1 : -1;
+          var iterations = Math.abs(end - start) + 1;
+          if (iterations > MAX_LOOPS) throw new PineError('The loop exceeded the maximum of ' + MAX_LOOPS + ' iterations.', statement.line, 1);
+          var hadLoopVariable = Object.prototype.hasOwnProperty.call(scope, statement.name);
+          var previousLoopValue = scope[statement.name];
+          for (var loopValue = start; step > 0 ? loopValue <= end : loopValue >= end; loopValue += step) {
+            scope[statement.name] = loopValue;
+            var loopResult = executeStatements(statement.body, scope, index);
+            if (loopResult.type === 'return') {
+              if (hadLoopVariable) scope[statement.name] = previousLoopValue;
+              else delete scope[statement.name];
+              return loopResult;
+            }
+            if (loopResult.type === 'break') {
+              lastValue = loopResult.value;
+              break;
+            }
+            lastValue = loopResult.value;
+          }
+          if (hadLoopVariable) scope[statement.name] = previousLoopValue;
+          else delete scope[statement.name];
+          continue;
+        }
+        if (statement.type === 'return') return { type: 'return', value: statement.expression ? evaluate(statement.expression, scope, index) : NaN };
+        if (statement.type === 'break') return { type: 'break', value: lastValue };
+        if (statement.type === 'expression') {
+          var expression = statement.expression;
+          var expressionCallee = expression.callee && expression.callee.name;
+          if (expression.type === 'call' && expressionCallee === 'plot') {
+            lastValue = plotFunction(argumentMap(expression.args, scope, index));
+          } else if (expression.type === 'call' && expressionCallee === 'hline') {
+            lastValue = hlineFunction(argumentMap(expression.args, scope, index));
+          } else {
+            lastValue = evaluate(expression, scope, index);
+            if (expressionCallee !== 'plot' && expressionCallee !== 'hline') warnings.push('Expression result is unused on line ' + statement.line + '.');
+          }
+        }
+      }
+      return { type: 'normal', value: lastValue };
     }
     compiled.statements.forEach(function (statement) {
       if (statement.type !== 'function') return;
@@ -802,7 +1351,7 @@
       }
       env[functionName] = function (args, ignoredEnv, callIndex) {
         var hasSeriesArgument = (args || []).some(function (value) { return value instanceof PineSeries; });
-        var shouldReturnSeries = hasSeriesArgument || expressionUsesSeries(definition.expression);
+        var shouldReturnSeries = hasSeriesArgument || expressionUsesSeries(definition.expression) || statementsUseSeries(definition.body);
         function invoke(barIndex) {
           if (functionDepth >= MAX_FUNCTION_DEPTH) throw new PineError('Function call depth exceeded the maximum of ' + MAX_FUNCTION_DEPTH + '.', definition.line, 1);
           functionDepth += 1;
@@ -811,6 +1360,10 @@
             localEnv[parameter] = args && args.named && args.named[parameter] !== undefined ? args.named[parameter] : args && args[index];
           });
           try {
+            if (definition.body) {
+              var bodyResult = executeStatements(definition.body, localEnv, barIndex);
+              return bodyResult.value;
+            }
             return evaluate(definition.expression, localEnv, barIndex);
           } finally {
             functionDepth -= 1;
@@ -823,40 +1376,7 @@
         }, functionName);
       };
     });
-    compiled.statements.forEach(function (statement) {
-      if (statement.type === 'declaration') {
-        var declaration = statement.expression;
-        var declarationName = declaration.callee && declaration.callee.name;
-        if (declaration.type !== 'call' || ['indicator', 'study', 'strategy'].indexOf(declarationName) === -1) throw new PineError('Only indicator() declarations are supported in this release.', statement.line, 1);
-        var declarationArgs = argumentMap(declaration.args, env, 0);
-        metadata.title = String(declarationArgs.named.title || declarationArgs[0] || metadata.title);
-        metadata.shorttitle = declarationArgs.named.shorttitle || null;
-        metadata.overlay = declarationArgs.named.overlay === true;
-        return;
-      }
-      if (statement.type === 'assignment') {
-        env[statement.name] = evaluate(statement.expression, env, 0);
-        return;
-      }
-      if (statement.type === 'tuple-assignment') {
-        var tupleValue = evaluate(statement.expression, env, 0);
-        if (!Array.isArray(tupleValue)) throw new PineError('The expression does not return a tuple.', statement.line, 1);
-        statement.names.forEach(function (name, index) { env[name] = tupleValue[index]; });
-        return;
-      }
-      if (statement.type === 'function') return;
-      if (statement.type === 'expression') {
-        if (statement.expression.type === 'call' && statement.expression.callee.name === 'plot') {
-          var plotArgs = argumentMap(statement.expression.args, env, 0);
-          plotFunction(plotArgs);
-        } else if (statement.expression.type === 'call' && statement.expression.callee.name === 'hline') {
-          hlineFunction(argumentMap(statement.expression.args, env, 0));
-        } else {
-          var calleeName = statement.expression.callee && statement.expression.callee.name;
-          if (calleeName !== 'plot' && calleeName !== 'hline') warnings.push('Expression result is unused on line ' + statement.line + '.');
-        }
-      }
-    });
+    executeStatements(compiled.statements, env, 0);
     var outputs = {};
     var render = [];
     plots.forEach(function (plot, index) {
@@ -867,7 +1387,53 @@
     levels.forEach(function (level, index) {
       render.push({ output: 'level' + (index + 1), type: 'level', value: level.value, title: level.title, color: level.color });
     });
-    return { metadata: metadata, outputs: outputs, render: render, plots: plots, inputs: inputDefinitions, warnings: warnings };
+    shapePlots.forEach(function (plot) {
+      outputs[plot.output] = seriesToPoints(plot.source, bars);
+      render.push({
+        output: plot.output,
+        type: plot.characterMode ? 'char' : 'shape',
+        title: plot.title,
+        color: plot.color,
+        textColor: plot.textColor,
+        style: plot.style,
+        location: plot.location,
+        text: plot.text,
+        character: plot.character,
+        size: plot.size,
+        opacity: plot.opacity
+      });
+    });
+    backgrounds.forEach(function (background) {
+      outputs[background.output] = colorSeriesToPoints(background.source, bars);
+      render.push({ output: background.output, type: 'background', title: background.title, opacity: background.opacity });
+    });
+    fills.forEach(function (fill, index) {
+      var firstOutput = 'fill' + (index + 1) + '_first';
+      var secondOutput = 'fill' + (index + 1) + '_second';
+      outputs[firstOutput] = seriesToPoints(fill.first, bars);
+      outputs[secondOutput] = seriesToPoints(fill.second, bars);
+      render.push({ output: fill.output, type: 'fill', firstOutput: firstOutput, secondOutput: secondOutput, title: fill.title, color: fill.color, opacity: fill.opacity });
+    });
+    alertConditions.forEach(function (condition, index) {
+      var output = 'alert' + (index + 1);
+      outputs[output] = seriesToPoints(condition.condition, bars);
+      condition.output = output;
+    });
+    var result = {
+      metadata: metadata,
+      outputs: outputs,
+      render: render,
+      plots: plots,
+      inputs: inputDefinitions,
+      warnings: warnings,
+      drawings: pineDrawings,
+      alertConditions: alertConditions.map(function (condition) {
+        return { output: condition.output, title: condition.title, message: condition.message };
+      }),
+      securityRequests: securityRequests
+    };
+    activeBudget = null;
+    return result;
   }
 
   function runInWorker(message) {
@@ -888,6 +1454,14 @@
     compile: compile,
     run: run,
     runInWorker: runInWorker,
-    limits: { maxSourceLength: MAX_SOURCE_LENGTH, maxPlots: MAX_PLOTS, maxLoops: MAX_LOOPS, maxFunctionDepth: MAX_FUNCTION_DEPTH }
+    limits: {
+      maxSourceLength: MAX_SOURCE_LENGTH,
+      maxPlots: MAX_PLOTS,
+      maxLoops: MAX_LOOPS,
+      maxFunctionDepth: MAX_FUNCTION_DEPTH,
+      maxSecurityRequests: MAX_SECURITY_REQUESTS,
+      maxOperations: MAX_OPERATIONS,
+      compileCacheSize: COMPILE_CACHE_LIMIT
+    }
   };
 }));
