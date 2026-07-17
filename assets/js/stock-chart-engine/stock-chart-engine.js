@@ -3879,6 +3879,7 @@
       '<div class="sce-pine-recent-menu" data-sce-pine-recent-menu role="listbox" hidden></div>',
       '</span>',
       '<span class="sce-pine-editor-tool-divider" aria-hidden="true"></span>',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="docs" title="Pine Script documentation" aria-label="Pine Script documentation">', paneControlIconSvg('help'), '</button>',
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-increase" title="Increase editor font size" aria-label="Increase editor font size">', paneControlIconSvg('font-increase'), '</button>',
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-decrease" title="Decrease editor font size" aria-label="Decrease editor font size">', paneControlIconSvg('font-decrease'), '</button>',
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-reset" title="Reset editor font size" aria-label="Reset editor font size">', paneControlIconSvg('font-reset'), '</button>',
@@ -3910,6 +3911,19 @@
       '<input type="search" data-sce-pine-command-search placeholder="Search commands" aria-label="Search commands">',
       '<div class="sce-pine-command-list" data-sce-pine-command-list role="listbox"></div>',
       '</div>',
+      '<section class="sce-pine-docs" data-sce-pine-docs hidden aria-label="Pine Script documentation">',
+      '<div class="sce-pine-docs-header"><strong>Pine Script reference</strong><button type="button" data-sce-pine-doc-action="close" title="Close documentation" aria-label="Close documentation">', paneControlIconSvg('close'), '</button></div>',
+      '<div class="sce-pine-docs-filters">',
+      '<input type="search" data-sce-pine-doc-search placeholder="Search functions, keywords, or content" aria-label="Search Pine Script documentation">',
+      '<select data-sce-pine-doc-filter aria-label="Filter documentation category">',
+      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="namespace">Namespaces</option><option value="syntax">Syntax</option>',
+      '</select>',
+      '</div>',
+      '<div class="sce-pine-docs-content">',
+      '<div class="sce-pine-docs-list" data-sce-pine-doc-list role="listbox"></div>',
+      '<article class="sce-pine-docs-detail" data-sce-pine-doc-detail aria-live="polite"></article>',
+      '</div>',
+      '</section>',
       '<div data-sce-pine-inputs>', inputControls, '</div>',
       '<div class="sce-pine-status" data-sce-pine-status aria-live="polite" hidden></div>',
       '<div class="sce-settings-actions" data-sce-pine-actions>',
@@ -3945,6 +3959,65 @@
     if (!button) return;
     button.hidden = !visible;
     button.setAttribute('aria-hidden', visible ? 'false' : 'true');
+  };
+
+  Chart.prototype.openPineDocumentation = function () {
+    var panel = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-docs]');
+    var search = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-search]');
+    var filter = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-filter]');
+    if (!panel || !search || !filter) return false;
+    this.hidePineCompletions();
+    this.hidePineSignatureHelp();
+    panel.hidden = false;
+    search.value = '';
+    filter.value = 'all';
+    this.renderPineDocumentation('', 'all');
+    if (search.focus) search.focus();
+    return true;
+  };
+
+  Chart.prototype.closePineDocumentation = function () {
+    var panel = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-docs]');
+    if (panel) panel.hidden = true;
+  };
+
+  Chart.prototype.showPineDocumentationEntry = function (index) {
+    var detail = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
+    var item = PINE_EDITOR_DOCUMENTATION[Number(index)];
+    if (!detail || !item) return;
+    detail.innerHTML = [
+      '<div class="sce-pine-doc-detail-heading"><strong>', escapeHtml(item.name), '</strong><span>', escapeHtml(item.type), '</span></div>',
+      item.signature ? '<code class="sce-pine-doc-signature">' + escapeHtml(item.signature) + '</code>' : '',
+      '<p>', escapeHtml(item.description), '</p>',
+      item.parameters && item.parameters.length ? '<div class="sce-pine-doc-parameters">' + item.parameters.map(function (parameter) {
+        return '<div><code>' + escapeHtml(parameter.name) + '</code><span>' + escapeHtml(parameter.description) + '</span></div>';
+      }).join('') + '</div>' : '',
+      item.example ? '<pre class="sce-pine-doc-example"><code>' + escapeHtml(item.example) + '</code></pre>' : ''
+    ].join('');
+  };
+
+  Chart.prototype.renderPineDocumentation = function (query, category) {
+    var list = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-list]');
+    if (!list) return;
+    var normalizedQuery = String(query || '').trim().toLowerCase();
+    var normalizedCategory = String(category || 'all').toLowerCase();
+    var matches = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
+      if (normalizedCategory !== 'all' && item.category !== normalizedCategory) return false;
+      if (!normalizedQuery) return true;
+      var searchable = [item.name, item.type, item.signature, item.description, item.example]
+        .concat((item.parameters || []).map(function (parameter) { return parameter.name + ' ' + parameter.description; }))
+        .join(' ').toLowerCase();
+      return searchable.indexOf(normalizedQuery) !== -1;
+    });
+    list.innerHTML = matches.length ? matches.map(function (item) {
+      var index = PINE_EDITOR_DOCUMENTATION.indexOf(item);
+      return '<button type="button" data-sce-pine-doc-index="' + index + '" role="option"><strong>' + escapeHtml(item.name) + '</strong><span>' + escapeHtml(item.type) + '</span></button>';
+    }).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
+    if (matches.length) this.showPineDocumentationEntry(PINE_EDITOR_DOCUMENTATION.indexOf(matches[0]));
+    else {
+      var detail = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
+      if (detail) detail.innerHTML = '<p class="sce-pine-doc-empty">No matching documentation.</p>';
+    }
   };
 
   Chart.prototype.pineInputControlsHtml = function (inputs) {
@@ -4465,6 +4538,7 @@
     if (action === 'format') this.formatPineEditor();
     if (action === 'toggle-wrap') this.togglePineEditorWrap();
     if (action === 'recent') this.openRecentPineScripts();
+    if (action === 'docs') this.openPineDocumentation();
     if (action === 'font-increase') this.changePineEditorFontSize(1);
     if (action === 'font-decrease') this.changePineEditorFontSize(-1);
     if (action === 'font-reset') {
@@ -4759,6 +4833,13 @@
     };
     var commandSearch = this.settingsPopup.querySelector('[data-sce-pine-command-search]');
     if (commandSearch) commandSearch.oninput = function () { self.renderPineCommandPalette(commandSearch.value); };
+    var documentationSearch = this.settingsPopup.querySelector('[data-sce-pine-doc-search]');
+    var documentationFilter = this.settingsPopup.querySelector('[data-sce-pine-doc-filter]');
+    var renderDocumentation = function () {
+      self.renderPineDocumentation(documentationSearch && documentationSearch.value, documentationFilter && documentationFilter.value);
+    };
+    if (documentationSearch) documentationSearch.oninput = renderDocumentation;
+    if (documentationFilter) documentationFilter.onchange = renderDocumentation;
     var findQuery = this.settingsPopup.querySelector('[data-sce-pine-find-query]');
     if (findQuery) findQuery.oninput = function () { self.selectPineFindMatch(1); };
     var commandPalette = this.settingsPopup.querySelector('[data-sce-pine-command-palette]');
@@ -4982,6 +5063,8 @@
     var self = this;
     this.settingsPopup.onclick = function (event) {
       var editorActionTarget = closestAttribute(event.target, 'data-sce-pine-editor-action');
+      var documentationActionTarget = closestAttribute(event.target, 'data-sce-pine-doc-action');
+      var documentationTarget = closestAttribute(event.target, 'data-sce-pine-doc-index');
       var findActionTarget = closestAttribute(event.target, 'data-sce-pine-find-action');
       var commandTarget = closestAttribute(event.target, 'data-sce-pine-command');
       var recentTarget = closestAttribute(event.target, 'data-sce-pine-recent-index');
@@ -4992,6 +5075,16 @@
       if (editorActionTarget) {
         if (event.preventDefault) event.preventDefault();
         self.handlePineEditorAction(editorActionTarget.getAttribute('data-sce-pine-editor-action'));
+        return;
+      }
+      if (documentationActionTarget) {
+        if (event.preventDefault) event.preventDefault();
+        if (documentationActionTarget.getAttribute('data-sce-pine-doc-action') === 'close') self.closePineDocumentation();
+        return;
+      }
+      if (documentationTarget) {
+        if (event.preventDefault) event.preventDefault();
+        self.showPineDocumentationEntry(documentationTarget.getAttribute('data-sce-pine-doc-index'));
         return;
       }
       if (findActionTarget) {
@@ -5061,6 +5154,7 @@
         var palette = self.settingsPopup.querySelector('[data-sce-pine-command-palette]');
         var recentMenu = self.settingsPopup.querySelector('[data-sce-pine-recent-menu]');
         var findbar = self.settingsPopup.querySelector('[data-sce-pine-findbar]');
+        var documentation = self.settingsPopup.querySelector('[data-sce-pine-docs]');
         if (palette && !palette.hidden) {
           self.closePineCommandPalette();
           event.preventDefault();
@@ -5073,6 +5167,11 @@
         }
         if (findbar && !findbar.hidden && event.target !== self.pineEditorField()) {
           self.closePineFindBar();
+          event.preventDefault();
+          return;
+        }
+        if (documentation && !documentation.hidden) {
+          self.closePineDocumentation();
           event.preventDefault();
           return;
         }
@@ -10595,6 +10694,42 @@
     { value: 'low', label: 'Low price series' },
     { value: 'volume', label: 'Volume series' }
   ];
+  var PINE_EDITOR_DOCUMENTATION = Object.keys(PINE_EDITOR_SIGNATURES).map(function (name) {
+    var definition = PINE_EDITOR_SIGNATURES[name];
+    return {
+      name: name,
+      type: 'Function',
+      category: 'function',
+      signature: definition.signature,
+      description: definition.description,
+      parameters: definition.parameters
+    };
+  }).concat([
+    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script. Strategy order execution is not available in this client runtime.', example: 'strategy("My strategy", overlay=true)' },
+    { name: 'library', type: 'Function', category: 'function', signature: 'library(title, overlay, dynamic_requests)', description: 'Declares a reusable Pine library. Library publishing is not available in this client runtime.' },
+    { name: 'ta.highest', type: 'Function', category: 'function', signature: 'ta.highest(source, length)', description: 'Returns the highest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.highest(high, 20)' },
+    { name: 'ta.lowest', type: 'Function', category: 'function', signature: 'ta.lowest(source, length)', description: 'Returns the lowest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.lowest(low, 20)' },
+    { name: 'math.abs', type: 'Function', category: 'function', signature: 'math.abs(number)', description: 'Returns the absolute value of a number.', parameters: [{ name: 'number', description: 'Numeric value to make positive.' }], example: 'math.abs(close - open)' },
+    { name: 'math.max', type: 'Function', category: 'function', signature: 'math.max(number0, number1)', description: 'Returns the larger of two numeric values.', parameters: [{ name: 'number0', description: 'First numeric value.' }, { name: 'number1', description: 'Second numeric value.' }] },
+    { name: 'math.min', type: 'Function', category: 'function', signature: 'math.min(number0, number1)', description: 'Returns the smaller of two numeric values.', parameters: [{ name: 'number0', description: 'First numeric value.' }, { name: 'number1', description: 'Second numeric value.' }] },
+    { name: 'and / or / not', type: 'Keyword', category: 'keyword', signature: 'condition1 and condition2', description: 'Combines or negates boolean expressions.', example: 'close > open and volume > volume[1]' },
+    { name: 'if / else', type: 'Keyword', category: 'keyword', signature: 'condition ? valueWhenTrue : valueWhenFalse', description: 'Chooses a value or block based on a condition.', example: 'color = close >= open ? color.green : color.red' },
+    { name: 'for / while', type: 'Keyword', category: 'keyword', signature: 'for index = start to end', description: 'Repeats a calculation while the loop condition is satisfied. Use bounded loops to keep scripts responsive.' },
+    { name: 'var / const', type: 'Keyword', category: 'keyword', signature: 'var name = value', description: 'Declares a persistent variable or a value intended to remain constant.' },
+    { name: '=>', type: 'Syntax', category: 'syntax', signature: 'name(arguments) => expression', description: 'Defines a user function.', example: 'average(source, length) => ta.sma(source, length)' },
+    { name: '[]', type: 'Syntax', category: 'syntax', signature: 'series[barsBack]', description: 'Reads a historical value from a series. Index 0 is the current bar.', example: 'close[1]' },
+    { name: '//@version=5', type: 'Syntax', category: 'syntax', signature: '//@version=5', description: 'Selects the Pine language version understood by the editor.' },
+    { name: '// comments', type: 'Syntax', category: 'syntax', signature: '// comment text', description: 'Marks the rest of a line as a comment.' },
+    { name: 'open / high / low / close / volume', type: 'Built-in', category: 'built-in', signature: 'close', description: 'Built-in OHLCV series from the chart symbol.', example: 'plot(close)' },
+    { name: 'time / bar_index', type: 'Built-in', category: 'built-in', signature: 'bar_index', description: 'Built-in bar timestamp and zero-based bar index series.' },
+    { name: 'true / false / na', type: 'Built-in', category: 'built-in', signature: 'na', description: 'Boolean and missing-value constants.' }
+  ]).concat(Object.keys(PINE_EDITOR_KEYWORDS).map(function (name) {
+    return { name: name, type: 'Keyword', category: 'keyword', signature: name, description: 'Reserved Pine language word.' };
+  })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
+    return { name: name, type: 'Built-in', category: 'built-in', signature: name, description: 'Built-in Pine series or constant.' };
+  })).concat(Object.keys(PINE_EDITOR_NAMESPACES).map(function (name) {
+    return { name: name, type: 'Namespace', category: 'namespace', signature: name + '.*', description: 'Namespace containing related Pine functions and values.' };
+  }));
   var PINE_RECENT_STORAGE_KEY = 'sce-pine-recent-scripts';
   var PINE_WINDOW_STORAGE_KEY = 'sce-pine-window-settings';
   var PINE_RECENT_SCRIPT_LIMIT = 8;
@@ -10734,6 +10869,7 @@
       maximize: '<path d="M8 4H4v4"/><path d="M16 4h4v4"/><path d="M20 16v4h-4"/><path d="M8 20H4v-4"/><path d="M4 4l6 6"/><path d="m20 4-6 6"/><path d="m20 20-6-6"/><path d="m4 20 6-6"/>',
       minimize: '<path d="M10 4v6H4"/><path d="M14 4v6h6"/><path d="M14 20v-6h6"/><path d="M10 20v-6H4"/>',
       close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
+      help: '<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.1 1.7c-.9.8-1.8 1.2-1.8 2.6"/><path d="M12 17h.01"/>',
       trash: '<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5"/><path d="M14 11v5"/>',
       download: '<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 20h14"/>',
       copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
