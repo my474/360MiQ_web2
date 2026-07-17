@@ -1180,6 +1180,8 @@
       styles: outputStyles,
       securityRequests: result.securityRequests || [],
       alertConditions: result.alertConditions || [],
+      strategyOrders: result.strategyOrders || [],
+      alerts: result.alerts || [],
       drawings: result.drawings || [],
       error: null
     };
@@ -4087,7 +4089,7 @@
         return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
       }).join('');
       var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
-      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, keyword, or description.</p><p><strong>Supported</strong> entries run in this chart. <strong>Reference</strong> entries describe Pine v6 APIs that are cataloged for editor guidance but are not yet executable by the client runtime.</p>';
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, keyword, or description.</p><p><strong>Supported</strong> entries run in this chart runtime. <strong>Reference</strong> entries identify Pine language constructs that still need a dedicated parser or broker/data integration.</p>';
       return;
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
@@ -8548,6 +8550,72 @@
     });
   };
 
+  Chart.prototype.drawPineOhlc = function (rect, range, theme, renderItem, result, style) {
+    var sources = (renderItem.sourceOutputs || []).map(function (output) { return result.outputs[output] || []; });
+    if (sources.length < 4) return;
+    var visible = this.visibleBars();
+    var visibleTimes = Object.create(null);
+    visible.forEach(function (bar) { visibleTimes[String(bar.time)] = true; });
+    var spacing = this.priceBarSpacing(rect);
+    var width = this.candleBodyWidth(spacing);
+    var ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = normalizeOpacity(style.opacity, 1);
+    ctx.lineWidth = Math.max(1, style.lineWidth || 1);
+    sources[0].forEach(function (point, index) {
+      if (!point || !visibleTimes[String(point.time)]) return;
+      var open = Number(point.value);
+      var high = sources[1][index] && Number(sources[1][index].value);
+      var low = sources[2][index] && Number(sources[2][index].value);
+      var close = sources[3][index] && Number(sources[3][index].value);
+      if (![open, high, low, close].every(Number.isFinite)) return;
+      var x = this.xForTime(point.time, rect);
+      var yOpen = this.yForValue(open, rect, range);
+      var yHigh = this.yForValue(high, rect, range);
+      var yLow = this.yForValue(low, rect, range);
+      var yClose = this.yForValue(close, rect, range);
+      if ([yOpen, yHigh, yLow, yClose].some(function (value) { return value == null; })) return;
+      var color = style.color || (close >= open ? theme.up : theme.down);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x, yHigh); ctx.lineTo(x, yLow); ctx.stroke();
+      if (renderItem.type === 'bar') {
+        var tick = this.ohlcTickWidth(spacing);
+        ctx.beginPath();
+        ctx.moveTo(x - tick, yOpen); ctx.lineTo(x, yOpen);
+        ctx.moveTo(x, yClose); ctx.lineTo(x + tick, yClose);
+        ctx.stroke();
+      } else {
+        var top = Math.min(yOpen, yClose);
+        var bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
+        ctx.fillRect(x - width / 2, top, width, bodyHeight);
+      }
+    }, this);
+    ctx.restore();
+  };
+
+  Chart.prototype.drawPineBarColors = function (rect, range, theme, data) {
+    var visible = this.visibleBars();
+    var colors = Object.create(null);
+    (data || []).forEach(function (point) { if (point && point.value != null) colors[String(point.time)] = point.value; });
+    var spacing = this.priceBarSpacing(rect);
+    var width = this.candleBodyWidth(spacing);
+    var ctx = this.ctx;
+    ctx.save();
+    visible.forEach(function (bar) {
+      var color = colors[String(bar.time)];
+      if (!color || typeof color !== 'string') return;
+      var open = this.yForValue(bar.open, rect, range);
+      var close = this.yForValue(bar.close, rect, range);
+      if (open == null || close == null) return;
+      ctx.globalAlpha = 0.82;
+      ctx.fillStyle = color;
+      ctx.fillRect(this.xForTime(bar.time, rect) - width / 2, Math.min(open, close), width, Math.max(1, Math.abs(close - open)));
+    }, this);
+    ctx.restore();
+  };
+
   Chart.prototype.drawIndicators = function (rect, range, theme) {
     var self = this;
     var paletteIndex = 0;
@@ -8578,6 +8646,8 @@
         if (renderItem.type === 'fill') self.drawIndicatorFill(rect, range, theme, result.outputs[renderItem.firstOutput] || [], result.outputs[renderItem.secondOutput] || [], style);
         else if (renderItem.type === 'background') self.drawIndicatorBackground(rect, theme, data, style);
         else if (renderItem.type === 'shape' || renderItem.type === 'char') self.drawIndicatorShape(rect, range, theme, data, style);
+        else if (renderItem.type === 'candlestick' || renderItem.type === 'bar') self.drawPineOhlc(rect, range, theme, renderItem, result, style);
+        else if (renderItem.type === 'barcolor' && rect.paneId === 'price') self.drawPineBarColors(rect, range, theme, data);
         else if (renderItem.type === 'histogram') self.drawHistogram(rect, range, theme, data, style, false);
         else if (renderItem.type === 'volume') self.drawHistogram(rect, range, theme, data, style, true);
         else self.drawLineSeries(rect, range, theme, data, style);
@@ -10980,9 +11050,9 @@
     }
   };
 
-  // The reference catalog intentionally includes the v6 API surface that this
-  // browser runtime does not execute yet. Keeping it here makes autocomplete
-  // and documentation useful without pretending every reference entry runs.
+  // The catalog is shared by autocomplete, documentation, and the client
+  // runtime. Reference-only language constructs remain explicitly marked;
+  // executable API entries are promoted to Supported below.
   var PINE_EDITOR_REFERENCE_FUNCTIONS = [];
   function pineReferenceParameters(names) {
     return (names || []).map(function (name) {
@@ -11150,7 +11220,7 @@
 
   PINE_EDITOR_REFERENCE_FUNCTIONS.forEach(function (name) {
     var definition = PINE_EDITOR_SIGNATURES[name];
-    if (definition) definition.status = definition.status || 'Reference';
+    if (definition) definition.status = 'Supported';
   });
   [
     'input.int', 'input.float', 'input.bool', 'input.string', 'input.source', 'input.color', 'request.security',
@@ -11220,8 +11290,8 @@
       status: definition.status || 'Supported'
     };
   }).concat([
-    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script. Strategy order execution is not available in this client runtime.', example: 'strategy("My strategy", overlay=true)' },
-    { name: 'library', type: 'Function', category: 'function', signature: 'library(title, overlay, dynamic_requests)', description: 'Declares a reusable Pine library. Library publishing is not available in this client runtime.' },
+    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script. Orders are recorded for the chart result without broker-side execution.', status: 'Supported', example: 'strategy("My strategy", overlay=true)' },
+    { name: 'library', type: 'Function', category: 'function', signature: 'library(title, overlay, dynamic_requests)', description: 'Declares a reusable Pine library script. Publishing is outside the browser runtime.', status: 'Supported' },
     { name: 'ta.highest', type: 'Function', category: 'function', signature: 'ta.highest(source, length)', description: 'Returns the highest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.highest(high, 20)' },
     { name: 'ta.lowest', type: 'Function', category: 'function', signature: 'ta.lowest(source, length)', description: 'Returns the lowest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.lowest(low, 20)' },
     { name: 'math.abs', type: 'Function', category: 'function', signature: 'math.abs(number)', description: 'Returns the absolute value of a number.', parameters: [{ name: 'number', description: 'Numeric value to make positive.' }], example: 'math.abs(close - open)' },
@@ -11247,9 +11317,9 @@
   })).concat(Object.keys(PINE_EDITOR_NAMESPACES).map(function (name) {
     return { name: name, type: 'Namespace', category: 'namespace', signature: name + '.*', description: 'Namespace containing related Pine functions and values.', status: 'Reference' };
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
-    return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Reference' };
+    return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {
-    return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: 'Reference' };
+    return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: entry.name === 'import / export' ? 'Reference' : 'Supported' };
   }));
   var PINE_EDITOR_DOCUMENTATION_UNIQUE = [];
   PINE_EDITOR_DOCUMENTATION.forEach(function (item) {

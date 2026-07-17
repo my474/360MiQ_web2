@@ -414,6 +414,27 @@ line.new(bar_index - 3, low, bar_index, high, color=color.red, width=2, style=li
 box.new(bar_index - 5, high, bar_index, low, bgcolor=color.new(color.blue, 90))`, data);
 assert.strictEqual(drawingOutputPreview.drawings.length, 3);
 assert.deepStrictEqual(drawingOutputPreview.drawings.map((drawing) => drawing.type), ['label', 'line', 'box']);
+const expandedRuntimePreview = PineScriptRuntime.run(`strategy("Expanded runtime")
+int length = input.int(5)
+plot(ta.hma(close, length), title="HMA")
+[plus, minus, adx] = ta.dmi(5, 5)
+plot(plus, title="DI+")
+plot(str.tonumber(str.tostring(close)), title="String conversion")
+values = array.from(1, 2, 3)
+for value in values
+    total = value
+mode = switch close > open
+    true => 1
+    => 0
+method smooth(array<float> source, int period) => ta.sma(source, period)
+plot(smooth(close, 3), title="Method")
+order = strategy.entry("Long", 1)
+line1 = line.new(0, close, bar_index, close)
+line.set_color(line1, color.red)`, data);
+assert.strictEqual(expandedRuntimePreview.metadata.kind, 'strategy');
+assert.ok(expandedRuntimePreview.outputs.plot1.length > 0);
+assert.ok(expandedRuntimePreview.strategyOrders.length > 0);
+assert.strictEqual(expandedRuntimePreview.drawings[0].color, '#ef4444');
 const workerSecurityPreview = PineScriptRuntime.runInWorker({
   source: `indicator("Worker security")
 plot(request.security("SPY", "W", close))`,
@@ -623,7 +644,7 @@ pineDocsSearch.value = 'ta.supertrend';
 pineDocsFilter.value = 'function';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.ok(pineDocsList.innerHTML.includes('ta.supertrend'));
-assert.ok(pineDocsList.innerHTML.includes('Reference'));
+assert.ok(pineDocsList.innerHTML.includes('Supported'));
 pineDocsSearch.value = 'barstate.isconfirmed';
 pineDocsFilter.value = 'built-in';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);

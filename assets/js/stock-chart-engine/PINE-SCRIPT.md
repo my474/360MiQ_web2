@@ -4,7 +4,7 @@ Advanced Chart includes a restricted, browser-safe Pine-compatible runtime and a
 
 ## Coverage in the editor
 
-The editor catalog is broader than the executable runtime. It includes:
+The editor catalog mirrors the executable runtime for the supported API surface and also lists a small set of language constructs that need a larger parser or platform integration:
 
 - Functions: declarations, plots, alerts, inputs, technical analysis, math, strings, requests, arrays, matrices, maps, colors, time, tickers, strategies, lines, labels, boxes, polylines, tables, and line fills.
 - Built-ins: OHLCV and derived price series, time and bar indexes, symbol information, timeframe information, bar states, strategy values, and named colors.
@@ -14,21 +14,20 @@ The editor catalog is broader than the executable runtime. It includes:
 Search the `Pine Script reference` panel with a function name, parameter, namespace, keyword, or description. Select a category to browse a manageable list instead of loading every topic at once. Click a function or keyword name to insert it at the editor cursor. Each entry is labeled `Supported` or `Reference`:
 
 - `Supported` means the current client runtime can execute that feature.
-- `Reference` means the catalog describes the TradingView Pine API, but this client runtime does not execute it yet. This is especially important for strategy orders, mutable drawing handles, and newer collection/object APIs.
+- `Reference` means the catalog describes a Pine language construct that is intentionally documented but still needs a dedicated parser or broker/data integration. API functions and objects listed as `Supported` execute in the browser runtime.
 
 ## Supported in the client runtime
 
-- `//@version` directives, `indicator()` and `study()` declarations.
+- `//@version` directives, `indicator()`, `study()`, `strategy()`, and `library()` declarations.
 - `open`, `high`, `low`, `close`, `volume`, `hl2`, `hlc3`, `ohlc4`, `bar_index`, `time`, and related chart series.
 - Assignments, `var` declarations, tuples, arithmetic, comparisons, boolean operators, ternaries, and user functions (`name(args) => expression` or an indented multi-statement body).
-- `if`/`else`, bounded `for ... to ...` loops, `return`, and `break`.
-- `plot()`, `hline()`, `plotshape()`, `plotchar()`, `bgcolor()`, `fill()`, and `alertcondition()`.
-- Safe declarative `label.new()`, `line.new()`, and `box.new()` outputs for chart annotations.
-- `request.security(symbol, timeframe, expression)` with timestamp alignment across missing or non-trading dates. The chart requests missing symbols through its configured comparison-data loader.
-- `input.int()`, `input.float()`, `input.bool()`, `input.string()`, `input.source()`, and `input.color()`.
-- `ta.sma()`, `ta.ema()`, `ta.rma()`, `ta.wma()`, `ta.rsi()`, `ta.macd()`, `ta.highest()`, `ta.lowest()`, `ta.sum()`, `ta.stdev()`, `ta.change()`, `ta.roc()`, `ta.crossover()`, and `ta.crossunder()`.
-- `math.abs()`, `math.max()`, `math.min()`, `math.pow()`, `math.sqrt()`, `math.log()`, `math.log10()`, `math.round()`, `math.floor()`, and `math.ceil()`.
-- Common colors, plot styles, `color.new()`, `color.rgb()`, and common `shape.*`, `location.*`, and `size.*` values.
+- `if`/`else`, bounded `for ... to ...` and `for ... in ...` loops, `switch`, typed declarations, `return`, and `break`.
+- `plot()`, `plotarrow()`, `plotcandle()`, `plotbar()`, `barcolor()`, `hline()`, `plotshape()`, `plotchar()`, `bgcolor()`, `fill()`, `alert()`, and `alertcondition()`.
+- `label`, `line`, `linefill`, `box`, `polyline`, and `table` objects, including common getters, setters, copies, and deletes.
+- `request.security()` and `request.security_lower_tf()` with timestamp alignment. Other request APIs return configured external data when supplied, otherwise `na` without crashing the chart.
+- `input.int()`, `input.float()`, `input.bool()`, `input.string()`, `input.source()`, `input.color()`, `input.time()`, `input.symbol()`, `input.session()`, `input.enum()`, and `input.text_area()`.
+- The rolling `ta.*` family in the reference catalog, including moving averages, oscillators, volatility, pivots, channels, correlations, percentiles, and tuple-returning functions such as `ta.bb()`, `ta.dmi()`, `ta.aroon()`, and `ta.supertrend()`.
+- The cataloged `math.*`, `str.*`, `array.*`, `matrix.*`, `map.*`, `color.*`, `ticker.*`, time, symbol, timeframe, barstate, strategy, and logging helpers.
 
 ## Example
 
