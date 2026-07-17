@@ -2246,6 +2246,7 @@
         }
       }
     } catch (error) {}
+    this.loadPineWindowSettings();
     this.pineEditorHistory = null;
     this.pineWorker = null;
     this.pineWorkerRequests = {};
@@ -3914,9 +3915,10 @@
     delete this.settingsPopup.dataset.drawingId;
     delete this.settingsPopup.dataset.output;
     if (indicator) this.rememberRecentPineScript(title, code);
-    this.pineWindowState.minimized = false;
+    this.loadPineWindowSettings();
     this.bindPineScriptPopup();
     this.positionPineScriptWindow(pointer);
+    this.savePineWindowSettings();
     var field = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
     if (field && field.focus) field.focus();
   };
@@ -3945,6 +3947,57 @@
   Chart.prototype.savePineEditorSettings = function () {
     try {
       if (typeof localStorage !== 'undefined') localStorage.setItem('sce-pine-editor-settings', JSON.stringify(this.pineEditorSettings));
+    } catch (error) {}
+  };
+
+  Chart.prototype.loadPineWindowSettings = function () {
+    if (!this.pineWindowState || typeof localStorage === 'undefined') return this.pineWindowState;
+    try {
+      var raw = localStorage.getItem(PINE_WINDOW_STORAGE_KEY);
+      var parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || typeof parsed !== 'object') return this.pineWindowState;
+      ['left', 'top', 'width', 'height'].forEach(function (key) {
+        if (parsed[key] == null) return;
+        var value = Number(parsed[key]);
+        if (Number.isFinite(value)) this.pineWindowState[key] = value;
+      }, this);
+      if (typeof parsed.minimized === 'boolean') this.pineWindowState.minimized = parsed.minimized;
+      if (typeof parsed.maximized === 'boolean') this.pineWindowState.maximized = parsed.maximized;
+      if (parsed.restore && typeof parsed.restore === 'object') {
+        var restore = {};
+        ['left', 'top', 'width', 'height'].forEach(function (key) {
+          var value = Number(parsed.restore[key]);
+          if (Number.isFinite(value)) restore[key] = value;
+        });
+        if (Object.keys(restore).length) this.pineWindowState.restore = restore;
+      }
+    } catch (error) {}
+    return this.pineWindowState;
+  };
+
+  Chart.prototype.savePineWindowSettings = function () {
+    if (!this.pineWindowState || typeof localStorage === 'undefined') return;
+    var state = this.pineWindowState;
+    var serialized = {
+      left: state.left == null ? null : (Number.isFinite(Number(state.left)) ? Number(state.left) : null),
+      top: state.top == null ? null : (Number.isFinite(Number(state.top)) ? Number(state.top) : null),
+      width: Number(state.width),
+      height: Number(state.height),
+      minimized: !!state.minimized,
+      maximized: !!state.maximized,
+      restore: null
+    };
+    if (state.restore && typeof state.restore === 'object') {
+      serialized.restore = {};
+      ['left', 'top', 'width', 'height'].forEach(function (key) {
+        if (state.restore[key] == null) return;
+        var value = Number(state.restore[key]);
+        if (Number.isFinite(value)) serialized.restore[key] = value;
+      });
+      if (!Object.keys(serialized.restore).length) serialized.restore = null;
+    }
+    try {
+      localStorage.setItem(PINE_WINDOW_STORAGE_KEY, JSON.stringify(serialized));
     } catch (error) {}
   };
 
@@ -4777,6 +4830,7 @@
 
   Chart.prototype.resetPineWindowPresentation = function () {
     if (!this.settingsPopup) return;
+    if (String(this.settingsPopup.className || '').split(/\s+/).indexOf('sce-pine-window') !== -1) this.savePineWindowSettings();
     this.settingsPopup.classList.remove('sce-pine-window', 'is-minimized', 'is-maximized');
     this.settingsPopup.style.left = '';
     this.settingsPopup.style.top = '';
@@ -4876,6 +4930,7 @@
       state.minimized = false;
     }
     this.positionPineScriptWindow();
+    this.savePineWindowSettings();
   };
 
   Chart.prototype.bindPineScriptPopup = function () {
@@ -5249,9 +5304,11 @@
       try { this.settingsPopup.releasePointerCapture(event.pointerId); } catch (ignore) {}
     }
     this.pineWindowInteraction = null;
+    this.savePineWindowSettings();
   };
 
   Chart.prototype.closeIndicatorSettingsPopup = function () {
+    if (this.settingsPopup && String(this.settingsPopup.className || '').split(/\s+/).indexOf('sce-pine-window') !== -1) this.savePineWindowSettings();
     this.settingsPopup.setAttribute('hidden', 'hidden');
   };
 
@@ -10409,6 +10466,7 @@
     { value: 'volume', label: 'Volume series' }
   ];
   var PINE_RECENT_STORAGE_KEY = 'sce-pine-recent-scripts';
+  var PINE_WINDOW_STORAGE_KEY = 'sce-pine-window-settings';
   var PINE_RECENT_SCRIPT_LIMIT = 8;
   var PINE_EDITOR_COMMANDS = [
     { id: 'font-increase', label: 'Increase editor font size', shortcut: '' },
