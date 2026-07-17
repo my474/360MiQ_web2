@@ -14,10 +14,11 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.1.0';
+  var VERSION = '0.2.0';
   var MAX_SOURCE_LENGTH = 120000;
   var MAX_PLOTS = 64;
   var MAX_LOOPS = 1000;
+  var MAX_FUNCTION_DEPTH = 32;
 
   function PineError(message, line, column) {
     this.name = 'PineError';
@@ -196,6 +197,8 @@
 
   Parser.prototype.parseStatement = function () {
     var token = this.current();
+    var functionDeclaration = this.parseFunctionDeclaration();
+    if (functionDeclaration) return functionDeclaration;
     if (token.type === 'identifier' && token.value === 'var') {
       this.take();
       if (this.current().type === 'identifier' && ['int', 'float', 'bool', 'string', 'color'].indexOf(this.current().value) !== -1) this.take();
@@ -220,6 +223,50 @@
       return { type: 'tuple-assignment', names: tuple, expression: this.parseExpression(0), persistent: tupleOperator.value === ':=', line: token.line };
     }
     return { type: 'expression', expression: this.parseExpression(0), line: token.line };
+  };
+
+  Parser.prototype.parseFunctionDeclaration = function () {
+    var start = this.index;
+    var name = this.current();
+    if (!name || name.type !== 'identifier' || this.peek().value !== '(') return null;
+    this.take();
+    if (!this.match('(')) {
+      this.index = start;
+      return null;
+    }
+    this.take();
+    var parameters = [];
+    while (!this.match(')')) {
+      var parameter = this.take();
+      if (!parameter || parameter.type !== 'identifier') {
+        this.index = start;
+        return null;
+      }
+      parameters.push(parameter.value);
+      if (this.match(',')) {
+        this.take();
+      } else if (!this.match(')')) {
+        this.index = start;
+        return null;
+      }
+    }
+    if (!this.match(')')) {
+      this.index = start;
+      return null;
+    }
+    this.take();
+    if (!this.match('=>')) {
+      this.index = start;
+      return null;
+    }
+    this.take();
+    return {
+      type: 'function',
+      name: name.value,
+      parameters: parameters,
+      expression: this.parseExpression(0),
+      line: name.line
+    };
   };
 
   Parser.prototype.parseTupleTarget = function () {
@@ -360,11 +407,20 @@
     }
   }
 
+  function hasEnvironmentValue(env, name) {
+    var scope = env;
+    while (scope && scope !== Object.prototype) {
+      if (Object.prototype.hasOwnProperty.call(scope, name)) return true;
+      scope = Object.getPrototypeOf ? Object.getPrototypeOf(scope) : null;
+    }
+    return false;
+  }
+
   function evaluate(node, env, index) {
     if (!node) return NaN;
     if (node.type === 'literal') return node.value;
     if (node.type === 'identifier') {
-      if (Object.prototype.hasOwnProperty.call(env, node.name)) return env[node.name];
+      if (hasEnvironmentValue(env, node.name)) return env[node.name];
       throw new PineError('Unknown identifier "' + node.name + '".', node.line, 1);
     }
     if (node.type === 'member') {
@@ -708,6 +764,65 @@
     env.plot = { style_line: 'line', style_histogram: 'histogram', style_columns: 'histogram', style_area: 'area' };
     env.hline = hlineFunction;
     env.na = naFunction;
+    var userFunctions = {};
+    var functionDepth = 0;
+    var seriesIdentifiers = { open: true, high: true, low: true, close: true, volume: true, hl2: true, hlc3: true, ohlc4: true };
+    function resolveFunctionSeries(value, barIndex) {
+      if (!(value instanceof PineSeries)) return value;
+      if (functionDepth >= MAX_FUNCTION_DEPTH) throw new PineError('Function call depth exceeded the maximum of ' + MAX_FUNCTION_DEPTH + '.', 1, 1);
+      functionDepth += 1;
+      try {
+        return resolveFunctionSeries(value.get(barIndex), barIndex);
+      } finally {
+        functionDepth -= 1;
+      }
+    }
+    function expressionUsesSeries(node) {
+      if (!node) return false;
+      if (node.type === 'identifier') return !!seriesIdentifiers[node.name];
+      if (node.type === 'member') return expressionUsesSeries(node.object);
+      if (node.type === 'index') return expressionUsesSeries(node.object) || expressionUsesSeries(node.index);
+      if (node.type === 'call') return expressionUsesSeries(node.callee) || (node.args || []).some(function (arg) { return expressionUsesSeries(arg.value); });
+      if (node.type === 'unary') return expressionUsesSeries(node.argument);
+      if (node.type === 'conditional') return expressionUsesSeries(node.test) || expressionUsesSeries(node.consequent) || expressionUsesSeries(node.alternate);
+      if (node.type === 'binary') return expressionUsesSeries(node.left) || expressionUsesSeries(node.right);
+      return false;
+    }
+    compiled.statements.forEach(function (statement) {
+      if (statement.type !== 'function') return;
+      if (Object.prototype.hasOwnProperty.call(userFunctions, statement.name)) {
+        throw new PineError('Duplicate function "' + statement.name + '".', statement.line, 1);
+      }
+      userFunctions[statement.name] = statement;
+    });
+    Object.keys(userFunctions).forEach(function (functionName) {
+      var definition = userFunctions[functionName];
+      if (Object.prototype.hasOwnProperty.call(env, functionName)) {
+        throw new PineError('Cannot redefine runtime identifier "' + functionName + '".', definition.line, 1);
+      }
+      env[functionName] = function (args, ignoredEnv, callIndex) {
+        var hasSeriesArgument = (args || []).some(function (value) { return value instanceof PineSeries; });
+        var shouldReturnSeries = hasSeriesArgument || expressionUsesSeries(definition.expression);
+        function invoke(barIndex) {
+          if (functionDepth >= MAX_FUNCTION_DEPTH) throw new PineError('Function call depth exceeded the maximum of ' + MAX_FUNCTION_DEPTH + '.', definition.line, 1);
+          functionDepth += 1;
+          var localEnv = Object.create(env);
+          definition.parameters.forEach(function (parameter, index) {
+            localEnv[parameter] = args && args.named && args.named[parameter] !== undefined ? args.named[parameter] : args && args[index];
+          });
+          try {
+            return evaluate(definition.expression, localEnv, barIndex);
+          } finally {
+            functionDepth -= 1;
+          }
+        }
+        if (!shouldReturnSeries) return invoke(callIndex);
+        return new PineSeries(function (barIndex) {
+          var value = invoke(barIndex);
+          return resolveFunctionSeries(value, barIndex);
+        }, functionName);
+      };
+    });
     compiled.statements.forEach(function (statement) {
       if (statement.type === 'declaration') {
         var declaration = statement.expression;
@@ -729,6 +844,7 @@
         statement.names.forEach(function (name, index) { env[name] = tupleValue[index]; });
         return;
       }
+      if (statement.type === 'function') return;
       if (statement.type === 'expression') {
         if (statement.expression.type === 'call' && statement.expression.callee.name === 'plot') {
           var plotArgs = argumentMap(statement.expression.args, env, 0);
@@ -772,6 +888,6 @@
     compile: compile,
     run: run,
     runInWorker: runInWorker,
-    limits: { maxSourceLength: MAX_SOURCE_LENGTH, maxPlots: MAX_PLOTS, maxLoops: MAX_LOOPS }
+    limits: { maxSourceLength: MAX_SOURCE_LENGTH, maxPlots: MAX_PLOTS, maxLoops: MAX_LOOPS, maxFunctionDepth: MAX_FUNCTION_DEPTH }
   };
 }));

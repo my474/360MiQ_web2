@@ -5208,7 +5208,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260717.2';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260717.3';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;

@@ -7,7 +7,7 @@ The Advanced Chart includes a restricted, browser-safe Pine-compatible runtime. 
 - `//@version` directives
 - `indicator()` and `study()` declarations
 - `open`, `high`, `low`, `close`, `volume`, `hl2`, `hlc3`, and `ohlc4`
-- assignments, `var` declarations, tuples, arithmetic, comparisons, boolean operators, and ternaries
+- assignments, `var` declarations, tuples, arithmetic, comparisons, boolean operators, ternaries, and single-expression user functions (`name(args) => expression`)
 - `plot()` and `hline()`
 - `input.int()`, `input.float()`, `input.bool()`, `input.string()`, `input.source()`, and `input.color()`
 - `ta.sma()`, `ta.ema()`, `ta.rma()`, `ta.wma()`, `ta.rsi()`, `ta.macd()`, `ta.highest()`, `ta.lowest()`, `ta.sum()`, `ta.stdev()`, `ta.change()`, `ta.roc()`, `ta.crossover()`, and `ta.crossunder()`
@@ -31,7 +31,7 @@ Open the `Pine Script` button in the chart toolbar to create or edit a script. E
 
 ## Deliberate limitations
 
-Strategies, orders, alerts, `request.security()`, user-defined functions, loops, labels, lines, boxes, and unrestricted drawing APIs are not enabled in this release. Unsupported syntax returns a line and column diagnostic instead of being silently interpreted.
+Strategies, orders, alerts, `request.security()`, multi-statement functions, loops, labels, lines, boxes, and unrestricted drawing APIs are not enabled in this release. Unsupported syntax returns a line and column diagnostic instead of being silently interpreted. User-function recursion is capped at 32 calls.
 
 The runtime has a dedicated Web Worker entry point at `pine-script-worker.js`.
 

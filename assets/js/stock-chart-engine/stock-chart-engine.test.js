@@ -365,6 +365,20 @@ source = input.source(close, "Source")
 plot(ta.sma(source, 3))`, data);
 assert.strictEqual(sourcePreview.inputs[0].type, 'source');
 assert.ok(sourcePreview.outputs.plot1.length > 0);
+const functionPreview = PineScriptRuntime.run(`indicator("Function test")
+smooth(source, length) => ta.sma(source, length)
+double(value) => value * 2
+plot(double(smooth(close, 3)), title="Double SMA")`, data);
+assert.strictEqual(functionPreview.metadata.title, 'Function test');
+assert.strictEqual(functionPreview.plots[0].title, 'Double SMA');
+assert.ok(functionPreview.outputs.plot1.length > 0);
+const indexedFunctionPreview = PineScriptRuntime.run(`indicator("Indexed function")
+previous(value) => value[1]
+plot(previous(close))`, data);
+assert.strictEqual(indexedFunctionPreview.outputs.plot1.length, data.length - 1);
+assert.throws(() => PineScriptRuntime.run(`indicator("Recursive function")
+loop(value) => loop(value)
+plot(loop(close))`, data), /Function call depth exceeded/);
 const pineIndicatorId = chart.addIndicator('PINE_SCRIPT', {
   placement: 'new',
   inputs: { code: pineSource, title: 'RSI Average' }
