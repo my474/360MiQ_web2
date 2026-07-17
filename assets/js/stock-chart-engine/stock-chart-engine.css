@@ -309,6 +309,11 @@
   visibility: visible;
 }
 
+.sce-recent-stocks-picker.is-left-anchored .sce-recent-stocks-menu {
+  left: 0;
+  right: auto;
+}
+
 .sce-recent-stocks-list {
   display: grid;
   gap: 3px;

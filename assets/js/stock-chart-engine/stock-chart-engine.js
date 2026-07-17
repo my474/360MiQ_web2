@@ -2501,6 +2501,9 @@
             self.focusIndicatorMenuSearch();
           }, 0);
         }
+        setTimeout(function () {
+          self.positionRecentStocksMenu();
+        }, 0);
       }
     }, true);
     this.toolbar.addEventListener('mousedown', function (event) {
@@ -5790,9 +5793,26 @@
     if (!this.document.visibleRange) this.fitContent();
     this.draw();
     this.positionDrawingToolMenus();
+    this.positionRecentStocksMenu();
     if (this.settingsPopup && !this.settingsPopup.hasAttribute('hidden') && String(this.settingsPopup.className || '').split(/\s+/).indexOf('sce-pine-window') !== -1) {
       this.positionPineScriptWindow();
     }
+  };
+
+  Chart.prototype.positionRecentStocksMenu = function () {
+    var picker = this.toolbar && this.toolbar.querySelector ? this.toolbar.querySelector('[data-sce-recent-stocks-picker]') : null;
+    if (!picker || !picker.getBoundingClientRect || !this.root || !this.root.getBoundingClientRect) return;
+    if (!picker.hasAttribute('open') || this.isMobileViewport()) {
+      picker.classList.remove('is-left-anchored');
+      return;
+    }
+    var pickerRect = picker.getBoundingClientRect();
+    var rootRect = this.root.getBoundingClientRect();
+    var menu = picker.querySelector('[data-sce-recent-stocks-menu]');
+    var menuRect = menu && menu.getBoundingClientRect ? menu.getBoundingClientRect() : null;
+    var menuWidth = Math.max(160, Math.min(250, menuRect && menuRect.width || 250));
+    var rightAlignedLeft = pickerRect.right - menuWidth;
+    picker.classList.toggle('is-left-anchored', rightAlignedLeft < rootRect.left + 8);
   };
 
   Chart.prototype.positionDrawingToolMenus = function () {
