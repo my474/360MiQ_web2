@@ -5599,13 +5599,23 @@
     var resizeTarget = closestAttribute(target, 'data-sce-pine-resize');
     var dragTarget = closestAttribute(target, 'data-sce-pine-drag-handle');
     var splitterTarget = closestAttribute(target, 'data-sce-pine-splitter');
-    if (splitterTarget && !this.pineWindowState.maximized && !this.pineWindowState.minimized && !this.pineWindowState.helpMinimized && !this.pineWindowState.helpMaximized) {
+    if (splitterTarget && !this.pineWindowState.maximized && !this.pineWindowState.minimized) {
       var splitMetrics = this.pinePaneSplitMetrics();
+      var startCodeHeight = splitMetrics.codeHeight;
+      if (this.pineWindowState.helpMinimized) startCodeHeight = splitMetrics.available - splitMetrics.minHelp;
+      if (this.pineWindowState.helpMaximized) startCodeHeight = splitMetrics.minCode;
+      if (this.pineWindowState.helpMinimized || this.pineWindowState.helpMaximized) {
+        this.pineWindowState.paneSplit = clamp(startCodeHeight / Math.max(1, splitMetrics.available), 0.2, 0.8);
+        this.pineWindowState.helpMinimized = false;
+        this.pineWindowState.helpMaximized = false;
+        this.pineWindowState.helpRestore = null;
+        this.renderPineWindowState();
+      }
       this.pineWindowInteraction = {
         type: 'pane-split',
         pointerId: event.pointerId == null ? null : event.pointerId,
         startY: event.clientY,
-        startCodeHeight: splitMetrics.codeHeight,
+        startCodeHeight: startCodeHeight,
         availableHeight: splitMetrics.available,
         minCode: splitMetrics.minCode,
         minHelp: splitMetrics.minHelp

@@ -644,6 +644,18 @@ chart.handlePineWindowPointerMove({ clientX: 240, clientY: 240, pointerId: 8, pr
 assert.strictEqual(chart.pineWindowState.width, pineWidthBeforeResize + 40);
 assert.strictEqual(chart.pineWindowState.height, 340);
 chart.handlePineWindowPointerUp({ pointerId: 8 });
+const pinePaneSplitter = new FakeElement('div');
+pinePaneSplitter.setAttribute('data-sce-pine-splitter', '');
+chart.settingsPopup.appendChild(pinePaneSplitter);
+chart.pineWindowState.helpMinimized = true;
+chart.pineWindowState.helpMaximized = false;
+chart.pineWindowState.helpRestore = { paneSplit: 0.52 };
+chart.settingsPopup.onpointerdown({ target: pinePaneSplitter, clientX: 200, clientY: 300, pointerId: 9, preventDefault() {} });
+assert.strictEqual(chart.pineWindowInteraction.type, 'pane-split');
+assert.strictEqual(chart.pineWindowState.helpMinimized, false);
+chart.handlePineWindowPointerMove({ clientX: 200, clientY: 330, pointerId: 9, preventDefault() {} });
+assert.ok(chart.pineWindowState.paneSplit > 0.2);
+chart.handlePineWindowPointerUp({ pointerId: 9 });
 chart.pineWindowState.left = 46;
 chart.pineWindowState.top = 32;
 chart.pineWindowState.width = 640;
