@@ -4770,7 +4770,7 @@
       return;
     }
     completions.innerHTML = matches.map(function (item) {
-      return '<button type="button" data-sce-pine-completion="' + escapeHtml(item.value) + '" role="option"><strong>' + escapeHtml(item.value) + '</strong><span>' + escapeHtml(item.label) + '</span></button>';
+      return '<button type="button" data-sce-pine-completion="' + escapeHtml(item.value) + '" role="option"><strong data-sce-pine-completion="' + escapeHtml(item.value) + '" title="Insert ' + escapeHtml(item.value) + '">' + escapeHtml(item.value) + '</strong><span>' + escapeHtml(item.label) + '</span></button>';
     }).join('');
     completions.hidden = false;
     this.updatePineEditorHelpLayout();
