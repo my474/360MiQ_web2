@@ -11153,7 +11153,8 @@
     if (definition) definition.status = definition.status || 'Reference';
   });
   [
-    'input.source', 'input.color', 'ta.rma', 'ta.wma', 'ta.highest', 'ta.lowest', 'ta.change', 'ta.roc', 'ta.sum', 'ta.stdev',
+    'input.int', 'input.float', 'input.bool', 'input.string', 'input.source', 'input.color', 'request.security',
+    'ta.rma', 'ta.wma', 'ta.highest', 'ta.lowest', 'ta.change', 'ta.roc', 'ta.sum', 'ta.stdev',
     'ta.crossover', 'ta.crossunder', 'math.pow', 'math.sqrt', 'math.log', 'math.log10', 'math.round',
     'math.floor', 'math.ceil', 'math.abs', 'math.max', 'math.min', 'color.new', 'color.rgb', 'alertcondition',
     'line.new', 'label.new', 'box.new'
