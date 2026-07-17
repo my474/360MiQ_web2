@@ -4004,7 +4004,7 @@
     var item = PINE_EDITOR_DOCUMENTATION[Number(index)];
     if (!detail || !item) return;
     detail.innerHTML = [
-      '<div class="sce-pine-doc-detail-heading"><strong>', escapeHtml(item.name), '</strong><span>', escapeHtml(item.type), '</span></div>',
+      '<div class="sce-pine-doc-detail-heading"><strong class="sce-pine-doc-insert" data-sce-pine-doc-insert="', escapeHtml(Number(index)), '" title="Insert ', escapeHtml(this.pineDocumentationInsertText(item)), ' into the editor">', escapeHtml(item.name), '</strong><span>', escapeHtml(item.type), '</span></div>',
       item.signature ? '<code class="sce-pine-doc-signature">' + escapeHtml(item.signature) + '</code>' : '',
       '<p>', escapeHtml(item.description), '</p>',
       item.parameters && item.parameters.length ? '<div class="sce-pine-doc-parameters">' + item.parameters.map(function (parameter) {
@@ -4012,6 +4012,31 @@
       }).join('') + '</div>' : '',
       item.example ? '<pre class="sce-pine-doc-example"><code>' + escapeHtml(item.example) + '</code></pre>' : ''
     ].join('');
+  };
+
+  Chart.prototype.pineDocumentationInsertText = function (item) {
+    if (!item) return '';
+    if (item.insertText) return String(item.insertText);
+    var name = String(item.name || '').trim();
+    if (name.indexOf('/') !== -1) return name.split('/')[0].trim();
+    if (item.category === 'namespace') return name + '.';
+    return name;
+  };
+
+  Chart.prototype.insertPineDocumentation = function (index) {
+    var item = PINE_EDITOR_DOCUMENTATION[Number(index)];
+    if (!item) return false;
+    var field = this.pineEditorField();
+    if (!field) return false;
+    var text = this.pineDocumentationInsertText(item);
+    if (!text) return false;
+    if (field.focus) field.focus();
+    var start = Number(field.selectionStart) || 0;
+    var end = Number(field.selectionEnd);
+    if (!Number.isFinite(end)) end = start;
+    var next = field.value.slice(0, start) + text + field.value.slice(end);
+    this.setPineEditorValue(next, start + text.length, start + text.length);
+    return true;
   };
 
   Chart.prototype.renderPineDocumentation = function (query, category) {
@@ -4045,8 +4070,9 @@
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
       var index = PINE_EDITOR_DOCUMENTATION.indexOf(item);
-      return '<button type="button" data-sce-pine-doc-index="' + index + '" role="option"><strong>' + escapeHtml(item.name) + '</strong><span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span></button>';
-    }).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
+      var insertText = this.pineDocumentationInsertText(item);
+      return '<button type="button" data-sce-pine-doc-index="' + index + '" role="option"><strong class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + index + '" title="Insert ' + escapeHtml(insertText) + ' into the editor">' + escapeHtml(item.name) + '</strong><span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span></button>';
+    }, this).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
     if (matches.length) this.showPineDocumentationEntry(PINE_EDITOR_DOCUMENTATION.indexOf(matches[0]));
     else {
       var detail = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
@@ -5231,6 +5257,7 @@
       var editorActionTarget = closestAttribute(event.target, 'data-sce-pine-editor-action');
       var documentationActionTarget = closestAttribute(event.target, 'data-sce-pine-doc-action');
       var documentationCategoryTarget = closestAttribute(event.target, 'data-sce-pine-doc-category');
+      var documentationInsertTarget = closestAttribute(event.target, 'data-sce-pine-doc-insert');
       var documentationTarget = closestAttribute(event.target, 'data-sce-pine-doc-index');
       var findActionTarget = closestAttribute(event.target, 'data-sce-pine-find-action');
       var commandTarget = closestAttribute(event.target, 'data-sce-pine-command');
@@ -5256,6 +5283,12 @@
         var documentationCategory = documentationCategoryTarget.getAttribute('data-sce-pine-doc-category');
         if (documentationFilter) documentationFilter.value = documentationCategory;
         self.renderPineDocumentation('', documentationCategory);
+        return;
+      }
+      if (documentationInsertTarget) {
+        if (event.preventDefault) event.preventDefault();
+        if (event.stopPropagation) event.stopPropagation();
+        self.insertPineDocumentation(documentationInsertTarget.getAttribute('data-sce-pine-doc-insert'));
         return;
       }
       if (documentationTarget) {

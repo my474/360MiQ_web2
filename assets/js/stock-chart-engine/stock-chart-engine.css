@@ -1436,6 +1436,19 @@
   white-space: nowrap;
 }
 
+.sce-pine-doc-insert {
+  cursor: copy;
+  text-decoration: underline dotted transparent;
+  text-underline-offset: 2px;
+  transition: color 140ms ease, text-decoration-color 140ms ease;
+}
+
+.sce-pine-doc-insert:hover,
+.sce-pine-doc-insert:focus {
+  color: #2563eb;
+  text-decoration-color: currentColor;
+}
+
 .sce-pine-docs-detail {
   color: var(--sce-muted);
   padding: 9px;
