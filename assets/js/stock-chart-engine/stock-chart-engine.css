@@ -124,6 +124,17 @@
   cursor: pointer;
 }
 
+.sce-toolbar .sce-pine-button {
+  border-color: #7c3aed;
+  color: #6d28d9;
+  font-weight: 700;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-toolbar .sce-pine-button {
+  border-color: #a78bfa;
+  color: #c4b5fd;
+}
+
 .sce-toolbar button:disabled,
 .sce-toolbar button[aria-disabled="true"] {
   cursor: default;
@@ -926,6 +937,34 @@
   min-height: 82px;
   padding: 7px;
   resize: vertical;
+}
+
+.sce-settings-popup .sce-pine-editor {
+  background: var(--sce-panel);
+  color: var(--sce-text);
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  min-height: 250px;
+  white-space: pre;
+}
+
+.sce-pine-status {
+  color: var(--sce-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  min-height: 30px;
+  white-space: pre-wrap;
+}
+
+.sce-settings-popup .sce-pine-checkbox {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.sce-settings-popup .sce-pine-checkbox input {
+  width: auto;
 }
 
 .sce-settings-popup input:focus,

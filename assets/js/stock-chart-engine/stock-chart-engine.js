@@ -1147,6 +1147,46 @@
     };
   }
 
+  function pineRuntime() {
+    if (typeof window !== 'undefined' && window.PineScriptRuntime) return window.PineScriptRuntime;
+    if (typeof self !== 'undefined' && self.PineScriptRuntime) return self.PineScriptRuntime;
+    return null;
+  }
+
+  function computePineScriptIndicator(context, indicator) {
+    var runtime = pineRuntime();
+    if (!runtime || typeof runtime.run !== 'function') {
+      return { outputs: {}, render: [], error: 'Pine Script runtime is not loaded.' };
+    }
+    var code = indicator.inputs && indicator.inputs.code;
+    try {
+      var result = runtime.run(code || '', context.bars, {
+        title: indicator.inputs && indicator.inputs.title,
+        inputs: indicator.inputs && indicator.inputs.pineValues || {}
+      });
+      var outputStyles = {};
+      (result.render || []).forEach(function (renderItem) {
+        if (renderItem.type === 'level') return;
+        outputStyles[renderItem.output] = {
+          color: renderItem.color || null,
+          lineWidth: renderItem.lineWidth || 2,
+          opacity: renderItem.opacity == null ? 1 : renderItem.opacity
+        };
+      });
+      indicator.runtimeMetadata = result.metadata || {};
+      indicator.runtimeInputs = result.inputs || [];
+      indicator.runtimeWarnings = result.warnings || [];
+      return {
+        outputs: result.outputs || {},
+        render: result.render || [],
+        styles: outputStyles,
+        error: null
+      };
+    } catch (error) {
+      return { outputs: {}, render: [], error: error && error.toString ? error.toString() : String(error) };
+    }
+  }
+
   var Indicators = {
     SMA: {
       id: 'SMA',
@@ -1290,6 +1330,26 @@
           return { time: bar.time, value: bar.volume, open: bar.open, close: bar.close };
         });
         return createIndicatorResult(indicator, { value: value }, [{ output: 'value', type: 'volume' }]);
+      }
+    },
+    PINE_SCRIPT: {
+      id: 'Pine Script',
+      name: 'Pine Script',
+      menuCode: 'PINE',
+      category: 'Custom',
+      defaultPanePolicy: 'new',
+      defaultInputs: {
+        title: 'Custom Pine',
+        pineValues: {},
+        code: '//@version=5\nindicator("Custom Pine", overlay=false)\nplot(ta.sma(close, 20), title="SMA 20")'
+      },
+      defaultStyles: {},
+      compute: function (context, indicator) {
+        var result = computePineScriptIndicator(context, indicator);
+        var indicatorResult = createIndicatorResult(indicator, result.outputs, result.render);
+        indicatorResult.error = result.error;
+        indicatorResult.styles = result.styles || {};
+        return indicatorResult;
       }
     },
     ATR: {
@@ -2214,6 +2274,7 @@
       '<div class="sce-indicator-empty" data-sce-indicator-empty hidden>No indicators found</div>',
       '</div>',
       '</details>',
+      '<button type="button" class="sce-pine-button" data-sce-action="pine-script" title="Open Pine Script editor">Pine Script</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-in" title="Zoom in" aria-label="Zoom in">', paneControlIconSvg('zoom-in'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-out" title="Zoom out" aria-label="Zoom out">', paneControlIconSvg('zoom-out'), '</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
@@ -2342,6 +2403,7 @@
       if (action === 'redo') self.redo();
       if (action === 'zoom-in') self.zoomIn(0.5);
       if (action === 'zoom-out') self.zoomOut(0.5);
+      if (action === 'pine-script') self.openPineScriptPopup();
       if (action === 'fit') {
         self.fitContent();
         self.draw();
@@ -3494,6 +3556,10 @@
 
   Chart.prototype.addIndicatorFromMenu = function (type) {
     if (!Indicators[type]) return null;
+    if (type === 'PINE_SCRIPT') {
+      this.openPineScriptPopup();
+      return null;
+    }
     return this.addIndicator(type, {});
   };
 
@@ -3677,6 +3743,118 @@
     return null;
   };
 
+  Chart.prototype.openPineScriptPopup = function (indicatorId, pointer) {
+    var indicator = indicatorId ? this.document.indicators.filter(function (item) {
+      return item.id === indicatorId && item.type === 'PINE_SCRIPT';
+    })[0] : null;
+    var code = indicator && indicator.inputs && indicator.inputs.code || Indicators.PINE_SCRIPT.defaultInputs.code;
+    var title = indicator && indicator.inputs && indicator.inputs.title || 'Custom Pine';
+    var inputControls = '';
+    var runtime = pineRuntime();
+    if (runtime && typeof runtime.run === 'function') {
+      try {
+        var preview = runtime.run(code, this.bars, {
+          title: title,
+          inputs: indicator && indicator.inputs && indicator.inputs.pineValues || {}
+        });
+        inputControls = (preview.inputs || []).map(function (input) {
+          var value = input.value == null ? '' : input.value;
+          if (input.type === 'bool') {
+            return '<label class="sce-pine-checkbox"><input type="checkbox" data-sce-pine-input="' + escapeHtml(input.id) + '"' + (value ? ' checked' : '') + '> ' + escapeHtml(input.title) + '</label>';
+          }
+          var inputType = input.type === 'color' ? 'color' : (input.type === 'int' || input.type === 'float' ? 'number' : 'text');
+          var constraints = input.type === 'int' || input.type === 'float'
+            ? ' min="' + escapeHtml(input.min == null ? '' : input.min) + '" max="' + escapeHtml(input.max == null ? '' : input.max) + '" step="' + escapeHtml(input.step == null ? (input.type === 'int' ? '1' : '0.01') : input.step) + '"'
+            : '';
+          return '<label>' + escapeHtml(input.title) + '<input type="' + inputType + '" data-sce-pine-input="' + escapeHtml(input.id) + '" value="' + escapeHtml(value) + '"' + constraints + '></label>';
+        }).join('');
+      } catch (error) {
+        inputControls = '<div class="sce-pine-status">Enter a valid script to see its inputs.</div>';
+      }
+    }
+    this.settingsPopup.innerHTML = [
+      '<div class="sce-settings-title">',
+      '<strong>Pine Script</strong>',
+      '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
+      '</div>',
+      '<label>Name<input type="text" data-sce-pine-field="title" value="', escapeHtml(title), '"></label>',
+      '<label>Script<textarea class="sce-pine-editor" data-sce-pine-field="code" spellcheck="false" autocapitalize="off" autocomplete="off">', escapeHtml(code), '</textarea></label>',
+      inputControls,
+      '<div class="sce-pine-status" data-sce-pine-status aria-live="polite">Supports indicator(), plot(), hline(), ta.*, math.*, and input.* controls.</div>',
+      '<div class="sce-settings-actions">',
+      indicator ? '<button type="button" data-sce-popup-action="remove">Remove</button>' : '',
+      '<button type="button" data-sce-popup-action="run-pine">Run</button>',
+      '</div>'
+    ].join('');
+    this.settingsPopup.removeAttribute('hidden');
+    this.settingsPopup.dataset.mode = 'pine-script';
+    if (indicator) this.settingsPopup.dataset.indicatorId = indicator.id;
+    else delete this.settingsPopup.dataset.indicatorId;
+    delete this.settingsPopup.dataset.drawingId;
+    delete this.settingsPopup.dataset.output;
+    this.bindPineScriptPopup();
+    this.positionSettingsPopup(pointer || { x: 22, y: 22 }, 420, 560);
+    var field = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    if (field && field.focus) field.focus();
+  };
+
+  Chart.prototype.bindPineScriptPopup = function () {
+    var self = this;
+    this.settingsPopup.onclick = function (event) {
+      var action = event.target && event.target.getAttribute('data-sce-popup-action');
+      if (!action) return;
+      if (action === 'close') self.closeIndicatorSettingsPopup();
+      if (action === 'run-pine') self.applyPineScriptPopup();
+      if (action === 'remove') {
+        self.removeIndicator(self.settingsPopup.dataset.indicatorId);
+        self.closeIndicatorSettingsPopup();
+      }
+    };
+    this.settingsPopup.onkeydown = function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        self.closeIndicatorSettingsPopup();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        self.applyPineScriptPopup();
+      }
+    };
+  };
+
+  Chart.prototype.applyPineScriptPopup = function () {
+    var runtime = pineRuntime();
+    var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
+    if (!runtime || !codeField) return;
+    try {
+      var pineValues = {};
+      var inputFields = this.settingsPopup.querySelectorAll ? this.settingsPopup.querySelectorAll('[data-sce-pine-input]') : [];
+      Array.prototype.forEach.call(inputFields, function (field) {
+        var key = field.getAttribute('data-sce-pine-input');
+        pineValues[key] = field.type === 'checkbox' ? !!field.checked : field.value;
+      });
+      var compiled = runtime.compile(codeField.value);
+      var preview = runtime.run(compiled, this.bars, { title: titleField && titleField.value, inputs: pineValues });
+      var indicatorId = this.settingsPopup.dataset.indicatorId;
+      if (indicatorId) {
+        this.updateIndicatorSettings(indicatorId, { inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues } });
+      } else {
+        indicatorId = this.addIndicator('PINE_SCRIPT', {
+          placement: preview.metadata.overlay ? 'source' : 'new',
+          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues }
+        });
+      }
+      if (status) status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
+      this.closeIndicatorSettingsPopup();
+      return indicatorId;
+    } catch (error) {
+      if (status) status.textContent = error && error.toString ? error.toString() : String(error);
+      return null;
+    }
+  };
+
   Chart.prototype.hitTestScaleMode = function (pointer) {
     for (var i = this.scaleHitZones.length - 1; i >= 0; i -= 1) {
       var zone = this.scaleHitZones[i];
@@ -3702,6 +3880,10 @@
       return item.id === legendHit.indicatorId;
     })[0];
     if (!indicator) return;
+    if (indicator.type === 'PINE_SCRIPT') {
+      this.openPineScriptPopup(indicator.id, pointer);
+      return;
+    }
     var definition = Indicators[indicator.type] || {};
     var output = legendHit.output || Object.keys(indicator.styles || { value: {} })[0];
     var style = indicator.styles && indicator.styles[output] || {};
@@ -3784,7 +3966,7 @@
         var output = renderItem.output || 'value';
         options.push({
           key: 'indicator:' + indicator.id + ':' + output,
-          label: indicatorLegendName(indicator, output),
+          label: indicatorLegendName(indicator, output, renderItem),
           source: { kind: 'indicator', indicatorId: indicator.id, output: output },
           paneId: indicator.paneId
         });
@@ -6034,14 +6216,18 @@
         var data = result.outputs[renderItem.output] || [];
         var valuePoint = nearestSeriesPoint(data, time);
         if (!valuePoint) return;
-        var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
+        var style = merge(defaultStyleForIndicator(theme, paletteIndex), {
+          color: renderItem.color || null,
+          lineWidth: renderItem.lineWidth || null,
+          opacity: renderItem.opacity == null ? null : renderItem.opacity
+        }, indicator.styles && indicator.styles[renderItem.output] || {});
         if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
         var color = renderItem.type === 'volume' ? self.volumeColorForPoint(valuePoint, theme) : style.color;
         items.push({
           indicatorId: indicator.id,
           output: renderItem.output,
           color: color,
-          label: indicatorLegendName(indicator, renderItem.output) + ' ' + formatNumber(valuePoint.value)
+          label: indicatorLegendName(indicator, renderItem.output, renderItem) + ' ' + formatNumber(valuePoint.value)
         });
         paletteIndex += 1;
       });
@@ -6145,7 +6331,11 @@
         var data = result.outputs[renderItem.output] || [];
         var valuePoint = lastVisibleSeriesPoint(data, visibleStart, time);
         if (!valuePoint || valuePoint.value == null) return;
-        var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
+        var style = merge(defaultStyleForIndicator(theme, paletteIndex), {
+          color: renderItem.color || null,
+          lineWidth: renderItem.lineWidth || null,
+          opacity: renderItem.opacity == null ? null : renderItem.opacity
+        }, indicator.styles && indicator.styles[renderItem.output] || {});
         var color = style.color || theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
         items.push({
           kind: 'indicator',
@@ -6406,7 +6596,11 @@
           return;
         }
         var data = result.outputs[renderItem.output] || [];
-        var style = merge(defaultStyleForIndicator(theme, paletteIndex), indicator.styles && indicator.styles[renderItem.output] || {});
+        var style = merge(defaultStyleForIndicator(theme, paletteIndex), {
+          color: renderItem.color || null,
+          lineWidth: renderItem.lineWidth || null,
+          opacity: renderItem.opacity == null ? null : renderItem.opacity
+        }, indicator.styles && indicator.styles[renderItem.output] || {});
         if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
         if (renderItem.type === 'histogram') self.drawHistogram(rect, range, theme, data, style, false);
         else if (renderItem.type === 'volume') self.drawHistogram(rect, range, theme, data, style, true);
@@ -8119,9 +8313,10 @@
     return null;
   }
 
-  function indicatorLegendName(indicator, output) {
+  function indicatorLegendName(indicator, output, renderItem) {
     var definition = Indicators[indicator.type];
     var inputs = indicator.inputs || {};
+    if (indicator.type === 'PINE_SCRIPT' && renderItem && renderItem.title) return String(renderItem.title);
     var name = definition ? definition.id : indicator.type;
     if (indicator.type === 'VOLUME') return 'VOLUME';
     if (indicator.type === 'RELATIVE_STRENGTH') return 'RS (' + (normalizeComparisonSymbol(inputs.benchmark) || 'SPY') + ')';

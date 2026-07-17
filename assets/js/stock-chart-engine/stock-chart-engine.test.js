@@ -1,5 +1,6 @@
 const assert = require('assert');
 const StockChartEngine = require('./stock-chart-engine.js');
+const PineScriptRuntime = require('./pine-script-runtime.js');
 
 class FakeClassList {
   constructor(element) {
@@ -235,6 +236,7 @@ function createFakeDom() {
   };
   global.window = {
     devicePixelRatio: 1,
+    PineScriptRuntime,
     addEventListener() {},
     removeEventListener() {}
   };
@@ -321,6 +323,34 @@ const chart = new StockChartEngine.Chart('#chart', {
   }
 });
 assert.strictEqual(chart.autosaveTimer, null);
+const pineSource = `//@version=5
+indicator("RSI Average", overlay=false)
+r = ta.rsi(close, 14)
+plot(r, title="RSI", color=color.orange)
+plot(ta.sma(r, 5), title="RSI SMA")
+hline(50, title="Mid")`;
+const pinePreview = PineScriptRuntime.run(pineSource, data);
+assert.strictEqual(pinePreview.metadata.title, 'RSI Average');
+assert.strictEqual(pinePreview.plots.length, 2);
+assert.ok(pinePreview.outputs.plot1.length > 0);
+assert.ok(pinePreview.render.some((item) => item.type === 'level' && item.value === 50));
+const inputPreview = PineScriptRuntime.run(`indicator("Input test")
+length = input.int(10, "Length", min=2, max=50)
+plot(ta.sma(close, length))`, data, { inputs: { length: 5 } });
+assert.strictEqual(inputPreview.inputs[0].id, 'length');
+assert.strictEqual(inputPreview.inputs[0].value, 5);
+const sourcePreview = PineScriptRuntime.run(`indicator("Source test")
+source = input.source(close, "Source")
+plot(ta.sma(source, 3))`, data);
+assert.strictEqual(sourcePreview.inputs[0].type, 'source');
+assert.ok(sourcePreview.outputs.plot1.length > 0);
+const pineIndicatorId = chart.addIndicator('PINE_SCRIPT', {
+  placement: 'new',
+  inputs: { code: pineSource, title: 'RSI Average' }
+});
+assert.ok(chart.indicatorResults[pineIndicatorId]);
+assert.strictEqual(chart.indicatorResults[pineIndicatorId].error, null);
+assert.ok(chart.indicatorResults[pineIndicatorId].outputs.plot1.length > 0);
 chart.emitChange('autosave-disabled-check', {});
 assert.strictEqual(chart.autosaveTimer, null);
 const toolbarOpenDetail = new FakeElement('details');

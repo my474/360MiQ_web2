@@ -199,43 +199,45 @@
     }
 
     function ensureEngineReady() {
-        if (window.StockChartEngine) return Promise.resolve(window.StockChartEngine);
+        if (window.StockChartEngine && window.PineScriptRuntime) return Promise.resolve(window.StockChartEngine);
         if (engineReadyPromise) return engineReadyPromise;
 
-        engineReadyPromise = new Promise(function (resolve, reject) {
-            var existing = document.querySelector('script[data-tool-stock-chart-engine]');
-            if (existing) {
-                existing.addEventListener('load', function () {
-                    if (window.StockChartEngine) resolve(window.StockChartEngine);
-                    else {
-                        engineReadyPromise = null;
-                        reject(new Error('StockChartEngine was not registered after script load.'));
-                    }
-                }, { once: true });
-                existing.addEventListener('error', function () {
-                    engineReadyPromise = null;
-                    reject(new Error('Unable to load stock-chart-engine.js.'));
-                }, { once: true });
-                return;
-            }
-
-            var script = document.createElement('script');
-            script.src = 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260716.4';
-            script.async = false;
-            script.setAttribute('data-tool-stock-chart-engine', 'true');
-            script.onload = function () {
-                if (window.StockChartEngine) resolve(window.StockChartEngine);
-                else {
-                    engineReadyPromise = null;
-                    reject(new Error('StockChartEngine was not registered after script load.'));
+        function loadScript(attribute, source, globalName) {
+            if (window[globalName]) return Promise.resolve();
+            return new Promise(function (resolve, reject) {
+                var existing = document.querySelector('script[' + attribute + ']');
+                if (existing) {
+                    existing.addEventListener('load', function () {
+                        if (window[globalName]) resolve();
+                        else reject(new Error(globalName + ' was not registered after script load.'));
+                    }, { once: true });
+                    existing.addEventListener('error', function () {
+                        reject(new Error('Unable to load ' + source + '.'));
+                    }, { once: true });
+                    return;
                 }
-            };
-            script.onerror = function () {
+                var script = document.createElement('script');
+                script.src = source;
+                script.async = false;
+                script.setAttribute(attribute.replace(/^data-/, 'data-'), 'true');
+                script.onload = function () {
+                    if (window[globalName]) resolve();
+                    else reject(new Error(globalName + ' was not registered after script load.'));
+                };
+                script.onerror = function () { reject(new Error('Unable to load ' + source + '.')); };
+                document.head.appendChild(script);
+            });
+        }
+
+        engineReadyPromise = loadScript('data-tool-stock-chart-runtime', 'assets/js/stock-chart-engine/pine-script-runtime.js?v=20260717.1', 'PineScriptRuntime')
+            .then(function () {
+                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260717.5', 'StockChartEngine');
+            })
+            .then(function () { return window.StockChartEngine; })
+            .catch(function (error) {
                 engineReadyPromise = null;
-                reject(new Error('Unable to load assets/js/stock-chart-engine/stock-chart-engine.js.'));
-            };
-            document.head.appendChild(script);
-        });
+                throw error;
+            });
 
         return engineReadyPromise;
     }
