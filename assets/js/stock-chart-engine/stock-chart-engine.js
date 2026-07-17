@@ -4546,6 +4546,14 @@
     if (commandSearch) commandSearch.oninput = function () { self.renderPineCommandPalette(commandSearch.value); };
     var findQuery = this.settingsPopup.querySelector('[data-sce-pine-find-query]');
     if (findQuery) findQuery.oninput = function () { self.selectPineFindMatch(1); };
+    var commandPalette = this.settingsPopup.querySelector('[data-sce-pine-command-palette]');
+    if (commandPalette) commandPalette.onfocusout = function (event) {
+      setTimeout(function () {
+        var relatedTarget = event && event.relatedTarget;
+        var activeElement = relatedTarget || (typeof document !== 'undefined' ? document.activeElement : null);
+        if (!activeElement || !commandPalette.contains(activeElement)) self.closePineCommandPalette();
+      }, 0);
+    };
     var findOptions = this.settingsPopup.querySelectorAll ? this.settingsPopup.querySelectorAll('[data-sce-pine-find-case], [data-sce-pine-find-word], [data-sce-pine-find-regex]') : [];
     Array.prototype.forEach.call(findOptions || [], function (input) {
       input.onchange = function () { self.selectPineFindMatch(1); };

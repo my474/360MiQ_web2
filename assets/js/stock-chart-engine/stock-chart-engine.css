@@ -1230,8 +1230,17 @@
 
 .sce-pine-completions button span,
 .sce-pine-command-list button kbd {
+  background: var(--sce-border);
+  border: 1px solid var(--sce-border);
+  border-radius: 3px;
   color: var(--sce-muted);
+  font: 11px Consolas, "SFMono-Regular", monospace;
   font-size: 11px;
+  padding: 2px 5px;
+}
+
+.sce-pine-command-list button kbd:empty {
+  display: none;
 }
 
 .sce-pine-findbar {
