@@ -31,7 +31,7 @@ hline(70, title="Overbought")
 hline(30, title="Oversold")
 ```
 
-Open the `Pine Script` button in the chart toolbar to create or edit a script. Existing Pine indicators can also be edited by clicking their legend. The editor provides Pine-aware syntax highlighting, line numbers, autocomplete with `Ctrl+Space` (or `Cmd+I`), context-sensitive signature help inside calls such as `plot(`, custom undo/redo, `Ctrl/Cmd+F` find, `Ctrl/Cmd+H` find and replace, `F1` or `Ctrl/Cmd+Shift+P` commands, word wrap with `Alt/Option+Z`, indentation with `Tab`, and font-size commands. `Ctrl/Cmd+Enter` runs the editor and `Escape` closes it.
+Open the `Pine Script` button in the chart toolbar to create or edit a script. Existing Pine indicators can also be edited by clicking their legend. The editor provides Pine-aware syntax highlighting, line numbers, autocomplete with `Ctrl+Space` (or `Cmd+I`), context-sensitive signature help inside calls such as `plot(`, custom undo/redo, `Ctrl/Cmd+F` find, `Ctrl/Cmd+H` find and replace, `F1` or `Ctrl/Cmd+Shift+P` commands, word wrap with `Alt/Option+Z`, indentation with `Tab`, and font-size commands. `Recent` lists the last eight scripts stored in this browser for quick loading; loading one updates the editor without running it until you press `Run`. `Ctrl/Cmd+Enter` runs the editor and `Escape` closes it.
 
 ## Deliberate limitations
 

@@ -465,9 +465,16 @@ assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="u
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="redo"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-findbar'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-command-palette'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="recent"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-recent-menu'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="load-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="save-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('accept=".pine,.txt,text/plain"'));
+const recentPineCode = 'indicator("Recent")\nplot(close)';
+chart.rememberRecentPineScript('Recent test', recentPineCode);
+const recentPineScripts = chart.getRecentPineScripts();
+assert.strictEqual(recentPineScripts[0].title, 'Recent test');
+assert.strictEqual(recentPineScripts[0].code, recentPineCode);
 const pineSignatureField = new FakeElement('textarea');
 pineSignatureField.setAttribute('data-sce-pine-field', 'code');
 pineSignatureField.value = 'plot(ta.sma(close, 20), ';

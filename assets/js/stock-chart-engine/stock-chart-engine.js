@@ -3859,6 +3859,10 @@
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="format" title="Format document">Format</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="toggle-wrap" title="Toggle word wrap" aria-pressed="false">Wrap</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="command-palette" title="Command palette (F1)">Commands</button>',
+      '<span class="sce-pine-recent-wrap" data-sce-pine-recent-wrap>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="recent" title="Recent Pine Scripts" aria-expanded="false">', paneControlIconSvg('recent'), 'Recent</button>',
+      '<div class="sce-pine-recent-menu" data-sce-pine-recent-menu role="listbox" hidden></div>',
+      '</span>',
       '</div>',
       '<label>Script</label>',
       '<div class="sce-pine-editor-shell" data-sce-pine-editor-shell>',
@@ -3906,6 +3910,7 @@
     else delete this.settingsPopup.dataset.indicatorId;
     delete this.settingsPopup.dataset.drawingId;
     delete this.settingsPopup.dataset.output;
+    if (indicator) this.rememberRecentPineScript(title, code);
     this.pineWindowState.minimized = false;
     this.bindPineScriptPopup();
     this.positionPineScriptWindow(pointer);
@@ -3938,6 +3943,102 @@
     try {
       if (typeof localStorage !== 'undefined') localStorage.setItem('sce-pine-editor-settings', JSON.stringify(this.pineEditorSettings));
     } catch (error) {}
+  };
+
+  Chart.prototype.getRecentPineScripts = function () {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      var raw = localStorage.getItem(PINE_RECENT_STORAGE_KEY);
+      var parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(function (item) {
+        return item && typeof item.code === 'string' && item.code.trim();
+      }).slice(0, PINE_RECENT_SCRIPT_LIMIT);
+    } catch (error) {
+      return [];
+    }
+  };
+
+  Chart.prototype.rememberRecentPineScript = function (title, code) {
+    code = String(code == null ? '' : code);
+    if (!code.trim() || typeof localStorage === 'undefined') return [];
+    var normalizedTitle = String(title || 'Custom Pine').trim() || 'Custom Pine';
+    var recent = this.getRecentPineScripts().filter(function (item) {
+      return item.code !== code;
+    });
+    recent.unshift({
+      title: normalizedTitle,
+      code: code,
+      updatedAt: Date.now()
+    });
+    recent = recent.slice(0, PINE_RECENT_SCRIPT_LIMIT);
+    try {
+      localStorage.setItem(PINE_RECENT_STORAGE_KEY, JSON.stringify(recent));
+    } catch (error) {}
+    this.renderRecentPineScripts();
+    return recent;
+  };
+
+  Chart.prototype.renderRecentPineScripts = function () {
+    var menu = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-recent-menu]');
+    if (!menu) return;
+    var recent = this.getRecentPineScripts();
+    if (!recent.length) {
+      menu.innerHTML = '<div class="sce-pine-recent-empty">No recent scripts</div>';
+      return;
+    }
+    menu.innerHTML = recent.map(function (item, index) {
+      var lineCount = String(item.code || '').split('\n').length;
+      return '<button type="button" data-sce-pine-recent-index="' + index + '" role="option"><strong>' + escapeHtml(item.title || 'Custom Pine') + '</strong><span>' + lineCount + ' line' + (lineCount === 1 ? '' : 's') + '</span></button>';
+    }).join('');
+  };
+
+  Chart.prototype.openRecentPineScripts = function () {
+    var menu = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-recent-menu]');
+    var button = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-editor-action="recent"]');
+    if (!menu) return;
+    this.closePineCommandPalette();
+    if (!menu.hidden) {
+      menu.hidden = true;
+      if (button) button.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    this.renderRecentPineScripts();
+    menu.hidden = false;
+    if (button) button.setAttribute('aria-expanded', 'true');
+  };
+
+  Chart.prototype.closeRecentPineScripts = function () {
+    var menu = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-recent-menu]');
+    var button = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-editor-action="recent"]');
+    if (menu) menu.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+  };
+
+  Chart.prototype.loadRecentPineScript = function (index) {
+    var recent = this.getRecentPineScripts();
+    var item = recent[Number(index)];
+    if (!item || !this.settingsPopup) return false;
+    var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
+    if (!codeField) return false;
+    codeField.value = item.code;
+    if (titleField) titleField.value = item.title || 'Custom Pine';
+    this.refreshPineEditorView();
+    this.resetPineEditorHistory();
+    this.refreshPineScriptInputs();
+    this.hidePineCompletions();
+    this.hidePineSignatureHelp();
+    this.rememberRecentPineScript(item.title, item.code);
+    this.closeRecentPineScripts();
+    if (status) {
+      status.hidden = false;
+      status.textContent = 'Loaded recent script. Review it, then click Run.';
+    }
+    if (codeField.setSelectionRange) codeField.setSelectionRange(codeField.value.length, codeField.value.length);
+    if (codeField.focus) codeField.focus();
+    return true;
   };
 
   Chart.prototype.pineEditorField = function () {
@@ -4274,6 +4375,7 @@
       var fileInput = this.settingsPopup.querySelector('[data-sce-pine-file-input]');
       if (fileInput && fileInput.click) fileInput.click();
     }
+    if (commandId === 'recent') this.openRecentPineScripts();
     if (commandId === 'run') this.applyPineScriptPopup();
   };
 
@@ -4285,6 +4387,7 @@
     if (action === 'format') this.formatPineEditor();
     if (action === 'toggle-wrap') this.togglePineEditorWrap();
     if (action === 'command-palette') this.openPineCommandPalette();
+    if (action === 'recent') this.openRecentPineScripts();
   };
 
   Chart.prototype.insertPineCompletion = function (completion) {
@@ -4630,6 +4733,7 @@
       status.hidden = false;
       status.textContent = 'Saved ' + fileName + '.';
     }
+    this.rememberRecentPineScript(titleField && titleField.value, codeField.value);
     return true;
   };
 
@@ -4648,6 +4752,7 @@
       self.refreshPineEditorView();
       self.resetPineEditorHistory();
       self.refreshPineScriptInputs();
+      self.rememberRecentPineScript(titleField && titleField.value, codeField.value);
       if (status) {
         status.hidden = false;
         status.textContent = 'Loaded ' + String(file.name || 'Pine Script') + '. Review it, then click Run.';
@@ -4783,6 +4888,7 @@
       var editorActionTarget = closestAttribute(event.target, 'data-sce-pine-editor-action');
       var findActionTarget = closestAttribute(event.target, 'data-sce-pine-find-action');
       var commandTarget = closestAttribute(event.target, 'data-sce-pine-command');
+      var recentTarget = closestAttribute(event.target, 'data-sce-pine-recent-index');
       var completionTarget = closestAttribute(event.target, 'data-sce-pine-completion');
       var actionTarget = closestAttribute(event.target, 'data-sce-popup-action');
       var windowActionTarget = closestAttribute(event.target, 'data-sce-pine-window-action');
@@ -4805,6 +4911,11 @@
       if (commandTarget) {
         if (event.preventDefault) event.preventDefault();
         self.executePineEditorCommand(commandTarget.getAttribute('data-sce-pine-command'));
+        return;
+      }
+      if (recentTarget) {
+        if (event.preventDefault) event.preventDefault();
+        self.loadRecentPineScript(recentTarget.getAttribute('data-sce-pine-recent-index'));
         return;
       }
       if (completionTarget) {
@@ -4837,12 +4948,26 @@
       self.loadPineScriptFile(fileInput.files && fileInput.files[0]);
     };
     this.bindPineEditor();
+    var recentWrap = this.settingsPopup.querySelector('[data-sce-pine-recent-wrap]');
+    if (recentWrap) recentWrap.onfocusout = function (event) {
+      setTimeout(function () {
+        var relatedTarget = event && event.relatedTarget;
+        var activeElement = relatedTarget || (typeof document !== 'undefined' ? document.activeElement : null);
+        if (!activeElement || !recentWrap.contains(activeElement)) self.closeRecentPineScripts();
+      }, 0);
+    };
     this.settingsPopup.onkeydown = function (event) {
       if (event.key === 'Escape') {
         var palette = self.settingsPopup.querySelector('[data-sce-pine-command-palette]');
+        var recentMenu = self.settingsPopup.querySelector('[data-sce-pine-recent-menu]');
         var findbar = self.settingsPopup.querySelector('[data-sce-pine-findbar]');
         if (palette && !palette.hidden) {
           self.closePineCommandPalette();
+          event.preventDefault();
+          return;
+        }
+        if (recentMenu && !recentMenu.hidden) {
+          self.closeRecentPineScripts();
           event.preventDefault();
           return;
         }
@@ -4895,6 +5020,7 @@
         status.hidden = false;
         status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
       }
+      this.rememberRecentPineScript(titleField && titleField.value || preview.metadata.title, codeField.value);
       this.closeIndicatorSettingsPopup();
       return indicatorId;
     } catch (error) {
@@ -10286,6 +10412,8 @@
     { value: 'low', label: 'Low price series' },
     { value: 'volume', label: 'Volume series' }
   ];
+  var PINE_RECENT_STORAGE_KEY = 'sce-pine-recent-scripts';
+  var PINE_RECENT_SCRIPT_LIMIT = 8;
   var PINE_EDITOR_COMMANDS = [
     { id: 'undo', label: 'Undo', shortcut: 'Ctrl/Cmd+Z' },
     { id: 'redo', label: 'Redo', shortcut: 'Ctrl+Y / Cmd+Shift+Z' },
@@ -10298,6 +10426,7 @@
     { id: 'font-reset', label: 'Reset editor font size', shortcut: '' },
     { id: 'save', label: 'Save Pine Script to file', shortcut: 'Ctrl/Cmd+S' },
     { id: 'load', label: 'Load Pine Script from file', shortcut: '' },
+    { id: 'recent', label: 'Recent Pine Scripts', shortcut: '' },
     { id: 'run', label: 'Run script', shortcut: 'Ctrl/Cmd+Enter' }
   ];
 
