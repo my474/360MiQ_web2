@@ -943,6 +943,294 @@
   white-space: pre;
 }
 
+.sce-pine-editor-tools {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sce-pine-editor-tool,
+.sce-pine-editor-tool-text {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  color: var(--sce-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  height: 26px;
+  justify-content: center;
+  min-width: 26px;
+  padding: 0 7px;
+}
+
+.sce-pine-editor-tool svg {
+  height: 15px;
+  pointer-events: none;
+  width: 15px;
+}
+
+.sce-pine-editor-tool:hover,
+.sce-pine-editor-tool:focus,
+.sce-pine-editor-tool-text:hover,
+.sce-pine-editor-tool-text:focus,
+.sce-pine-editor-tool-text.is-active {
+  background: var(--sce-panel);
+  border-color: #2563eb;
+  outline: none;
+}
+
+.sce-pine-editor-tool:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.sce-pine-editor-tool-divider {
+  background: var(--sce-border);
+  height: 18px;
+  margin: 0 2px;
+  width: 1px;
+}
+
+.sce-pine-editor-shell {
+  --sce-pine-font-size: 13px;
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: var(--sce-pine-font-size);
+  line-height: 1.5;
+  min-height: 160px;
+  overflow: hidden;
+  position: relative;
+  resize: vertical;
+}
+
+.sce-pine-editor-gutter,
+.sce-pine-highlight,
+.sce-pine-editor-shell .sce-pine-editor {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.sce-pine-editor-gutter {
+  background: var(--sce-panel);
+  background: color-mix(in srgb, var(--sce-panel) 88%, var(--sce-border));
+  border-right: 1px solid var(--sce-border);
+  box-sizing: border-box;
+  color: var(--sce-muted);
+  inset: 0 auto 0 0;
+  overflow: hidden;
+  padding: 9px 7px 9px 5px;
+  position: absolute;
+  text-align: right;
+  width: 40px;
+  z-index: 3;
+}
+
+.sce-pine-editor-gutter span {
+  display: block;
+  height: 1.5em;
+  line-height: inherit;
+}
+
+.sce-pine-highlight {
+  box-sizing: border-box;
+  color: var(--sce-text);
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  padding: 9px 10px 9px 48px;
+  pointer-events: none;
+  position: absolute;
+  white-space: pre;
+  z-index: 1;
+}
+
+.sce-pine-highlight code {
+  font: inherit;
+}
+
+.sce-pine-editor-shell .sce-pine-editor {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  color: transparent;
+  caret-color: var(--sce-text);
+  inset: 0;
+  min-height: 0;
+  outline: none;
+  overflow: auto;
+  padding: 9px 10px 9px 48px;
+  position: absolute;
+  resize: none;
+  white-space: pre;
+  width: 100%;
+  z-index: 2;
+  -webkit-text-fill-color: transparent;
+}
+
+.sce-pine-editor-shell .sce-pine-editor::selection {
+  background: rgba(37, 99, 235, 0.28);
+}
+
+.sce-pine-editor-shell.is-word-wrapped .sce-pine-editor,
+.sce-pine-editor-shell.is-word-wrapped .sce-pine-highlight {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sce-pine-editor-shell:focus-within {
+  border-color: #2563eb;
+}
+
+.sce-pine-token-comment { color: #6b7280; }
+.sce-pine-token-string { color: #a16207; }
+.sce-pine-token-number { color: #0f766e; }
+.sce-pine-token-keyword { color: #7c3aed; font-weight: 700; }
+.sce-pine-token-constant { color: #b45309; }
+.sce-pine-token-namespace { color: #2563eb; font-weight: 700; }
+.sce-pine-token-function { color: #047857; }
+.sce-pine-token-operator { color: #be123c; }
+
+.sce-root[data-sce-theme="dark"] .sce-pine-token-comment { color: #94a3b8; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-string { color: #facc15; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-number { color: #5eead4; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-keyword { color: #c4b5fd; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-constant { color: #fdba74; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-namespace { color: #93c5fd; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-function { color: #6ee7b7; }
+.sce-root[data-sce-theme="dark"] .sce-pine-token-operator { color: #fda4af; }
+
+.sce-pine-completions,
+.sce-pine-command-palette {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+  color: var(--sce-text);
+  position: absolute;
+  z-index: 6;
+}
+
+.sce-pine-completions {
+  bottom: 10px;
+  left: 48px;
+  max-height: 190px;
+  max-width: calc(100% - 58px);
+  min-width: 220px;
+  overflow: auto;
+  right: 10px;
+}
+
+.sce-pine-completions button,
+.sce-pine-command-list button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--sce-text);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-height: 30px;
+  padding: 5px 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.sce-pine-completions button:hover,
+.sce-pine-completions button:focus,
+.sce-pine-command-list button:hover,
+.sce-pine-command-list button:focus {
+  background: rgba(37, 99, 235, 0.14);
+  outline: none;
+}
+
+.sce-pine-completions button span,
+.sce-pine-command-list button kbd {
+  color: var(--sce-muted);
+  font-size: 11px;
+}
+
+.sce-pine-findbar {
+  align-items: center;
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 5px;
+}
+
+.sce-pine-findbar-fields {
+  display: flex;
+  flex: 1 1 220px;
+  gap: 5px;
+  min-width: 180px;
+}
+
+.sce-pine-findbar input[type="search"],
+.sce-pine-findbar input[type="text"],
+.sce-pine-command-palette > input {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: var(--sce-text);
+  height: 26px;
+  min-width: 0;
+  padding: 0 7px;
+}
+
+.sce-pine-findbar-fields input {
+  width: 50%;
+}
+
+.sce-pine-find-option {
+  align-items: center;
+  display: inline-flex !important;
+  gap: 3px !important;
+  white-space: nowrap;
+}
+
+.sce-pine-find-option input {
+  height: auto !important;
+  width: auto !important;
+}
+
+.sce-pine-find-status {
+  color: var(--sce-muted);
+  font-size: 11px;
+  margin-left: auto;
+  min-width: 54px;
+  text-align: right;
+}
+
+.sce-pine-command-palette {
+  left: 48px;
+  max-width: calc(100% - 58px);
+  padding: 6px;
+  right: 10px;
+  top: 78px;
+}
+
+.sce-pine-command-palette > input {
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.sce-pine-command-list {
+  max-height: 260px;
+  overflow: auto;
+}
+
 .sce-pine-status {
   color: var(--sce-muted);
   font-size: 11px;
@@ -1041,9 +1329,13 @@
   margin-top: 2px;
 }
 
-.sce-pine-window .sce-pine-editor {
+.sce-pine-window .sce-pine-editor-shell {
   height: 220px;
   min-height: 140px;
+}
+
+.sce-pine-window .sce-pine-editor {
+  height: auto;
   resize: none;
 }
 

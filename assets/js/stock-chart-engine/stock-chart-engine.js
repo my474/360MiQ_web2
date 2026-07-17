@@ -2234,6 +2234,19 @@
       restore: null
     };
     this.pineWindowInteraction = null;
+    this.pineEditorSettings = { fontSize: 13, wordWrap: false, suggestions: true };
+    try {
+      var savedPineEditorSettings = typeof localStorage !== 'undefined' && localStorage.getItem('sce-pine-editor-settings');
+      if (savedPineEditorSettings) {
+        var parsedPineEditorSettings = JSON.parse(savedPineEditorSettings);
+        if (parsedPineEditorSettings && typeof parsedPineEditorSettings === 'object') {
+          this.pineEditorSettings.fontSize = clamp(Number(parsedPineEditorSettings.fontSize) || 13, 11, 20);
+          this.pineEditorSettings.wordWrap = !!parsedPineEditorSettings.wordWrap;
+          this.pineEditorSettings.suggestions = parsedPineEditorSettings.suggestions !== false;
+        }
+      }
+    } catch (error) {}
+    this.pineEditorHistory = null;
     this.pineWorker = null;
     this.pineWorkerRequests = {};
     this.pineWorkerSequence = 0;
@@ -3837,7 +3850,42 @@
       '</div>',
       '<div class="sce-pine-window-body">',
       '<label>Name<input type="text" data-sce-pine-field="title" value="', escapeHtml(title), '"></label>',
-      '<label>Script<textarea class="sce-pine-editor" data-sce-pine-field="code" spellcheck="false" autocapitalize="off" autocomplete="off">', escapeHtml(code), '</textarea></label>',
+      '<div class="sce-pine-editor-tools" data-sce-pine-editor-tools role="toolbar" aria-label="Pine editor tools">',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">', paneControlIconSvg('undo'), '</button>',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="redo" title="Redo (Ctrl+Y / Cmd+Shift+Z)" aria-label="Redo">', paneControlIconSvg('redo'), '</button>',
+      '<span class="sce-pine-editor-tool-divider" aria-hidden="true"></span>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="find" title="Find (Ctrl/Cmd+F)">Find</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="replace" title="Find and replace (Ctrl/Cmd+H)">Replace</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="format" title="Format document">Format</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="toggle-wrap" title="Toggle word wrap" aria-pressed="false">Wrap</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="command-palette" title="Command palette (F1)">Commands</button>',
+      '</div>',
+      '<label>Script</label>',
+      '<div class="sce-pine-editor-shell" data-sce-pine-editor-shell>',
+      '<div class="sce-pine-editor-gutter" data-sce-pine-gutter aria-hidden="true"></div>',
+      '<pre class="sce-pine-highlight" data-sce-pine-highlight aria-hidden="true"><code>', highlightPineScript(code), '</code></pre>',
+      '<textarea class="sce-pine-editor" data-sce-pine-field="code" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">', escapeHtml(code), '</textarea>',
+      '<div class="sce-pine-completions" data-sce-pine-completions role="listbox" hidden></div>',
+      '</div>',
+      '<div class="sce-pine-findbar" data-sce-pine-findbar hidden>',
+      '<div class="sce-pine-findbar-fields">',
+      '<input type="search" data-sce-pine-find-query placeholder="Find" aria-label="Find">',
+      '<input type="text" data-sce-pine-replace-query placeholder="Replace" aria-label="Replace" hidden>',
+      '</div>',
+      '<label class="sce-pine-find-option"><input type="checkbox" data-sce-pine-find-case> Match case</label>',
+      '<label class="sce-pine-find-option"><input type="checkbox" data-sce-pine-find-word> Whole word</label>',
+      '<label class="sce-pine-find-option"><input type="checkbox" data-sce-pine-find-regex> RegExp</label>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-find-action="previous" title="Previous match">Prev</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-find-action="next" title="Next match">Next</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-find-action="replace" hidden>Replace</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-find-action="replace-all" hidden>Replace all</button>',
+      '<span class="sce-pine-find-status" data-sce-pine-find-status aria-live="polite"></span>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-find-action="close" title="Close find">Close</button>',
+      '</div>',
+      '<div class="sce-pine-command-palette" data-sce-pine-command-palette hidden>',
+      '<input type="search" data-sce-pine-command-search placeholder="Search commands" aria-label="Search commands">',
+      '<div class="sce-pine-command-list" data-sce-pine-command-list role="listbox"></div>',
+      '</div>',
       '<div data-sce-pine-inputs>', inputControls, '</div>',
       '<div class="sce-pine-status" data-sce-pine-status aria-live="polite">Supports indicator(), plot(), hline(), ta.*, math.*, and input.* controls.</div>',
       '<div class="sce-settings-actions">',
@@ -3883,6 +3931,520 @@
       .replace(/[^a-z0-9._-]+/gi, '-')
       .replace(/^-+|-+$/g, '') || 'custom-pine';
     return /\.pine$/i.test(base) ? base : base + '.pine';
+  };
+
+  Chart.prototype.savePineEditorSettings = function () {
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.setItem('sce-pine-editor-settings', JSON.stringify(this.pineEditorSettings));
+    } catch (error) {}
+  };
+
+  Chart.prototype.pineEditorField = function () {
+    return this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+  };
+
+  Chart.prototype.resetPineEditorHistory = function () {
+    var field = this.pineEditorField();
+    if (!field) return;
+    this.pineEditorHistory = {
+      entries: [{ value: field.value, start: field.selectionStart || 0, end: field.selectionEnd || 0 }],
+      index: 0
+    };
+    this.updatePineEditorActions();
+  };
+
+  Chart.prototype.recordPineEditorHistory = function () {
+    var field = this.pineEditorField();
+    if (!field) return;
+    if (!this.pineEditorHistory) this.resetPineEditorHistory();
+    var history = this.pineEditorHistory;
+    var current = { value: field.value, start: field.selectionStart || 0, end: field.selectionEnd || 0 };
+    var previous = history.entries[history.index];
+    if (previous && previous.value === current.value && previous.start === current.start && previous.end === current.end) return;
+    history.entries = history.entries.slice(0, history.index + 1);
+    history.entries.push(current);
+    if (history.entries.length > 120) history.entries.shift();
+    history.index = history.entries.length - 1;
+    this.updatePineEditorActions();
+  };
+
+  Chart.prototype.setPineEditorSnapshot = function (snapshot) {
+    var field = this.pineEditorField();
+    if (!field || !snapshot) return;
+    field.value = snapshot.value;
+    if (field.setSelectionRange) field.setSelectionRange(snapshot.start, snapshot.end);
+    this.refreshPineEditorView();
+    this.refreshPineScriptInputs();
+    this.updatePineEditorActions();
+  };
+
+  Chart.prototype.undoPineEditor = function () {
+    if (!this.pineEditorHistory || this.pineEditorHistory.index <= 0) return false;
+    this.pineEditorHistory.index -= 1;
+    this.setPineEditorSnapshot(this.pineEditorHistory.entries[this.pineEditorHistory.index]);
+    return true;
+  };
+
+  Chart.prototype.redoPineEditor = function () {
+    if (!this.pineEditorHistory || this.pineEditorHistory.index >= this.pineEditorHistory.entries.length - 1) return false;
+    this.pineEditorHistory.index += 1;
+    this.setPineEditorSnapshot(this.pineEditorHistory.entries[this.pineEditorHistory.index]);
+    return true;
+  };
+
+  Chart.prototype.updatePineEditorActions = function () {
+    if (!this.settingsPopup || !this.pineEditorHistory) return;
+    var history = this.pineEditorHistory;
+    var undo = this.settingsPopup.querySelector('[data-sce-pine-editor-action="undo"]');
+    var redo = this.settingsPopup.querySelector('[data-sce-pine-editor-action="redo"]');
+    if (undo) undo.disabled = history.index <= 0;
+    if (redo) redo.disabled = history.index >= history.entries.length - 1;
+  };
+
+  Chart.prototype.applyPineEditorViewSettings = function () {
+    if (!this.settingsPopup) return;
+    var shell = this.settingsPopup.querySelector('[data-sce-pine-editor-shell]');
+    var wrapButton = this.settingsPopup.querySelector('[data-sce-pine-editor-action="toggle-wrap"]');
+    if (!shell) return;
+    shell.style.setProperty('--sce-pine-font-size', this.pineEditorSettings.fontSize + 'px');
+    shell.classList.toggle('is-word-wrapped', !!this.pineEditorSettings.wordWrap);
+    if (wrapButton) {
+      wrapButton.setAttribute('aria-pressed', this.pineEditorSettings.wordWrap ? 'true' : 'false');
+      wrapButton.classList.toggle('is-active', !!this.pineEditorSettings.wordWrap);
+    }
+  };
+
+  Chart.prototype.refreshPineEditorView = function () {
+    var field = this.pineEditorField();
+    if (!field || !this.settingsPopup) return;
+    var highlight = this.settingsPopup.querySelector('[data-sce-pine-highlight]');
+    var code = highlight && highlight.querySelector ? highlight.querySelector('code') : null;
+    var gutter = this.settingsPopup.querySelector('[data-sce-pine-gutter]');
+    if (code) code.innerHTML = highlightPineScript(field.value);
+    if (gutter) {
+      var lineCount = String(field.value || '').split('\n').length;
+      gutter.innerHTML = Array(lineCount + 1).join('<span></span>');
+      Array.prototype.forEach.call(gutter.children || [], function (line, index) {
+        line.textContent = String(index + 1);
+      });
+    }
+    this.syncPineEditorScroll();
+    this.applyPineEditorViewSettings();
+  };
+
+  Chart.prototype.syncPineEditorScroll = function () {
+    var field = this.pineEditorField();
+    if (!field || !this.settingsPopup) return;
+    var highlight = this.settingsPopup.querySelector('[data-sce-pine-highlight]');
+    var gutter = this.settingsPopup.querySelector('[data-sce-pine-gutter]');
+    if (highlight) {
+      highlight.scrollTop = field.scrollTop;
+      highlight.scrollLeft = field.scrollLeft;
+    }
+    if (gutter) gutter.scrollTop = field.scrollTop;
+  };
+
+  Chart.prototype.setPineEditorValue = function (value, start, end) {
+    var field = this.pineEditorField();
+    if (!field) return;
+    field.value = String(value == null ? '' : value);
+    var nextStart = start == null ? field.value.length : start;
+    var nextEnd = end == null ? nextStart : end;
+    if (field.setSelectionRange) field.setSelectionRange(nextStart, nextEnd);
+    this.refreshPineEditorView();
+    this.refreshPineScriptInputs();
+    this.recordPineEditorHistory();
+  };
+
+  Chart.prototype.togglePineEditorWrap = function () {
+    this.pineEditorSettings.wordWrap = !this.pineEditorSettings.wordWrap;
+    this.savePineEditorSettings();
+    this.applyPineEditorViewSettings();
+  };
+
+  Chart.prototype.changePineEditorFontSize = function (delta) {
+    this.pineEditorSettings.fontSize = clamp(this.pineEditorSettings.fontSize + delta, 11, 20);
+    this.savePineEditorSettings();
+    this.applyPineEditorViewSettings();
+  };
+
+  Chart.prototype.formatPineEditor = function () {
+    var field = this.pineEditorField();
+    if (!field) return;
+    var start = field.selectionStart || 0;
+    var end = field.selectionEnd || 0;
+    var source = field.value.replace(/\r\n?/g, '\n').split('\n').map(function (line) {
+      return line.replace(/[ \t]+$/g, '');
+    }).join('\n');
+    this.setPineEditorValue(source, Math.min(start, source.length), Math.min(end, source.length));
+    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
+    if (status) status.textContent = 'Formatted line endings and trailing whitespace.';
+  };
+
+  Chart.prototype.pineFindOptions = function () {
+    return {
+      query: (this.settingsPopup.querySelector('[data-sce-pine-find-query]') || {}).value || '',
+      caseSensitive: !!((this.settingsPopup.querySelector('[data-sce-pine-find-case]') || {}).checked),
+      wholeWord: !!((this.settingsPopup.querySelector('[data-sce-pine-find-word]') || {}).checked),
+      regex: !!((this.settingsPopup.querySelector('[data-sce-pine-find-regex]') || {}).checked)
+    };
+  };
+
+  Chart.prototype.pineFindRegex = function (options, global) {
+    var query = options.query;
+    if (!query) return null;
+    if (!options.regex) query = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (options.wholeWord) query = '\\b' + query + '\\b';
+    try {
+      return new RegExp(query, (options.caseSensitive ? '' : 'i') + (global ? 'g' : ''));
+    } catch (error) {
+      return null;
+    }
+  };
+
+  Chart.prototype.pineFindMatches = function () {
+    var field = this.pineEditorField();
+    var options = this.pineFindOptions();
+    var regex = this.pineFindRegex(options, true);
+    if (!field || !regex) return [];
+    var matches = [];
+    var match;
+    while ((match = regex.exec(field.value))) {
+      matches.push({ start: match.index, end: match.index + match[0].length, text: match[0] });
+      if (!match[0].length) regex.lastIndex += 1;
+    }
+    return matches;
+  };
+
+  Chart.prototype.updatePineFindStatus = function (matches, selectedIndex) {
+    var status = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-find-status]');
+    if (!status) return;
+    status.textContent = matches.length ? ((selectedIndex == null ? 0 : selectedIndex + 1) + ' of ' + matches.length) : 'No results';
+  };
+
+  Chart.prototype.selectPineFindMatch = function (direction) {
+    var field = this.pineEditorField();
+    if (!field) return false;
+    var matches = this.pineFindMatches();
+    if (!matches.length) {
+      this.updatePineFindStatus(matches);
+      return false;
+    }
+    var start = field.selectionStart || 0;
+    var end = field.selectionEnd || start;
+    var index = -1;
+    if (direction < 0) {
+      for (var i = matches.length - 1; i >= 0; i -= 1) {
+        if (matches[i].end < start || (matches[i].end === start && matches[i].start < start)) {
+          index = i;
+          break;
+        }
+      }
+      if (index === -1) index = matches.length - 1;
+    } else {
+      for (var j = 0; j < matches.length; j += 1) {
+        if (matches[j].start >= end) {
+          index = j;
+          break;
+        }
+      }
+      if (index === -1) index = 0;
+    }
+    var selected = matches[index];
+    if (field.focus) field.focus();
+    if (field.setSelectionRange) field.setSelectionRange(selected.start, selected.end);
+    this.updatePineFindStatus(matches, index);
+    return true;
+  };
+
+  Chart.prototype.openPineFindBar = function (replace) {
+    var bar = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-findbar]');
+    var query = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-find-query]');
+    var replaceQuery = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-replace-query]');
+    if (!bar || !query) return;
+    bar.hidden = false;
+    if (replaceQuery) {
+      replaceQuery.hidden = !replace;
+      replaceQuery.setAttribute('aria-hidden', replace ? 'false' : 'true');
+    }
+    var findActions = this.settingsPopup.querySelectorAll ? this.settingsPopup.querySelectorAll('[data-sce-pine-find-action]') : [];
+    Array.prototype.forEach.call(findActions || [], function (button) {
+      var action = button.getAttribute('data-sce-pine-find-action');
+      if (action === 'replace' || action === 'replace-all') button.hidden = !replace;
+    });
+    if (query.focus) query.focus();
+    this.selectPineFindMatch(1);
+  };
+
+  Chart.prototype.closePineFindBar = function () {
+    var bar = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-findbar]');
+    if (bar) bar.hidden = true;
+  };
+
+  Chart.prototype.replacePineEditorSelection = function () {
+    var field = this.pineEditorField();
+    if (!field) return false;
+    var options = this.pineFindOptions();
+    var replacementField = this.settingsPopup.querySelector('[data-sce-pine-replace-query]');
+    var replacement = replacementField && replacementField.value || '';
+    var start = field.selectionStart || 0;
+    var end = field.selectionEnd || start;
+    var selected = field.value.slice(start, end);
+    var regex = this.pineFindRegex(options, false);
+    if (!regex || !regex.test(selected)) {
+      this.selectPineFindMatch(1);
+      return false;
+    }
+    var replacementText = options.regex ? selected.replace(regex, replacement) : replacement;
+    this.setPineEditorValue(field.value.slice(0, start) + replacementText + field.value.slice(end), start, start + replacementText.length);
+    this.selectPineFindMatch(1);
+    return true;
+  };
+
+  Chart.prototype.replaceAllPineEditorMatches = function () {
+    var field = this.pineEditorField();
+    if (!field) return false;
+    var options = this.pineFindOptions();
+    var regex = this.pineFindRegex(options, true);
+    var replacementField = this.settingsPopup.querySelector('[data-sce-pine-replace-query]');
+    var replacement = replacementField && replacementField.value || '';
+    if (!regex) {
+      this.updatePineFindStatus([]);
+      return false;
+    }
+    var source = field.value;
+    var next = source.replace(regex, replacement);
+    if (next === source) {
+      this.updatePineFindStatus([]);
+      return false;
+    }
+    this.setPineEditorValue(next, 0, 0);
+    this.updatePineFindStatus([], null);
+    return true;
+  };
+
+  Chart.prototype.renderPineCommandPalette = function (query) {
+    var list = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-command-list]');
+    if (!list) return;
+    var normalized = String(query || '').toLowerCase();
+    list.innerHTML = PINE_EDITOR_COMMANDS.filter(function (command) {
+      return !normalized || (command.label + ' ' + command.shortcut).toLowerCase().indexOf(normalized) !== -1;
+    }).map(function (command) {
+      return '<button type="button" data-sce-pine-command="' + escapeHtml(command.id) + '" role="option"><span>' + escapeHtml(command.label) + '</span><kbd>' + escapeHtml(command.shortcut) + '</kbd></button>';
+    }).join('');
+  };
+
+  Chart.prototype.openPineCommandPalette = function () {
+    var palette = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-command-palette]');
+    var search = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-command-search]');
+    if (!palette || !search) return;
+    palette.hidden = false;
+    search.value = '';
+    this.renderPineCommandPalette('');
+    if (search.focus) search.focus();
+  };
+
+  Chart.prototype.closePineCommandPalette = function () {
+    var palette = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-command-palette]');
+    if (palette) palette.hidden = true;
+  };
+
+  Chart.prototype.executePineEditorCommand = function (commandId) {
+    this.closePineCommandPalette();
+    if (commandId === 'undo') this.undoPineEditor();
+    if (commandId === 'redo') this.redoPineEditor();
+    if (commandId === 'find') this.openPineFindBar(false);
+    if (commandId === 'replace') this.openPineFindBar(true);
+    if (commandId === 'format') this.formatPineEditor();
+    if (commandId === 'toggle-wrap') this.togglePineEditorWrap();
+    if (commandId === 'font-increase') this.changePineEditorFontSize(1);
+    if (commandId === 'font-decrease') this.changePineEditorFontSize(-1);
+    if (commandId === 'font-reset') {
+      this.pineEditorSettings.fontSize = 13;
+      this.savePineEditorSettings();
+      this.applyPineEditorViewSettings();
+    }
+    if (commandId === 'save') this.savePineScriptToFile();
+    if (commandId === 'load') {
+      var fileInput = this.settingsPopup.querySelector('[data-sce-pine-file-input]');
+      if (fileInput && fileInput.click) fileInput.click();
+    }
+    if (commandId === 'run') this.applyPineScriptPopup();
+  };
+
+  Chart.prototype.handlePineEditorAction = function (action) {
+    if (action === 'undo') this.undoPineEditor();
+    if (action === 'redo') this.redoPineEditor();
+    if (action === 'find') this.openPineFindBar(false);
+    if (action === 'replace') this.openPineFindBar(true);
+    if (action === 'format') this.formatPineEditor();
+    if (action === 'toggle-wrap') this.togglePineEditorWrap();
+    if (action === 'command-palette') this.openPineCommandPalette();
+  };
+
+  Chart.prototype.insertPineCompletion = function (completion) {
+    var field = this.pineEditorField();
+    if (!field) return;
+    var cursor = field.selectionStart || 0;
+    var before = field.value.slice(0, cursor);
+    var token = /[A-Za-z_][A-Za-z0-9_.]*$/.exec(before);
+    var start = token ? cursor - token[0].length : cursor;
+    var next = field.value.slice(0, start) + completion + field.value.slice(cursor);
+    this.setPineEditorValue(next, start + completion.length, start + completion.length);
+    this.hidePineCompletions();
+  };
+
+  Chart.prototype.hidePineCompletions = function () {
+    var completions = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-completions]');
+    if (completions) completions.hidden = true;
+  };
+
+  Chart.prototype.showPineCompletions = function (force) {
+    var field = this.pineEditorField();
+    var completions = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-completions]');
+    if (!field || !completions) return;
+    var cursor = field.selectionStart || 0;
+    var token = /[A-Za-z_][A-Za-z0-9_.]*$/.exec(field.value.slice(0, cursor));
+    var prefix = token ? token[0].toLowerCase() : '';
+    if (!force && (!this.pineEditorSettings.suggestions || prefix.length < 2)) {
+      this.hidePineCompletions();
+      return;
+    }
+    var matches = PINE_EDITOR_COMPLETIONS.filter(function (item) {
+      return !prefix || item.value.toLowerCase().indexOf(prefix) === 0 || item.label.toLowerCase().indexOf(prefix) === 0;
+    }).slice(0, 12);
+    if (!matches.length) {
+      this.hidePineCompletions();
+      return;
+    }
+    completions.innerHTML = matches.map(function (item) {
+      return '<button type="button" data-sce-pine-completion="' + escapeHtml(item.value) + '" role="option"><strong>' + escapeHtml(item.value) + '</strong><span>' + escapeHtml(item.label) + '</span></button>';
+    }).join('');
+    completions.hidden = false;
+  };
+
+  Chart.prototype.handlePineEditorKeydown = function (event) {
+    var field = this.pineEditorField();
+    if (!field) return;
+    var modifier = event.ctrlKey || event.metaKey;
+    var key = String(event.key || '').toLowerCase();
+    if (event.key === 'Escape') {
+      if (this.settingsPopup.querySelector('[data-sce-pine-command-palette]:not([hidden])')) {
+        this.closePineCommandPalette();
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      this.hidePineCompletions();
+      return;
+    }
+    if (modifier && key === 'z' && !event.shiftKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.undoPineEditor();
+      return;
+    }
+    if ((modifier && key === 'y') || (modifier && event.shiftKey && key === 'z')) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.redoPineEditor();
+      return;
+    }
+    if (modifier && key === 'f') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openPineFindBar(false);
+      return;
+    }
+    if (modifier && key === 'h') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openPineFindBar(true);
+      return;
+    }
+    if (modifier && key === 's') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.savePineScriptToFile();
+      return;
+    }
+    if (event.key === 'F1' || (modifier && event.shiftKey && key === 'p')) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openPineCommandPalette();
+      return;
+    }
+    if ((modifier && event.code === 'Space') || (event.metaKey && key === 'i')) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.showPineCompletions(true);
+      return;
+    }
+    if (event.altKey && key === 'z') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.togglePineEditorWrap();
+      return;
+    }
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      event.stopPropagation();
+      var start = field.selectionStart || 0;
+      var end = field.selectionEnd || start;
+      var source = field.value;
+      if (event.shiftKey) {
+        var lineStart = source.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+        var indentation = source.slice(lineStart, start).match(/^ {1,2}/);
+        if (indentation) this.setPineEditorValue(source.slice(0, lineStart) + source.slice(lineStart + indentation[0].length), start - indentation[0].length, Math.max(start - indentation[0].length, end - indentation[0].length));
+      } else {
+        this.setPineEditorValue(source.slice(0, start) + '  ' + source.slice(end), start + 2, start + 2);
+      }
+      return;
+    }
+    if (event.key === 'Enter' && !event.shiftKey) {
+      var currentLineStart = field.value.lastIndexOf('\n', Math.max(0, (field.selectionStart || 0) - 1)) + 1;
+      var currentLine = field.value.slice(currentLineStart, field.selectionStart || 0);
+      var indent = (currentLine.match(/^\s*/) || [''])[0];
+      if (/=>\s*$/.test(currentLine.trim())) indent += '  ';
+      if (indent) {
+        event.preventDefault();
+        event.stopPropagation();
+        var enterStart = field.selectionStart || 0;
+        var enterEnd = field.selectionEnd || enterStart;
+        this.setPineEditorValue(field.value.slice(0, enterStart) + '\n' + indent + field.value.slice(enterEnd), enterStart + 1 + indent.length, enterStart + 1 + indent.length);
+      }
+    }
+  };
+
+  Chart.prototype.bindPineEditor = function () {
+    var self = this;
+    var field = this.pineEditorField();
+    if (!field) return;
+    this.resetPineEditorHistory();
+    this.refreshPineEditorView();
+    field.oninput = function () {
+      self.refreshPineEditorView();
+      self.recordPineEditorHistory();
+      self.refreshPineScriptInputs();
+      self.showPineCompletions(false);
+    };
+    field.onscroll = function () { self.syncPineEditorScroll(); };
+    field.onkeydown = function (event) { self.handlePineEditorKeydown(event); };
+    field.oncontextmenu = function (event) {
+      if (event.preventDefault) event.preventDefault();
+      self.openPineCommandPalette();
+    };
+    field.onblur = function () {
+      setTimeout(function () { self.hidePineCompletions(); }, 120);
+    };
+    var commandSearch = this.settingsPopup.querySelector('[data-sce-pine-command-search]');
+    if (commandSearch) commandSearch.oninput = function () { self.renderPineCommandPalette(commandSearch.value); };
+    var findQuery = this.settingsPopup.querySelector('[data-sce-pine-find-query]');
+    if (findQuery) findQuery.oninput = function () { self.selectPineFindMatch(1); };
+    var findOptions = this.settingsPopup.querySelectorAll ? this.settingsPopup.querySelectorAll('[data-sce-pine-find-case], [data-sce-pine-find-word], [data-sce-pine-find-regex]') : [];
+    Array.prototype.forEach.call(findOptions || [], function (input) {
+      input.onchange = function () { self.selectPineFindMatch(1); };
+    });
   };
 
   Chart.prototype.refreshPineScriptInputs = function () {
@@ -3945,6 +4507,8 @@
       if (titleField && (!String(titleField.value || '').trim() || titleField.value === 'Custom Pine')) {
         titleField.value = String(file.name || 'Custom Pine').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim() || 'Custom Pine';
       }
+      self.refreshPineEditorView();
+      self.resetPineEditorHistory();
       self.refreshPineScriptInputs();
       if (status) status.textContent = 'Loaded ' + String(file.name || 'Pine Script') + '. Review it, then click Run.';
       return true;
@@ -4072,9 +4636,38 @@
   Chart.prototype.bindPineScriptPopup = function () {
     var self = this;
     this.settingsPopup.onclick = function (event) {
+      var editorActionTarget = closestAttribute(event.target, 'data-sce-pine-editor-action');
+      var findActionTarget = closestAttribute(event.target, 'data-sce-pine-find-action');
+      var commandTarget = closestAttribute(event.target, 'data-sce-pine-command');
+      var completionTarget = closestAttribute(event.target, 'data-sce-pine-completion');
       var actionTarget = closestAttribute(event.target, 'data-sce-popup-action');
       var windowActionTarget = closestAttribute(event.target, 'data-sce-pine-window-action');
       var action = actionTarget && actionTarget.getAttribute('data-sce-popup-action');
+      if (editorActionTarget) {
+        if (event.preventDefault) event.preventDefault();
+        self.handlePineEditorAction(editorActionTarget.getAttribute('data-sce-pine-editor-action'));
+        return;
+      }
+      if (findActionTarget) {
+        if (event.preventDefault) event.preventDefault();
+        var findAction = findActionTarget.getAttribute('data-sce-pine-find-action');
+        if (findAction === 'previous') self.selectPineFindMatch(-1);
+        if (findAction === 'next') self.selectPineFindMatch(1);
+        if (findAction === 'replace') self.replacePineEditorSelection();
+        if (findAction === 'replace-all') self.replaceAllPineEditorMatches();
+        if (findAction === 'close') self.closePineFindBar();
+        return;
+      }
+      if (commandTarget) {
+        if (event.preventDefault) event.preventDefault();
+        self.executePineEditorCommand(commandTarget.getAttribute('data-sce-pine-command'));
+        return;
+      }
+      if (completionTarget) {
+        if (event.preventDefault) event.preventDefault();
+        self.insertPineCompletion(completionTarget.getAttribute('data-sce-pine-completion'));
+        return;
+      }
       if (windowActionTarget) {
         self.setPineWindowAction(windowActionTarget.getAttribute('data-sce-pine-window-action'));
         return;
@@ -4099,8 +4692,21 @@
     if (fileInput) fileInput.onchange = function () {
       self.loadPineScriptFile(fileInput.files && fileInput.files[0]);
     };
+    this.bindPineEditor();
     this.settingsPopup.onkeydown = function (event) {
       if (event.key === 'Escape') {
+        var palette = self.settingsPopup.querySelector('[data-sce-pine-command-palette]');
+        var findbar = self.settingsPopup.querySelector('[data-sce-pine-findbar]');
+        if (palette && !palette.hidden) {
+          self.closePineCommandPalette();
+          event.preventDefault();
+          return;
+        }
+        if (findbar && !findbar.hidden && event.target !== self.pineEditorField()) {
+          self.closePineFindBar();
+          event.preventDefault();
+          return;
+        }
         event.preventDefault();
         self.closeIndicatorSettingsPopup();
       }
@@ -9255,6 +9861,134 @@
         return useSignedLog ? signedLogInverse(value) : Math.pow(10, value);
       }
     };
+  }
+
+  var PINE_EDITOR_KEYWORDS = {
+    'and': true, 'or': true, 'not': true, 'if': true, 'else': true, 'for': true, 'while': true,
+    'switch': true, 'break': true, 'continue': true, 'import': true, 'export': true, 'type': true,
+    'method': true, 'var': true, 'const': true, 'struct': true, 'enum': true
+  };
+  var PINE_EDITOR_CONSTANTS = {
+    'true': true, 'false': true, 'na': true, 'open': true, 'high': true, 'low': true, 'close': true,
+    'volume': true, 'time': true, 'bar_index': true
+  };
+  var PINE_EDITOR_NAMESPACES = {
+    'ta': true, 'math': true, 'input': true, 'request': true, 'color': true, 'str': true, 'array': true,
+    'matrix': true, 'map': true, 'strategy': true, 'syminfo': true, 'barstate': true, 'timeframe': true,
+    'chart': true, 'line': true, 'label': true, 'box': true, 'table': true
+  };
+  var PINE_EDITOR_COMPLETIONS = [
+    { value: 'indicator', label: 'Declare an indicator' },
+    { value: 'strategy', label: 'Declare a strategy' },
+    { value: 'library', label: 'Declare a library' },
+    { value: 'plot', label: 'Plot a series' },
+    { value: 'plotshape', label: 'Plot a shape' },
+    { value: 'plotchar', label: 'Plot a character' },
+    { value: 'hline', label: 'Plot a horizontal line' },
+    { value: 'bgcolor', label: 'Color the background' },
+    { value: 'fill', label: 'Fill between plots' },
+    { value: 'alertcondition', label: 'Create an alert condition' },
+    { value: 'ta.sma', label: 'Simple moving average' },
+    { value: 'ta.ema', label: 'Exponential moving average' },
+    { value: 'ta.rsi', label: 'Relative strength index' },
+    { value: 'ta.macd', label: 'Moving average convergence divergence' },
+    { value: 'ta.highest', label: 'Highest value' },
+    { value: 'ta.lowest', label: 'Lowest value' },
+    { value: 'math.abs', label: 'Absolute value' },
+    { value: 'math.max', label: 'Maximum value' },
+    { value: 'math.min', label: 'Minimum value' },
+    { value: 'input.int', label: 'Integer input' },
+    { value: 'input.float', label: 'Float input' },
+    { value: 'input.bool', label: 'Boolean input' },
+    { value: 'input.string', label: 'String input' },
+    { value: 'input.color', label: 'Color input' },
+    { value: 'request.security', label: 'Request another symbol or timeframe' },
+    { value: 'close', label: 'Closing price series' },
+    { value: 'open', label: 'Opening price series' },
+    { value: 'high', label: 'High price series' },
+    { value: 'low', label: 'Low price series' },
+    { value: 'volume', label: 'Volume series' }
+  ];
+  var PINE_EDITOR_COMMANDS = [
+    { id: 'undo', label: 'Undo', shortcut: 'Ctrl/Cmd+Z' },
+    { id: 'redo', label: 'Redo', shortcut: 'Ctrl+Y / Cmd+Shift+Z' },
+    { id: 'find', label: 'Find', shortcut: 'Ctrl/Cmd+F' },
+    { id: 'replace', label: 'Find and replace', shortcut: 'Ctrl/Cmd+H' },
+    { id: 'format', label: 'Format document', shortcut: '' },
+    { id: 'toggle-wrap', label: 'Toggle word wrap', shortcut: 'Alt/Option+Z' },
+    { id: 'font-increase', label: 'Increase editor font size', shortcut: '' },
+    { id: 'font-decrease', label: 'Decrease editor font size', shortcut: '' },
+    { id: 'font-reset', label: 'Reset editor font size', shortcut: '' },
+    { id: 'save', label: 'Save Pine Script to file', shortcut: 'Ctrl/Cmd+S' },
+    { id: 'load', label: 'Load Pine Script from file', shortcut: '' },
+    { id: 'run', label: 'Run script', shortcut: 'Ctrl/Cmd+Enter' }
+  ];
+
+  function highlightPineScript(source) {
+    var text = String(source == null ? '' : source);
+    var html = '';
+    var index = 0;
+    while (index < text.length) {
+      var char = text.charAt(index);
+      if (char === '\n') {
+        html += '\n';
+        index += 1;
+        continue;
+      }
+      if (/\s/.test(char)) {
+        var whitespaceStart = index;
+        while (index < text.length && /\s/.test(text.charAt(index)) && text.charAt(index) !== '\n') index += 1;
+        html += escapeHtml(text.slice(whitespaceStart, index));
+        continue;
+      }
+      if (char === '/' && text.charAt(index + 1) === '/') {
+        var commentEnd = text.indexOf('\n', index);
+        if (commentEnd === -1) commentEnd = text.length;
+        html += '<span class="sce-pine-token-comment">' + escapeHtml(text.slice(index, commentEnd)) + '</span>';
+        index = commentEnd;
+        continue;
+      }
+      if (char === '"' || char === "'") {
+        var quote = char;
+        var stringEnd = index + 1;
+        while (stringEnd < text.length) {
+          if (text.charAt(stringEnd) === '\\') stringEnd += 2;
+          else if (text.charAt(stringEnd) === quote) {
+            stringEnd += 1;
+            break;
+          } else stringEnd += 1;
+        }
+        html += '<span class="sce-pine-token-string">' + escapeHtml(text.slice(index, stringEnd)) + '</span>';
+        index = stringEnd;
+        continue;
+      }
+      var numberMatch = text.slice(index).match(/^(?:\d+\.\d*|\.\d+|\d+)/);
+      if (numberMatch) {
+        html += '<span class="sce-pine-token-number">' + escapeHtml(numberMatch[0]) + '</span>';
+        index += numberMatch[0].length;
+        continue;
+      }
+      var identifierMatch = text.slice(index).match(/^[A-Za-z_][A-Za-z0-9_]*/);
+      if (identifierMatch) {
+        var identifier = identifierMatch[0];
+        var lowerIdentifier = identifier.toLowerCase();
+        var lookahead = index + identifier.length;
+        while (/\s/.test(text.charAt(lookahead)) && text.charAt(lookahead) !== '\n') lookahead += 1;
+        var tokenClass = PINE_EDITOR_KEYWORDS[lowerIdentifier] ? 'keyword' : (PINE_EDITOR_CONSTANTS[lowerIdentifier] ? 'constant' : (PINE_EDITOR_NAMESPACES[lowerIdentifier] ? 'namespace' : (text.charAt(lookahead) === '(' ? 'function' : 'identifier')));
+        html += '<span class="sce-pine-token-' + tokenClass + '">' + escapeHtml(identifier) + '</span>';
+        index += identifier.length;
+        continue;
+      }
+      var operatorMatch = text.slice(index).match(/^(?:=>|:=|==|!=|<=|>=|\+=|-=|\*=|\/=|\+\+|--|&&|\|\||[+\-*\/%=<>!?:.,()[\]{}])/);
+      if (operatorMatch) {
+        html += '<span class="sce-pine-token-operator">' + escapeHtml(operatorMatch[0]) + '</span>';
+        index += operatorMatch[0].length;
+        continue;
+      }
+      html += escapeHtml(char);
+      index += 1;
+    }
+    return html || ' ';
   }
 
   function escapeHtml(value) {
