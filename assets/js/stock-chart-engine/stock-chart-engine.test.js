@@ -555,6 +555,43 @@ pineSignatureField.selectionStart = 0;
 pineSignatureField.selectionEnd = 0;
 assert.strictEqual(chart.insertPineDocumentation(plotDocumentationMatch[1]), true);
 assert.strictEqual(pineSignatureField.value, 'plot');
+const groupedPineDocumentationEntries = [
+  { category: 'keyword', query: 'and / or / not', token: 'and' },
+  { category: 'keyword', query: 'and / or / not', token: 'or' },
+  { category: 'keyword', query: 'and / or / not', token: 'not' },
+  { category: 'keyword', query: 'if / else', token: 'if' },
+  { category: 'keyword', query: 'if / else', token: 'else' },
+  { category: 'keyword', query: 'for / while', token: 'for' },
+  { category: 'keyword', query: 'for / while', token: 'while' },
+  { category: 'keyword', query: 'var / const', token: 'var' },
+  { category: 'keyword', query: 'var / const', token: 'const' },
+  { category: 'built-in', query: 'open / high / low / close / volume', token: 'open' },
+  { category: 'built-in', query: 'open / high / low / close / volume', token: 'high' },
+  { category: 'built-in', query: 'open / high / low / close / volume', token: 'low' },
+  { category: 'built-in', query: 'open / high / low / close / volume', token: 'close' },
+  { category: 'built-in', query: 'open / high / low / close / volume', token: 'volume' },
+  { category: 'built-in', query: 'time / bar_index', token: 'time' },
+  { category: 'built-in', query: 'time / bar_index', token: 'bar_index' },
+  { category: 'built-in', query: 'true / false / na', token: 'true' },
+  { category: 'built-in', query: 'true / false / na', token: 'false' },
+  { category: 'built-in', query: 'true / false / na', token: 'na' }
+];
+groupedPineDocumentationEntries.forEach(function (entry) {
+  pineDocsSearch.value = entry.query;
+  pineDocsFilter.value = entry.category;
+  chart.renderPineDocumentation(entry.query, entry.category);
+  const tokenPattern = new RegExp('data-sce-pine-doc-insert="(\\d+)" data-sce-pine-doc-insert-text="' + entry.token.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&') + '"');
+  const tokenMatch = pineDocsList.innerHTML.match(tokenPattern);
+  assert.ok(tokenMatch, 'Expected grouped documentation token: ' + entry.token);
+  pineSignatureField.value = '';
+  pineSignatureField.selectionStart = 0;
+  pineSignatureField.selectionEnd = 0;
+  const groupedToken = new FakeElement('span');
+  groupedToken.setAttribute('data-sce-pine-doc-insert', tokenMatch[1]);
+  groupedToken.setAttribute('data-sce-pine-doc-insert-text', entry.token);
+  chart.settingsPopup.onclick({ target: groupedToken, preventDefault() {}, stopPropagation() {} });
+  assert.strictEqual(pineSignatureField.value, entry.token);
+});
 const pineFileInput = new FakeElement('input');
 pineFileInput.setAttribute('data-sce-pine-file-input', '');
 pineFileInput.click = function () { pineFileInput.wasClicked = true; };

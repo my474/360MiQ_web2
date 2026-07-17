@@ -1372,7 +1372,8 @@
   padding: 3px;
 }
 
-.sce-pine-docs-list button {
+.sce-pine-docs-list button,
+.sce-pine-docs-list .sce-pine-doc-list-item {
   align-items: baseline;
   background: transparent;
   border: 0;
@@ -1388,9 +1389,15 @@
 }
 
 .sce-pine-docs-list button:hover,
-.sce-pine-docs-list button:focus {
+.sce-pine-docs-list button:focus,
+.sce-pine-docs-list .sce-pine-doc-list-item:hover,
+.sce-pine-docs-list .sce-pine-doc-list-item:focus {
   background: rgba(37, 99, 235, 0.14);
   outline: none;
+}
+
+.sce-pine-docs-list .sce-pine-doc-list-item {
+  cursor: pointer;
 }
 
 .sce-pine-docs-list button.sce-pine-doc-category {
@@ -1412,7 +1419,8 @@
   font-size: 10px;
 }
 
-.sce-pine-docs-list button strong {
+.sce-pine-docs-list button strong,
+.sce-pine-docs-list .sce-pine-doc-list-item strong {
   font-family: Consolas, "SFMono-Regular", monospace;
   font-size: 11px;
   overflow: hidden;
@@ -1421,12 +1429,14 @@
 }
 
 .sce-pine-docs-list button span,
+.sce-pine-docs-list .sce-pine-doc-list-item span,
 .sce-pine-doc-empty {
   color: var(--sce-muted);
   font-size: 10px;
 }
 
-.sce-pine-docs-list button .sce-pine-doc-type {
+.sce-pine-docs-list button .sce-pine-doc-type,
+.sce-pine-docs-list .sce-pine-doc-list-item .sce-pine-doc-type {
   background: rgba(37, 99, 235, 0.12);
   border: 1px solid var(--sce-border);
   border-radius: 999px;
@@ -1434,6 +1444,36 @@
   flex: 0 0 auto;
   padding: 2px 6px;
   white-space: nowrap;
+}
+
+.sce-pine-doc-name-group {
+  align-items: baseline;
+  display: inline-flex;
+  flex: 1 1 auto;
+  gap: 5px;
+  min-width: 0;
+}
+
+.sce-pine-doc-name-group .sce-pine-doc-insert {
+  color: var(--sce-text);
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sce-pine-doc-name-separator {
+  color: var(--sce-muted);
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 11px;
+}
+
+.sce-pine-doc-detail-heading button.sce-pine-doc-insert {
+  background: transparent;
+  border: 0;
+  color: var(--sce-text);
+  cursor: copy;
+  font: inherit;
+  padding: 0;
 }
 
 .sce-pine-doc-insert {
@@ -1454,7 +1494,9 @@
   padding: 9px;
 }
 
-.sce-pine-doc-detail-heading strong {
+.sce-pine-doc-detail-heading strong,
+.sce-pine-doc-detail-heading button,
+.sce-pine-doc-detail-heading .sce-pine-doc-name-group {
   color: var(--sce-text);
   font-family: Consolas, "SFMono-Regular", monospace;
   font-size: 13px;
