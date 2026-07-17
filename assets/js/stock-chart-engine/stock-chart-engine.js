@@ -4762,7 +4762,6 @@
     if (!this.settingsPopup) return false;
     var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
     var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
-    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
     if (!codeField || typeof document === 'undefined' || !document.createElement) return false;
     var fileName = this.pineScriptFileName(titleField && titleField.value);
     var BlobConstructor = typeof Blob !== 'undefined' ? Blob : (typeof window !== 'undefined' ? window.Blob : null);
@@ -4783,10 +4782,6 @@
     if (link.parentNode && link.parentNode.removeChild) link.parentNode.removeChild(link);
     if (objectUrl && urlApi.revokeObjectURL) {
       setTimeout(function () { urlApi.revokeObjectURL(objectUrl); }, 0);
-    }
-    if (status) {
-      status.hidden = false;
-      status.textContent = 'Saved ' + fileName + '.';
     }
     this.rememberRecentPineScript(titleField && titleField.value, codeField.value);
     return true;
@@ -5078,12 +5073,12 @@
           inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues }
         });
       }
+      if (indicatorId) this.settingsPopup.dataset.indicatorId = indicatorId;
       if (status) {
         status.hidden = false;
         status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
       }
       this.rememberRecentPineScript(titleField && titleField.value || preview.metadata.title, codeField.value);
-      this.closeIndicatorSettingsPopup();
       return indicatorId;
     } catch (error) {
       if (status) {

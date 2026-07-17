@@ -506,6 +506,28 @@ chart.handlePineEditorKeydown(openPineShortcutEvent);
 assert.strictEqual(openPineShortcutEvent.defaultPrevented, true);
 assert.strictEqual(openPineShortcutEvent.propagationStopped, true);
 assert.strictEqual(pineFileInput.wasClicked, true);
+pineSignatureField.value = 'indicator("Run test")\nplot(close)';
+const originalAddIndicator = chart.addIndicator;
+const originalUpdateIndicatorSettings = chart.updateIndicatorSettings;
+let pineAddCount = 0;
+let pineUpdateCount = 0;
+chart.addIndicator = function () {
+  pineAddCount += 1;
+  return 'pine-run-test';
+};
+chart.updateIndicatorSettings = function (indicatorId) {
+  pineUpdateCount += 1;
+  assert.strictEqual(indicatorId, 'pine-run-test');
+};
+chart.applyPineScriptPopup();
+assert.strictEqual(pineAddCount, 1);
+assert.strictEqual(pineUpdateCount, 0);
+assert.strictEqual(chart.settingsPopup.dataset.indicatorId, 'pine-run-test');
+chart.applyPineScriptPopup();
+assert.strictEqual(pineAddCount, 1);
+assert.strictEqual(pineUpdateCount, 1);
+chart.addIndicator = originalAddIndicator;
+chart.updateIndicatorSettings = originalUpdateIndicatorSettings;
 assert.strictEqual(chart.pineScriptFileName('My RSI Script'), 'My-RSI-Script.pine');
 assert.strictEqual(chart.pineScriptFileName('already.pine'), 'already.pine');
 assert.ok(parseInt(chart.settingsPopup.style.left, 10) >= chart.drawingRailWidth());
