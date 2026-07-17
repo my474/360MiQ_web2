@@ -1477,7 +1477,21 @@
 }
 
 .sce-pine-window-body > .sce-settings-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   margin-top: 2px;
+}
+
+.sce-pine-window .sce-settings-actions button {
+  align-items: center;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 12px;
+  height: 28px;
+  justify-content: center;
+  line-height: 1;
 }
 
 .sce-pine-window .sce-pine-editor-shell {
