@@ -472,6 +472,7 @@ assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="f
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="recent"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-recent-menu'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="load-pine"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('Load Pine Script from your device (Ctrl/Cmd+O)'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="save-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('accept=".pine,.txt,text/plain"'));
 const recentPineCode = 'indicator("Recent")\nplot(close)';
@@ -491,6 +492,20 @@ chart.showPineSignatureHelp();
 assert.strictEqual(pineSignatureHelp.hidden, false);
 assert.ok(pineSignatureHelp.innerHTML.includes('color'));
 assert.ok(pineSignatureHelp.innerHTML.includes('series'));
+const pineFileInput = new FakeElement('input');
+pineFileInput.setAttribute('data-sce-pine-file-input', '');
+pineFileInput.click = function () { pineFileInput.wasClicked = true; };
+chart.settingsPopup.appendChild(pineFileInput);
+const openPineShortcutEvent = {
+  key: 'o',
+  ctrlKey: true,
+  preventDefault() { this.defaultPrevented = true; },
+  stopPropagation() { this.propagationStopped = true; }
+};
+chart.handlePineEditorKeydown(openPineShortcutEvent);
+assert.strictEqual(openPineShortcutEvent.defaultPrevented, true);
+assert.strictEqual(openPineShortcutEvent.propagationStopped, true);
+assert.strictEqual(pineFileInput.wasClicked, true);
 assert.strictEqual(chart.pineScriptFileName('My RSI Script'), 'My-RSI-Script.pine');
 assert.strictEqual(chart.pineScriptFileName('already.pine'), 'already.pine');
 assert.ok(parseInt(chart.settingsPopup.style.left, 10) >= chart.drawingRailWidth());

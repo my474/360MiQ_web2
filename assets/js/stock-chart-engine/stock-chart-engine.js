@@ -3899,7 +3899,7 @@
       '<div class="sce-pine-status" data-sce-pine-status aria-live="polite" hidden></div>',
       '<div class="sce-settings-actions">',
       indicator ? '<button type="button" data-sce-popup-action="remove">Remove</button>' : '',
-      '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device">Load</button>',
+      '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device (Ctrl/Cmd+O)">Load</button>',
       '<button type="button" data-sce-popup-action="save-pine" title="Save Pine Script to your device (Ctrl/Cmd+S)">Save</button>',
       '<button type="button" data-sce-popup-action="run-pine" title="Run Pine Script (Ctrl/Cmd+Enter)">Run</button>',
       '</div>',
@@ -4638,6 +4638,12 @@
       this.savePineScriptToFile();
       return;
     }
+    if (modifier && key === 'o') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.openPineScriptFilePicker();
+      return;
+    }
     if (event.key === 'F1' || (modifier && event.shiftKey && key === 'p')) {
       event.preventDefault();
       event.stopPropagation();
@@ -4828,6 +4834,15 @@
     return Promise.resolve(fail(new Error('File reading is unavailable.')));
   };
 
+  Chart.prototype.openPineScriptFilePicker = function () {
+    if (!this.settingsPopup) return false;
+    var fileInput = this.settingsPopup.querySelector('[data-sce-pine-file-input]');
+    if (!fileInput || typeof fileInput.click !== 'function') return false;
+    fileInput.value = '';
+    fileInput.click();
+    return true;
+  };
+
   Chart.prototype.resetPineWindowPresentation = function () {
     if (!this.settingsPopup) return;
     if (String(this.settingsPopup.className || '').split(/\s+/).indexOf('sce-pine-window') !== -1) this.savePineWindowSettings();
@@ -4983,11 +4998,7 @@
       if (action === 'run-pine') self.applyPineScriptPopup();
       if (action === 'save-pine') self.savePineScriptToFile();
       if (action === 'load-pine') {
-        var fileInput = self.settingsPopup.querySelector('[data-sce-pine-file-input]');
-        if (fileInput) {
-          fileInput.value = '';
-          if (fileInput.click) fileInput.click();
-        }
+        self.openPineScriptFilePicker();
       }
       if (action === 'remove') {
         self.removeIndicator(self.settingsPopup.dataset.indicatorId);
