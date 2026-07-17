@@ -4095,7 +4095,8 @@
       var insertText = this.pineDocumentationInsertText(item);
       var nameHtml = this.pineDocumentationNameHtml(item, index, false);
       var rowTag = this.pineDocumentationInsertItems(item).length > 1 ? 'div' : 'button';
-      return '<' + rowTag + (rowTag === 'button' ? ' type="button"' : '') + ' data-sce-pine-doc-index="' + index + '" role="option"' + (rowTag === 'div' ? ' tabindex="0"' : '') + '>' + nameHtml + '<span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span></' + rowTag + '>';
+      var rowClass = rowTag === 'div' ? ' class="sce-pine-doc-list-item"' : '';
+      return '<' + rowTag + (rowTag === 'button' ? ' type="button"' : '') + rowClass + ' data-sce-pine-doc-index="' + index + '" role="option"' + (rowTag === 'div' ? ' tabindex="0"' : '') + '>' + nameHtml + '<span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span></' + rowTag + '>';
     }, this).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
     if (matches.length) this.showPineDocumentationEntry(PINE_EDITOR_DOCUMENTATION.indexOf(matches[0]));
     else {
@@ -11033,7 +11034,9 @@
     { name: 'open / high / low / close / volume', type: 'Built-in', category: 'built-in', signature: 'close', description: 'Built-in OHLCV series from the chart symbol.', example: 'plot(close)' },
     { name: 'time / bar_index', type: 'Built-in', category: 'built-in', signature: 'bar_index', description: 'Built-in bar timestamp and zero-based bar index series.' },
     { name: 'true / false / na', type: 'Built-in', category: 'built-in', signature: 'na', description: 'Boolean and missing-value constants.' }
-  ]).concat(Object.keys(PINE_EDITOR_KEYWORDS).map(function (name) {
+  ]).concat(Object.keys(PINE_EDITOR_KEYWORDS).filter(function (name) {
+    return ['and', 'or', 'not', 'if', 'else', 'for', 'while', 'var', 'const'].indexOf(name) === -1;
+  }).map(function (name) {
     return { name: name, type: 'Keyword', category: 'keyword', signature: name, description: 'Reserved Pine language word.' };
   })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
     return { name: name, type: 'Built-in', category: 'built-in', signature: name, description: 'Built-in Pine series or constant.' };
