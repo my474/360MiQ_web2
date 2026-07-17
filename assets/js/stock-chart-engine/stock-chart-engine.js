@@ -10822,6 +10822,17 @@
     'font': true, 'location': true, 'size': true, 'shape': true, 'text': true, 'xloc': true, 'yloc': true,
     'alert': true, 'session': true, 'scale': true
   };
+  // These names are exposed by the client runtime as objects or callable
+  // namespace members. The namespace badge describes availability of the
+  // container; individual entries still describe member-level coverage.
+  var PINE_EDITOR_RUNTIME_NAMESPACES = {
+    ta: true, math: true, input: true, request: true, color: true, str: true, array: true,
+    matrix: true, map: true, strategy: true, syminfo: true, barstate: true, timeframe: true,
+    chart: true, line: true, linefill: true, label: true, box: true, polyline: true,
+    table: true, ticker: true, runtime: true, log: true, display: true, format: true,
+    font: true, location: true, size: true, shape: true, text: true, xloc: true, yloc: true,
+    alert: true, session: true, scale: true
+  };
   var PINE_EDITOR_SIGNATURES = {
     'indicator': {
       signature: 'indicator(title, shorttitle, overlay, format, precision, scale, max_bars_back, timeframe, timeframe_gaps)',
@@ -11315,7 +11326,14 @@
   })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
     return { name: name, type: 'Built-in', category: 'built-in', signature: name, description: 'Built-in Pine series or constant.' };
   })).concat(Object.keys(PINE_EDITOR_NAMESPACES).map(function (name) {
-    return { name: name, type: 'Namespace', category: 'namespace', signature: name + '.*', description: 'Namespace containing related Pine functions and values.', status: 'Reference' };
+    return {
+      name: name,
+      type: 'Namespace',
+      category: 'namespace',
+      signature: name + '.*',
+      description: PINE_EDITOR_RUNTIME_NAMESPACES[name] ? 'Runtime namespace containing supported Pine functions or values.' : 'Reference namespace not exposed by the client runtime.',
+      status: PINE_EDITOR_RUNTIME_NAMESPACES[name] ? 'Supported' : 'Reference'
+    };
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
     return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {

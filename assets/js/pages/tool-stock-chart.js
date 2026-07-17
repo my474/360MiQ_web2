@@ -231,7 +231,7 @@
 
         engineReadyPromise = loadScript('data-tool-stock-chart-runtime', 'assets/js/stock-chart-engine/pine-script-runtime.js?v=20260718.5', 'PineScriptRuntime')
             .then(function () {
-                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260718.36', 'StockChartEngine');
+                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260718.37', 'StockChartEngine');
             })
             .then(function () { return window.StockChartEngine; })
             .catch(function (error) {

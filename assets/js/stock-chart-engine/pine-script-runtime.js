@@ -1971,6 +1971,7 @@
     env.xloc = { bar_index: 'bar_index', bar_time: 'bar_time' };
     env.yloc = { price: 'price', abovebar: 'abovebar', belowbar: 'belowbar' };
     env.extend = { none: 'none', left: 'left', right: 'right', both: 'both' };
+    env.font = { family_default: 'default', family_monospace: 'monospace' };
     env.format = { price: 'price', volume: 'volume', percent: 'percent', inherited: 'inherited' };
     env.scale = { left: 'left', right: 'right', none: 'none' };
     env.text = { align_left: 'left', align_center: 'center', align_right: 'right' };
