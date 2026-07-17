@@ -10424,10 +10424,7 @@
     { id: 'font-increase', label: 'Increase editor font size', shortcut: '' },
     { id: 'font-decrease', label: 'Decrease editor font size', shortcut: '' },
     { id: 'font-reset', label: 'Reset editor font size', shortcut: '' },
-    { id: 'save', label: 'Save Pine Script to file', shortcut: 'Ctrl/Cmd+S' },
-    { id: 'load', label: 'Load Pine Script from file', shortcut: '' },
-    { id: 'recent', label: 'Recent Pine Scripts', shortcut: '' },
-    { id: 'run', label: 'Run script', shortcut: 'Ctrl/Cmd+Enter' }
+    { id: 'recent', label: 'Recent Pine Scripts', shortcut: '' }
   ];
 
   function highlightPineScript(source) {
