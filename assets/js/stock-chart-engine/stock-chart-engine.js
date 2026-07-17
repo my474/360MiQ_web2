@@ -3865,6 +3865,7 @@
       '<div class="sce-pine-editor-gutter" data-sce-pine-gutter aria-hidden="true"></div>',
       '<pre class="sce-pine-highlight" data-sce-pine-highlight aria-hidden="true"><code>', highlightPineScript(code), '</code></pre>',
       '<textarea class="sce-pine-editor" data-sce-pine-field="code" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">', escapeHtml(code), '</textarea>',
+      '<div class="sce-pine-signature-help" data-sce-pine-signature-help hidden aria-live="polite"></div>',
       '<div class="sce-pine-completions" data-sce-pine-completions role="listbox" hidden></div>',
       '</div>',
       '<div class="sce-pine-findbar" data-sce-pine-findbar hidden>',
@@ -3887,7 +3888,7 @@
       '<div class="sce-pine-command-list" data-sce-pine-command-list role="listbox"></div>',
       '</div>',
       '<div data-sce-pine-inputs>', inputControls, '</div>',
-      '<div class="sce-pine-status" data-sce-pine-status aria-live="polite">Supports indicator(), plot(), hline(), ta.*, math.*, and input.* controls.</div>',
+      '<div class="sce-pine-status" data-sce-pine-status aria-live="polite" hidden></div>',
       '<div class="sce-settings-actions">',
       indicator ? '<button type="button" data-sce-popup-action="remove">Remove</button>' : '',
       '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device">Load</button>',
@@ -4054,6 +4055,7 @@
     this.refreshPineEditorView();
     this.refreshPineScriptInputs();
     this.recordPineEditorHistory();
+    this.showPineSignatureHelp();
   };
 
   Chart.prototype.togglePineEditorWrap = function () {
@@ -4078,7 +4080,10 @@
     }).join('\n');
     this.setPineEditorValue(source, Math.min(start, source.length), Math.min(end, source.length));
     var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
-    if (status) status.textContent = 'Formatted line endings and trailing whitespace.';
+    if (status) {
+      status.hidden = false;
+      status.textContent = 'Formatted line endings and trailing whitespace.';
+    }
   };
 
   Chart.prototype.pineFindOptions = function () {
@@ -4299,6 +4304,96 @@
     if (completions) completions.hidden = true;
   };
 
+  Chart.prototype.hidePineSignatureHelp = function () {
+    var help = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-signature-help]');
+    if (help) help.hidden = true;
+  };
+
+  Chart.prototype.pineCurrentCall = function () {
+    var field = this.pineEditorField();
+    if (!field) return null;
+    var source = String(field.value || '');
+    var limit = Math.max(0, Math.min(Number(field.selectionStart) || 0, source.length));
+    var stack = [];
+    var quote = '';
+    var lineComment = false;
+    for (var i = 0; i < limit; i += 1) {
+      var character = source.charAt(i);
+      if (lineComment) {
+        if (character === '\n') lineComment = false;
+        continue;
+      }
+      if (quote) {
+        if (character === '\\') i += 1;
+        else if (character === quote) quote = '';
+        continue;
+      }
+      if (character === '/' && source.charAt(i + 1) === '/') {
+        lineComment = true;
+        i += 1;
+        continue;
+      }
+      if (character === '"' || character === "'") quote = character;
+      else if (character === '(') stack.push(i);
+      else if (character === ')' && stack.length) stack.pop();
+    }
+    if (!stack.length) return null;
+    var openIndex = stack[stack.length - 1];
+    var functionMatch = source.slice(0, openIndex).match(/([A-Za-z_][A-Za-z0-9_.]*)\s*$/);
+    if (!functionMatch) return null;
+    var name = functionMatch[1].toLowerCase();
+    var definition = PINE_EDITOR_SIGNATURES[name];
+    if (!definition) return null;
+    var parameterIndex = 0;
+    var nestedDepth = 0;
+    quote = '';
+    lineComment = false;
+    for (var j = openIndex + 1; j < limit; j += 1) {
+      var current = source.charAt(j);
+      if (lineComment) {
+        if (current === '\n') lineComment = false;
+        continue;
+      }
+      if (quote) {
+        if (current === '\\') j += 1;
+        else if (current === quote) quote = '';
+        continue;
+      }
+      if (current === '/' && source.charAt(j + 1) === '/') {
+        lineComment = true;
+        j += 1;
+        continue;
+      }
+      if (current === '"' || current === "'") quote = current;
+      else if (current === '(') nestedDepth += 1;
+      else if (current === ')' && nestedDepth > 0) nestedDepth -= 1;
+      else if (current === ',' && nestedDepth === 0) parameterIndex += 1;
+    }
+    return { definition: definition, name: name, parameterIndex: parameterIndex };
+  };
+
+  Chart.prototype.showPineSignatureHelp = function () {
+    var help = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-signature-help]');
+    if (!help) return;
+    var call = this.pineCurrentCall();
+    if (!call) {
+      help.hidden = true;
+      return;
+    }
+    var definition = call.definition;
+    var parameterIndex = Math.min(call.parameterIndex, definition.parameters.length - 1);
+    help.innerHTML = [
+      '<div class="sce-pine-signature-heading"><strong>', escapeHtml(call.name), '</strong><code>', escapeHtml(definition.signature), '</code></div>',
+      '<div class="sce-pine-signature-description">', escapeHtml(definition.description), '</div>',
+      '<div class="sce-pine-signature-parameters">',
+      definition.parameters.map(function (parameter, index) {
+        return '<div class="sce-pine-signature-parameter' + (index === parameterIndex ? ' is-active' : '') + '"><strong>' + escapeHtml(parameter.name) + '</strong><span>' + escapeHtml(parameter.description) + '</span></div>';
+      }).join(''),
+      '</div>'
+    ].join('');
+    help.hidden = false;
+  };
+
   Chart.prototype.showPineCompletions = function (force) {
     var field = this.pineEditorField();
     var completions = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-completions]');
@@ -4336,6 +4431,7 @@
         return;
       }
       this.hidePineCompletions();
+      this.hidePineSignatureHelp();
       return;
     }
     if (modifier && key === 'z' && !event.shiftKey) {
@@ -4427,15 +4523,24 @@
       self.recordPineEditorHistory();
       self.refreshPineScriptInputs();
       self.showPineCompletions(false);
+      self.showPineSignatureHelp();
     };
     field.onscroll = function () { self.syncPineEditorScroll(); };
     field.onkeydown = function (event) { self.handlePineEditorKeydown(event); };
+    field.onkeyup = function (event) {
+      if (!event || event.key !== 'Escape') self.showPineSignatureHelp();
+    };
+    field.onclick = function () { self.showPineSignatureHelp(); };
     field.oncontextmenu = function (event) {
       if (event.preventDefault) event.preventDefault();
       self.openPineCommandPalette();
+      self.hidePineSignatureHelp();
     };
     field.onblur = function () {
-      setTimeout(function () { self.hidePineCompletions(); }, 120);
+      setTimeout(function () {
+        self.hidePineCompletions();
+        self.hidePineSignatureHelp();
+      }, 120);
     };
     var commandSearch = this.settingsPopup.querySelector('[data-sce-pine-command-search]');
     if (commandSearch) commandSearch.oninput = function () { self.renderPineCommandPalette(commandSearch.value); };
@@ -4491,7 +4596,10 @@
     if (objectUrl && urlApi.revokeObjectURL) {
       setTimeout(function () { urlApi.revokeObjectURL(objectUrl); }, 0);
     }
-    if (status) status.textContent = 'Saved ' + fileName + '.';
+    if (status) {
+      status.hidden = false;
+      status.textContent = 'Saved ' + fileName + '.';
+    }
     return true;
   };
 
@@ -4510,12 +4618,18 @@
       self.refreshPineEditorView();
       self.resetPineEditorHistory();
       self.refreshPineScriptInputs();
-      if (status) status.textContent = 'Loaded ' + String(file.name || 'Pine Script') + '. Review it, then click Run.';
+      if (status) {
+        status.hidden = false;
+        status.textContent = 'Loaded ' + String(file.name || 'Pine Script') + '. Review it, then click Run.';
+      }
       return true;
     };
     var fail = function (error) {
       var status = self.settingsPopup && self.settingsPopup.querySelector('[data-sce-pine-status]');
-      if (status) status.textContent = 'Could not load that Pine Script file.';
+      if (status) {
+        status.hidden = false;
+        status.textContent = 'Could not load that Pine Script file.';
+      }
       return false;
     };
     if (typeof file.text === 'function') return Promise.resolve().then(function () { return file.text(); }).then(applyText).catch(fail);
@@ -4747,11 +4861,17 @@
           inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues }
         });
       }
-      if (status) status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
+      if (status) {
+        status.hidden = false;
+        status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
+      }
       this.closeIndicatorSettingsPopup();
       return indicatorId;
     } catch (error) {
-      if (status) status.textContent = error && error.toString ? error.toString() : String(error);
+      if (status) {
+        status.hidden = false;
+        status.textContent = error && error.toString ? error.toString() : String(error);
+      }
       return null;
     }
   };
@@ -9876,6 +9996,233 @@
     'ta': true, 'math': true, 'input': true, 'request': true, 'color': true, 'str': true, 'array': true,
     'matrix': true, 'map': true, 'strategy': true, 'syminfo': true, 'barstate': true, 'timeframe': true,
     'chart': true, 'line': true, 'label': true, 'box': true, 'table': true
+  };
+  var PINE_EDITOR_SIGNATURES = {
+    'indicator': {
+      signature: 'indicator(title, shorttitle, overlay, format, precision, scale, max_bars_back, timeframe, timeframe_gaps)',
+      description: 'Declares an indicator and controls where and how its plots are displayed.',
+      parameters: [
+        { name: 'title', description: 'Required display name for the indicator.' },
+        { name: 'shorttitle', description: 'Short name used in compact legends.' },
+        { name: 'overlay', description: 'true places plots over the price chart; false uses a separate pane.' },
+        { name: 'format', description: 'Output format such as price, volume, or percent.' },
+        { name: 'precision', description: 'Number of decimal places shown for values.' },
+        { name: 'scale', description: 'Choose the price scale used by the indicator.' },
+        { name: 'max_bars_back', description: 'Maximum historical bars reserved for calculations.' },
+        { name: 'timeframe', description: 'Optional timeframe used to calculate the script.' },
+        { name: 'timeframe_gaps', description: 'Controls gaps when requesting another timeframe.' }
+      ]
+    },
+    'plot': {
+      signature: 'plot(series, title, color, linewidth, style, trackprice, histbase, offset, join, editable, show_last, display, format, precision)',
+      description: 'Plots a numeric series and adds it to the chart legend.',
+      parameters: [
+        { name: 'series', description: 'Numeric series to draw.' },
+        { name: 'title', description: 'Name shown in the legend and settings.' },
+        { name: 'color', description: 'Line or histogram color.' },
+        { name: 'linewidth', description: 'Line thickness in pixels.' },
+        { name: 'style', description: 'Plot style such as line, histogram, columns, or stepline.' },
+        { name: 'trackprice', description: 'Extends the last value across the chart.' },
+        { name: 'histbase', description: 'Baseline used by histogram-style plots.' },
+        { name: 'offset', description: 'Shifts the plot by a number of bars.' },
+        { name: 'join', description: 'Connects points across gaps when supported.' },
+        { name: 'editable', description: 'Allows the plot style to be changed by the user.' },
+        { name: 'show_last', description: 'Limits the number of latest bars that are visible.' },
+        { name: 'display', description: 'Controls whether the plot appears in the pane or data window.' },
+        { name: 'format', description: 'Formats values as price, volume, percent, or automatic.' },
+        { name: 'precision', description: 'Overrides the displayed decimal precision.' }
+      ]
+    },
+    'hline': {
+      signature: 'hline(price, title, color, linestyle, linewidth, editable)',
+      description: 'Draws a horizontal reference level across the pane.',
+      parameters: [
+        { name: 'price', description: 'Fixed numeric level.' },
+        { name: 'title', description: 'Name shown for the reference line.' },
+        { name: 'color', description: 'Reference line color.' },
+        { name: 'linestyle', description: 'Solid, dashed, dotted, or another line style.' },
+        { name: 'linewidth', description: 'Reference line thickness in pixels.' },
+        { name: 'editable', description: 'Allows the line style to be changed by the user.' }
+      ]
+    },
+    'plotshape': {
+      signature: 'plotshape(series, title, style, location, color, offset, text, textcolor, editable, size, show_last, display)',
+      description: 'Plots a shape when a boolean or numeric condition is true.',
+      parameters: [
+        { name: 'series', description: 'Condition or series that controls visibility.' },
+        { name: 'title', description: 'Name shown in the legend.' },
+        { name: 'style', description: 'Shape style such as circle, triangle, label, or cross.' },
+        { name: 'location', description: 'Places the shape above, below, or at the bar.' },
+        { name: 'color', description: 'Shape fill or stroke color.' },
+        { name: 'offset', description: 'Shifts the shape by a number of bars.' },
+        { name: 'text', description: 'Optional text drawn inside or beside the shape.' },
+        { name: 'textcolor', description: 'Color of the optional shape text.' },
+        { name: 'editable', description: 'Allows the shape style to be changed by the user.' },
+        { name: 'size', description: 'Shape size.' },
+        { name: 'show_last', description: 'Limits the number of latest bars that are visible.' },
+        { name: 'display', description: 'Controls where the shape is shown.' }
+      ]
+    },
+    'plotchar': {
+      signature: 'plotchar(series, title, char, location, color, offset, text, textcolor, editable, size, show_last, display)',
+      description: 'Plots a character when a boolean or numeric condition is true.',
+      parameters: [
+        { name: 'series', description: 'Condition or series that controls visibility.' },
+        { name: 'title', description: 'Name shown in the legend.' },
+        { name: 'char', description: 'Character or symbol to draw.' },
+        { name: 'location', description: 'Places the character above, below, or at the bar.' },
+        { name: 'color', description: 'Character color.' },
+        { name: 'offset', description: 'Shifts the character by a number of bars.' },
+        { name: 'text', description: 'Optional text drawn beside the character.' },
+        { name: 'textcolor', description: 'Color of the optional text.' },
+        { name: 'editable', description: 'Allows the character style to be changed by the user.' },
+        { name: 'size', description: 'Character size.' },
+        { name: 'show_last', description: 'Limits the number of latest bars that are visible.' },
+        { name: 'display', description: 'Controls where the character is shown.' }
+      ]
+    },
+    'bgcolor': {
+      signature: 'bgcolor(color, offset, editable, show_last, title, display)',
+      description: 'Colors the background of chart bars when a condition is met.',
+      parameters: [
+        { name: 'color', description: 'Background color, including transparency.' },
+        { name: 'offset', description: 'Shifts the background by a number of bars.' },
+        { name: 'editable', description: 'Allows the background style to be changed by the user.' },
+        { name: 'show_last', description: 'Limits coloring to the latest bars.' },
+        { name: 'title', description: 'Name shown in the legend.' },
+        { name: 'display', description: 'Controls where the background is shown.' }
+      ]
+    },
+    'fill': {
+      signature: 'fill(plot1, plot2, color, title, editable, show_last, fillgaps)',
+      description: 'Fills the region between two plot or hline references.',
+      parameters: [
+        { name: 'plot1', description: 'First plot or horizontal-line reference.' },
+        { name: 'plot2', description: 'Second plot or horizontal-line reference.' },
+        { name: 'color', description: 'Fill color, including transparency.' },
+        { name: 'title', description: 'Name shown in the legend.' },
+        { name: 'editable', description: 'Allows the fill style to be changed by the user.' },
+        { name: 'show_last', description: 'Limits the fill to the latest bars.' },
+        { name: 'fillgaps', description: 'Fills across gaps in the source plots.' }
+      ]
+    },
+    'alertcondition': {
+      signature: 'alertcondition(condition, title, message)',
+      description: 'Defines a condition that can be selected in an alert.',
+      parameters: [
+        { name: 'condition', description: 'Boolean expression that triggers the alert.' },
+        { name: 'title', description: 'Alert condition name.' },
+        { name: 'message', description: 'Message included when the alert triggers.' }
+      ]
+    },
+    'ta.sma': {
+      signature: 'ta.sma(source, length)',
+      description: 'Returns the simple moving average of a series.',
+      parameters: [
+        { name: 'source', description: 'Series to average, such as close or an indicator output.' },
+        { name: 'length', description: 'Number of bars in the moving window.' }
+      ]
+    },
+    'ta.ema': {
+      signature: 'ta.ema(source, length)',
+      description: 'Returns the exponential moving average of a series.',
+      parameters: [
+        { name: 'source', description: 'Series to smooth, such as close or another indicator output.' },
+        { name: 'length', description: 'Number of bars in the moving window.' }
+      ]
+    },
+    'ta.rsi': {
+      signature: 'ta.rsi(source, length)',
+      description: 'Returns the relative strength index for a series.',
+      parameters: [
+        { name: 'source', description: 'Series used to calculate gains and losses.' },
+        { name: 'length', description: 'Number of bars in the RSI calculation.' }
+      ]
+    },
+    'ta.macd': {
+      signature: 'ta.macd(source, fastlen, slowlen, siglen)',
+      description: 'Returns MACD, signal, and histogram series.',
+      parameters: [
+        { name: 'source', description: 'Series used for the MACD calculation.' },
+        { name: 'fastlen', description: 'Length of the fast moving average.' },
+        { name: 'slowlen', description: 'Length of the slow moving average.' },
+        { name: 'siglen', description: 'Length of the signal moving average.' }
+      ]
+    },
+    'request.security': {
+      signature: 'request.security(symbol, timeframe, expression, gaps, lookahead, ignore_invalid_symbol)',
+      description: 'Evaluates an expression using another symbol or timeframe.',
+      parameters: [
+        { name: 'symbol', description: 'Ticker or symbol to request.' },
+        { name: 'timeframe', description: 'Requested timeframe, such as 1D or 1W.' },
+        { name: 'expression', description: 'Series expression evaluated on the requested data.' },
+        { name: 'gaps', description: 'Controls how missing requested bars are handled.' },
+        { name: 'lookahead', description: 'Controls whether future requested values are exposed.' },
+        { name: 'ignore_invalid_symbol', description: 'Suppresses an error for an unknown symbol.' }
+      ]
+    },
+    'input.int': {
+      signature: 'input.int(defval, title, minval, maxval, step, tooltip, inline, group)',
+      description: 'Creates an integer input in the indicator settings.',
+      parameters: [
+        { name: 'defval', description: 'Default integer value.' },
+        { name: 'title', description: 'Label shown beside the input.' },
+        { name: 'minval', description: 'Smallest allowed value.' },
+        { name: 'maxval', description: 'Largest allowed value.' },
+        { name: 'step', description: 'Increment used by the input control.' },
+        { name: 'tooltip', description: 'Help text shown on hover.' },
+        { name: 'inline', description: 'Places related inputs on the same row.' },
+        { name: 'group', description: 'Groups inputs under a shared heading.' }
+      ]
+    },
+    'input.float': {
+      signature: 'input.float(defval, title, minval, maxval, step, tooltip, inline, group)',
+      description: 'Creates a decimal-number input in the indicator settings.',
+      parameters: [
+        { name: 'defval', description: 'Default decimal value.' },
+        { name: 'title', description: 'Label shown beside the input.' },
+        { name: 'minval', description: 'Smallest allowed value.' },
+        { name: 'maxval', description: 'Largest allowed value.' },
+        { name: 'step', description: 'Increment used by the input control.' },
+        { name: 'tooltip', description: 'Help text shown on hover.' },
+        { name: 'inline', description: 'Places related inputs on the same row.' },
+        { name: 'group', description: 'Groups inputs under a shared heading.' }
+      ]
+    },
+    'input.bool': {
+      signature: 'input.bool(defval, title, tooltip, inline, group)',
+      description: 'Creates a checkbox input in the indicator settings.',
+      parameters: [
+        { name: 'defval', description: 'Default true or false value.' },
+        { name: 'title', description: 'Label shown beside the checkbox.' },
+        { name: 'tooltip', description: 'Help text shown on hover.' },
+        { name: 'inline', description: 'Places related inputs on the same row.' },
+        { name: 'group', description: 'Groups inputs under a shared heading.' }
+      ]
+    },
+    'input.string': {
+      signature: 'input.string(defval, title, options, tooltip, inline, group)',
+      description: 'Creates a text or option-list input in the indicator settings.',
+      parameters: [
+        { name: 'defval', description: 'Default text value.' },
+        { name: 'title', description: 'Label shown beside the input.' },
+        { name: 'options', description: 'Optional list of allowed values.' },
+        { name: 'tooltip', description: 'Help text shown on hover.' },
+        { name: 'inline', description: 'Places related inputs on the same row.' },
+        { name: 'group', description: 'Groups inputs under a shared heading.' }
+      ]
+    },
+    'input.color': {
+      signature: 'input.color(defval, title, tooltip, inline, group)',
+      description: 'Creates a color input in the indicator settings.',
+      parameters: [
+        { name: 'defval', description: 'Default color value.' },
+        { name: 'title', description: 'Label shown beside the color control.' },
+        { name: 'tooltip', description: 'Help text shown on hover.' },
+        { name: 'inline', description: 'Places related inputs on the same row.' },
+        { name: 'group', description: 'Groups inputs under a shared heading.' }
+      ]
+    }
   };
   var PINE_EDITOR_COMPLETIONS = [
     { value: 'indicator', label: 'Declare an indicator' },

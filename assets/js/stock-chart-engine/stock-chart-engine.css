@@ -1006,7 +1006,7 @@
   min-height: 160px;
   overflow: hidden;
   position: relative;
-  resize: vertical;
+  resize: none;
 }
 
 .sce-pine-editor-gutter,
@@ -1129,6 +1129,81 @@
   right: 10px;
 }
 
+.sce-pine-signature-help {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+  color: var(--sce-text);
+  left: 48px;
+  max-height: 190px;
+  max-width: calc(100% - 58px);
+  overflow: auto;
+  padding: 7px 9px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 5;
+}
+
+.sce-pine-signature-heading {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sce-pine-signature-heading strong {
+  color: var(--sce-text);
+  flex: 0 0 auto;
+}
+
+.sce-pine-signature-heading code {
+  color: var(--sce-muted);
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sce-pine-signature-description {
+  color: var(--sce-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.sce-pine-signature-parameters {
+  display: grid;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.sce-pine-signature-parameter {
+  align-items: baseline;
+  border-radius: 3px;
+  display: flex;
+  gap: 7px;
+  padding: 2px 4px;
+}
+
+.sce-pine-signature-parameter.is-active {
+  background: rgba(37, 99, 235, 0.14);
+}
+
+.sce-pine-signature-parameter strong {
+  color: var(--sce-text);
+  flex: 0 0 92px;
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 11px;
+}
+
+.sce-pine-signature-parameter span {
+  color: var(--sce-muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
 .sce-pine-completions button,
 .sce-pine-command-list button {
   align-items: center;
@@ -1239,6 +1314,10 @@
   white-space: pre-wrap;
 }
 
+.sce-pine-status[hidden] {
+  display: none;
+}
+
 .sce-pine-window [data-sce-pine-inputs] {
   display: grid;
   gap: 8px;
@@ -1317,7 +1396,8 @@
 }
 
 .sce-pine-window-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   gap: 8px;
   min-height: 0;
@@ -1330,7 +1410,8 @@
 }
 
 .sce-pine-window .sce-pine-editor-shell {
-  height: 220px;
+  flex: 1 1 220px;
+  height: auto;
   min-height: 140px;
 }
 

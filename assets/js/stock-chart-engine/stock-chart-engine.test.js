@@ -457,6 +457,9 @@ assert.ok(chart.settingsPopup.className.split(/\s+/).includes('sce-pine-window')
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-window-action="minimize"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-resize'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-highlight'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-signature-help'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-status aria-live="polite" hidden'));
+assert.strictEqual(chart.settingsPopup.innerHTML.includes('Supports indicator(), plot(), hline()'), false);
 assert.ok(chart.settingsPopup.innerHTML.includes('sce-pine-token-function'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="undo"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="redo"'));
@@ -465,6 +468,18 @@ assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-command-palette'
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="load-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="save-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('accept=".pine,.txt,text/plain"'));
+const pineSignatureField = new FakeElement('textarea');
+pineSignatureField.setAttribute('data-sce-pine-field', 'code');
+pineSignatureField.value = 'plot(ta.sma(close, 20), ';
+pineSignatureField.selectionStart = pineSignatureField.value.length;
+const pineSignatureHelp = new FakeElement('div');
+pineSignatureHelp.setAttribute('data-sce-pine-signature-help', '');
+chart.settingsPopup.appendChild(pineSignatureField);
+chart.settingsPopup.appendChild(pineSignatureHelp);
+chart.showPineSignatureHelp();
+assert.strictEqual(pineSignatureHelp.hidden, false);
+assert.ok(pineSignatureHelp.innerHTML.includes('color'));
+assert.ok(pineSignatureHelp.innerHTML.includes('series'));
 assert.strictEqual(chart.pineScriptFileName('My RSI Script'), 'My-RSI-Script.pine');
 assert.strictEqual(chart.pineScriptFileName('already.pine'), 'already.pine');
 assert.ok(parseInt(chart.settingsPopup.style.left, 10) >= chart.drawingRailWidth());
