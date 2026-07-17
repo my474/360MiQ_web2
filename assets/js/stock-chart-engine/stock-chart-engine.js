@@ -4004,7 +4004,7 @@
     var item = PINE_EDITOR_DOCUMENTATION[Number(index)];
     if (!detail || !item) return;
     detail.innerHTML = [
-      '<div class="sce-pine-doc-detail-heading">', this.pineDocumentationNameHtml(item, Number(index), true), '<span>', escapeHtml(item.type), '</span></div>',
+      '<div class="sce-pine-doc-detail-heading">', this.pineDocumentationNameHtml(item, Number(index), true), '<span>', escapeHtml(item.type), item.status ? '<em class="sce-pine-doc-status ' + (item.status === 'Supported' ? 'is-supported' : 'is-reference') + '">' + escapeHtml(item.status) + '</em>' : '', '</span></div>',
       item.signature ? '<code class="sce-pine-doc-signature">' + escapeHtml(item.signature) + '</code>' : '',
       '<p>', escapeHtml(item.description), '</p>',
       item.parameters && item.parameters.length ? '<div class="sce-pine-doc-parameters">' + item.parameters.map(function (parameter) {
@@ -4039,7 +4039,7 @@
       var tag = detail ? 'button type="button"' : 'strong';
       return '<' + tag + ' class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + escapeHtml(index) + '" title="Insert ' + escapeHtml(text) + ' into the editor">' + escapeHtml(item.name) + '</' + (detail ? 'button' : 'strong') + '>';
     }
-    return '<span class="sce-pine-doc-name-group">' + items.map(function (itemPart) {
+    return '<span class="sce-pine-doc-name-group" aria-label="' + escapeHtml(item.name) + '">' + items.map(function (itemPart) {
       var tag = detail ? 'button type="button"' : 'span role="button" tabindex="0"';
       return '<' + tag + ' class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + escapeHtml(index) + '" data-sce-pine-doc-insert-text="' + escapeHtml(itemPart.text) + '" title="Insert ' + escapeHtml(itemPart.text) + ' into the editor">' + escapeHtml(itemPart.label) + '</' + (detail ? 'button' : 'span') + '>';
     }).join('<span class="sce-pine-doc-name-separator" aria-hidden="true">/</span>') + '</span>';
@@ -4087,7 +4087,7 @@
         return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
       }).join('');
       var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
-      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, keyword, or description.</p><p>Entries reflect the Pine-compatible features currently supported by this chart.</p>';
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, keyword, or description.</p><p><strong>Supported</strong> entries run in this chart. <strong>Reference</strong> entries describe Pine v6 APIs that are cataloged for editor guidance but are not yet executable by the client runtime.</p>';
       return;
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
@@ -4096,7 +4096,7 @@
       var nameHtml = this.pineDocumentationNameHtml(item, index, false);
       var rowTag = this.pineDocumentationInsertItems(item).length > 1 ? 'div' : 'button';
       var rowClass = rowTag === 'div' ? ' class="sce-pine-doc-list-item"' : '';
-      return '<' + rowTag + (rowTag === 'button' ? ' type="button"' : '') + rowClass + ' data-sce-pine-doc-index="' + index + '" role="option"' + (rowTag === 'div' ? ' tabindex="0"' : '') + '>' + nameHtml + '<span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span></' + rowTag + '>';
+      return '<' + rowTag + (rowTag === 'button' ? ' type="button"' : '') + rowClass + ' data-sce-pine-doc-index="' + index + '" role="option"' + (rowTag === 'div' ? ' tabindex="0"' : '') + '>' + nameHtml + '<span class="sce-pine-doc-meta"><span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span>' + (item.status ? '<span class="sce-pine-doc-status ' + (item.status === 'Supported' ? 'is-supported' : 'is-reference') + '">' + escapeHtml(item.status) + '</span>' : '') + '</span></' + rowTag + '>';
     }, this).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
     if (matches.length) this.showPineDocumentationEntry(PINE_EDITOR_DOCUMENTATION.indexOf(matches[0]));
     else {
@@ -10734,17 +10734,23 @@
 
   var PINE_EDITOR_KEYWORDS = {
     'and': true, 'or': true, 'not': true, 'if': true, 'else': true, 'for': true, 'while': true,
-    'switch': true, 'break': true, 'continue': true, 'import': true, 'export': true, 'type': true,
-    'method': true, 'var': true, 'const': true, 'struct': true, 'enum': true
+    'switch': true, 'break': true, 'continue': true, 'return': true, 'import': true, 'export': true,
+    'type': true, 'method': true, 'var': true, 'varip': true, 'const': true, 'struct': true, 'enum': true
   };
   var PINE_EDITOR_CONSTANTS = {
     'true': true, 'false': true, 'na': true, 'open': true, 'high': true, 'low': true, 'close': true,
-    'volume': true, 'time': true, 'bar_index': true
+    'volume': true, 'time': true, 'time_close': true, 'time_tradingday': true, 'bar_index': true,
+    'last_bar_index': true, 'last_bar_time': true, 'timenow': true, 'year': true, 'month': true,
+    'weekofyear': true, 'dayofmonth': true, 'dayofweek': true, 'hour': true, 'minute': true, 'second': true,
+    'hl2': true, 'hlc3': true, 'ohlc4': true
   };
   var PINE_EDITOR_NAMESPACES = {
     'ta': true, 'math': true, 'input': true, 'request': true, 'color': true, 'str': true, 'array': true,
     'matrix': true, 'map': true, 'strategy': true, 'syminfo': true, 'barstate': true, 'timeframe': true,
-    'chart': true, 'line': true, 'label': true, 'box': true, 'table': true
+    'chart': true, 'line': true, 'linefill': true, 'label': true, 'box': true, 'polyline': true,
+    'table': true, 'ticker': true, 'runtime': true, 'log': true, 'display': true, 'format': true,
+    'font': true, 'location': true, 'size': true, 'shape': true, 'text': true, 'xloc': true, 'yloc': true,
+    'alert': true, 'session': true, 'scale': true
   };
   var PINE_EDITOR_SIGNATURES = {
     'indicator': {
@@ -10973,6 +10979,187 @@
       ]
     }
   };
+
+  // The reference catalog intentionally includes the v6 API surface that this
+  // browser runtime does not execute yet. Keeping it here makes autocomplete
+  // and documentation useful without pretending every reference entry runs.
+  var PINE_EDITOR_REFERENCE_FUNCTIONS = [];
+  function pineReferenceParameters(names) {
+    return (names || []).map(function (name) {
+      return { name: name, description: 'Parameter documented by TradingView for this function.' };
+    });
+  }
+  function registerPineReferenceFunctions(names, description, parameterNames) {
+    (names || []).forEach(function (name) {
+      if (!PINE_EDITOR_SIGNATURES[name]) {
+        PINE_EDITOR_SIGNATURES[name] = {
+          signature: name + '(...)',
+          description: description,
+          parameters: pineReferenceParameters(parameterNames),
+          status: 'Reference'
+        };
+      }
+      PINE_EDITOR_REFERENCE_FUNCTIONS.push(name);
+    });
+  }
+  registerPineReferenceFunctions([
+    'strategy.entry', 'strategy.order', 'strategy.exit', 'strategy.close', 'strategy.close_all',
+    'strategy.cancel', 'strategy.cancel_all', 'strategy.risk.allow_entry_in', 'strategy.opentrades.entry_id',
+    'strategy.opentrades.entry_price', 'strategy.opentrades.entry_size', 'strategy.closedtrades.entry_id',
+    'strategy.closedtrades.exit_id', 'strategy.closedtrades.profit', 'strategy.convert_to_account',
+    'strategy.convert_to_symbol', 'strategy.default_entry_qty'
+  ], 'Strategy order, trade, and performance API. Order execution is reference-only in this client runtime.');
+  registerPineReferenceFunctions([
+    'plotarrow', 'plotcandle', 'plotbar', 'barcolor', 'alert', 'alertcondition', 'linefill.new', 'linefill.delete',
+    'linefill.get_line1', 'linefill.get_line2', 'line.new', 'line.copy', 'line.delete', 'line.get_price',
+    'line.get_x1', 'line.get_x2', 'line.get_y1', 'line.get_y2', 'line.set_x1', 'line.set_x2', 'line.set_y1',
+    'line.set_y2', 'line.set_xy1', 'line.set_xy2', 'line.set_color', 'line.set_style', 'line.set_width',
+    'line.set_extend', 'line.get_xloc', 'line.get_extend', 'label.new', 'label.copy', 'label.delete',
+    'label.get_x', 'label.get_y', 'label.get_text', 'label.set_x', 'label.set_y', 'label.set_xy',
+    'label.set_text', 'label.set_textcolor', 'label.set_color', 'label.set_style', 'label.set_size',
+    'label.set_textalign', 'label.set_tooltip', 'box.new', 'box.copy', 'box.delete', 'box.get_left',
+    'box.get_top', 'box.get_right', 'box.get_bottom', 'box.set_left', 'box.set_top', 'box.set_right',
+    'box.set_bottom', 'box.set_bgcolor', 'box.set_border_color', 'box.set_border_style', 'box.set_border_width',
+    'box.set_text', 'box.set_text_color', 'box.set_text_size', 'box.set_text_halign', 'box.set_text_valign',
+    'polyline.new', 'polyline.delete', 'polyline.copy', 'table.new', 'table.cell', 'table.cell_set_text',
+    'table.cell_set_bgcolor', 'table.cell_set_text_color', 'table.cell_set_text_size', 'table.clear',
+    'table.delete', 'table.get_position', 'table.set_position'
+  ], 'Visual and object API for plots, drawings, labels, boxes, polylines, and tables.');
+  registerPineReferenceFunctions([
+    'ta.rma', 'ta.wma', 'ta.vwma', 'ta.hma', 'ta.swma', 'ta.tr', 'ta.atr', 'ta.stoch',
+    'ta.cci', 'ta.mfi', 'ta.mom', 'ta.roc', 'ta.cmo', 'ta.tsi', 'ta.wpr', 'ta.willr', 'ta.ppo', 'ta.kc',
+    'ta.kcw', 'ta.bbw', 'ta.bb', 'ta.dmi', 'ta.supertrend', 'ta.vhf', 'ta.vi', 'ta.trix', 'ta.aroon',
+    'ta.barssince', 'ta.change', 'ta.correlation', 'ta.covariance', 'ta.dev',
+    'ta.falling', 'ta.rising', 'ta.cross', 'ta.crossover', 'ta.crossunder', 'ta.valuewhen', 'ta.pivothigh',
+    'ta.pivotlow', 'ta.highestbars', 'ta.lowestbars', 'ta.linreg', 'ta.slope', 'ta.variance', 'ta.stdev',
+    'ta.sum', 'ta.median', 'ta.mode', 'ta.percentile_linear_interpolation', 'ta.percentile_nearest_rank',
+    'ta.range', 'ta.dev', 'ta.ema2', 'ta.frama', 'ta.dema', 'ta.tema', 'ta.trima'
+  ], 'Technical-analysis calculations and rolling series utilities.');
+  registerPineReferenceFunctions([
+    'math.abs', 'math.acos', 'math.asin', 'math.atan', 'math.avg', 'math.ceil', 'math.cos', 'math.exp',
+    'math.floor', 'math.log', 'math.log10', 'math.max', 'math.min', 'math.pow', 'math.random', 'math.round',
+    'math.round_to_mintick', 'math.sign', 'math.sin', 'math.sqrt', 'math.sum', 'math.tan', 'math.todegrees',
+    'math.toradians', 'math.e', 'math.pi', 'math.phi'
+  ], 'Mathematical functions and constants.');
+  registerPineReferenceFunctions([
+    'str.contains', 'str.endswith', 'str.startswith', 'str.length', 'str.lower', 'str.upper', 'str.replace',
+    'str.replace_all', 'str.substring', 'str.split', 'str.format', 'str.format_time', 'str.tonumber',
+    'str.tostring', 'str.trim', 'str.pos', 'str.match'
+  ], 'String inspection, conversion, formatting, and replacement functions.');
+  registerPineReferenceFunctions([
+    'request.security_lower_tf', 'request.currency_rate', 'request.dividends', 'request.earnings',
+    'request.financial', 'request.quandl', 'request.seed', 'request.splits', 'request.security'
+  ], 'Functions for requesting other symbols, timeframes, and external market data.');
+  registerPineReferenceFunctions([
+    'input', 'input.source', 'input.time', 'input.symbol', 'input.session', 'input.enum', 'input.text_area',
+    'input.float', 'input.int', 'input.bool', 'input.string', 'input.color'
+  ], 'Functions that create editable script inputs.');
+  registerPineReferenceFunctions([
+    'array.new', 'array.from', 'array.size', 'array.get', 'array.set', 'array.push', 'array.pop', 'array.shift',
+    'array.unshift', 'array.insert', 'array.remove', 'array.clear', 'array.copy', 'array.sort', 'array.reverse',
+    'array.slice', 'array.concat', 'array.binary_search', 'array.binary_search_leftmost', 'array.binary_search_rightmost',
+    'array.range', 'array.avg', 'array.covariance', 'array.max', 'array.min', 'array.median', 'array.mode',
+    'array.percentile_linear_interpolation', 'array.percentile_nearest_rank', 'array.stdev', 'array.standardize',
+    'array.sum', 'array.join'
+  ], 'Array creation, access, mutation, sorting, and statistics.');
+  registerPineReferenceFunctions([
+    'matrix.new', 'matrix.rows', 'matrix.columns', 'matrix.get', 'matrix.set', 'matrix.add', 'matrix.sub',
+    'matrix.mult', 'matrix.transpose', 'matrix.det', 'matrix.inv', 'matrix.pinv', 'matrix.rank', 'matrix.trace',
+    'matrix.reshape', 'matrix.fill', 'matrix.copy', 'matrix.sort', 'matrix.reverse', 'matrix.sum', 'matrix.avg',
+    'matrix.min', 'matrix.max', 'matrix.median', 'matrix.mode', 'matrix.pow'
+  ], 'Matrix creation, transformation, and statistical functions.');
+  registerPineReferenceFunctions([
+    'map.new', 'map.size', 'map.put', 'map.get', 'map.remove', 'map.clear', 'map.contains', 'map.keys',
+    'map.values', 'map.copy'
+  ], 'Key-value map creation and access functions.');
+  registerPineReferenceFunctions([
+    'color.new', 'color.rgb', 'color.from_gradient', 'color.r', 'color.g', 'color.b', 'color.t'
+  ], 'Color construction, transparency, channel extraction, and gradients.');
+  registerPineReferenceFunctions([
+    'ticker.new', 'ticker.modify', 'ticker.standard', 'ticker.heikinashi', 'ticker.renko', 'ticker.kagi',
+    'ticker.linebreak', 'ticker.pointfigure', 'ticker.inherit', 'time', 'time_close', 'timestamp', 'dayofmonth',
+    'dayofweek', 'hour', 'minute', 'month', 'second', 'weekofyear', 'year'
+  ], 'Ticker construction and time/session functions.');
+
+  var PINE_EDITOR_REFERENCE_BUILT_INS = [
+    ['syminfo.basecurrency', 'Symbol base currency.'], ['syminfo.currency', 'Symbol currency.'],
+    ['syminfo.description', 'Human-readable symbol description.'], ['syminfo.main_tickerid', 'Main chart ticker identifier.'],
+    ['syminfo.mintick', 'Minimum tick size.'], ['syminfo.pointvalue', 'Point value for the symbol.'],
+    ['syminfo.prefix', 'Exchange or market prefix.'], ['syminfo.root', 'Root symbol.'], ['syminfo.session', 'Symbol session.'],
+    ['syminfo.ticker', 'Symbol name without exchange prefix.'], ['syminfo.tickerid', 'Full ticker identifier.'],
+    ['syminfo.timezone', 'Exchange timezone.'], ['syminfo.type', 'Symbol type.'],
+    ['timeframe.isseconds', 'Whether the chart timeframe is seconds.'], ['timeframe.isminutes', 'Whether the chart timeframe is minutes.'],
+    ['timeframe.isintraday', 'Whether the chart timeframe is intraday.'], ['timeframe.isdaily', 'Whether the chart timeframe is daily.'],
+    ['timeframe.isweekly', 'Whether the chart timeframe is weekly.'], ['timeframe.ismonthly', 'Whether the chart timeframe is monthly.'],
+    ['timeframe.isdwm', 'Whether the chart timeframe is daily, weekly, or monthly.'], ['timeframe.multiplier', 'Timeframe multiplier.'],
+    ['timeframe.main_period', 'Main chart timeframe string.'], ['timeframe.period', 'Chart timeframe string.'],
+    ['barstate.isconfirmed', 'Whether the current bar is confirmed.'], ['barstate.isfirst', 'Whether this is the first bar.'],
+    ['barstate.ishistory', 'Whether the current bar is historical.'], ['barstate.islast', 'Whether this is the last chart bar.'],
+    ['barstate.islastconfirmedhistory', 'Whether this is the last confirmed historical bar.'], ['barstate.isnew', 'Whether this is a new bar.'],
+    ['barstate.isrealtime', 'Whether the current bar is realtime.'], ['strategy.equity', 'Strategy equity series.'],
+    ['strategy.initial_capital', 'Strategy initial capital.'], ['strategy.position_size', 'Open position size.'],
+    ['strategy.position_avg_price', 'Average open position price.'], ['strategy.wintrades', 'Number of winning trades.'],
+    ['strategy.losstrades', 'Number of losing trades.'], ['color.red', 'Named red color.'], ['color.green', 'Named green color.'],
+    ['color.blue', 'Named blue color.'], ['color.orange', 'Named orange color.'], ['color.yellow', 'Named yellow color.'],
+    ['color.purple', 'Named purple color.'], ['color.white', 'Named white color.'], ['color.black', 'Named black color.']
+  ];
+
+  var PINE_EDITOR_REFERENCE_SYNTAX = [
+    { name: '//@version=6', signature: '//@version=6', description: 'Selects Pine Script version 6.' },
+    { name: 'indentation', signature: 'if condition\n    expression', description: 'Indentation defines the body of conditional and loop blocks.' },
+    { name: 'tuples', signature: '[macd, signal, hist] = ta.macd(close, 12, 26, 9)', description: 'Assigns multiple returned values in one declaration.' },
+    { name: 'type qualifiers', signature: 'const/input/simple/series type', description: 'Describes when a value is known and how it can change across bars.' },
+    { name: 'user-defined type', signature: 'type pivot\n    int x\n    float price', description: 'Defines a custom object type with fields.' },
+    { name: 'enum declaration', signature: 'enum signal\n    buy\n    sell', description: 'Defines a finite set of named enum members.' },
+    { name: 'method declaration', signature: 'method average(array<float> source) => ...', description: 'Declares a user function that can be called with method syntax.' },
+    { name: 'import / export', signature: 'import user/library/1 as lib', description: 'Imports or exports library code. Publishing is reference-only in this client runtime.' },
+    { name: 'switch', signature: 'switch expression\n    condition => value', description: 'Selects one expression or block from multiple cases.' },
+    { name: 'for in', signature: 'for item in collection', description: 'Iterates over the values in an array, matrix, or map.' },
+    { name: 'history operator', signature: 'series[barsBack]', description: 'Reads a previous value from a time series.' },
+    { name: 'arithmetic operators', signature: 'a + b, a - b, a * b, a / b, a % b', description: 'Performs numeric arithmetic on compatible values.' },
+    { name: 'comparison operators', signature: 'a == b, a != b, a > b, a >= b', description: 'Compares values and returns a boolean result.' },
+    { name: 'assignment operators', signature: 'name = value\nname := value', description: 'Declares or reassigns a variable.' },
+    { name: 'conditional operator', signature: 'condition ? valueWhenTrue : valueWhenFalse', description: 'Selects one of two expressions.' },
+    { name: 'explicit type', signature: 'float value = close', description: 'Declares a variable with an explicit Pine type.' },
+    { name: 'function call', signature: 'namespace.function(argument)', description: 'Calls a built-in or user-defined function.' },
+    { name: 'line wrapping', signature: 'expression +\n    expression', description: 'Continues a long expression across indented lines.' },
+    { name: 'comments', signature: '// line comment\n/* block comment */', description: 'Adds line or block comments to a script.' }
+  ];
+
+  function refinePineReferenceSignature(name, signature, parameterNames) {
+    if (!PINE_EDITOR_SIGNATURES[name]) return;
+    PINE_EDITOR_SIGNATURES[name].signature = signature;
+    PINE_EDITOR_SIGNATURES[name].parameters = pineReferenceParameters(parameterNames);
+  }
+  refinePineReferenceSignature('plotarrow', 'plotarrow(series, title, colorup, colordown, offset, minheight, maxheight, editable, show_last, display)', ['series', 'title', 'colorup', 'colordown', 'offset', 'minheight', 'maxheight', 'editable', 'show_last', 'display']);
+  refinePineReferenceSignature('plotcandle', 'plotcandle(open, high, low, close, title, color, wickcolor, editable, show_last, bordercolor, display)', ['open', 'high', 'low', 'close', 'title', 'color', 'wickcolor', 'editable', 'show_last', 'bordercolor', 'display']);
+  refinePineReferenceSignature('plotbar', 'plotbar(open, high, low, close, title, color, editable, show_last, display)', ['open', 'high', 'low', 'close', 'title', 'color', 'editable', 'show_last', 'display']);
+  refinePineReferenceSignature('barcolor', 'barcolor(color, offset, editable, show_last, title, display)', ['color', 'offset', 'editable', 'show_last', 'title', 'display']);
+  refinePineReferenceSignature('ta.atr', 'ta.atr(length)', ['length']);
+  refinePineReferenceSignature('ta.supertrend', 'ta.supertrend(factor, atrPeriod)', ['factor', 'atrPeriod']);
+  refinePineReferenceSignature('ta.stoch', 'ta.stoch(source, peak, valley, period)', ['source', 'peak', 'valley', 'period']);
+  refinePineReferenceSignature('ta.bb', 'ta.bb(series, length, mult)', ['series', 'length', 'mult']);
+  refinePineReferenceSignature('ta.dmi', 'ta.dmi(diLength, adxSmoothing)', ['diLength', 'adxSmoothing']);
+  refinePineReferenceSignature('math.round', 'math.round(number, precision)', ['number', 'precision']);
+  refinePineReferenceSignature('str.contains', 'str.contains(source, str)', ['source', 'str']);
+  refinePineReferenceSignature('str.substring', 'str.substring(source, begin, end)', ['source', 'begin', 'end']);
+  refinePineReferenceSignature('request.security_lower_tf', 'request.security_lower_tf(symbol, timeframe, expression, ignore_invalid_symbol, ignore_invalid_timeframe)', ['symbol', 'timeframe', 'expression', 'ignore_invalid_symbol', 'ignore_invalid_timeframe']);
+  refinePineReferenceSignature('array.new', 'array.new<type>(size, initial_value)', ['size', 'initial_value']);
+  refinePineReferenceSignature('array.push', 'array.push(id, value)', ['id', 'value']);
+  refinePineReferenceSignature('map.put', 'map.put(id, key, value)', ['id', 'key', 'value']);
+
+  PINE_EDITOR_REFERENCE_FUNCTIONS.forEach(function (name) {
+    var definition = PINE_EDITOR_SIGNATURES[name];
+    if (definition) definition.status = definition.status || 'Reference';
+  });
+  [
+    'input.source', 'input.color', 'ta.rma', 'ta.wma', 'ta.highest', 'ta.lowest', 'ta.change', 'ta.roc', 'ta.sum', 'ta.stdev',
+    'ta.crossover', 'ta.crossunder', 'math.pow', 'math.sqrt', 'math.log', 'math.log10', 'math.round',
+    'math.floor', 'math.ceil', 'math.abs', 'math.max', 'math.min', 'color.new', 'color.rgb', 'alertcondition',
+    'line.new', 'label.new', 'box.new'
+  ].forEach(function (name) {
+    if (PINE_EDITOR_SIGNATURES[name]) PINE_EDITOR_SIGNATURES[name].status = 'Supported';
+  });
   var PINE_EDITOR_COMPLETIONS = [
     { value: 'indicator', label: 'Declare an indicator' },
     { value: 'strategy', label: 'Declare a strategy' },
@@ -11005,6 +11192,21 @@
     { value: 'low', label: 'Low price series' },
     { value: 'volume', label: 'Volume series' }
   ];
+  PINE_EDITOR_REFERENCE_FUNCTIONS.forEach(function (name) {
+    if (!PINE_EDITOR_COMPLETIONS.some(function (item) { return item.value === name; })) {
+      PINE_EDITOR_COMPLETIONS.push({ value: name, label: 'Pine reference function' });
+    }
+  });
+  Object.keys(PINE_EDITOR_KEYWORDS).concat(Object.keys(PINE_EDITOR_CONSTANTS)).forEach(function (name) {
+    if (!PINE_EDITOR_COMPLETIONS.some(function (item) { return item.value === name; })) {
+      PINE_EDITOR_COMPLETIONS.push({ value: name, label: PINE_EDITOR_KEYWORDS[name] ? 'Pine language keyword' : 'Built-in series or constant' });
+    }
+  });
+  Object.keys(PINE_EDITOR_NAMESPACES).forEach(function (name) {
+    if (!PINE_EDITOR_COMPLETIONS.some(function (item) { return item.value === name; })) {
+      PINE_EDITOR_COMPLETIONS.push({ value: name, label: 'Pine namespace' });
+    }
+  });
   var PINE_EDITOR_DOCUMENTATION = Object.keys(PINE_EDITOR_SIGNATURES).map(function (name) {
     var definition = PINE_EDITOR_SIGNATURES[name];
     return {
@@ -11013,7 +11215,8 @@
       category: 'function',
       signature: definition.signature,
       description: definition.description,
-      parameters: definition.parameters
+      parameters: definition.parameters,
+      status: definition.status || 'Supported'
     };
   }).concat([
     { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script. Strategy order execution is not available in this client runtime.', example: 'strategy("My strategy", overlay=true)' },
@@ -11041,8 +11244,19 @@
   })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
     return { name: name, type: 'Built-in', category: 'built-in', signature: name, description: 'Built-in Pine series or constant.' };
   })).concat(Object.keys(PINE_EDITOR_NAMESPACES).map(function (name) {
-    return { name: name, type: 'Namespace', category: 'namespace', signature: name + '.*', description: 'Namespace containing related Pine functions and values.' };
+    return { name: name, type: 'Namespace', category: 'namespace', signature: name + '.*', description: 'Namespace containing related Pine functions and values.', status: 'Reference' };
+  })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
+    return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Reference' };
+  })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {
+    return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: 'Reference' };
   }));
+  var PINE_EDITOR_DOCUMENTATION_UNIQUE = [];
+  PINE_EDITOR_DOCUMENTATION.forEach(function (item) {
+    if (!item.status) item.status = item.name === 'strategy' || item.name === 'library' ? 'Reference' : 'Supported';
+    if (PINE_EDITOR_DOCUMENTATION_UNIQUE.some(function (existing) { return existing.name === item.name; })) return;
+    PINE_EDITOR_DOCUMENTATION_UNIQUE.push(item);
+  });
+  PINE_EDITOR_DOCUMENTATION = PINE_EDITOR_DOCUMENTATION_UNIQUE;
   var PINE_RECENT_STORAGE_KEY = 'sce-pine-recent-scripts';
   var PINE_WINDOW_STORAGE_KEY = 'sce-pine-window-settings';
   var PINE_RECENT_SCRIPT_LIMIT = 8;

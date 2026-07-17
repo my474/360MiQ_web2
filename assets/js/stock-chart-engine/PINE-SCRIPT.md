@@ -1,22 +1,34 @@
 # Pine-Compatible Scripts
 
-The Advanced Chart includes a restricted, browser-safe Pine-compatible runtime. It is designed for custom indicators and does not execute arbitrary JavaScript.
+Advanced Chart includes a restricted, browser-safe Pine-compatible runtime and a searchable Pine v6 reference catalog. It is designed for custom indicators and does not execute arbitrary JavaScript.
+
+## Coverage in the editor
+
+The editor catalog is broader than the executable runtime. It includes:
+
+- Functions: declarations, plots, alerts, inputs, technical analysis, math, strings, requests, arrays, matrices, maps, colors, time, tickers, strategies, lines, labels, boxes, polylines, tables, and line fills.
+- Built-ins: OHLCV and derived price series, time and bar indexes, symbol information, timeframe information, bar states, strategy values, and named colors.
+- Namespaces: `ta`, `math`, `input`, `request`, `color`, `str`, `array`, `matrix`, `map`, `strategy`, `syminfo`, `barstate`, `timeframe`, `chart`, `line`, `linefill`, `label`, `box`, `polyline`, `table`, `ticker`, `runtime`, `log`, `display`, `format`, `font`, `location`, `size`, `shape`, `text`, `xloc`, `yloc`, `alert`, `session`, and `scale`.
+- Language syntax: version directives, comments, indentation, assignments, tuple declarations, history references, type qualifiers, user-defined types, enums, methods, imports/exports, conditionals, loops, `switch`, `for ... in`, and user-defined functions.
+
+Search the `Pine Script reference` panel with a function name, parameter, namespace, keyword, or description. Select a category to browse a manageable list instead of loading every topic at once. Click a function or keyword name to insert it at the editor cursor. Each entry is labeled `Supported` or `Reference`:
+
+- `Supported` means the current client runtime can execute that feature.
+- `Reference` means the catalog describes the TradingView Pine API, but this client runtime does not execute it yet. This is especially important for strategy orders, mutable drawing handles, and newer collection/object APIs.
 
 ## Supported in the client runtime
 
-- `//@version` directives
-- `indicator()` and `study()` declarations
-- `open`, `high`, `low`, `close`, `volume`, `bar_index`, `time`, `hl2`, `hlc3`, and `ohlc4`
-- assignments, `var` declarations, tuples, arithmetic, comparisons, boolean operators, ternaries, and user functions (`name(args) => expression` or an indented multi-statement body)
-- `if`/`else`, bounded `for ... to ...` loops, `return`, and `break`
-- `plot()`, `hline()`, `plotshape()`, `plotchar()`, `bgcolor()`, `fill()`, and `alertcondition()`
-- safe declarative `label.new()`, `line.new()`, and `box.new()` outputs for chart annotations
+- `//@version` directives, `indicator()` and `study()` declarations.
+- `open`, `high`, `low`, `close`, `volume`, `hl2`, `hlc3`, `ohlc4`, `bar_index`, `time`, and related chart series.
+- Assignments, `var` declarations, tuples, arithmetic, comparisons, boolean operators, ternaries, and user functions (`name(args) => expression` or an indented multi-statement body).
+- `if`/`else`, bounded `for ... to ...` loops, `return`, and `break`.
+- `plot()`, `hline()`, `plotshape()`, `plotchar()`, `bgcolor()`, `fill()`, and `alertcondition()`.
+- Safe declarative `label.new()`, `line.new()`, and `box.new()` outputs for chart annotations.
 - `request.security(symbol, timeframe, expression)` with timestamp alignment across missing or non-trading dates. The chart requests missing symbols through its configured comparison-data loader.
-- `input.int()`, `input.float()`, `input.bool()`, `input.string()`, `input.source()`, and `input.color()`
-- `ta.sma()`, `ta.ema()`, `ta.rma()`, `ta.wma()`, `ta.rsi()`, `ta.macd()`, `ta.highest()`, `ta.lowest()`, `ta.sum()`, `ta.stdev()`, `ta.change()`, `ta.roc()`, `ta.crossover()`, and `ta.crossunder()`
-- `math.abs()`, `math.max()`, `math.min()`, `math.pow()`, `math.sqrt()`, `math.log()`, `math.log10()`, `math.round()`, `math.floor()`, and `math.ceil()`
-- common colors and plot styles
-- `color.new()`, `color.rgb()`, common `shape.*`, `location.*`, and `size.*` values
+- `input.int()`, `input.float()`, `input.bool()`, `input.string()`, `input.source()`, and `input.color()`.
+- `ta.sma()`, `ta.ema()`, `ta.rma()`, `ta.wma()`, `ta.rsi()`, `ta.macd()`, `ta.highest()`, `ta.lowest()`, `ta.sum()`, `ta.stdev()`, `ta.change()`, `ta.roc()`, `ta.crossover()`, and `ta.crossunder()`.
+- `math.abs()`, `math.max()`, `math.min()`, `math.pow()`, `math.sqrt()`, `math.log()`, `math.log10()`, `math.round()`, `math.floor()`, and `math.ceil()`.
+- Common colors, plot styles, `color.new()`, `color.rgb()`, and common `shape.*`, `location.*`, and `size.*` values.
 
 ## Example
 
@@ -43,6 +55,16 @@ The runtime has a dedicated Web Worker entry point at `pine-script-worker.js`.
 
 ## Execution model
 
-When the browser supports Web Workers, Advanced Chart now evaluates each Pine Script indicator in `pine-script-worker.js` after the synchronous preview is rendered. The synchronous result keeps the chart responsive while the worker starts, and the worker result replaces it when it returns. A request revision and script fingerprint prevent results from an older symbol, timeframe, or edit from being applied to the current chart. Browsers that cannot create a worker, pages opened from an unsupported origin, and automated test environments continue to use the synchronous runtime automatically.
+When the browser supports Web Workers, Advanced Chart evaluates each Pine Script indicator in `pine-script-worker.js` after the synchronous preview is rendered. The synchronous result keeps the chart responsive while the worker starts, and the worker result replaces it when it returns. A request revision and script fingerprint prevent results from an older symbol, timeframe, or edit from being applied to the current chart. Browsers that cannot create a worker, pages opened from an unsupported origin, and automated test environments continue to use the synchronous runtime automatically.
 
 The worker URL can be overridden by passing `pineWorkerUrl` to the chart constructor. Set `pineWorker: false` only for an embedding that deliberately requires synchronous evaluation.
+
+## Official reference
+
+The catalog follows TradingView's official Pine Script v6 documentation:
+
+- Pine Script language reference manual: https://www.tradingview.com/pine-script-reference/v6/
+- Pine Script language and built-ins: https://www.tradingview.com/pine-script-docs/language/built-ins/
+- Pine Script language overview: https://www.tradingview.com/pine-script-docs/language/
+
+The official manual remains authoritative for exact overloads, type qualifiers, limits, version changes, and behavior that is marked `Reference` in this client.

@@ -1446,6 +1446,38 @@
   white-space: nowrap;
 }
 
+.sce-pine-doc-meta {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.sce-pine-doc-status {
+  border: 1px solid var(--sce-border);
+  border-radius: 999px;
+  color: var(--sce-muted);
+  font-size: 9px;
+  font-style: normal;
+  padding: 2px 5px;
+  white-space: nowrap;
+}
+
+.sce-pine-doc-status.is-supported {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--sce-text);
+}
+
+.sce-pine-doc-status.is-reference {
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--sce-text);
+}
+
+.sce-pine-doc-detail-heading .sce-pine-doc-status {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .sce-pine-doc-name-group {
   align-items: baseline;
   display: inline-flex;
