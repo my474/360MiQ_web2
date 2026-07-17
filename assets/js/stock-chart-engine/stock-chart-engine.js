@@ -2234,6 +2234,8 @@
       restore: null
     };
     this.pineWindowInteraction = null;
+    this.pineRunGlow = null;
+    this.pineRunGlowFrame = null;
     this.pineEditorSettings = { fontSize: 13, wordWrap: false, suggestions: true };
     try {
       var savedPineEditorSettings = typeof localStorage !== 'undefined' && localStorage.getItem('sce-pine-editor-settings');
@@ -2636,6 +2638,11 @@
   Chart.prototype.destroy = function () {
     this.destroyed = true;
     this.setFullBrowserMode(false);
+    if (this.pineRunGlowFrame != null && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+      window.cancelAnimationFrame(this.pineRunGlowFrame);
+    }
+    this.pineRunGlowFrame = null;
+    this.pineRunGlow = null;
     window.removeEventListener('resize', this.resizeListener);
     window.removeEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.removeEventListener('themechange', this.themeListener);
@@ -5079,6 +5086,10 @@
         status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
       }
       this.rememberRecentPineScript(titleField && titleField.value || preview.metadata.title, codeField.value);
+      var pineIndicator = this.document.indicators.filter(function (indicator) {
+        return indicator.id === indicatorId;
+      })[0];
+      this.triggerPineRunGlow(pineIndicator ? pineIndicator.paneId : this.activePaneId());
       return indicatorId;
     } catch (error) {
       if (status) {
@@ -7259,6 +7270,69 @@
     ctx.restore();
   };
 
+  Chart.prototype.schedulePineRunGlowFrame = function () {
+    if (!this.pineRunGlow || this.destroyed || typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+    if (this.pineRunGlowFrame != null) return;
+    this.pineRunGlowFrame = window.requestAnimationFrame(function () {
+      this.pineRunGlowFrame = null;
+      if (!this.pineRunGlow || this.destroyed) return;
+      this.draw();
+      this.schedulePineRunGlowFrame();
+    }.bind(this));
+  };
+
+  Chart.prototype.triggerPineRunGlow = function (paneIds) {
+    paneIds = Array.isArray(paneIds) ? paneIds : [paneIds];
+    var uniquePaneIds = [];
+    paneIds.forEach(function (paneId) {
+      if (!paneId || uniquePaneIds.indexOf(paneId) !== -1) return;
+      uniquePaneIds.push(paneId);
+    });
+    if (!uniquePaneIds.length) uniquePaneIds.push(this.document.panes[0] ? this.document.panes[0].id : 'price');
+    if (this.pineRunGlowFrame != null && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+      window.cancelAnimationFrame(this.pineRunGlowFrame);
+    }
+    this.pineRunGlowFrame = null;
+    this.pineRunGlow = {
+      paneIds: uniquePaneIds,
+      startedAt: Date.now(),
+      duration: 4200
+    };
+    this.draw();
+    this.schedulePineRunGlowFrame();
+    return uniquePaneIds;
+  };
+
+  Chart.prototype.drawPineRunGlow = function (theme) {
+    var glow = this.pineRunGlow;
+    if (!glow) return;
+    var elapsed = Date.now() - glow.startedAt;
+    var progress = Math.min(1, Math.max(0, elapsed / glow.duration));
+    if (progress >= 1) {
+      this.pineRunGlow = null;
+      return;
+    }
+    var envelope = Math.sin(progress * Math.PI);
+    var ctx = this.ctx;
+    ctx.save();
+    ctx.strokeStyle = theme.drawing;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.12 + envelope * 0.58;
+    ctx.shadowColor = theme.drawing;
+    ctx.shadowBlur = 4 + envelope * 14;
+    this.paneRects.forEach(function (rect) {
+      if (glow.paneIds.indexOf(rect.paneId) === -1) return;
+      var inset = 1;
+      ctx.strokeRect(
+        rect.x + inset,
+        rect.y + inset,
+        rect.width + rect.scaleWidth - inset * 2,
+        rect.height - inset * 2
+      );
+    });
+    ctx.restore();
+  };
+
   Chart.prototype.draw = function () {
     if (!this.ctx) return;
     var theme = this.theme();
@@ -7278,6 +7352,7 @@
     this.renderPaneControlOverlays();
     this.drawTimeAxis(theme);
     this.drawCrosshair(theme);
+    this.drawPineRunGlow(theme);
     this.updateLatestMarker();
   };
 
