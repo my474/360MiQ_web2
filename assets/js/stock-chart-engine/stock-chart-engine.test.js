@@ -351,6 +351,16 @@ const pineIndicatorId = chart.addIndicator('PINE_SCRIPT', {
 assert.ok(chart.indicatorResults[pineIndicatorId]);
 assert.strictEqual(chart.indicatorResults[pineIndicatorId].error, null);
 assert.ok(chart.indicatorResults[pineIndicatorId].outputs.plot1.length > 0);
+chart.openPineScriptPopup();
+assert.ok(chart.settingsPopup.className.split(/\s+/).includes('sce-pine-window'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-window-action="minimize"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-resize'));
+assert.ok(parseInt(chart.settingsPopup.style.left, 10) >= chart.drawingRailWidth());
+chart.setPineWindowAction('maximize');
+assert.ok(chart.settingsPopup.className.split(/\s+/).includes('is-maximized'));
+chart.setPineWindowAction('restore');
+assert.ok(!chart.settingsPopup.className.split(/\s+/).includes('is-maximized'));
+chart.closeIndicatorSettingsPopup();
 chart.emitChange('autosave-disabled-check', {});
 assert.strictEqual(chart.autosaveTimer, null);
 const toolbarOpenDetail = new FakeElement('details');
