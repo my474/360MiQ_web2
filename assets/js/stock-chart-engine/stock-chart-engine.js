@@ -2213,6 +2213,8 @@
       restore: null
     };
     this.pineWindowInteraction = null;
+    this.pineWindowPointerMoveListener = this.handlePineWindowPointerMove.bind(this);
+    this.pineWindowPointerUpListener = this.handlePineWindowPointerUp.bind(this);
     this.destroyed = false;
     this.themeListener = this.handleThemeChange.bind(this);
     this.resizeListener = this.resize.bind(this);
@@ -2573,6 +2575,11 @@
       document.addEventListener('keydown', this.keydownListener);
       document.addEventListener('mousedown', this.documentPointerDownListener);
       document.addEventListener('touchstart', this.documentPointerDownListener);
+      document.addEventListener('pointermove', this.pineWindowPointerMoveListener);
+      document.addEventListener('pointerup', this.pineWindowPointerUpListener);
+      document.addEventListener('pointercancel', this.pineWindowPointerUpListener);
+      document.addEventListener('mousemove', this.pineWindowPointerMoveListener);
+      document.addEventListener('mouseup', this.pineWindowPointerUpListener);
       document.addEventListener('fullscreenchange', this.fullscreenChangeListener);
       document.addEventListener('webkitfullscreenchange', this.fullscreenChangeListener);
     }
@@ -2588,6 +2595,11 @@
       document.removeEventListener('keydown', this.keydownListener);
       document.removeEventListener('mousedown', this.documentPointerDownListener);
       document.removeEventListener('touchstart', this.documentPointerDownListener);
+      document.removeEventListener('pointermove', this.pineWindowPointerMoveListener);
+      document.removeEventListener('pointerup', this.pineWindowPointerUpListener);
+      document.removeEventListener('pointercancel', this.pineWindowPointerUpListener);
+      document.removeEventListener('mousemove', this.pineWindowPointerMoveListener);
+      document.removeEventListener('mouseup', this.pineWindowPointerUpListener);
       document.removeEventListener('fullscreenchange', this.fullscreenChangeListener);
       document.removeEventListener('webkitfullscreenchange', this.fullscreenChangeListener);
     }
@@ -3828,6 +3840,7 @@
     this.settingsPopup.style.right = '';
     this.settingsPopup.style.bottom = '';
     this.settingsPopup.onpointerdown = null;
+    this.settingsPopup.onmousedown = null;
     this.settingsPopup.onpointermove = null;
     this.settingsPopup.onpointerup = null;
     this.settingsPopup.onpointercancel = null;
@@ -3947,6 +3960,12 @@
         event.preventDefault();
         self.applyPineScriptPopup();
       }
+    };
+    this.settingsPopup.onpointerdown = function (event) {
+      self.beginPineWindowInteraction(event);
+    };
+    this.settingsPopup.onmousedown = function (event) {
+      if (!self.pineWindowInteraction) self.beginPineWindowInteraction(event);
     };
   };
 
@@ -4146,57 +4165,64 @@
         self.closeIndicatorSettingsPopup();
       }
     };
-    this.settingsPopup.onpointerdown = function (event) {
-      var target = event.target;
-      var resizeTarget = closestAttribute(target, 'data-sce-pine-resize');
-      var dragTarget = closestAttribute(target, 'data-sce-pine-drag-handle');
-      if (resizeTarget && !self.pineWindowState.maximized && !self.pineWindowState.minimized) {
-        self.pineWindowInteraction = {
-          type: 'resize',
-          pointerId: event.pointerId,
-          startX: event.clientX,
-          startY: event.clientY,
-          width: self.pineWindowState.width,
-          height: self.pineWindowState.height
-        };
-      } else if (dragTarget && !closestTagName(target, 'BUTTON') && !self.pineWindowState.maximized) {
-        self.pineWindowInteraction = {
-          type: 'drag',
-          pointerId: event.pointerId,
-          startX: event.clientX,
-          startY: event.clientY,
-          left: self.pineWindowState.left,
-          top: self.pineWindowState.top
-        };
-      } else {
-        return;
-      }
-      if (event.preventDefault) event.preventDefault();
-      if (self.settingsPopup.setPointerCapture && event.pointerId != null) {
-        try { self.settingsPopup.setPointerCapture(event.pointerId); } catch (ignore) {}
-      }
-    };
-    this.settingsPopup.onpointermove = function (event) {
-      var interaction = self.pineWindowInteraction;
-      if (!interaction || (interaction.pointerId != null && event.pointerId !== interaction.pointerId)) return;
-      var bounds = self.pineWindowBounds();
-      if (interaction.type === 'drag') {
-        var maxLeft = Math.max(self.drawingRailWidth() + 8, bounds.width - self.pineWindowState.width - 8);
-        self.pineWindowState.left = clamp(interaction.left + event.clientX - interaction.startX, self.drawingRailWidth() + 8, maxLeft);
-        self.pineWindowState.top = clamp(interaction.top + event.clientY - interaction.startY, 8, Math.max(8, bounds.height - self.pineWindowState.height - 8));
-      } else {
-        self.pineWindowState.width = clamp(interaction.width + event.clientX - interaction.startX, 320, Math.max(320, bounds.width - self.pineWindowState.left - 8));
-        self.pineWindowState.height = clamp(interaction.height + event.clientY - interaction.startY, 220, Math.max(220, bounds.height - self.pineWindowState.top - 8));
-      }
-      self.renderPineWindowState();
-      if (event.preventDefault) event.preventDefault();
-    };
-    this.settingsPopup.onpointerup = this.settingsPopup.onpointercancel = function (event) {
-      if (self.settingsPopup.releasePointerCapture && event && event.pointerId != null) {
-        try { self.settingsPopup.releasePointerCapture(event.pointerId); } catch (ignore) {}
-      }
-      self.pineWindowInteraction = null;
-    };
+  };
+
+  Chart.prototype.beginPineWindowInteraction = function (event) {
+    var target = event && event.target;
+    var resizeTarget = closestAttribute(target, 'data-sce-pine-resize');
+    var dragTarget = closestAttribute(target, 'data-sce-pine-drag-handle');
+    if (resizeTarget && !this.pineWindowState.maximized && !this.pineWindowState.minimized) {
+      this.pineWindowInteraction = {
+        type: 'resize',
+        pointerId: event.pointerId == null ? null : event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        width: this.pineWindowState.width,
+        height: this.pineWindowState.height
+      };
+    } else if (dragTarget && !closestTagName(target, 'BUTTON') && !this.pineWindowState.maximized) {
+      this.pineWindowInteraction = {
+        type: 'drag',
+        pointerId: event.pointerId == null ? null : event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: this.pineWindowState.left,
+        top: this.pineWindowState.top
+      };
+    } else {
+      return false;
+    }
+    if (event.preventDefault) event.preventDefault();
+    if (this.settingsPopup.setPointerCapture && event.pointerId != null) {
+      try { this.settingsPopup.setPointerCapture(event.pointerId); } catch (ignore) {}
+    }
+    return true;
+  };
+
+  Chart.prototype.handlePineWindowPointerMove = function (event) {
+    var interaction = this.pineWindowInteraction;
+    if (!interaction || !event) return;
+    if (interaction.pointerId != null && event.pointerId != null && event.pointerId !== interaction.pointerId) return;
+    var bounds = this.pineWindowBounds();
+    if (interaction.type === 'drag') {
+      var maxLeft = Math.max(this.drawingRailWidth() + 8, bounds.width - this.pineWindowState.width - 8);
+      this.pineWindowState.left = clamp(interaction.left + event.clientX - interaction.startX, this.drawingRailWidth() + 8, maxLeft);
+      this.pineWindowState.top = clamp(interaction.top + event.clientY - interaction.startY, 8, Math.max(8, bounds.height - this.pineWindowState.height - 8));
+    } else {
+      this.pineWindowState.width = clamp(interaction.width + event.clientX - interaction.startX, 320, Math.max(320, bounds.width - this.pineWindowState.left - 8));
+      this.pineWindowState.height = clamp(interaction.height + event.clientY - interaction.startY, 220, Math.max(220, bounds.height - this.pineWindowState.top - 8));
+    }
+    this.renderPineWindowState();
+    if (event.preventDefault) event.preventDefault();
+  };
+
+  Chart.prototype.handlePineWindowPointerUp = function (event) {
+    if (!this.pineWindowInteraction) return;
+    if (event && this.pineWindowInteraction.pointerId != null && event.pointerId != null && event.pointerId !== this.pineWindowInteraction.pointerId) return;
+    if (this.settingsPopup.releasePointerCapture && event && event.pointerId != null) {
+      try { this.settingsPopup.releasePointerCapture(event.pointerId); } catch (ignore) {}
+    }
+    this.pineWindowInteraction = null;
   };
 
   Chart.prototype.closeIndicatorSettingsPopup = function () {

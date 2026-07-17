@@ -995,6 +995,7 @@
 .sce-pine-window-titlebar {
   cursor: move;
   flex: 0 0 auto;
+  touch-action: none;
   user-select: none;
 }
 
@@ -1057,6 +1058,7 @@
   height: 18px;
   position: absolute;
   right: 2px;
+  touch-action: none;
   width: 18px;
 }
 
