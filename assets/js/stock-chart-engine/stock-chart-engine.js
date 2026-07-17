@@ -3852,12 +3852,12 @@
       '<label>Name<input type="text" data-sce-pine-field="title" value="', escapeHtml(title), '"></label>',
       '<div class="sce-pine-editor-tools" data-sce-pine-editor-tools role="toolbar" aria-label="Pine editor tools">',
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">', paneControlIconSvg('undo'), '</button>',
-      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="redo" title="Redo (Ctrl+Y / Cmd+Shift+Z)" aria-label="Redo">', paneControlIconSvg('redo'), '</button>',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="redo" title="Redo (Ctrl/Cmd+Y or Cmd+Shift+Z)" aria-label="Redo">', paneControlIconSvg('redo'), '</button>',
       '<span class="sce-pine-editor-tool-divider" aria-hidden="true"></span>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="find" title="Find (Ctrl/Cmd+F)">Find</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="replace" title="Find and replace (Ctrl/Cmd+H)">Replace</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="format" title="Format document">Format</button>',
-      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="toggle-wrap" title="Toggle word wrap" aria-pressed="false">Wrap</button>',
+      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="toggle-wrap" title="Toggle word wrap (Alt/Option+Z)" aria-pressed="false">Wrap</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="command-palette" title="Command palette (F1)">Commands</button>',
       '<span class="sce-pine-recent-wrap" data-sce-pine-recent-wrap>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="recent" title="Recent Pine Scripts" aria-expanded="false">', paneControlIconSvg('recent'), 'Recent</button>',
@@ -3896,8 +3896,8 @@
       '<div class="sce-settings-actions">',
       indicator ? '<button type="button" data-sce-popup-action="remove">Remove</button>' : '',
       '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device">Load</button>',
-      '<button type="button" data-sce-popup-action="save-pine" title="Save Pine Script to your device">Save</button>',
-      '<button type="button" data-sce-popup-action="run-pine">Run</button>',
+      '<button type="button" data-sce-popup-action="save-pine" title="Save Pine Script to your device (Ctrl/Cmd+S)">Save</button>',
+      '<button type="button" data-sce-popup-action="run-pine" title="Run Pine Script (Ctrl/Cmd+Enter)">Run</button>',
       '</div>',
       '<input type="file" data-sce-pine-file-input accept=".pine,.txt,text/plain" hidden>',
       '</div>',
@@ -4357,12 +4357,6 @@
 
   Chart.prototype.executePineEditorCommand = function (commandId) {
     this.closePineCommandPalette();
-    if (commandId === 'undo') this.undoPineEditor();
-    if (commandId === 'redo') this.redoPineEditor();
-    if (commandId === 'find') this.openPineFindBar(false);
-    if (commandId === 'replace') this.openPineFindBar(true);
-    if (commandId === 'format') this.formatPineEditor();
-    if (commandId === 'toggle-wrap') this.togglePineEditorWrap();
     if (commandId === 'font-increase') this.changePineEditorFontSize(1);
     if (commandId === 'font-decrease') this.changePineEditorFontSize(-1);
     if (commandId === 'font-reset') {
@@ -4370,13 +4364,6 @@
       this.savePineEditorSettings();
       this.applyPineEditorViewSettings();
     }
-    if (commandId === 'save') this.savePineScriptToFile();
-    if (commandId === 'load') {
-      var fileInput = this.settingsPopup.querySelector('[data-sce-pine-file-input]');
-      if (fileInput && fileInput.click) fileInput.click();
-    }
-    if (commandId === 'recent') this.openRecentPineScripts();
-    if (commandId === 'run') this.applyPineScriptPopup();
   };
 
   Chart.prototype.handlePineEditorAction = function (action) {
@@ -10415,16 +10402,9 @@
   var PINE_RECENT_STORAGE_KEY = 'sce-pine-recent-scripts';
   var PINE_RECENT_SCRIPT_LIMIT = 8;
   var PINE_EDITOR_COMMANDS = [
-    { id: 'undo', label: 'Undo', shortcut: 'Ctrl/Cmd+Z' },
-    { id: 'redo', label: 'Redo', shortcut: 'Ctrl+Y / Cmd+Shift+Z' },
-    { id: 'find', label: 'Find', shortcut: 'Ctrl/Cmd+F' },
-    { id: 'replace', label: 'Find and replace', shortcut: 'Ctrl/Cmd+H' },
-    { id: 'format', label: 'Format document', shortcut: '' },
-    { id: 'toggle-wrap', label: 'Toggle word wrap', shortcut: 'Alt/Option+Z' },
     { id: 'font-increase', label: 'Increase editor font size', shortcut: '' },
     { id: 'font-decrease', label: 'Decrease editor font size', shortcut: '' },
-    { id: 'font-reset', label: 'Reset editor font size', shortcut: '' },
-    { id: 'recent', label: 'Recent Pine Scripts', shortcut: '' }
+    { id: 'font-reset', label: 'Reset editor font size', shortcut: '' }
   ];
 
   function highlightPineScript(source) {
