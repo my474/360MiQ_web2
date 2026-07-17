@@ -3779,6 +3779,7 @@
     var indicator = this.document.indicators.filter(function (item) { return item.id === indicatorId; })[0];
     if (!indicator) return false;
     settings = settings || {};
+    var previousPaneId = indicator.paneId;
     if (settings.source) {
       var source = normalizeIndicatorSource(settings.source);
       if (source.kind !== 'indicator' || (source.indicatorId !== indicator.id && !this.indicatorDependsOn(source.indicatorId, indicator.id))) {
@@ -3791,6 +3792,13 @@
           });
         }
       }
+    }
+    if (settings.paneId && settings.paneId !== indicator.paneId && this.document.panes.some(function (pane) { return pane.id === settings.paneId; })) {
+      indicator.paneId = settings.paneId;
+      this.document.drawings.forEach(function (drawing) {
+        if (drawing.ownerStudyId === indicatorId) drawing.paneId = settings.paneId;
+      });
+      this.removeEmptyIndicatorPane(previousPaneId);
     }
     if (settings.inputs) {
       indicator.inputs = merge({}, indicator.inputs || {}, sanitizeIndicatorInputs(settings.inputs));
@@ -4101,6 +4109,17 @@
     }
     if (codeField.setSelectionRange) codeField.setSelectionRange(codeField.value.length, codeField.value.length);
     if (codeField.focus) codeField.focus();
+    return true;
+  };
+
+  Chart.prototype.removeEmptyIndicatorPane = function (paneId) {
+    if (!paneId || paneId === 'price') return false;
+    if (this.document.indicators.some(function (indicator) { return indicator.paneId === paneId; })) return false;
+    this.document.panes = this.document.panes.filter(function (pane) { return pane.id !== paneId; });
+    this.document.drawings = this.document.drawings.filter(function (drawing) { return drawing.paneId !== paneId; });
+    if (this.document.settings.maximizedPaneId === paneId) this.document.settings.maximizedPaneId = null;
+    this.paneResizeState = null;
+    this.panState = null;
     return true;
   };
 
@@ -5073,7 +5092,19 @@
       var preview = runtime.run(compiled, this.bars, { title: titleField && titleField.value, inputs: pineValues });
       var indicatorId = this.settingsPopup.dataset.indicatorId;
       if (indicatorId) {
-        this.updateIndicatorSettings(indicatorId, { inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues } });
+        var existingIndicator = this.document.indicators.filter(function (indicator) {
+          return indicator.id === indicatorId && indicator.type === 'PINE_SCRIPT';
+        })[0];
+        var paneId = existingIndicator ? existingIndicator.paneId : null;
+        if (existingIndicator && preview.metadata.overlay) {
+          paneId = 'price';
+        } else if (existingIndicator && !preview.metadata.overlay && existingIndicator.paneId === 'price') {
+          paneId = this.addPane({ title: preview.metadata.title || 'Pine Script' }, { silent: true });
+        }
+        this.updateIndicatorSettings(indicatorId, {
+          paneId: paneId,
+          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues }
+        });
       } else {
         indicatorId = this.addIndicator('PINE_SCRIPT', {
           placement: preview.metadata.overlay ? 'source' : 'new',
