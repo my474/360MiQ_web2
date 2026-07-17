@@ -896,6 +896,48 @@ chart.handlePointerDown({ clientX: priceRectForPan.x + priceRectForPan.width / 2
 chart.handlePointerMove({ clientX: priceRectForPan.x + priceRectForPan.width / 2 - 80, clientY: priceRectForPan.y + priceRectForPan.height / 2 });
 chart.handlePointerUp();
 assert.ok(chart.visibleIndexRange().from >= panStart.from);
+assert.strictEqual(chart.goToEarliest(), true);
+const earliestKeyboardRange = chart.visibleIndexRange();
+const pageDownEvent = {
+  type: 'keydown',
+  key: 'PageDown',
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.canvas.dispatchEvent(pageDownEvent);
+assert.strictEqual(pageDownEvent.defaultPrevented, true);
+assert.ok(chart.visibleIndexRange().from > earliestKeyboardRange.from);
+const pageUpEvent = {
+  type: 'keydown',
+  key: 'PageUp',
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.canvas.dispatchEvent(pageUpEvent);
+assert.strictEqual(pageUpEvent.defaultPrevented, true);
+assert.ok(chart.visibleIndexRange().from < earliestKeyboardRange.from + chart.bars.length);
+const endEvent = {
+  type: 'keydown',
+  key: 'End',
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.canvas.dispatchEvent(endEvent);
+assert.strictEqual(endEvent.defaultPrevented, true);
+assert.strictEqual(chart.visibleIndexRange().to, chart.bars.length - 1);
+const homeEvent = {
+  type: 'keydown',
+  key: 'Home',
+  preventDefault() {
+    this.defaultPrevented = true;
+  }
+};
+chart.canvas.dispatchEvent(homeEvent);
+assert.strictEqual(homeEvent.defaultPrevented, true);
+assert.strictEqual(chart.visibleIndexRange().from, 0);
 chart.fitContent();
 chart.draw();
 assert.strictEqual(chart.latestMarker.hidden, true);
