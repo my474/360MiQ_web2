@@ -1310,6 +1310,12 @@
   width: 24px;
 }
 
+.sce-pine-doc-controls {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+
 .sce-pine-docs-header button:hover,
 .sce-pine-docs-header button:focus {
   background: rgba(37, 99, 235, 0.14);
@@ -1714,6 +1720,87 @@
   min-height: 0;
   overflow: auto;
   width: 100%;
+}
+
+.sce-pine-code-pane {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.sce-pine-code-pane > label {
+  flex: 0 0 auto;
+}
+
+.sce-pine-code-pane .sce-pine-editor-shell {
+  flex: 1 1 auto;
+  min-height: 140px;
+}
+
+.sce-pine-pane-splitter {
+  align-items: center;
+  cursor: row-resize;
+  display: flex;
+  flex: 0 0 10px;
+  justify-content: center;
+  min-height: 10px;
+  touch-action: none;
+  user-select: none;
+}
+
+.sce-pine-pane-splitter::before {
+  background: var(--sce-border);
+  border-radius: 999px;
+  content: "";
+  height: 4px;
+  opacity: 0.9;
+  transition: background 140ms ease, box-shadow 140ms ease, width 140ms ease;
+  width: 54px;
+}
+
+.sce-pine-pane-splitter:hover::before,
+.sce-pine-pane-splitter:focus::before {
+  background: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  outline: none;
+  width: 72px;
+}
+
+.sce-pine-help-pane {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sce-pine-help-pane[hidden],
+.sce-pine-pane-splitter[hidden] {
+  display: none;
+}
+
+.sce-pine-help-pane .sce-pine-docs {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sce-pine-help-pane.is-help-minimized {
+  flex: 0 0 42px !important;
+}
+
+.sce-pine-help-pane.is-help-minimized .sce-pine-docs {
+  min-height: 0;
+}
+
+.sce-pine-help-pane.is-help-minimized .sce-pine-docs-filters,
+.sce-pine-help-pane.is-help-minimized .sce-pine-docs-content {
+  display: none;
+}
+
+.sce-pine-help-pane.is-help-maximized {
+  flex: 1 1 auto;
 }
 
 .sce-pine-window-body > .sce-settings-actions {

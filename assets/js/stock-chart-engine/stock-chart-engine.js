@@ -2229,6 +2229,10 @@
       top: null,
       width: 480,
       height: 580,
+      paneSplit: 0.58,
+      helpMinimized: false,
+      helpMaximized: false,
+      helpRestore: null,
       minimized: false,
       maximized: false,
       restore: null
@@ -3864,7 +3868,7 @@
       '<button type="button" data-sce-popup-action="close" title="Close" aria-label="Close">', paneControlIconSvg('close'), '</button>',
       '</span>',
       '</div>',
-      '<div class="sce-pine-window-body">',
+      '<div class="sce-pine-window-body" data-sce-pine-window-body>',
       '<label>Name<input type="text" data-sce-pine-field="title" value="', escapeHtml(title), '"></label>',
       '<div class="sce-pine-editor-tools" data-sce-pine-editor-tools role="toolbar" aria-label="Pine editor tools">',
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">', paneControlIconSvg('undo'), '</button>',
@@ -3884,6 +3888,7 @@
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-decrease" title="Decrease editor font size" aria-label="Decrease editor font size">', paneControlIconSvg('font-decrease'), '</button>',
       '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-reset" title="Reset editor font size" aria-label="Reset editor font size">', paneControlIconSvg('font-reset'), '</button>',
       '</div>',
+      '<div class="sce-pine-code-pane" data-sce-pine-code-pane>',
       '<label>Script</label>',
       '<div class="sce-pine-editor-shell" data-sce-pine-editor-shell>',
       '<div class="sce-pine-editor-gutter" data-sce-pine-gutter aria-hidden="true"></div>',
@@ -3911,8 +3916,16 @@
       '<input type="search" data-sce-pine-command-search placeholder="Search commands" aria-label="Search commands">',
       '<div class="sce-pine-command-list" data-sce-pine-command-list role="listbox"></div>',
       '</div>',
+      '</div>',
+      '<div class="sce-pine-pane-splitter" data-sce-pine-splitter role="separator" aria-label="Resize code and help panes" aria-orientation="horizontal" tabindex="0" title="Drag to resize code and help panes" hidden></div>',
+      '<div class="sce-pine-help-pane" data-sce-pine-help-pane hidden>',
       '<section class="sce-pine-docs" data-sce-pine-docs hidden aria-label="Pine Script documentation">',
-      '<div class="sce-pine-docs-header"><strong>Pine Script reference</strong><button type="button" data-sce-pine-doc-action="close" title="Close documentation" aria-label="Close documentation">', paneControlIconSvg('close'), '</button></div>',
+      '<div class="sce-pine-docs-header"><strong>Pine Script reference</strong><span class="sce-pine-doc-controls">',
+      '<button type="button" data-sce-pine-help-action="minimize" title="Minimize help pane" aria-label="Minimize help pane">', paneControlIconSvg('minimize'), '</button>',
+      '<button type="button" data-sce-pine-help-action="maximize" title="Maximize help pane" aria-label="Maximize help pane">', paneControlIconSvg('maximize'), '</button>',
+      '<button type="button" data-sce-pine-help-action="restore" title="Restore help pane size" aria-label="Restore help pane size" hidden>', paneControlIconSvg('maximize'), '</button>',
+      '<button type="button" data-sce-pine-doc-action="close" title="Close documentation" aria-label="Close documentation">', paneControlIconSvg('close'), '</button>',
+      '</span></div>',
       '<div class="sce-pine-docs-filters">',
       '<input type="search" data-sce-pine-doc-search placeholder="Search functions, keywords, or content" aria-label="Search Pine Script documentation">',
       '<select data-sce-pine-doc-filter aria-label="Filter documentation category">',
@@ -3924,6 +3937,7 @@
       '<article class="sce-pine-docs-detail" data-sce-pine-doc-detail aria-live="polite"></article>',
       '</div>',
       '</section>',
+      '</div>',
       '<div data-sce-pine-inputs>', inputControls, '</div>',
       '<div class="sce-pine-status" data-sce-pine-status aria-live="polite" hidden></div>',
       '<div class="sce-settings-actions" data-sce-pine-actions>',
@@ -3971,6 +3985,8 @@
     panel.hidden = false;
     search.value = '';
     filter.value = 'all';
+    this.updatePineHelpPaneVisibility();
+    this.renderPineWindowState();
     this.renderPineDocumentation('', 'all');
     if (search.focus) search.focus();
     return true;
@@ -3979,6 +3995,8 @@
   Chart.prototype.closePineDocumentation = function () {
     var panel = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-docs]');
     if (panel) panel.hidden = true;
+    this.updatePineHelpPaneVisibility();
+    this.renderPineWindowState();
   };
 
   Chart.prototype.showPineDocumentationEntry = function (index) {
@@ -4069,11 +4087,14 @@
       var raw = localStorage.getItem(PINE_WINDOW_STORAGE_KEY);
       var parsed = raw ? JSON.parse(raw) : null;
       if (!parsed || typeof parsed !== 'object') return this.pineWindowState;
-      ['left', 'top', 'width', 'height'].forEach(function (key) {
+      ['left', 'top', 'width', 'height', 'paneSplit'].forEach(function (key) {
         if (parsed[key] == null) return;
         var value = Number(parsed[key]);
         if (Number.isFinite(value)) this.pineWindowState[key] = value;
       }, this);
+      this.pineWindowState.paneSplit = clamp(Number(this.pineWindowState.paneSplit) || 0.58, 0.2, 0.8);
+      if (typeof parsed.helpMinimized === 'boolean') this.pineWindowState.helpMinimized = parsed.helpMinimized;
+      if (typeof parsed.helpMaximized === 'boolean') this.pineWindowState.helpMaximized = parsed.helpMaximized;
       if (typeof parsed.minimized === 'boolean') this.pineWindowState.minimized = parsed.minimized;
       if (typeof parsed.maximized === 'boolean') this.pineWindowState.maximized = parsed.maximized;
       if (parsed.restore && typeof parsed.restore === 'object') {
@@ -4083,6 +4104,10 @@
           if (Number.isFinite(value)) restore[key] = value;
         });
         if (Object.keys(restore).length) this.pineWindowState.restore = restore;
+      }
+      if (parsed.helpRestore && typeof parsed.helpRestore === 'object') {
+        var helpRestore = Number(parsed.helpRestore.paneSplit);
+        if (Number.isFinite(helpRestore)) this.pineWindowState.helpRestore = { paneSplit: clamp(helpRestore, 0.2, 0.8) };
       }
     } catch (error) {}
     return this.pineWindowState;
@@ -4096,6 +4121,10 @@
       top: state.top == null ? null : (Number.isFinite(Number(state.top)) ? Number(state.top) : null),
       width: Number(state.width),
       height: Number(state.height),
+      paneSplit: clamp(Number(state.paneSplit) || 0.58, 0.2, 0.8),
+      helpMinimized: !!state.helpMinimized,
+      helpMaximized: !!state.helpMaximized,
+      helpRestore: null,
       minimized: !!state.minimized,
       maximized: !!state.maximized,
       restore: null
@@ -4108,6 +4137,10 @@
         if (Number.isFinite(value)) serialized.restore[key] = value;
       });
       if (!Object.keys(serialized.restore).length) serialized.restore = null;
+    }
+    if (state.helpRestore && typeof state.helpRestore === 'object') {
+      var helpSplit = Number(state.helpRestore.paneSplit);
+      if (Number.isFinite(helpSplit)) serialized.helpRestore = { paneSplit: clamp(helpSplit, 0.2, 0.8) };
     }
     try {
       localStorage.setItem(PINE_WINDOW_STORAGE_KEY, JSON.stringify(serialized));
@@ -5023,6 +5056,85 @@
     if (maximizeButton) maximizeButton.hidden = !!state.maximized || !!state.minimized;
     if (restoreButton) restoreButton.hidden = !state.maximized;
     if (resizeHandle) resizeHandle.hidden = !!state.maximized || !!state.minimized;
+    this.applyPinePaneSplitLayout();
+  };
+
+  Chart.prototype.updatePineHelpPaneVisibility = function () {
+    if (!this.settingsPopup || !this.settingsPopup.querySelector) return false;
+    var docs = this.settingsPopup.querySelector('[data-sce-pine-docs]');
+    var helpPane = this.settingsPopup.querySelector('[data-sce-pine-help-pane]');
+    var splitter = this.settingsPopup.querySelector('[data-sce-pine-splitter]');
+    var visible = !!(docs && !docs.hidden);
+    if (helpPane) helpPane.hidden = !visible;
+    if (splitter) splitter.hidden = !visible;
+    return visible;
+  };
+
+  Chart.prototype.pinePaneSplitMetrics = function () {
+    var body = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-window-body]');
+    var splitter = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-splitter]');
+    var bodyHeight = body && (body.clientHeight || body.offsetHeight);
+    if (!bodyHeight) bodyHeight = Math.max(320, Number(this.pineWindowState.height) - 198);
+    var splitterHeight = splitter && (splitter.offsetHeight || splitter.clientHeight) || 9;
+    var available = Math.max(260, bodyHeight - splitterHeight);
+    var minCode = Math.min(180, Math.max(120, available - 42));
+    var minHelp = Math.min(180, Math.max(42, available - minCode));
+    var codeHeight = available * clamp(Number(this.pineWindowState.paneSplit) || 0.58, 0.2, 0.8);
+    return {
+      available: available,
+      minCode: minCode,
+      minHelp: minHelp,
+      codeHeight: clamp(codeHeight, minCode, Math.max(minCode, available - minHelp))
+    };
+  };
+
+  Chart.prototype.applyPinePaneSplitLayout = function () {
+    if (!this.settingsPopup || String(this.settingsPopup.className || '').split(/\s+/).indexOf('sce-pine-window') === -1) return;
+    var codePane = this.settingsPopup.querySelector('[data-sce-pine-code-pane]');
+    var helpPane = this.settingsPopup.querySelector('[data-sce-pine-help-pane]');
+    var splitter = this.settingsPopup.querySelector('[data-sce-pine-splitter]');
+    var docs = this.settingsPopup.querySelector('[data-sce-pine-docs]');
+    if (!codePane || !helpPane || !splitter || !docs) return;
+    var visible = this.updatePineHelpPaneVisibility();
+    if (!visible) {
+      codePane.style.flex = '1 1 auto';
+      codePane.classList.remove('is-help-maximized');
+      helpPane.classList.remove('is-help-minimized', 'is-help-maximized');
+      return;
+    }
+    var state = this.pineWindowState;
+    var metrics = this.pinePaneSplitMetrics();
+    var codeHeight = metrics.available * clamp(Number(state.paneSplit) || 0.58, 0.2, 0.8);
+    if (state.helpMinimized) {
+      codeHeight = metrics.available - metrics.minHelp;
+      helpPane.classList.add('is-help-minimized');
+    } else {
+      helpPane.classList.remove('is-help-minimized');
+    }
+    if (state.helpMaximized) {
+      codeHeight = metrics.minCode;
+      helpPane.classList.add('is-help-maximized');
+    } else {
+      helpPane.classList.remove('is-help-maximized');
+    }
+    codeHeight = clamp(codeHeight, metrics.minCode, Math.max(metrics.minCode, metrics.available - metrics.minHelp));
+    codePane.style.flex = '0 0 ' + Math.round(codeHeight) + 'px';
+    helpPane.style.flex = '1 1 auto';
+    var minimizeButton = this.settingsPopup.querySelector('[data-sce-pine-help-action="minimize"]');
+    var maximizeButton = this.settingsPopup.querySelector('[data-sce-pine-help-action="maximize"]');
+    var restoreButton = this.settingsPopup.querySelector('[data-sce-pine-help-action="restore"]');
+    if (minimizeButton) {
+      minimizeButton.innerHTML = paneControlIconSvg(state.helpMinimized ? 'maximize' : 'minimize');
+      minimizeButton.setAttribute('title', state.helpMinimized ? 'Restore help pane' : 'Minimize help pane');
+      minimizeButton.setAttribute('aria-label', state.helpMinimized ? 'Restore help pane' : 'Minimize help pane');
+    }
+    if (maximizeButton) {
+      maximizeButton.hidden = !!state.helpMaximized || !!state.helpMinimized;
+      maximizeButton.setAttribute('title', 'Maximize help pane');
+      maximizeButton.setAttribute('aria-label', 'Maximize help pane');
+    }
+    if (restoreButton) restoreButton.hidden = !state.helpMaximized;
+    splitter.setAttribute('aria-valuenow', String(Math.round(clamp(Number(state.paneSplit) || 0.58, 0.2, 0.8) * 100)));
   };
 
   Chart.prototype.positionPineScriptWindow = function (pointer) {
@@ -5075,6 +5187,44 @@
     this.savePineWindowSettings();
   };
 
+  Chart.prototype.setPineHelpPaneAction = function (action) {
+    var state = this.pineWindowState;
+    if (action === 'minimize') {
+      if (state.helpMinimized) {
+        state.paneSplit = state.helpRestore && Number.isFinite(Number(state.helpRestore.paneSplit))
+          ? Number(state.helpRestore.paneSplit) : state.paneSplit;
+        state.helpMinimized = false;
+        state.helpMaximized = false;
+        state.helpRestore = null;
+      } else {
+        state.helpRestore = { paneSplit: state.paneSplit };
+        state.helpMinimized = true;
+        state.helpMaximized = false;
+      }
+    } else if (action === 'maximize') {
+      if (state.helpMaximized) {
+        state.paneSplit = state.helpRestore && Number.isFinite(Number(state.helpRestore.paneSplit))
+          ? Number(state.helpRestore.paneSplit) : state.paneSplit;
+        state.helpMinimized = false;
+        state.helpMaximized = false;
+        state.helpRestore = null;
+      } else {
+        state.helpRestore = { paneSplit: state.paneSplit };
+        state.helpMinimized = false;
+        state.helpMaximized = true;
+      }
+    } else if (action === 'restore') {
+      state.paneSplit = state.helpRestore && Number.isFinite(Number(state.helpRestore.paneSplit))
+        ? Number(state.helpRestore.paneSplit) : state.paneSplit;
+      state.helpMinimized = false;
+      state.helpMaximized = false;
+      state.helpRestore = null;
+    }
+    state.paneSplit = clamp(Number(state.paneSplit) || 0.58, 0.2, 0.8);
+    this.renderPineWindowState();
+    this.savePineWindowSettings();
+  };
+
   Chart.prototype.bindPineScriptPopup = function () {
     var self = this;
     this.settingsPopup.onclick = function (event) {
@@ -5088,6 +5238,7 @@
       var completionTarget = closestAttribute(event.target, 'data-sce-pine-completion');
       var actionTarget = closestAttribute(event.target, 'data-sce-popup-action');
       var windowActionTarget = closestAttribute(event.target, 'data-sce-pine-window-action');
+      var helpActionTarget = closestAttribute(event.target, 'data-sce-pine-help-action');
       var action = actionTarget && actionTarget.getAttribute('data-sce-popup-action');
       if (editorActionTarget) {
         if (event.preventDefault) event.preventDefault();
@@ -5139,6 +5290,11 @@
       }
       if (windowActionTarget) {
         self.setPineWindowAction(windowActionTarget.getAttribute('data-sce-pine-window-action'));
+        return;
+      }
+      if (helpActionTarget) {
+        if (event.preventDefault) event.preventDefault();
+        self.setPineHelpPaneAction(helpActionTarget.getAttribute('data-sce-pine-help-action'));
         return;
       }
       if (!action) return;
@@ -5442,7 +5598,19 @@
     var target = event && event.target;
     var resizeTarget = closestAttribute(target, 'data-sce-pine-resize');
     var dragTarget = closestAttribute(target, 'data-sce-pine-drag-handle');
-    if (resizeTarget && !this.pineWindowState.maximized && !this.pineWindowState.minimized) {
+    var splitterTarget = closestAttribute(target, 'data-sce-pine-splitter');
+    if (splitterTarget && !this.pineWindowState.maximized && !this.pineWindowState.minimized && !this.pineWindowState.helpMinimized && !this.pineWindowState.helpMaximized) {
+      var splitMetrics = this.pinePaneSplitMetrics();
+      this.pineWindowInteraction = {
+        type: 'pane-split',
+        pointerId: event.pointerId == null ? null : event.pointerId,
+        startY: event.clientY,
+        startCodeHeight: splitMetrics.codeHeight,
+        availableHeight: splitMetrics.available,
+        minCode: splitMetrics.minCode,
+        minHelp: splitMetrics.minHelp
+      };
+    } else if (resizeTarget && !this.pineWindowState.maximized && !this.pineWindowState.minimized) {
       this.pineWindowInteraction = {
         type: 'resize',
         pointerId: event.pointerId == null ? null : event.pointerId,
@@ -5475,7 +5643,12 @@
     if (!interaction || !event) return;
     if (interaction.pointerId != null && event.pointerId != null && event.pointerId !== interaction.pointerId) return;
     var bounds = this.pineWindowBounds();
-    if (interaction.type === 'drag') {
+    if (interaction.type === 'pane-split') {
+      var codeHeight = interaction.startCodeHeight + event.clientY - interaction.startY;
+      var maximumCode = Math.max(interaction.minCode, interaction.availableHeight - interaction.minHelp);
+      codeHeight = clamp(codeHeight, interaction.minCode, maximumCode);
+      this.pineWindowState.paneSplit = clamp(codeHeight / Math.max(1, interaction.availableHeight), 0.2, 0.8);
+    } else if (interaction.type === 'drag') {
       var maxLeft = Math.max(this.drawingRailWidth() + 8, bounds.width - this.pineWindowState.width - 8);
       this.pineWindowState.left = clamp(interaction.left + event.clientX - interaction.startX, this.drawingRailWidth() + 8, maxLeft);
       this.pineWindowState.top = clamp(interaction.top + event.clientY - interaction.startY, 8, Math.max(8, bounds.height - this.pineWindowState.height - 8));
