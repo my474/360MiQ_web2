@@ -3912,8 +3912,8 @@
       '</div>',
       '<div data-sce-pine-inputs>', inputControls, '</div>',
       '<div class="sce-pine-status" data-sce-pine-status aria-live="polite" hidden></div>',
-      '<div class="sce-settings-actions">',
-      indicator ? '<button type="button" data-sce-popup-action="remove">Remove</button>' : '',
+      '<div class="sce-settings-actions" data-sce-pine-actions>',
+      '<button type="button" data-sce-popup-action="remove" data-sce-pine-remove title="Remove Pine indicator"', indicator ? '' : ' hidden', '>Remove</button>',
       '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device (Ctrl/Cmd+O)">Load</button>',
       '<button type="button" data-sce-popup-action="save-pine" title="Save Pine Script to your device (Ctrl/Cmd+S)">Save</button>',
       '<button type="button" data-sce-popup-action="run-pine" title="Run Pine Script (Ctrl/Cmd+Enter)">Run</button>',
@@ -3930,12 +3930,21 @@
     delete this.settingsPopup.dataset.drawingId;
     delete this.settingsPopup.dataset.output;
     if (indicator) this.rememberRecentPineScript(title, code);
+    this.setPineRemoveButtonVisible(!!indicator);
     this.loadPineWindowSettings();
     this.bindPineScriptPopup();
     this.positionPineScriptWindow(pointer);
     this.savePineWindowSettings();
     var field = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
     if (field && field.focus) field.focus();
+  };
+
+  Chart.prototype.setPineRemoveButtonVisible = function (visible) {
+    if (!this.settingsPopup || !this.settingsPopup.querySelector) return;
+    var button = this.settingsPopup.querySelector('[data-sce-pine-remove]');
+    if (!button) return;
+    button.hidden = !visible;
+    button.setAttribute('aria-hidden', visible ? 'false' : 'true');
   };
 
   Chart.prototype.pineInputControlsHtml = function (inputs) {
@@ -5022,8 +5031,16 @@
         self.openPineScriptFilePicker();
       }
       if (action === 'remove') {
-        self.removeIndicator(self.settingsPopup.dataset.indicatorId);
-        self.closeIndicatorSettingsPopup();
+        var removedIndicatorId = self.settingsPopup.dataset.indicatorId;
+        if (removedIndicatorId && self.removeIndicator(removedIndicatorId)) {
+          delete self.settingsPopup.dataset.indicatorId;
+          self.setPineRemoveButtonVisible(false);
+          var status = self.settingsPopup.querySelector('[data-sce-pine-status]');
+          if (status) {
+            status.hidden = false;
+            status.textContent = 'Pine indicator removed. Click Run to add it again.';
+          }
+        }
       }
     };
     var fileInput = this.settingsPopup.querySelector('[data-sce-pine-file-input]');
@@ -5112,6 +5129,7 @@
         });
       }
       if (indicatorId) this.settingsPopup.dataset.indicatorId = indicatorId;
+      this.setPineRemoveButtonVisible(!!indicatorId);
       if (status) {
         status.hidden = false;
         status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
