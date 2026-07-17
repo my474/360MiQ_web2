@@ -996,6 +996,7 @@
 
 .sce-pine-editor-shell {
   --sce-pine-font-size: 13px;
+  --sce-pine-help-space: 9px;
   background: var(--sce-panel);
   border: 1px solid var(--sce-border);
   border-radius: 4px;
@@ -1076,6 +1077,11 @@
   -webkit-text-fill-color: transparent;
 }
 
+.sce-pine-editor-shell .sce-pine-editor,
+.sce-pine-editor-shell .sce-pine-highlight {
+  padding-bottom: var(--sce-pine-help-space);
+}
+
 .sce-pine-editor-shell .sce-pine-editor::selection {
   background: rgba(37, 99, 235, 0.28);
 }
@@ -1135,12 +1141,15 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
   box-sizing: border-box;
   color: var(--sce-text);
-  flex: 0 0 auto;
   max-height: 160px;
   overflow: auto;
   padding: 7px 9px;
-  pointer-events: none;
-  width: 100%;
+  pointer-events: auto;
+  position: absolute;
+  bottom: 10px;
+  left: 48px;
+  right: 10px;
+  z-index: 5;
 }
 
 .sce-pine-signature-heading {

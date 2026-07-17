@@ -3865,9 +3865,9 @@
       '<div class="sce-pine-editor-gutter" data-sce-pine-gutter aria-hidden="true"></div>',
       '<pre class="sce-pine-highlight" data-sce-pine-highlight aria-hidden="true"><code>', highlightPineScript(code), '</code></pre>',
       '<textarea class="sce-pine-editor" data-sce-pine-field="code" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">', escapeHtml(code), '</textarea>',
+      '<div class="sce-pine-signature-help" data-sce-pine-signature-help hidden aria-live="polite"></div>',
       '<div class="sce-pine-completions" data-sce-pine-completions role="listbox" hidden></div>',
       '</div>',
-      '<div class="sce-pine-signature-help" data-sce-pine-signature-help hidden aria-live="polite"></div>',
       '<div class="sce-pine-findbar" data-sce-pine-findbar hidden>',
       '<div class="sce-pine-findbar-fields">',
       '<input type="search" data-sce-pine-find-query placeholder="Find" aria-label="Find">',
@@ -4302,11 +4302,29 @@
   Chart.prototype.hidePineCompletions = function () {
     var completions = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-completions]');
     if (completions) completions.hidden = true;
+    this.updatePineEditorHelpLayout();
+  };
+
+  Chart.prototype.updatePineEditorHelpLayout = function () {
+    var shell = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-editor-shell]');
+    if (!shell) return;
+    var helpSpace = 9;
+    var helpPanels = [
+      shell.querySelector('[data-sce-pine-signature-help]'),
+      shell.querySelector('[data-sce-pine-completions]')
+    ];
+    helpPanels.forEach(function (panel) {
+      if (!panel || panel.hidden) return;
+      var height = panel.getBoundingClientRect ? panel.getBoundingClientRect().height : panel.offsetHeight;
+      if (Number.isFinite(height) && height > 0) helpSpace = Math.max(helpSpace, Math.ceil(height + 18));
+    });
+    shell.style.setProperty('--sce-pine-help-space', helpSpace + 'px');
   };
 
   Chart.prototype.hidePineSignatureHelp = function () {
     var help = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-signature-help]');
     if (help) help.hidden = true;
+    this.updatePineEditorHelpLayout();
   };
 
   Chart.prototype.pineCurrentCall = function () {
@@ -4378,8 +4396,10 @@
     var call = this.pineCurrentCall();
     if (!call) {
       help.hidden = true;
+      this.updatePineEditorHelpLayout();
       return;
     }
+    this.hidePineCompletions();
     var definition = call.definition;
     var parameterIndex = Math.min(call.parameterIndex, definition.parameters.length - 1);
     help.innerHTML = [
@@ -4392,6 +4412,7 @@
       '</div>'
     ].join('');
     help.hidden = false;
+    this.updatePineEditorHelpLayout();
   };
 
   Chart.prototype.showPineCompletions = function (force) {
@@ -4416,6 +4437,7 @@
       return '<button type="button" data-sce-pine-completion="' + escapeHtml(item.value) + '" role="option"><strong>' + escapeHtml(item.value) + '</strong><span>' + escapeHtml(item.label) + '</span></button>';
     }).join('');
     completions.hidden = false;
+    this.updatePineEditorHelpLayout();
   };
 
   Chart.prototype.handlePineEditorKeydown = function (event) {
