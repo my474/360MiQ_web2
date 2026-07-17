@@ -483,7 +483,7 @@ chart.settingsPopup.appendChild(pineDocsList);
 chart.settingsPopup.appendChild(pineDocsDetail);
 assert.strictEqual(chart.openPineDocumentation(), true);
 assert.strictEqual(pineDocsPanel.hidden, false);
-assert.ok(pineDocsList.innerHTML.includes('plot'));
+assert.ok(pineDocsList.innerHTML.includes('Functions'));
 pineDocsSearch.value = 'moving average';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.ok(pineDocsList.innerHTML.includes('ta.sma'));

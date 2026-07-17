@@ -4001,6 +4001,13 @@
     if (!list) return;
     var normalizedQuery = String(query || '').trim().toLowerCase();
     var normalizedCategory = String(category || 'all').toLowerCase();
+    var categoryLabels = {
+      function: 'Functions',
+      keyword: 'Keywords',
+      'built-in': 'Built-ins',
+      namespace: 'Namespaces',
+      syntax: 'Syntax'
+    };
     var matches = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
       if (normalizedCategory !== 'all' && item.category !== normalizedCategory) return false;
       if (!normalizedQuery) return true;
@@ -4009,9 +4016,18 @@
         .join(' ').toLowerCase();
       return searchable.indexOf(normalizedQuery) !== -1;
     });
+    if (normalizedCategory === 'all' && !normalizedQuery) {
+      list.innerHTML = Object.keys(categoryLabels).map(function (categoryId) {
+        var count = PINE_EDITOR_DOCUMENTATION.filter(function (item) { return item.category === categoryId; }).length;
+        return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
+      }).join('');
+      var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, keyword, or description.</p><p>Entries reflect the Pine-compatible features currently supported by this chart.</p>';
+      return;
+    }
     list.innerHTML = matches.length ? matches.map(function (item) {
       var index = PINE_EDITOR_DOCUMENTATION.indexOf(item);
-      return '<button type="button" data-sce-pine-doc-index="' + index + '" role="option"><strong>' + escapeHtml(item.name) + '</strong><span>' + escapeHtml(item.type) + '</span></button>';
+      return '<button type="button" data-sce-pine-doc-index="' + index + '" role="option"><strong>' + escapeHtml(item.name) + '</strong><span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span></button>';
     }).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
     if (matches.length) this.showPineDocumentationEntry(PINE_EDITOR_DOCUMENTATION.indexOf(matches[0]));
     else {
@@ -5064,6 +5080,7 @@
     this.settingsPopup.onclick = function (event) {
       var editorActionTarget = closestAttribute(event.target, 'data-sce-pine-editor-action');
       var documentationActionTarget = closestAttribute(event.target, 'data-sce-pine-doc-action');
+      var documentationCategoryTarget = closestAttribute(event.target, 'data-sce-pine-doc-category');
       var documentationTarget = closestAttribute(event.target, 'data-sce-pine-doc-index');
       var findActionTarget = closestAttribute(event.target, 'data-sce-pine-find-action');
       var commandTarget = closestAttribute(event.target, 'data-sce-pine-command');
@@ -5080,6 +5097,14 @@
       if (documentationActionTarget) {
         if (event.preventDefault) event.preventDefault();
         if (documentationActionTarget.getAttribute('data-sce-pine-doc-action') === 'close') self.closePineDocumentation();
+        return;
+      }
+      if (documentationCategoryTarget) {
+        if (event.preventDefault) event.preventDefault();
+        var documentationFilter = self.settingsPopup.querySelector('[data-sce-pine-doc-filter]');
+        var documentationCategory = documentationCategoryTarget.getAttribute('data-sce-pine-doc-category');
+        if (documentationFilter) documentationFilter.value = documentationCategory;
+        self.renderPineDocumentation('', documentationCategory);
         return;
       }
       if (documentationTarget) {

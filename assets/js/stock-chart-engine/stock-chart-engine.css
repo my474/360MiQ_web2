@@ -1387,6 +1387,25 @@
   outline: none;
 }
 
+.sce-pine-docs-list button.sce-pine-doc-category {
+  border-bottom: 1px solid var(--sce-border);
+  min-height: 48px;
+  padding: 9px 8px;
+}
+
+.sce-pine-docs-list button.sce-pine-doc-category:last-child {
+  border-bottom: 0;
+}
+
+.sce-pine-docs-list button.sce-pine-doc-category strong {
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.sce-pine-docs-list button.sce-pine-doc-category span {
+  font-size: 10px;
+}
+
 .sce-pine-docs-list button strong {
   font-family: Consolas, "SFMono-Regular", monospace;
   font-size: 11px;
@@ -1399,6 +1418,16 @@
 .sce-pine-doc-empty {
   color: var(--sce-muted);
   font-size: 10px;
+}
+
+.sce-pine-docs-list button .sce-pine-doc-type {
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid var(--sce-border);
+  border-radius: 999px;
+  color: var(--sce-muted);
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  white-space: nowrap;
 }
 
 .sce-pine-docs-detail {
