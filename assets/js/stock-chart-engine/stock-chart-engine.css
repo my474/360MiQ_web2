@@ -1133,16 +1133,14 @@
   background: var(--sce-panel);
   border: 1px solid var(--sce-border);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+  box-sizing: border-box;
   color: var(--sce-text);
-  left: 48px;
-  max-height: 190px;
-  max-width: calc(100% - 58px);
+  flex: 0 0 auto;
+  max-height: 160px;
   overflow: auto;
   padding: 7px 9px;
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  z-index: 5;
+  pointer-events: none;
+  width: 100%;
 }
 
 .sce-pine-signature-heading {
