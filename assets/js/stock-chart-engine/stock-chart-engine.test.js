@@ -465,6 +465,10 @@ assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="u
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="redo"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-findbar'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-command-palette'));
+assert.strictEqual(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="command-palette"'), false);
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="font-increase"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="font-decrease"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="font-reset"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-editor-action="recent"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-recent-menu'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="load-pine"'));

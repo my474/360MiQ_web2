@@ -3858,11 +3858,14 @@
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="replace" title="Find and replace (Ctrl/Cmd+H)">Replace</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="format" title="Format document">Format</button>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="toggle-wrap" title="Toggle word wrap (Alt/Option+Z)" aria-pressed="false">Wrap</button>',
-      '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="command-palette" title="Command palette (F1)">Commands</button>',
       '<span class="sce-pine-recent-wrap" data-sce-pine-recent-wrap>',
       '<button type="button" class="sce-pine-editor-tool-text" data-sce-pine-editor-action="recent" title="Recent Pine Scripts" aria-expanded="false">', paneControlIconSvg('recent'), 'Recent</button>',
       '<div class="sce-pine-recent-menu" data-sce-pine-recent-menu role="listbox" hidden></div>',
       '</span>',
+      '<span class="sce-pine-editor-tool-divider" aria-hidden="true"></span>',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-increase" title="Increase editor font size" aria-label="Increase editor font size">', paneControlIconSvg('font-increase'), '</button>',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-decrease" title="Decrease editor font size" aria-label="Decrease editor font size">', paneControlIconSvg('font-decrease'), '</button>',
+      '<button type="button" class="sce-pine-editor-tool" data-sce-pine-editor-action="font-reset" title="Reset editor font size" aria-label="Reset editor font size">', paneControlIconSvg('font-reset'), '</button>',
       '</div>',
       '<label>Script</label>',
       '<div class="sce-pine-editor-shell" data-sce-pine-editor-shell>',
@@ -4373,8 +4376,14 @@
     if (action === 'replace') this.openPineFindBar(true);
     if (action === 'format') this.formatPineEditor();
     if (action === 'toggle-wrap') this.togglePineEditorWrap();
-    if (action === 'command-palette') this.openPineCommandPalette();
     if (action === 'recent') this.openRecentPineScripts();
+    if (action === 'font-increase') this.changePineEditorFontSize(1);
+    if (action === 'font-decrease') this.changePineEditorFontSize(-1);
+    if (action === 'font-reset') {
+      this.pineEditorSettings.fontSize = 13;
+      this.savePineEditorSettings();
+      this.applyPineEditorViewSettings();
+    }
   };
 
   Chart.prototype.insertPineCompletion = function (completion) {
@@ -10542,6 +10551,9 @@
       copy: '<rect x="8" y="8" width="11" height="13" rx="1.5"/><path d="M5 16H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1"/>',
       undo: '<path d="m9 14-5-5 5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v1"/>',
       redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0-5 5v1"/>',
+      'font-increase': '<path d="M4 19 9 5l5 14"/><path d="M6 14h6"/><path d="M19 8v8"/><path d="M15 12h8"/>',
+      'font-decrease': '<path d="M4 19 9 5l5 14"/><path d="M6 14h6"/><path d="M15 12h8"/>',
+      'font-reset': '<path d="M4 19 9 5l5 14"/><path d="M6 14h6"/><path d="M19 8a6 6 0 1 0 1.4 6.8"/><path d="M19 8h-4"/><path d="M19 8v4"/>',
       latest: '<path d="M4 12h15"/><path d="m14 6 6 6-6 6"/>',
       'zoom-in': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M10.5 8v5"/><path d="M8 10.5h5"/>',
       'zoom-out': '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/><path d="M8 10.5h5"/>',
