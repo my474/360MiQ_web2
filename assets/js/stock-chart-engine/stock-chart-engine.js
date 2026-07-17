@@ -4649,19 +4649,24 @@
 
   Chart.prototype.insertPineCompletion = function (completion) {
     var field = this.pineEditorField();
-    if (!field) return;
-    var cursor = field.selectionStart || 0;
+    var text = completion == null ? '' : String(completion);
+    if (!field || !text) return false;
+    var savedRange = this.pineCompletionRange;
+    var cursor = savedRange && Number.isFinite(savedRange.start) ? savedRange.start : (field.selectionStart || 0);
+    var selectionEnd = savedRange && Number.isFinite(savedRange.end) ? savedRange.end : (Number(field.selectionEnd) || cursor);
     var before = field.value.slice(0, cursor);
     var token = /[A-Za-z_][A-Za-z0-9_.]*$/.exec(before);
     var start = token ? cursor - token[0].length : cursor;
-    var next = field.value.slice(0, start) + completion + field.value.slice(cursor);
-    this.setPineEditorValue(next, start + completion.length, start + completion.length);
+    var next = field.value.slice(0, start) + text + field.value.slice(selectionEnd);
+    this.setPineEditorValue(next, start + text.length, start + text.length);
     this.hidePineCompletions();
+    return true;
   };
 
   Chart.prototype.hidePineCompletions = function () {
     var completions = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-completions]');
     if (completions) completions.hidden = true;
+    this.pineCompletionRange = null;
     this.updatePineEditorHelpLayout();
   };
 
@@ -4793,6 +4798,24 @@
       this.hidePineCompletions();
       return;
     }
+    this.pineCompletionRange = {
+      start: cursor,
+      end: Number(field.selectionEnd) || cursor
+    };
+    var chart = this;
+    completions.onclick = function (event) {
+      var target = closestAttribute(event.target, 'data-sce-pine-completion');
+      if (!target) return;
+      if (event.preventDefault) event.preventDefault();
+      if (event.stopPropagation) event.stopPropagation();
+      chart.insertPineCompletion(target.getAttribute('data-sce-pine-completion'));
+    };
+    var preserveEditorFocus = function (event) {
+      var target = closestAttribute(event.target, 'data-sce-pine-completion');
+      if (target && event.preventDefault) event.preventDefault();
+    };
+    completions.onpointerdown = preserveEditorFocus;
+    completions.onmousedown = preserveEditorFocus;
     completions.innerHTML = matches.map(function (item) {
       return '<button type="button" data-sce-pine-completion="' + escapeHtml(item.value) + '" role="option"><strong data-sce-pine-completion="' + escapeHtml(item.value) + '" title="Insert ' + escapeHtml(item.value) + '">' + escapeHtml(item.value) + '</strong><span>' + escapeHtml(item.label) + '</span></button>';
     }).join('');
