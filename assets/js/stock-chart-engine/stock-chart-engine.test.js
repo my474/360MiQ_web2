@@ -213,6 +213,27 @@ class FakeCanvas extends FakeElement {
   }
 }
 
+class FakePineWorker {
+  constructor(url) {
+    this.url = url;
+    this.messages = [];
+    this.terminated = false;
+    this.onmessage = null;
+    this.onerror = null;
+  }
+
+  postMessage(message) {
+    this.messages.push(message);
+    const response = PineScriptRuntime.runInWorker(message);
+    response.requestId = message.requestId;
+    if (this.onmessage) this.onmessage({ data: response });
+  }
+
+  terminate() {
+    this.terminated = true;
+  }
+}
+
 function findElement(root, predicate) {
   if (predicate(root)) return root;
   for (const child of root.children || []) {
@@ -2000,6 +2021,31 @@ assert.ok(layoutOnlyPayload.document.drawings.length > 0);
 assert.strictEqual(Object.prototype.hasOwnProperty.call(layoutOnlyPayload, 'data'), false);
 
 chart.destroy();
+
+global.window.Worker = FakePineWorker;
+const workerChart = new StockChartEngine.Chart('#chart', {
+  data,
+  symbol: 'WORKER_TEST',
+  interval: '1D',
+  load: false,
+  autosave: false
+});
+const workerIndicatorId = workerChart.addIndicator('PINE_SCRIPT', {
+  placement: 'new',
+  inputs: { code: pineSource, title: 'Worker RSI Average' }
+});
+assert.ok(workerChart.pineWorker instanceof FakePineWorker);
+assert.ok(workerChart.pineWorker.url.indexOf('pine-script-worker.js') !== -1);
+assert.ok(workerChart.pineWorker.messages.length > 0);
+assert.strictEqual(workerChart.indicatorResults[workerIndicatorId].computeMode, 'worker');
+const workerRequestCount = workerChart.pineWorker.messages.length;
+workerChart.setData(data.slice(0, 45));
+assert.ok(workerChart.pineWorker.messages.length > workerRequestCount);
+assert.strictEqual(workerChart.indicatorResults[workerIndicatorId].computeMode, 'worker');
+const workerInstance = workerChart.pineWorker;
+workerChart.destroy();
+assert.strictEqual(workerInstance.terminated, true);
+delete global.window.Worker;
 
 const darkDom = createFakeDom();
 darkDom.documentElement.setAttribute('data-theme', 'dark');

@@ -33,4 +33,10 @@ Open the `Pine Script` button in the chart toolbar to create or edit a script. E
 
 Strategies, orders, alerts, `request.security()`, user-defined functions, loops, labels, lines, boxes, and unrestricted drawing APIs are not enabled in this release. Unsupported syntax returns a line and column diagnostic instead of being silently interpreted.
 
-The runtime has a dedicated Web Worker entry point at `pine-script-worker.js`. The current chart renderer remains synchronous so it can preserve the existing indicator graph contract; worker-backed chart computation will be enabled when the renderer gains an asynchronous compute boundary.
+The runtime has a dedicated Web Worker entry point at `pine-script-worker.js`.
+
+## Execution model
+
+When the browser supports Web Workers, Advanced Chart now evaluates each Pine Script indicator in `pine-script-worker.js` after the synchronous preview is rendered. The synchronous result keeps the chart responsive while the worker starts, and the worker result replaces it when it returns. A request revision and script fingerprint prevent results from an older symbol, timeframe, or edit from being applied to the current chart. Browsers that cannot create a worker, pages opened from an unsupported origin, and automated test environments continue to use the synchronous runtime automatically.
+
+The worker URL can be overridden by passing `pineWorkerUrl` to the chart constructor. Set `pineWorker: false` only for an embedding that deliberately requires synchronous evaluation.

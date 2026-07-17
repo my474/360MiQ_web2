@@ -1153,6 +1153,34 @@
     return null;
   }
 
+  function pineWorkerConstructor() {
+    if (typeof window !== 'undefined' && typeof window.Worker === 'function') return window.Worker;
+    if (typeof Worker === 'function') return Worker;
+    return null;
+  }
+
+  function pineIndicatorResultFromRuntime(indicator, result) {
+    result = result || {};
+    var outputStyles = {};
+    (result.render || []).forEach(function (renderItem) {
+      if (renderItem.type === 'level') return;
+      outputStyles[renderItem.output] = {
+        color: renderItem.color || null,
+        lineWidth: renderItem.lineWidth || 2,
+        opacity: renderItem.opacity == null ? 1 : renderItem.opacity
+      };
+    });
+    indicator.runtimeMetadata = result.metadata || {};
+    indicator.runtimeInputs = result.inputs || [];
+    indicator.runtimeWarnings = result.warnings || [];
+    return {
+      outputs: result.outputs || {},
+      render: result.render || [],
+      styles: outputStyles,
+      error: null
+    };
+  }
+
   function computePineScriptIndicator(context, indicator) {
     var runtime = pineRuntime();
     if (!runtime || typeof runtime.run !== 'function') {
@@ -1164,24 +1192,7 @@
         title: indicator.inputs && indicator.inputs.title,
         inputs: indicator.inputs && indicator.inputs.pineValues || {}
       });
-      var outputStyles = {};
-      (result.render || []).forEach(function (renderItem) {
-        if (renderItem.type === 'level') return;
-        outputStyles[renderItem.output] = {
-          color: renderItem.color || null,
-          lineWidth: renderItem.lineWidth || 2,
-          opacity: renderItem.opacity == null ? 1 : renderItem.opacity
-        };
-      });
-      indicator.runtimeMetadata = result.metadata || {};
-      indicator.runtimeInputs = result.inputs || [];
-      indicator.runtimeWarnings = result.warnings || [];
-      return {
-        outputs: result.outputs || {},
-        render: result.render || [],
-        styles: outputStyles,
-        error: null
-      };
+      return pineIndicatorResultFromRuntime(indicator, result);
     } catch (error) {
       return { outputs: {}, render: [], error: error && error.toString ? error.toString() : String(error) };
     }
@@ -2213,6 +2224,14 @@
       restore: null
     };
     this.pineWindowInteraction = null;
+    this.pineWorker = null;
+    this.pineWorkerRequests = {};
+    this.pineWorkerSequence = 0;
+    this.pineComputeRevision = 0;
+    this.pineWorkerDisabled = false;
+    this.pineWorkerError = null;
+    this.pineWorkerMessageListener = this.handlePineWorkerMessage.bind(this);
+    this.pineWorkerErrorListener = this.handlePineWorkerError.bind(this);
     this.pineWindowPointerMoveListener = this.handlePineWindowPointerMove.bind(this);
     this.pineWindowPointerUpListener = this.handlePineWindowPointerUp.bind(this);
     this.destroyed = false;
@@ -2603,6 +2622,13 @@
       document.removeEventListener('fullscreenchange', this.fullscreenChangeListener);
       document.removeEventListener('webkitfullscreenchange', this.fullscreenChangeListener);
     }
+    if (this.pineWorker) {
+      this.pineWorker.onmessage = null;
+      this.pineWorker.onerror = null;
+      if (typeof this.pineWorker.terminate === 'function') this.pineWorker.terminate();
+      this.pineWorker = null;
+    }
+    this.pineWorkerRequests = {};
     clearTimeout(this.autosaveTimer);
     this.container.innerHTML = '';
   };
@@ -5176,8 +5202,98 @@
     return merge({}, base, this.options.themeTokens || {});
   };
 
+  Chart.prototype.ensurePineWorker = function () {
+    if (this.pineWorker || this.pineWorkerDisabled || this.options.pineWorker === false) return this.pineWorker;
+    if (!this.document.indicators.some(function (indicator) { return indicator.type === 'PINE_SCRIPT'; })) return null;
+    var WorkerConstructor = pineWorkerConstructor();
+    if (!WorkerConstructor) return null;
+    try {
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260717.2';
+      this.pineWorker = new WorkerConstructor(workerUrl);
+      this.pineWorker.onmessage = this.pineWorkerMessageListener;
+      this.pineWorker.onerror = this.pineWorkerErrorListener;
+    } catch (error) {
+      this.pineWorkerDisabled = true;
+      this.pineWorkerError = error && error.message ? error.message : String(error);
+      this.pineWorker = null;
+    }
+    return this.pineWorker;
+  };
+
+  Chart.prototype.queuePineWorkerComputations = function () {
+    var worker = this.ensurePineWorker();
+    if (!worker || typeof worker.postMessage !== 'function') return;
+    var revision = this.pineComputeRevision;
+    var self = this;
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.type !== 'PINE_SCRIPT') return;
+      var code = indicator.inputs && indicator.inputs.code || '';
+      var requestId = 'pine-' + (++self.pineWorkerSequence);
+      self.pineWorkerRequests[indicator.id] = {
+        requestId: requestId,
+        revision: revision,
+        code: code,
+        inputKey: JSON.stringify(indicator.inputs && indicator.inputs.pineValues || {})
+      };
+      try {
+        worker.postMessage({
+          requestId: requestId,
+          source: code,
+          bars: clone(self.bars),
+          options: {
+            title: indicator.inputs && indicator.inputs.title,
+            inputs: clone(indicator.inputs && indicator.inputs.pineValues || {})
+          }
+        });
+      } catch (error) {
+        delete self.pineWorkerRequests[indicator.id];
+      }
+    });
+  };
+
+  Chart.prototype.handlePineWorkerMessage = function (event) {
+    var message = event && event.data || {};
+    var request = null;
+    var indicator = null;
+    var self = this;
+    Object.keys(this.pineWorkerRequests).some(function (indicatorId) {
+      var candidate = self.pineWorkerRequests[indicatorId];
+      if (candidate && candidate.requestId === message.requestId) {
+        request = candidate;
+        indicator = self.document.indicators.filter(function (item) { return item.id === indicatorId; })[0] || null;
+        delete self.pineWorkerRequests[indicatorId];
+        return true;
+      }
+      return false;
+    });
+    if (!request || this.destroyed || request.revision !== this.pineComputeRevision || !indicator) return;
+    if (request.code !== (indicator.inputs && indicator.inputs.code || '') || request.inputKey !== JSON.stringify(indicator.inputs && indicator.inputs.pineValues || {})) return;
+    if (!message.ok || !message.result) return;
+    var result = pineIndicatorResultFromRuntime(indicator, message.result);
+    result.computeMode = 'worker';
+    this.indicatorResults[indicator.id] = result;
+    this.draw();
+    this.events.emit('change', {
+      type: 'pine:computed',
+      payload: { indicatorId: indicator.id, mode: 'worker' },
+      document: this.serialize()
+    });
+  };
+
+  Chart.prototype.handlePineWorkerError = function (event) {
+    this.pineWorkerError = event && event.message ? event.message : 'Pine Script worker failed.';
+    this.pineWorkerDisabled = true;
+    this.pineWorkerRequests = {};
+    if (this.pineWorker) {
+      if (typeof this.pineWorker.terminate === 'function') this.pineWorker.terminate();
+      this.pineWorker = null;
+    }
+  };
+
   Chart.prototype.compute = function () {
+    this.pineComputeRevision += 1;
     this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars);
+    this.queuePineWorkerComputations();
   };
 
   Chart.prototype.fitContent = function () {
