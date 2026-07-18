@@ -704,6 +704,34 @@ backtestBars.forEach((bar, index) => {
 const boundedResult = boundedSession.result();
 assert.ok(boundedResult.diagnostics.some((item) => item.type === 'date-range'));
 assert.ok(boundedResult.executions.every((execution) => execution.barIndex >= 1 && execution.barIndex <= 3));
+const brokerOrderLimitSession = PineBacktestEngine.createSession({ initialCapital: 1000, maxOrders: 1 }, backtestBars);
+brokerOrderLimitSession.beginBar(0);
+brokerOrderLimitSession.submit([
+  { type: 'entry', id: 'WithinLimit', direction: 1, quantity: 1 },
+  { type: 'entry', id: 'OverLimit', direction: 1, quantity: 1 }
+], 0);
+const brokerOrderLimitResult = brokerOrderLimitSession.result();
+assert.strictEqual(brokerOrderLimitResult.limits.maxBars, 100000);
+assert.strictEqual(brokerOrderLimitResult.limits.submittedOrders, 1);
+assert.strictEqual(brokerOrderLimitResult.pendingOrders.length, 1);
+assert.ok(brokerOrderLimitResult.diagnostics.some((item) => item.type === 'limit' && item.message.indexOf('maximum broker order limit') >= 0));
+const brokerExecutionLimitSession = PineBacktestEngine.createSession({ initialCapital: 1000, maxExecutions: 1 }, backtestBars);
+brokerExecutionLimitSession.beginBar(0);
+brokerExecutionLimitSession.submit([{ type: 'entry', id: 'FirstFill', direction: 1, quantity: 1 }], 0);
+brokerExecutionLimitSession.endBar(0);
+brokerExecutionLimitSession.beginBar(1);
+brokerExecutionLimitSession.submit([{ type: 'close', id: 'BlockedClose', fromEntry: 'FirstFill' }], 1);
+brokerExecutionLimitSession.endBar(1);
+brokerExecutionLimitSession.beginBar(2);
+brokerExecutionLimitSession.endBar(2);
+const brokerExecutionLimitResult = brokerExecutionLimitSession.result();
+assert.strictEqual(brokerExecutionLimitResult.limits.executions, 1);
+assert.ok(brokerExecutionLimitResult.diagnostics.some((item) => item.type === 'limit' && item.message.indexOf('maximum broker execution limit') >= 0));
+const barLimitSession = PineBacktestEngine.createSession({ initialCapital: 1000, maxBars: 3 }, backtestBars);
+const barLimitResult = barLimitSession.result();
+assert.strictEqual(barLimitSession.bars.length, 3);
+assert.strictEqual(barLimitResult.dataQuality.truncatedBars, 2);
+assert.ok(barLimitResult.diagnostics.some((item) => item.type === 'limit' && item.message.indexOf('maximum backtest bar limit') >= 0));
 const shortOnlySession = PineBacktestEngine.createSession({ initialCapital: 1000, directionMode: 'short' }, backtestBars);
 shortOnlySession.beginBar(0);
 shortOnlySession.submit([{ type: 'entry', id: 'LongBlocked', direction: 1 }], 0);
@@ -731,6 +759,9 @@ assert.ok(chart.strategyTesterPopup.innerHTML.includes('Ambiguous daily bars'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Completed'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('data-sce-strategy-export="csv"'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Buy &amp; hold'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Broker limits'));
+assert.ok(!chart.strategyTesterPopup.innerHTML.includes('Lower timeframe'));
+assert.ok(!chart.strategyTesterPopup.innerHTML.includes('lower-timeframe fills'));
 const strategyReportJson = chart.downloadStrategyReport('json');
 assert.ok(strategyReportJson.includes('stock-chart-engine-strategy-report'));
 assert.ok(strategyReportJson.includes('"metrics"'));

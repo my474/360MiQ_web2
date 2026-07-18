@@ -14,7 +14,7 @@ The relevant TradingView concepts are:
 
 - `strategy()` declares a strategy and its properties, such as initial capital, order sizing, pyramiding, commission, slippage, margin, and recalculation behavior.
 - Strategy code creates order intents with functions such as `strategy.entry()`, `strategy.order()`, `strategy.exit()`, `strategy.close()`, and cancellation functions.
-- The broker emulator fills market, limit, stop, and stop-limit orders according to historical OHLC data, gaps, order timing, and optional lower-timeframe information.
+- The broker emulator fills market, limit, stop, and stop-limit orders according to historical EOD OHLCV data, gaps, order timing, and the documented daily-bar path policy.
 - The execution model determines whether code runs once per bar, on every realtime tick, after order fills, or with orders processed on the bar close.
 - Strategy state includes equity, position size, average entry price, open profit, closed trades, open trades, and trade statistics.
 - Strategy Tester exposes an overview, performance summary, list of trades, and properties. The results include profit, drawdown, trade count, win/loss statistics, commissions, and related metrics.
@@ -35,10 +35,12 @@ The implementation has now started replacing the original intent-only strategy p
 - `assets/js/stock-chart-engine/pine-backtest-engine.js` contains the normalized settings contract, historical broker emulator, account ledger, pending orders, fills, trades, costs, drawdown, diagnostics, and metrics.
 - `assets/js/stock-chart-engine/pine-script-runtime.js` executes strategy scripts bar by bar, exposes live `strategy.*` state, and returns versioned backtest results.
 - `stock-chart-engine.js` integrates the worker/runtime result with a desktop/mobile Strategy Tester, editable properties, trade navigation, theme switching, and simulated chart overlays.
-- `PINE-SCRIPT.md` documents the supported subset and explicitly calls out unsupported tick-level and lower-timeframe behavior.
+- `PINE-SCRIPT.md` documents the supported subset and explicitly calls out unsupported realtime and intraday behavior.
 - The existing worker architecture is retained so strategy runs do not block chart interaction, and request revisions prevent stale results from overwriting a newer run.
 
-The EOD portion is implemented: daily OHLC execution uses the documented open-nearest-extreme path, next-open market timing, gap-aware fills, explicit same-bar stop/target ambiguity diagnostics, and Strategy Tester assumptions metadata. The remaining phases are deliberate fidelity work: lower-timeframe Bar Magnifier endpoint loading, broader compatibility fixtures, and deeper TradingView object parity. The runtime supports host-injected lower bars, bounded fill-triggered recalculation, `request.security_lower_tf()` array results, a conservative executable/reference capability registry, Strategy Tester equity and drawdown curves, and interactive pending-order/fill details.
+The EOD portion is implemented: daily OHLC execution uses the documented open-nearest-extreme path, next-open market timing, gap-aware fills, explicit same-bar stop/target ambiguity diagnostics, Strategy Tester assumptions metadata, and broker resource limits. The remaining roadmap is compatibility breadth and fidelity work that does not require intraday data. The runtime retains an isolated host-injection hook for deterministic compatibility tests, but the product has no lower-timeframe endpoint and does not expose Bar Magnifier controls.
+
+For the current EOD product scope, the configuration contract, broker ledger, historical execution loop, order lifecycle, daily fill policy, strategy built-ins, metrics, Strategy Tester workflow, chart visualization, worker execution, safeguards, and documentation phases are implemented. Remaining work is optional TradingView breadth/fidelity beyond the EOD contract; it is not required to make the current backtest trustworthy.
 
 The first implementation must replace intent recording with a deterministic event pipeline while keeping the current indicator runtime working unchanged.
 
@@ -49,7 +51,7 @@ The first implementation must replace intent recording with a deterministic even
 3. **Explicit fill assumptions:** ambiguous intrabar order sequences must follow a documented policy and be visible in Properties or diagnostics.
 4. **Separate concerns:** Pine execution, order simulation, accounting, metrics, and UI result rendering use separate modules and contracts.
 5. **Worker first:** strategy execution belongs in the Pine worker; the main thread receives progress, diagnostics, and immutable results.
-6. **No backend requirement:** OHLCV and optional lower-timeframe data come from existing endpoints; layout/share data stores the script and settings, not the full market history.
+6. **No backend requirement:** EOD OHLCV comes from the existing endpoint; layout/share data stores the script and settings, not the full market history.
 7. **Safe subset:** no dynamic JavaScript evaluation, network access from user scripts, unrestricted DOM access, or arbitrary code execution.
 8. **Versioned results:** strategy settings, engine version, and data assumptions are included in serialized results for reproducibility.
 
@@ -97,7 +99,6 @@ Required settings:
 - Recalculate on every tick and after order fills.
 - Date range filter and warm-up period.
 - Standard OHLC execution mode.
-- Optional Bar Magnifier/lower-timeframe mode.
 - Whether trades are long-only, short-only, or both where supported.
 
 The settings must be serializable with the chart layout and share URL, while OHLCV remains endpoint-loaded.
@@ -139,7 +140,7 @@ Add the following timing rules as separate tested behaviors:
 - Default historical calculation once per bar with market orders filled on the next bar.
 - `process_orders_on_close` allows eligible market orders to fill on the current bar close.
 - `calc_on_order_fills` schedules a recalculation after a fill.
-- `calc_on_every_tick` is meaningful for realtime data and lower-timeframe simulation; historical behavior must be clearly documented.
+- `calc_on_every_tick` is accepted for source compatibility, but EOD historical bars remain the calculation boundary and no tick stream is synthesized.
 - Orders created after the final executable bar remain unfilled and are reported as pending or expired according to the chosen policy.
 
 ### Phase 4: Broker emulator and order types
@@ -171,14 +172,11 @@ Fill rules must handle:
 - Reversal and position-size calculations.
 - Same-bar stop/target ambiguity.
 
-### Phase 5: Intrabar simulation and Bar Magnifier
+### Phase 5: EOD path policy and ambiguity diagnostics
 
-Historical OHLC alone does not reveal the exact order of high and low within a bar. Implement two documented modes:
+The current product has EOD OHLCV only, so it uses one explicit historical path policy rather than pretending to reconstruct intraday data. The emulator chooses `open -> high -> low -> close` when the open is nearer to the high and `open -> low -> high -> close` otherwise. It records a `same-bar-ambiguity` diagnostic whenever both a stop and a target are reachable on the same daily candle, and reports the policy and affected bars in Strategy Tester Properties and serialized results.
 
-1. **OHLC path mode:** use a deterministic path heuristic based on the bar's open and proximity to high/low, matching TradingView's documented broker-emulator assumption as closely as practical.
-2. **Lower-timeframe mode:** request lower-timeframe OHLC data for each chart bar and simulate fills in that sequence. Use the current endpoint/data-loading pattern, cache requests, and gracefully fall back when lower-timeframe data is unavailable.
-
-Expose a warning when a result contains ambiguous same-bar fills. Include the selected mode, lower timeframe, and fallback count in the result metadata.
+Intraday Bar Magnifier and lower-timeframe endpoint loading are outside the current data contract. They are not a remaining implementation phase for this project. If intraday data is added later, it should be introduced as a separately versioned execution mode with its own endpoint, alignment rules, and regression fixtures.
 
 ### Phase 6: Pine strategy built-ins
 
@@ -247,7 +245,7 @@ Tabs/views:
 - **Performance Summary:** complete metric table with long/short breakdown and costs.
 - **List of Trades:** sortable trade rows with entry/exit time, direction, size, prices, P&L, commission, and exit reason.
 - **Properties:** capital, sizing, costs, margin, execution mode, date range, data source, and engine version.
-- **Diagnostics:** rejected orders, ambiguous fills, unavailable lower-timeframe data, lookahead warnings, and unsupported calls.
+- **Diagnostics:** rejected orders, ambiguous fills, resource-limit events, lookahead warnings, data-quality warnings, and unsupported calls.
 
 Clicking a trade should move the chart crosshair to the entry or exit bar. The panel must not cover essential chart controls and must support dark mode, light mode, keyboard escape, and outside-click close where appropriate.
 
@@ -285,14 +283,14 @@ All layers must follow the existing chart viewport, zoom, scroll, pane movement,
 Protect the browser and make limitations understandable:
 
 - Keep Pine execution in the worker.
-- Enforce maximum bars, orders, trades, lower-timeframe requests, and execution time.
+- Enforce maximum bars, broker orders, executions, trades, Pine operations, and execution time.
 - Support cancellation and progress updates.
 - Reject network, DOM, storage, and JavaScript escape attempts from scripts.
 - Detect invalid or missing OHLCV fields.
 - Detect duplicate timestamps and non-monotonic data.
 - Warn on non-standard chart types and use standard OHLC for execution unless explicitly supported.
 - Warn about lookahead and future-data access.
-- Report when a request cannot align dates or when lower-timeframe data is incomplete.
+- Report when a request cannot align dates or when host-supplied external data is incomplete.
 - Use compact typed arrays for large equity and series outputs where practical.
 - Avoid rendering every execution marker when the viewport cannot display them; retain full data for the trade list.
 
@@ -345,7 +343,7 @@ Add limit, stop, exit, cancellation, reversal, pyramiding, slippage, tick roundi
 
 ### Milestone 3: TradingView-style execution controls
 
-Add process-on-close, recalculation modes, historical intrabar path, lower-timeframe Bar Magnifier, and strategy built-ins backed by the ledger.
+Add process-on-close, recalculation modes, the documented historical EOD path, and strategy built-ins backed by the ledger.
 
 ### Milestone 4: Complete Strategy Tester experience
 
@@ -372,7 +370,7 @@ Build deterministic fixtures before expanding the API:
 - Exit quantity reduction and partial closes.
 - Cancellation before fill.
 - Date range and warm-up handling.
-- Missing dates and unequal lower-timeframe coverage.
+- Missing dates, duplicate timestamps, invalid OHLC geometry, and mixed price bases.
 - `calc_on_order_fills` and recalculation ordering.
 - Equity, trade, drawdown, and cost accounting invariants.
 - Script cancellation and stale-run protection.

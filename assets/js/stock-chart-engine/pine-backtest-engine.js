@@ -11,9 +11,13 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.3.1';
+  var VERSION = '0.3.2';
   var INTRABAR_PATH_POLICY = 'open-nearest-extreme';
   var EOD_FILL_MODE = 'ohlc';
+  var DEFAULT_MAX_BARS = 100000;
+  var DEFAULT_MAX_BROKER_ORDERS = 100000;
+  var DEFAULT_MAX_EXECUTIONS = 100000;
+  var DEFAULT_MAX_TRADES = 50000;
 
   function number(value, fallback) {
     if (value == null || value === '') return fallback;
@@ -24,6 +28,12 @@
   function positive(value, fallback) {
     var result = number(value, fallback);
     return result > 0 ? result : fallback;
+  }
+
+  function boundedLimit(value, fallback, maximum) {
+    var result = Math.floor(number(value, fallback));
+    if (!Number.isFinite(result) || result < 1) return fallback;
+    return Math.min(result, maximum);
   }
 
   function normalizeDirection(value) {
@@ -107,6 +117,10 @@
       symbol: String(input.symbol || ''),
       timeframe: String(input.timeframe || '1D'),
       timezone: String(input.timezone || 'UTC'),
+      maxBars: boundedLimit(input.maxBars != null ? input.maxBars : input.max_bars, DEFAULT_MAX_BARS, DEFAULT_MAX_BARS),
+      maxOrders: boundedLimit(input.maxOrders != null ? input.maxOrders : input.max_orders, DEFAULT_MAX_BROKER_ORDERS, DEFAULT_MAX_BROKER_ORDERS),
+      maxExecutions: boundedLimit(input.maxExecutions != null ? input.maxExecutions : input.max_executions, DEFAULT_MAX_EXECUTIONS, DEFAULT_MAX_EXECUTIONS),
+      maxTrades: boundedLimit(input.maxTrades != null ? input.maxTrades : input.max_trades, DEFAULT_MAX_TRADES, DEFAULT_MAX_TRADES),
       barMagnifier: input.barMagnifier === true || input.useBarMagnifier === true || input.use_bar_magnifier === true,
       lowerTimeframe: String(input.lowerTimeframe || input.lower_timeframe || '')
     };
@@ -135,7 +149,8 @@
 
   function createSession(settingsInput, barsInput) {
     var settings = normalizeSettings(settingsInput);
-    var bars = normalizeBars(barsInput);
+    var normalizedBars = normalizeBars(barsInput);
+    var bars = normalizedBars.slice(0, settings.maxBars);
     var lowerBarsInput = settingsInput && Array.isArray(settingsInput.lowerTimeframeBars) ? settingsInput.lowerTimeframeBars : [];
     var lowerBars = normalizeBars(lowerBarsInput);
     var lowerBarsByChart = bars.map(function () { return []; });
@@ -148,6 +163,8 @@
     var diagnostics = [];
     var sameBarAmbiguities = [];
     var sameBarAmbiguityKeys = Object.create(null);
+    var submittedOrderCount = 0;
+    var limitDiagnosticKeys = Object.create(null);
     var equityCurve = [];
     var drawdownCurve = [];
     var buyAndHoldCurve = [];
@@ -156,6 +173,8 @@
     var dataQuality = {
       inputBars: rawBars.length,
       validBars: bars.length,
+      sourceValidBars: normalizedBars.length,
+      truncatedBars: Math.max(0, normalizedBars.length - bars.length),
       invalidBars: 0,
       invalidGeometry: 0,
       duplicateTimestamps: 0,
@@ -228,6 +247,7 @@
       }
     }
     if (dataQuality.largeCalendarGaps.length) diagnostics.push({ type: 'data-gap', message: dataQuality.largeCalendarGaps.length + ' calendar gap(s) exceed three times the preceding bar interval; no synthetic bars were inserted.', orderId: null, barIndex: -1 });
+    if (dataQuality.truncatedBars > 0) diagnostic('limit', 'The input was truncated at the maximum backtest bar limit; later bars were not evaluated.', null, -1, { limit: settings.maxBars, truncatedBars: dataQuality.truncatedBars });
     if (settings.barMagnifier && lowerBarsInput.length !== lowerBars.length) {
       diagnostics.push({ type: 'bar-magnifier-data', message: 'Some lower-timeframe bars were ignored because they were missing a valid OHLC field.', orderId: null, barIndex: -1 });
     }
@@ -294,6 +314,13 @@
       var item = { type: type, message: message, orderId: order && order.id || null, barIndex: index == null ? state.currentBar : index };
       if (details) item.details = details;
       diagnostics.push(item);
+    }
+
+    function brokerLimit(kind, message, order, index) {
+      if (limitDiagnosticKeys[kind]) return false;
+      limitDiagnosticKeys[kind] = true;
+      diagnostic('limit', message, order, index, { limit: settings['max' + kind.charAt(0).toUpperCase() + kind.slice(1)] });
+      return true;
     }
 
     function visibleBar(index) {
@@ -700,6 +727,11 @@
       var time = bar ? bar.time : index;
       var kind = String(order.kind || order.type || '').toLowerCase();
       var isCloseKind = kind === 'close' || kind === 'close_all' || kind === 'exit' || order.reduceOnly;
+      if (executions.length >= settings.maxExecutions) {
+        brokerLimit('executions', 'The run reached the maximum broker execution limit; additional fills were rejected.', order, index);
+        order.status = 'rejected';
+        return false;
+      }
       var direction = normalizeDirection(order.direction);
       if (!direction && isCloseKind) direction = state.positionSize >= 0 ? -1 : 1;
       if (!direction) {
@@ -963,15 +995,24 @@
     function submit(intents, index) {
       var replacements = Object.create(null);
       (Array.isArray(intents) ? intents : []).forEach(function (intent) {
-        if (pending.length + executions.length >= 100000) {
-          diagnostic('limit', 'The run reached the broker order limit; additional orders were ignored.', intent, index);
-          return;
-        }
+        var intentType = String(intent && intent.type || '').toLowerCase();
         if (!isEligible(index)) {
           diagnostic('date-range', 'The order was ignored outside the selected backtest range or warm-up period.', intent, index);
           return;
         }
-        var intentType = String(intent && intent.type || '').toLowerCase();
+        if (intent && ['entry', 'order', 'exit', 'close', 'close_all'].indexOf(intentType) !== -1) {
+          if (submittedOrderCount >= settings.maxOrders) {
+            brokerLimit('orders', 'The run reached the maximum broker order limit; additional orders were ignored.', intent, index);
+            return;
+          }
+          if (['entry', 'order'].indexOf(String(intent.type || '').toLowerCase()) !== -1 &&
+              closedTrades.length + openTrades.length >= settings.maxTrades &&
+              (!state.positionSize || normalizeDirection(intent.direction) === (state.positionSize > 0 ? 1 : -1))) {
+            brokerLimit('trades', 'The run reached the maximum trade limit; additional entries were ignored.', intent, index);
+            return;
+          }
+          submittedOrderCount += 1;
+        }
         var requestedDirection = normalizeDirection(intent && intent.direction);
         if ((intentType === 'entry' || intentType === 'order') && ((settings.directionMode === 'long' && requestedDirection < 0) || (settings.directionMode === 'short' && requestedDirection > 0))) {
           diagnostic('risk', 'The order was rejected by the selected trading direction filter.', intent, index);
@@ -1197,6 +1238,15 @@
         }),
         pendingOrders: pending.slice(),
         sameBarAmbiguities: sameBarAmbiguities.slice(),
+        limits: {
+          maxBars: settings.maxBars,
+          maxOrders: settings.maxOrders,
+          maxExecutions: settings.maxExecutions,
+          maxTrades: settings.maxTrades,
+          submittedOrders: submittedOrderCount,
+          executions: executions.length,
+          closedTrades: closedTrades.length
+        },
         risk: {
           halted: risk.halted,
           haltReason: risk.haltReason,

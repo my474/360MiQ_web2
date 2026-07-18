@@ -1412,8 +1412,6 @@
           processOrdersOnClose: false,
           calcOnOrderFills: false,
           calcOnEveryTick: false,
-          barMagnifier: false,
-          lowerTimeframe: '',
           fillMode: 'ohlc'
         },
         code: '//@version=5\nindicator("Custom Pine", overlay=false)\nplot(ta.sma(close, 20), title="SMA 20")'
@@ -7302,9 +7300,11 @@
   Chart.prototype.strategyAssumptionsHtml = function (result) {
     var assumptions = result && result.assumptions || {};
     var quality = result && result.dataQuality || {};
+    var limits = result && result.limits || {};
     var ambiguityCount = Array.isArray(result && result.sameBarAmbiguities) ? result.sameBarAmbiguities.length : 0;
-    var qualitySummary = Number.isFinite(Number(quality.inputBars)) ? 'Data quality: ' + String(quality.validBars || 0) + '/' + String(quality.inputBars || 0) + ' valid bars, ' + String(quality.largeCalendarGaps && quality.largeCalendarGaps.length || 0) + ' large calendar gap(s), ' + String(quality.priceBasis || 'unspecified') + ' prices, ' + String(quality.timezone || 'UTC') + '.' : '';
-    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small><small>Ambiguous daily bars: ' + escapeHtml(String(ambiguityCount)) + '.</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + '</section>';
+    var qualitySummary = Number.isFinite(Number(quality.inputBars)) ? 'Data quality: ' + String(quality.validBars || 0) + '/' + String(quality.inputBars || 0) + ' valid bars, ' + String(quality.largeCalendarGaps && quality.largeCalendarGaps.length || 0) + ' large calendar gap(s), ' + String(quality.truncatedBars || 0) + ' truncated bar(s), ' + String(quality.priceBasis || 'unspecified') + ' prices, ' + String(quality.timezone || 'UTC') + '.' : '';
+    var limitsSummary = Number.isFinite(Number(limits.maxOrders)) ? 'Broker limits: ' + String(limits.submittedOrders || 0) + '/' + String(limits.maxOrders) + ' orders, ' + String(limits.executions || 0) + '/' + String(limits.maxExecutions || 0) + ' executions, ' + String(limits.closedTrades || 0) + '/' + String(limits.maxTrades || 0) + ' closed trades.' : '';
+    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small><small>Ambiguous daily bars: ' + escapeHtml(String(ambiguityCount)) + '.</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + (limitsSummary ? '<small>' + escapeHtml(limitsSummary) + '</small>' : '') + '</section>';
   };
 
   Chart.prototype.strategyCurveHtml = function (label, points, colorClass, zeroBaseline) {
@@ -7350,6 +7350,7 @@
       timeframe: timeframe,
       assumptions: result.assumptions || {},
       dataQuality: result.dataQuality || {},
+      limits: result.limits || {},
       config: result.config || {},
       metrics: result.metrics || {},
       risk: result.risk || {},
@@ -7499,12 +7500,10 @@
         '<label>Date from<input type="date" data-sce-backtest-field="dateFrom" value="' + escapeHtml(dateFrom) + '"></label>' +
         '<label>Date to<input type="date" data-sce-backtest-field="dateTo" value="' + escapeHtml(dateTo) + '"></label>' +
         '<label>Warm-up bars<input type="number" min="0" step="1" data-sce-backtest-field="warmupBars" value="' + escapeHtml(config.warmupBars) + '"></label>' +
-        '<label>Lower timeframe<input type="text" placeholder="e.g. 5" data-sce-backtest-field="lowerTimeframe" value="' + escapeHtml(config.lowerTimeframe || '') + '"></label>' +
-        '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="barMagnifier"' + (config.barMagnifier ? ' checked' : '') + '> Use lower-timeframe fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="processOrdersOnClose"' + (config.processOrdersOnClose ? ' checked' : '') + '> Process orders on close</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnOrderFills"' + (config.calcOnOrderFills ? ' checked' : '') + '> Recalculate after order fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnEveryTick"' + (config.calcOnEveryTick ? ' checked' : '') + '> Recalculate on every tick</label>' +
-        '<p class="sce-strategy-property-note">' + (config.barMagnifier ? 'Lower-timeframe fills use host-provided bars; missing coverage falls back to chart OHLC. ' : 'Historical fills use standard OHLC bars. When a daily candle touches both a stop and target, the first level on the inferred open-nearest-extreme path fills first. ') + 'Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
+        '<p class="sce-strategy-property-note">Historical fills use standard EOD OHLC bars. When a daily candle touches both a stop and target, the first level on the inferred open-nearest-extreme path fills first. Broker limits protect the browser from unbounded order, execution, and trade output. Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
         '</div>';
     } else {
       var diagnostics = result.diagnostics || [];
@@ -7557,11 +7556,6 @@
     this.compute();
     this.draw();
     this.updateStrategyTester();
-    if ((field === 'barMagnifier' || field === 'lowerTimeframe') && indicator.inputs.backtest.barMagnifier && typeof this.options.onBacktestLowerTimeframeLoad === 'function') {
-      this.loadBacktestLowerTimeframe(indicator.inputs.backtest.lowerTimeframe).catch(function () {
-        /* The broker result retains its explicit fallback diagnostics. */
-      });
-    }
     this.emitChange('strategy:settings', { indicatorId: indicator.id, field: field });
   };
 
@@ -12954,7 +12948,7 @@
       supportNote: definition.supportNote || ''
     };
   }).concat([
-    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, format, precision, scale, pyramiding, calc_on_order_fills, calc_on_every_tick, max_bars_back, backtest_fill_limits_assumption, default_qty_type, default_qty_value, initial_capital, currency, slippage, commission_type, commission_value, process_orders_on_close, close_entries_rule, margin_long, margin_short, explicit_plot_zorder, max_lines_count, max_labels_count, max_boxes_count, calc_bars_count, risk_free_rate, use_bar_magnifier, fill_orders_on_standard_ohlc, max_polylines_count, dynamic_requests, behind_chart)', description: 'Declares a strategy script for the browser historical broker emulator. It does not place real broker orders; fills, costs, risk halts, and trade records are simulated from historical bars.', status: 'Supported', parameters: [
+    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, format, precision, scale, pyramiding, calc_on_order_fills, calc_on_every_tick, max_bars_back, backtest_fill_limits_assumption, default_qty_type, default_qty_value, initial_capital, currency, slippage, commission_type, commission_value, process_orders_on_close, close_entries_rule, margin_long, margin_short, explicit_plot_zorder, max_lines_count, max_labels_count, max_boxes_count, calc_bars_count, risk_free_rate, fill_orders_on_standard_ohlc, max_polylines_count, dynamic_requests, behind_chart)', description: 'Declares a strategy script for the browser historical broker emulator. It does not place real broker orders; fills, costs, risk halts, and trade records are simulated from historical EOD OHLCV bars.', status: 'Supported', parameters: [
       { name: 'title', description: 'Required strategy display name.' }, { name: 'shorttitle', description: 'Short name used in compact legends.' },
       { name: 'overlay', description: 'Places strategy plots over the price pane when true.' }, { name: 'format', description: 'Default output format for strategy plots.' },
       { name: 'precision', description: 'Default decimal precision for strategy plots.' }, { name: 'scale', description: 'Price scale placement for strategy plots.' },
@@ -12966,7 +12960,7 @@
       { name: 'commission_type', description: 'Commission model: percent, cash per order, or cash per contract.' }, { name: 'commission_value', description: 'Commission value for the selected model.' },
       { name: 'process_orders_on_close', description: 'Allows market orders to fill on the current bar close.' }, { name: 'close_entries_rule', description: 'FIFO or ANY selection rule for closing entries.' },
       { name: 'margin_long', description: 'Margin percentage required for long positions.' }, { name: 'margin_short', description: 'Margin percentage required for short positions.' },
-      { name: 'risk_free_rate', description: 'Risk-free annual rate used by performance calculations.' }, { name: 'use_bar_magnifier', description: 'Uses supplied lower-timeframe bars for historical fill sequencing.' }
+      { name: 'risk_free_rate', description: 'Risk-free annual rate used by performance calculations.' }
     ], example: 'strategy("My strategy", overlay=true, initial_capital=100000)' },
     { name: 'library', type: 'Function', category: 'function', signature: 'library(title, overlay, dynamic_requests)', description: 'Declares a reusable Pine library script. Publishing is outside the browser runtime.', status: 'Supported' },
     { name: 'ta.highest', type: 'Function', category: 'function', signature: 'ta.highest(source, length)', description: 'Returns the highest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.highest(high, 20)' },
