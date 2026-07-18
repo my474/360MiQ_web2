@@ -1,6 +1,8 @@
 const assert = require('assert');
 const StockChartEngine = require('./stock-chart-engine.js');
 const PineScriptRuntime = require('./pine-script-runtime.js');
+const PineBacktestEngine = require('./pine-backtest-engine.js');
+PineScriptRuntime.setBacktestEngine(PineBacktestEngine);
 
 class FakeClassList {
   constructor(element) {
@@ -355,6 +357,130 @@ assert.strictEqual(pinePreview.metadata.title, 'RSI Average');
 assert.strictEqual(pinePreview.plots.length, 2);
 assert.ok(pinePreview.outputs.plot1.length > 0);
 assert.ok(pinePreview.render.some((item) => item.type === 'level' && item.value === 50));
+const backtestBars = [
+  { time: 1, open: 100, high: 103, low: 99, close: 102, volume: 10 },
+  { time: 2, open: 102, high: 106, low: 101, close: 105, volume: 10 },
+  { time: 3, open: 105, high: 106, low: 98, close: 99, volume: 10 },
+  { time: 4, open: 99, high: 101, low: 96, close: 97, volume: 10 },
+  { time: 5, open: 97, high: 104, low: 96, close: 103, volume: 10 }
+];
+const backtestPreview = PineScriptRuntime.run(`strategy("Backtest", overlay=true)
+if close > close[1]
+    strategy.entry("Long", strategy.long)
+if close < close[1]
+    strategy.close("Long")`, backtestBars, {
+  symbol: 'TEST',
+  timeframe: '1D',
+  backtest: { initialCapital: 1000, defaultQtyType: 'fixed', defaultQtyValue: 1, commissionType: 'percent', commissionValue: 1 }
+});
+assert.strictEqual(backtestPreview.metadata.kind, 'strategy');
+assert.ok(backtestPreview.strategyBacktest);
+assert.ok(backtestPreview.strategyBacktest.executions.length >= 2);
+assert.strictEqual(backtestPreview.strategyBacktest.trades.length, 1);
+assert.ok(backtestPreview.strategyBacktest.metrics.commission > 0);
+assert.ok(backtestPreview.strategyBacktest.metrics.endingEquity < 1000);
+assert.ok(Array.isArray(backtestPreview.strategyBacktest.metrics.monthlyReturns));
+assert.ok(Array.isArray(backtestPreview.strategyBacktest.metrics.yearlyReturns));
+assert.ok(backtestPreview.outputs.plot1 == null || Array.isArray(backtestPreview.outputs.plot1));
+const declarationBacktestPreview = PineScriptRuntime.run(`strategy("Declaration settings", initial_capital=500, default_qty_type=strategy.cash, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=2, process_orders_on_close=true)
+if close > close[1]
+    strategy.entry("Long", strategy.long)
+if close < close[1]
+    strategy.close("Long")`, backtestBars, {
+  backtest: { initialCapital: 100000, defaultQtyType: 'fixed', defaultQtyValue: 1, commissionType: 'percent', commissionValue: 0 }
+});
+assert.strictEqual(declarationBacktestPreview.strategyBacktest.config.initialCapital, 500);
+assert.strictEqual(declarationBacktestPreview.strategyBacktest.config.defaultQtyType, 'cash');
+assert.strictEqual(declarationBacktestPreview.strategyBacktest.config.processOrdersOnClose, true);
+const defaultQtyPreview = PineScriptRuntime.run(`strategy("Default quantity", default_qty_value=7)
+plot(strategy.default_entry_qty(strategy.long))`, backtestBars, {
+  backtest: { initialCapital: 100000, defaultQtyValue: 1 }
+});
+assert.strictEqual(defaultQtyPreview.outputs.plot1[0].value, 7);
+const namedQtyPreview = PineScriptRuntime.run(`strategy("Named quantity")
+if close > close[1]
+    strategy.entry("Named", strategy.long, qty=2)`, backtestBars, { backtest: { initialCapital: 1000 } });
+assert.ok(namedQtyPreview.strategyBacktest.executions.some((execution) => execution.quantity === 2));
+const brokerSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyType: 'fixed', defaultQtyValue: 1, commissionType: 'percent', commissionValue: 0 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+  { time: 2, open: 100, high: 105, low: 100, close: 104, volume: 1 },
+  { time: 3, open: 104, high: 106, low: 103, close: 105, volume: 1 }
+]);
+brokerSession.beginBar(0);
+brokerSession.submit([{ type: 'entry', id: 'Long', direction: 1, quantity: 1 }], 0);
+brokerSession.endBar(0);
+brokerSession.beginBar(1);
+brokerSession.submit([{ type: 'exit', id: 'Target', fromEntry: 'Long', limit: 104, qty_percent: 100 }], 1);
+brokerSession.endBar(1);
+brokerSession.beginBar(2);
+brokerSession.endBar(2);
+const brokerResult = brokerSession.result();
+assert.strictEqual(brokerResult.trades.length, 1);
+assert.strictEqual(brokerResult.trades[0].exitPrice, 104);
+assert.strictEqual(brokerResult.pendingOrders.length, 0);
+const trailingSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100 },
+  { time: 2, open: 100, high: 102, low: 99, close: 101 },
+  { time: 3, open: 101, high: 106, low: 101, close: 104 }
+]);
+trailingSession.beginBar(0);
+trailingSession.submit([{ type: 'entry', id: 'TrailLong', direction: 1, quantity: 1 }], 0);
+trailingSession.endBar(0);
+trailingSession.beginBar(1);
+trailingSession.submit([{ type: 'exit', id: 'TrailExit', fromEntry: 'TrailLong', trail_points: 1, trail_offset: 2 }], 1);
+trailingSession.endBar(1);
+trailingSession.beginBar(2);
+trailingSession.endBar(2);
+assert.strictEqual(trailingSession.result().trades.length, 1);
+assert.strictEqual(trailingSession.result().trades[0].exitReason, 'exit');
+const boundedSession = PineBacktestEngine.createSession({
+  initialCapital: 1000,
+  defaultQtyType: 'fixed',
+  defaultQtyValue: 1,
+  warmupBars: 1,
+  dateFrom: 2,
+  dateTo: 4
+}, backtestBars);
+backtestBars.forEach((bar, index) => {
+  boundedSession.beginBar(index);
+  boundedSession.submit([{ type: 'entry', id: 'bounded-' + index, direction: 1 }], index);
+  boundedSession.endBar(index);
+});
+const boundedResult = boundedSession.result();
+assert.ok(boundedResult.diagnostics.some((item) => item.type === 'date-range'));
+assert.ok(boundedResult.executions.every((execution) => execution.barIndex >= 1 && execution.barIndex <= 3));
+const shortOnlySession = PineBacktestEngine.createSession({ initialCapital: 1000, directionMode: 'short' }, backtestBars);
+shortOnlySession.beginBar(0);
+shortOnlySession.submit([{ type: 'entry', id: 'LongBlocked', direction: 1 }], 0);
+shortOnlySession.endBar(0);
+assert.strictEqual(shortOnlySession.result().executions.length, 0);
+assert.ok(shortOnlySession.result().diagnostics.some((item) => item.type === 'risk'));
+const strategyIndicatorId = chart.addIndicator('PINE_SCRIPT', {
+  placement: 'new',
+  inputs: {
+    code: `strategy("Tester UI", overlay=true, initial_capital=1000)
+if close > close[1]
+    strategy.entry("Long", strategy.long)
+if close < close[1]
+    strategy.close("Long")`,
+    title: 'Tester UI'
+  }
+});
+assert.ok(chart.indicatorResults[strategyIndicatorId].strategyBacktest);
+assert.strictEqual(chart.strategyIndicator().id, strategyIndicatorId);
+assert.strictEqual(chart.openStrategyTester(), true);
+assert.strictEqual(chart.strategyTesterPopup.hasAttribute('hidden'), false);
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Strategy Tester'));
+chart.setTheme('dark');
+assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
+chart.setTheme('light');
+assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+chart.handleDocumentKeyDown({ key: 'Escape', preventDefault() { this.defaultPrevented = true; } });
+assert.strictEqual(chart.strategyTesterPopup.hasAttribute('hidden'), true);
+chart.openStrategyTester();
+chart.handleDocumentPointerDown({ target: documentElement });
+assert.strictEqual(chart.strategyTesterPopup.hasAttribute('hidden'), true);
+chart.removeIndicator(strategyIndicatorId);
 const inputPreview = PineScriptRuntime.run(`indicator("Input test")
 length = input.int(10, "Length", min=2, max=50)
 plot(ta.sma(close, length))`, data, { inputs: { length: 5 } });

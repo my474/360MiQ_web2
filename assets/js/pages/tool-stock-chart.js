@@ -229,7 +229,13 @@
             });
         }
 
-        engineReadyPromise = loadScript('data-tool-stock-chart-runtime', 'assets/js/stock-chart-engine/pine-script-runtime.js?v=20260718.6', 'PineScriptRuntime')
+        engineReadyPromise = loadScript('data-tool-stock-chart-backtest', 'assets/js/stock-chart-engine/pine-backtest-engine.js?v=20260718.3', 'PineBacktestEngine')
+            .then(function () {
+                return loadScript('data-tool-stock-chart-runtime', 'assets/js/stock-chart-engine/pine-script-runtime.js?v=20260718.7', 'PineScriptRuntime');
+            })
+            .then(function () {
+                window.PineScriptRuntime.setBacktestEngine(window.PineBacktestEngine);
+            })
             .then(function () {
                 return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260718.41', 'StockChartEngine');
             })

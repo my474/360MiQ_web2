@@ -30,13 +30,15 @@ Primary references:
 
 ## Current State in This Project
 
-The existing Pine runtime already parses `strategy()` and exposes strategy function names. It currently records order calls as intents, but does not perform actual backtesting:
+The implementation has now started replacing the original intent-only strategy placeholder with a deterministic browser broker emulator:
 
-- `assets/js/stock-chart-engine/pine-script-runtime.js` has a `strategyOrders` collection and placeholder `strategy.*` functions.
-- Position size, average price, equity, wins, losses, open trades, and closed trades are currently static or stubbed values.
-- `stock-chart-engine.js` forwards the recorded order intents but has no fill ledger or Strategy Tester result model.
-- The current Pine documentation says strategy orders and broker integration are not enabled, which should remain true until the first working backtest milestone is complete.
-- The existing worker architecture should be retained so long-running strategy runs do not block chart interaction.
+- `assets/js/stock-chart-engine/pine-backtest-engine.js` contains the normalized settings contract, historical broker emulator, account ledger, pending orders, fills, trades, costs, drawdown, diagnostics, and metrics.
+- `assets/js/stock-chart-engine/pine-script-runtime.js` executes strategy scripts bar by bar, exposes live `strategy.*` state, and returns versioned backtest results.
+- `stock-chart-engine.js` integrates the worker/runtime result with a desktop/mobile Strategy Tester, editable properties, trade navigation, theme switching, and simulated chart overlays.
+- `PINE-SCRIPT.md` documents the supported subset and explicitly calls out unsupported tick-level and lower-timeframe behavior.
+- The existing worker architecture is retained so strategy runs do not block chart interaction, and request revisions prevent stale results from overwriting a newer run.
+
+The remaining phases are deliberate fidelity work: fill-triggered/tick re-execution, lower-timeframe Bar Magnifier data loading, richer order tooltips and optional equity panes, broader capability metadata, and additional compatibility fixtures.
 
 The first implementation must replace intent recording with a deterministic event pipeline while keeping the current indicator runtime working unchanged.
 

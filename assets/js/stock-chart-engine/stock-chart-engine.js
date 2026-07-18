@@ -1181,6 +1181,7 @@
       securityRequests: result.securityRequests || [],
       alertConditions: result.alertConditions || [],
       strategyOrders: result.strategyOrders || [],
+      strategyBacktest: result.strategyBacktest || null,
       alerts: result.alerts || [],
       drawings: result.drawings || [],
       error: null
@@ -1198,7 +1199,11 @@
         title: indicator.inputs && indicator.inputs.title,
         inputs: indicator.inputs && indicator.inputs.pineValues || {},
         security: context.comparisonSourceBars || context.comparisonBars || {},
-        timeframe: context.timeframe || '1D'
+        timeframe: context.timeframe || '1D',
+        symbol: context.symbol || '',
+        mintick: context.mintick,
+        description: context.description || '',
+        backtest: indicator.inputs && indicator.inputs.backtest || null
       });
       return pineIndicatorResultFromRuntime(indicator, result);
     } catch (error) {
@@ -1360,6 +1365,28 @@
       defaultInputs: {
         title: 'Custom Pine',
         pineValues: {},
+        backtest: {
+          useDeclaration: true,
+          initialCapital: 100000,
+          defaultQtyType: 'fixed',
+          defaultQtyValue: 1,
+          directionMode: 'both',
+          pyramiding: 0,
+          commissionType: 'percent',
+          commissionValue: 0,
+          slippageTicks: 0,
+          tickSize: 0.01,
+          limitVerificationTicks: 0,
+          marginLong: 100,
+          marginShort: 100,
+          dateFrom: null,
+          dateTo: null,
+          warmupBars: 0,
+          processOrdersOnClose: false,
+          calcOnOrderFills: false,
+          calcOnEveryTick: false,
+          fillMode: 'ohlc'
+        },
         code: '//@version=5\nindicator("Custom Pine", overlay=false)\nplot(ta.sma(close, 20), title="SMA 20")'
       },
       defaultStyles: {},
@@ -1368,6 +1395,9 @@
         var indicatorResult = createIndicatorResult(indicator, result.outputs, result.render);
         indicatorResult.error = result.error;
         indicatorResult.styles = result.styles || {};
+        indicatorResult.strategyOrders = result.strategyOrders || [];
+        indicatorResult.strategyBacktest = result.strategyBacktest || null;
+        indicatorResult.strategyWarnings = result.strategyWarnings || [];
         return indicatorResult;
       }
     },
@@ -2266,6 +2296,7 @@
     this.pineSecurityErrors = {};
     this.pineWorkerDisabled = false;
     this.pineWorkerError = null;
+    this.strategyTesterState = { indicatorId: null, result: null, view: 'overview', visible: false };
     this.pineWorkerMessageListener = this.handlePineWorkerMessage.bind(this);
     this.pineWorkerErrorListener = this.handlePineWorkerError.bind(this);
     this.pineWindowPointerMoveListener = this.handlePineWindowPointerMove.bind(this);
@@ -2342,6 +2373,7 @@
       '</div>',
       '</details>',
       '<button type="button" class="sce-pine-button" data-sce-action="pine-script" title="Open Pine Script editor">Pine Script</button>',
+      '<button type="button" class="sce-strategy-tester-button" data-sce-action="strategy-tester" title="Open Strategy Tester" hidden>Strategy Tester</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-in" title="Zoom in" aria-label="Zoom in">', paneControlIconSvg('zoom-in'), '</button>',
       '<button type="button" class="sce-toolbar-icon-button" data-sce-action="zoom-out" title="Zoom out" aria-label="Zoom out">', paneControlIconSvg('zoom-out'), '</button>',
       '<button type="button" data-sce-action="fit">Fit</button>',
@@ -2371,6 +2403,9 @@
     this.settingsPopup = document.createElement('div');
     this.settingsPopup.className = 'sce-settings-popup';
     this.settingsPopup.setAttribute('hidden', 'hidden');
+    this.strategyTesterPopup = document.createElement('div');
+    this.strategyTesterPopup.className = 'sce-strategy-tester';
+    this.strategyTesterPopup.setAttribute('hidden', 'hidden');
     this.latestMarker = document.createElement('button');
     this.latestMarker.className = 'sce-latest-marker';
     this.latestMarker.type = 'button';
@@ -2386,6 +2421,7 @@
     this.drawingToolsLayer.innerHTML = drawingToolStripHtml();
     this.canvasWrap.appendChild(this.canvas);
     this.canvasWrap.appendChild(this.settingsPopup);
+    this.canvasWrap.appendChild(this.strategyTesterPopup);
     this.canvasWrap.appendChild(this.paneControlsLayer);
     this.canvasWrap.appendChild(this.drawingToolsLayer);
     this.canvasWrap.appendChild(this.latestMarker);
@@ -2471,6 +2507,7 @@
       if (action === 'zoom-in') self.zoomIn(0.5);
       if (action === 'zoom-out') self.zoomOut(0.5);
       if (action === 'pine-script') self.openPineScriptPopup();
+      if (action === 'strategy-tester') self.toggleStrategyTester();
       if (action === 'fit') {
         self.fitContent();
         self.draw();
@@ -2480,6 +2517,31 @@
       if (action === 'fullscreen') self.toggleFullscreenMode();
       if (action === 'log') self.togglePaneScaleMode(self.activePaneId() || 'price');
       if (action === 'theme') self.toggleTheme();
+    });
+    this.strategyTesterPopup.addEventListener('click', function (event) {
+      var tab = closestAttribute(event.target, 'data-sce-strategy-tab');
+      if (tab) {
+        event.preventDefault();
+        self.strategyTesterState.view = tab.getAttribute('data-sce-strategy-tab') || 'overview';
+        self.renderStrategyTester();
+        return;
+      }
+      var close = closestAttribute(event.target, 'data-sce-strategy-close');
+      if (close) {
+        event.preventDefault();
+        self.closeStrategyTester();
+        return;
+      }
+      var trade = closestAttribute(event.target, 'data-sce-strategy-trade');
+      if (trade) {
+        event.preventDefault();
+        self.focusStrategyTrade(Number(trade.getAttribute('data-sce-strategy-trade')));
+      }
+    });
+    this.strategyTesterPopup.addEventListener('change', function (event) {
+      var field = closestAttribute(event.target, 'data-sce-backtest-field');
+      if (!field) return;
+      self.updateStrategyBacktestSetting(field.getAttribute('data-sce-backtest-field'), event.target.value, event.target.type === 'checkbox' ? event.target.checked : null);
     });
     this.drawingToolsLayer.addEventListener('click', function (event) {
       var toolButton = closestAttribute(event.target, 'data-sce-drawing-tool');
@@ -2737,6 +2799,11 @@
       this.closeIndicatorSettingsPopup();
       return;
     }
+    if (this.strategyTesterPopup && !this.strategyTesterPopup.hasAttribute('hidden')) {
+      event.preventDefault();
+      this.closeStrategyTester();
+      return;
+    }
     if (this.pendingDrawing) {
       event.preventDefault();
       this.cancelDrawing();
@@ -2790,6 +2857,10 @@
     if (!elementContains(this.drawingToolsLayer, target)) this.closeDrawingToolMenus();
     if (this.settingsPopup && !this.settingsPopup.hasAttribute('hidden') && !elementContains(this.settingsPopup, target)) {
       this.closeIndicatorSettingsPopup();
+    }
+    if (this.strategyTesterPopup && !this.strategyTesterPopup.hasAttribute('hidden') && !elementContains(this.strategyTesterPopup, target)) {
+      var strategyButton = closestAttribute(target, 'data-sce-action');
+      if (!strategyButton || strategyButton.getAttribute('data-sce-action') !== 'strategy-tester') this.closeStrategyTester();
     }
   };
 
@@ -5501,8 +5572,12 @@
         pineValues[key] = field.type === 'checkbox' ? !!field.checked : field.value;
       });
       var compiled = runtime.compile(codeField.value);
-      var preview = runtime.run(compiled, this.bars, { title: titleField && titleField.value, inputs: pineValues });
       var indicatorId = this.settingsPopup.dataset.indicatorId;
+      var existingForBacktest = indicatorId && this.document.indicators.filter(function (indicator) {
+        return indicator.id === indicatorId && indicator.type === 'PINE_SCRIPT';
+      })[0];
+      var backtestSettings = merge({}, Indicators.PINE_SCRIPT.defaultInputs.backtest, existingForBacktest && existingForBacktest.inputs && existingForBacktest.inputs.backtest || {});
+      var preview = runtime.run(compiled, this.bars, { title: titleField && titleField.value, inputs: pineValues, backtest: backtestSettings, timeframe: this.document.interval || '1D' });
       if (indicatorId) {
         var existingIndicator = this.document.indicators.filter(function (indicator) {
           return indicator.id === indicatorId && indicator.type === 'PINE_SCRIPT';
@@ -5515,19 +5590,21 @@
         }
         this.updateIndicatorSettings(indicatorId, {
           paneId: paneId,
-          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues }
+          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings }
         });
       } else {
         indicatorId = this.addIndicator('PINE_SCRIPT', {
           placement: preview.metadata.overlay ? 'source' : 'new',
-          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues }
+          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings }
         });
       }
       if (indicatorId) this.settingsPopup.dataset.indicatorId = indicatorId;
       this.setPineRemoveButtonVisible(!!indicatorId);
       if (status) {
         status.hidden = false;
-        status.textContent = 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
+        status.textContent = preview.strategyBacktest
+          ? 'Strategy tested ' + preview.strategyBacktest.trades.length + ' closed trade' + (preview.strategyBacktest.trades.length === 1 ? '' : 's') + ' (' + formatNumber(preview.strategyBacktest.metrics.netProfit) + ' net).'
+          : 'Loaded ' + preview.plots.length + ' plot' + (preview.plots.length === 1 ? '' : 's') + (preview.warnings.length ? ' with warnings.' : '.');
       }
       this.rememberRecentPineScript(titleField && titleField.value || preview.metadata.title, codeField.value);
       var pineIndicator = this.document.indicators.filter(function (indicator) {
@@ -6753,7 +6830,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.1';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.3';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -6778,7 +6855,10 @@
         requestId: requestId,
         revision: revision,
         code: code,
-        inputKey: JSON.stringify(indicator.inputs && indicator.inputs.pineValues || {})
+        inputKey: JSON.stringify({
+          pineValues: indicator.inputs && indicator.inputs.pineValues || {},
+          backtest: indicator.inputs && indicator.inputs.backtest || {}
+        })
       };
       try {
         worker.postMessage({
@@ -6789,7 +6869,8 @@
             title: indicator.inputs && indicator.inputs.title,
             inputs: clone(indicator.inputs && indicator.inputs.pineValues || {}),
             security: clone(self.comparisonSourceBars || self.comparisonBars || {}),
-            timeframe: self.document.interval || '1D'
+            timeframe: self.document.interval || '1D',
+            backtest: clone(indicator.inputs && indicator.inputs.backtest || null)
           }
         });
       } catch (error) {
@@ -6814,11 +6895,15 @@
       return false;
     });
     if (!request || this.destroyed || request.revision !== this.pineComputeRevision || !indicator) return;
-    if (request.code !== (indicator.inputs && indicator.inputs.code || '') || request.inputKey !== JSON.stringify(indicator.inputs && indicator.inputs.pineValues || {})) return;
+    if (request.code !== (indicator.inputs && indicator.inputs.code || '') || request.inputKey !== JSON.stringify({
+      pineValues: indicator.inputs && indicator.inputs.pineValues || {},
+      backtest: indicator.inputs && indicator.inputs.backtest || {}
+    })) return;
     if (!message.ok || !message.result) return;
     var result = pineIndicatorResultFromRuntime(indicator, message.result);
     result.computeMode = 'worker';
     this.indicatorResults[indicator.id] = result;
+    this.updateStrategyTester();
     this.draw();
     this.events.emit('change', {
       type: 'pine:computed',
@@ -6864,6 +6949,7 @@
   Chart.prototype.compute = function () {
     this.pineComputeRevision += 1;
     this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars, this.document.interval);
+    this.updateStrategyTester();
     this.queuePineSecurityLoads();
     this.queuePineWorkerComputations();
   };
@@ -7045,6 +7131,186 @@
       fullscreenButton.innerHTML = paneControlIconSvg(fullscreenActive ? 'minimize' : 'fullscreen');
     }
     this.updateDrawingUtilityButtons();
+    var strategyButton = this.toolbar.querySelector('[data-sce-action="strategy-tester"]');
+    var strategyIndicator = this.strategyIndicator();
+    if (strategyButton) strategyButton.hidden = !strategyIndicator;
+  };
+
+  Chart.prototype.strategyIndicator = function () {
+    var self = this;
+    return this.document.indicators.filter(function (indicator) {
+      var result = self.indicatorResults[indicator.id];
+      return indicator.type === 'PINE_SCRIPT' && result && result.strategyBacktest;
+    })[0] || null;
+  };
+
+  Chart.prototype.updateStrategyTester = function () {
+    var indicator = this.strategyIndicator();
+    var button = this.toolbar && this.toolbar.querySelector('[data-sce-action="strategy-tester"]');
+    if (button) button.hidden = !indicator;
+    if (!indicator) {
+      this.strategyTesterState.indicatorId = null;
+      this.strategyTesterState.result = null;
+      this.closeStrategyTester();
+      return;
+    }
+    this.strategyTesterState.indicatorId = indicator.id;
+    this.strategyTesterState.result = this.indicatorResults[indicator.id].strategyBacktest;
+    if (this.strategyTesterState.visible) this.renderStrategyTester();
+  };
+
+  Chart.prototype.toggleStrategyTester = function () {
+    if (this.strategyTesterState.visible) this.closeStrategyTester();
+    else this.openStrategyTester();
+  };
+
+  Chart.prototype.openStrategyTester = function () {
+    if (!this.strategyIndicator()) return false;
+    this.strategyTesterState.visible = true;
+    this.updateStrategyTester();
+    this.renderStrategyTester();
+    return true;
+  };
+
+  Chart.prototype.closeStrategyTester = function () {
+    this.strategyTesterState.visible = false;
+    if (this.strategyTesterPopup) this.strategyTesterPopup.setAttribute('hidden', 'hidden');
+  };
+
+  Chart.prototype.strategyMetric = function (label, value) {
+    return '<div class="sce-strategy-metric"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>';
+  };
+
+  Chart.prototype.strategyDateLabel = function (time) {
+    var value = Number(time);
+    if (!Number.isFinite(value)) return '';
+    var date = new Date((value > 100000000000 ? value : value * 1000));
+    return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : String(time);
+  };
+
+  Chart.prototype.renderStrategyTester = function () {
+    var popup = this.strategyTesterPopup;
+    var state = this.strategyTesterState;
+    var indicator = this.document.indicators.filter(function (item) { return item.id === state.indicatorId; })[0];
+    var result = state.result;
+    if (!popup || !indicator || !result) return;
+    var metrics = result.metrics || {};
+    var view = state.view || 'overview';
+    var tabs = [
+      ['overview', 'Overview'],
+      ['performance', 'Performance Summary'],
+      ['trades', 'List of Trades'],
+      ['properties', 'Properties'],
+      ['diagnostics', 'Diagnostics']
+    ];
+    var content = '';
+    if (view === 'overview') {
+      content = '<div class="sce-strategy-metric-grid">' +
+        this.strategyMetric('Net profit', formatNumber(metrics.netProfit)) +
+        this.strategyMetric('Return', formatNumber(metrics.netReturnPercent) + '%') +
+        this.strategyMetric('Max drawdown', formatNumber(metrics.maxDrawdown)) +
+        this.strategyMetric('Trades', String(metrics.totalTrades || 0)) +
+        this.strategyMetric('Win rate', formatNumber(metrics.winRatePercent) + '%') +
+        this.strategyMetric('Ending equity', formatNumber(metrics.endingEquity)) +
+        '</div>' +
+        '<div class="sce-strategy-equity-summary"><strong>Equity curve</strong><span>' + escapeHtml((result.equityCurve || []).length + ' bars') + '</span></div>' +
+        '<div class="sce-strategy-equity-strip">' + (result.equityCurve || []).slice(-120).map(function (point, index, points) {
+          var previous = index ? points[index - 1].value : point.value;
+          return '<i class="' + (point.value >= previous ? 'is-up' : 'is-down') + '" style="height:' + Math.max(3, Math.min(100, Math.abs(point.value - previous) * 2 + 8)) + '%"></i>';
+        }).join('') + '</div>';
+    } else if (view === 'performance') {
+      var monthlyReturns = (metrics.monthlyReturns || []).slice(-12);
+      var yearlyReturns = (metrics.yearlyReturns || []).slice(-8);
+      var returnTable = function (title, rows) {
+        return '<div class="sce-strategy-period-returns"><strong>' + escapeHtml(title) + '</strong>' + (rows.length ? rows.map(function (row) {
+          return '<span><em>' + escapeHtml(row.period) + '</em><b class="' + (row.value >= 0 ? 'is-positive' : 'is-negative') + '">' + escapeHtml(formatNumber(row.value)) + '%</b></span>';
+        }).join('') : '<small>No completed periods.</small>') + '</div>';
+      };
+      content = '<div class="sce-strategy-performance-table">' + [
+        ['Net profit', metrics.netProfit], ['Net return', (metrics.netReturnPercent || 0) + '%'],
+        ['Gross profit', metrics.grossProfit], ['Gross loss', metrics.grossLoss], ['Profit factor', metrics.profitFactor],
+        ['Total trades', metrics.totalTrades], ['Winning trades', metrics.winningTrades], ['Losing trades', metrics.losingTrades],
+        ['Long trades', metrics.longTrades], ['Short trades', metrics.shortTrades], ['Long net profit', metrics.longNetProfit], ['Short net profit', metrics.shortNetProfit],
+        ['Average trade', metrics.averageTrade], ['Largest winning trade', metrics.largestWinningTrade],
+        ['Average winning trade', metrics.averageWinningTrade], ['Average losing trade', metrics.averageLosingTrade],
+        ['Largest losing trade', metrics.largestLosingTrade], ['Commission', metrics.commission], ['Slippage', metrics.slippage],
+        ['Max drawdown', metrics.maxDrawdown], ['Max drawdown %', (metrics.maxDrawdownPercent || 0) + '%'],
+        ['Max run-up', metrics.maxRunup], ['Buy and hold', (metrics.buyAndHoldPercent || 0) + '%'], ['Sharpe', metrics.sharpe]
+      ].map(function (row) { return '<div><span>' + escapeHtml(row[0]) + '</span><strong>' + escapeHtml(formatNumber(row[1])) + '</strong></div>'; }).join('') + '</div>' + returnTable('Monthly returns', monthlyReturns) + returnTable('Yearly returns', yearlyReturns);
+    } else if (view === 'trades') {
+      var trades = result.trades || [];
+      content = trades.length ? '<div class="sce-strategy-trades-table"><div class="sce-strategy-trade-row is-header"><span>#</span><span>Entry</span><span>Exit</span><span>Side</span><span>Qty</span><span>P&amp;L</span></div>' + trades.map(function (trade, index) {
+        return '<button type="button" class="sce-strategy-trade-row" data-sce-strategy-trade="' + index + '"><span>' + escapeHtml(String(trade.number || index + 1)) + '</span><span>' + escapeHtml(this.strategyDateLabel(trade.entryTime)) + '</span><span>' + escapeHtml(this.strategyDateLabel(trade.exitTime)) + '</span><span>' + escapeHtml(trade.direction) + '</span><span>' + escapeHtml(formatNumber(trade.quantity)) + '</span><strong class="' + (trade.netProfit >= 0 ? 'is-positive' : 'is-negative') + '">' + escapeHtml(formatNumber(trade.netProfit)) + '</strong></button>';
+      }, this).join('') + '</div>' : '<p class="sce-strategy-empty">No closed trades in the selected range.</p>';
+    } else if (view === 'properties') {
+      var config = merge({}, indicator.inputs && indicator.inputs.backtest || {}, result.config || {});
+      var dateFrom = config.dateFrom == null ? '' : this.strategyDateLabel(config.dateFrom);
+      var dateTo = config.dateTo == null ? '' : this.strategyDateLabel(config.dateTo);
+      content = '<div class="sce-strategy-properties">' +
+        '<label>Initial capital<input type="number" min="0" step="100" data-sce-backtest-field="initialCapital" value="' + escapeHtml(config.initialCapital) + '"></label>' +
+        '<label>Order size<select data-sce-backtest-field="defaultQtyType"><option value="fixed"' + (config.defaultQtyType === 'fixed' ? ' selected' : '') + '>Contracts</option><option value="cash"' + (config.defaultQtyType === 'cash' ? ' selected' : '') + '>Cash value</option><option value="percent_of_equity"' + (config.defaultQtyType === 'percent_of_equity' ? ' selected' : '') + '>% of equity</option></select></label>' +
+        '<label>Order size value<input type="number" min="0" step="0.01" data-sce-backtest-field="defaultQtyValue" value="' + escapeHtml(config.defaultQtyValue) + '"></label>' +
+        '<label>Trading direction<select data-sce-backtest-field="directionMode"><option value="both"' + (config.directionMode === 'both' ? ' selected' : '') + '>Long and short</option><option value="long"' + (config.directionMode === 'long' ? ' selected' : '') + '>Long only</option><option value="short"' + (config.directionMode === 'short' ? ' selected' : '') + '>Short only</option></select></label>' +
+        '<label>Pyramiding<input type="number" min="0" step="1" data-sce-backtest-field="pyramiding" value="' + escapeHtml(config.pyramiding) + '"></label>' +
+        '<label>Commission type<select data-sce-backtest-field="commissionType"><option value="percent"' + (config.commissionType === 'percent' ? ' selected' : '') + '>Percent</option><option value="cash_per_order"' + (config.commissionType === 'cash_per_order' ? ' selected' : '') + '>Cash per order</option><option value="cash_per_contract"' + (config.commissionType === 'cash_per_contract' ? ' selected' : '') + '>Cash per contract</option></select></label>' +
+        '<label>Commission value<input type="number" min="0" step="0.01" data-sce-backtest-field="commissionValue" value="' + escapeHtml(config.commissionValue) + '"></label>' +
+        '<label>Slippage ticks<input type="number" min="0" step="1" data-sce-backtest-field="slippageTicks" value="' + escapeHtml(config.slippageTicks) + '"></label>' +
+        '<label>Tick size<input type="number" min="0.00000001" step="0.00000001" data-sce-backtest-field="tickSize" value="' + escapeHtml(config.tickSize) + '"></label>' +
+        '<label>Limit verification ticks<input type="number" min="0" step="1" data-sce-backtest-field="limitVerificationTicks" value="' + escapeHtml(config.limitVerificationTicks) + '"></label>' +
+        '<label>Margin long %<input type="number" min="0.01" step="0.01" data-sce-backtest-field="marginLong" value="' + escapeHtml(config.marginLong) + '"></label>' +
+        '<label>Margin short %<input type="number" min="0.01" step="0.01" data-sce-backtest-field="marginShort" value="' + escapeHtml(config.marginShort) + '"></label>' +
+        '<label>Date from<input type="date" data-sce-backtest-field="dateFrom" value="' + escapeHtml(dateFrom) + '"></label>' +
+        '<label>Date to<input type="date" data-sce-backtest-field="dateTo" value="' + escapeHtml(dateTo) + '"></label>' +
+        '<label>Warm-up bars<input type="number" min="0" step="1" data-sce-backtest-field="warmupBars" value="' + escapeHtml(config.warmupBars) + '"></label>' +
+        '<label>Fill model<select data-sce-backtest-field="fillMode"><option value="ohlc"' + (config.fillMode === 'ohlc' ? ' selected' : '') + '>OHLC bars</option><option value="next_open"' + (config.fillMode === 'next_open' ? ' selected' : '') + '>Next open</option></select></label>' +
+        '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="processOrdersOnClose"' + (config.processOrdersOnClose ? ' checked' : '') + '> Process orders on close</label>' +
+        '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnOrderFills"' + (config.calcOnOrderFills ? ' checked' : '') + '> Recalculate after order fills</label>' +
+        '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnEveryTick"' + (config.calcOnEveryTick ? ' checked' : '') + '> Recalculate on every tick</label>' +
+        '<p class="sce-strategy-property-note">Historical fills use standard OHLC bars. Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
+        '</div>';
+    } else {
+      var diagnostics = result.diagnostics || [];
+      content = '<div class="sce-strategy-diagnostics">' +
+        '<p>Engine ' + escapeHtml(result.engineVersion || 'unknown') + '. ' + escapeHtml(diagnostics.length ? diagnostics.length + ' diagnostic event(s).' : 'No diagnostic events.') + '</p>' +
+        (diagnostics.length ? diagnostics.map(function (item) { return '<div><strong>' + escapeHtml(item.type) + '</strong><span>' + escapeHtml(item.message) + '</span><small>Bar ' + escapeHtml(String(item.barIndex)) + '</small></div>'; }).join('') : '<p class="sce-strategy-empty">The run completed without warnings from the broker emulator.</p>') +
+        '</div>';
+    }
+    popup.innerHTML = '<div class="sce-strategy-tester-header"><strong>Strategy Tester</strong><span>' + escapeHtml(indicator.inputs && indicator.inputs.title || 'Pine strategy') + '</span><button type="button" data-sce-strategy-close title="Close Strategy Tester" aria-label="Close Strategy Tester">' + paneControlIconSvg('close') + '</button></div>' +
+      '<nav class="sce-strategy-tabs" role="tablist">' + tabs.map(function (tab) { return '<button type="button" data-sce-strategy-tab="' + tab[0] + '" class="' + (view === tab[0] ? 'is-active' : '') + '" role="tab" aria-selected="' + (view === tab[0] ? 'true' : 'false') + '">' + escapeHtml(tab[1]) + '</button>'; }).join('') + '</nav>' +
+      '<div class="sce-strategy-tester-content">' + content + '</div>';
+    popup.removeAttribute('hidden');
+  };
+
+  Chart.prototype.updateStrategyBacktestSetting = function (field, value, checked) {
+    var indicator = this.document.indicators.filter(function (item) { return item.id === this.strategyTesterState.indicatorId; }, this)[0];
+    if (!indicator) return;
+    indicator.inputs = indicator.inputs || {};
+    indicator.inputs.backtest = merge({}, Indicators.PINE_SCRIPT.defaultInputs.backtest, indicator.inputs.backtest || {});
+    if (checked != null) {
+      indicator.inputs.backtest[field] = checked;
+    } else if (field === 'dateFrom' || field === 'dateTo') {
+      var timestamp = value ? Date.parse(String(value) + 'T00:00:00Z') / 1000 : null;
+      if (field === 'dateTo' && Number.isFinite(timestamp)) timestamp += 86399;
+      indicator.inputs.backtest[field] = Number.isFinite(timestamp) ? timestamp : null;
+    } else {
+      indicator.inputs.backtest[field] = ['initialCapital', 'defaultQtyValue', 'pyramiding', 'commissionValue', 'slippageTicks', 'tickSize', 'limitVerificationTicks', 'marginLong', 'marginShort', 'warmupBars'].indexOf(field) !== -1 ? Number(value) : value;
+    }
+    indicator.inputs.backtest.useDeclaration = false;
+    this.compute();
+    this.draw();
+    this.updateStrategyTester();
+    this.emitChange('strategy:settings', { indicatorId: indicator.id, field: field });
+  };
+
+  Chart.prototype.focusStrategyTrade = function (index) {
+    var result = this.strategyTesterState.result;
+    var trade = result && result.trades && result.trades[index];
+    if (!trade) return;
+    var from = Math.max(0, Number(trade.entryBarIndex) - 12);
+    var to = Math.min(this.bars.length - 1, Number(trade.exitBarIndex) + 12);
+    if (from <= to) this.setVisibleIndexRange(from, to);
+    this.pointer = { x: 0, y: 0, time: trade.exitTime, value: trade.exitPrice };
+    this.draw();
   };
 
   Chart.prototype.stockInfoHref = function () {
@@ -7859,6 +8125,7 @@
     if (rect.paneId === 'price') this.drawPriceVolumeOverlays(rect, theme);
     if (rect.paneId === 'price') this.drawPriceSeries(rect, range, theme);
     this.drawIndicators(rect, range, theme);
+    this.drawStrategyOverlays(rect, range, theme);
     this.drawDrawings(rect, range, theme);
     this.drawPendingDrawing(rect, range, theme);
     ctx.restore();
@@ -8666,6 +8933,89 @@
       });
       self.drawPineDrawings(rect, range, theme, result.drawings || []);
     });
+  };
+
+  Chart.prototype.drawStrategyOverlays = function (rect, range, theme) {
+    if (rect.paneId !== 'price') return;
+    var visible = this.visibleBars();
+    if (!visible.length) return;
+    var first = visible[0].time;
+    var last = visible[visible.length - 1].time;
+    var self = this;
+    var executions = [];
+    this.document.indicators.forEach(function (indicator) {
+      if (indicator.type !== 'PINE_SCRIPT' || indicator.visible === false) return;
+      var result = self.indicatorResults[indicator.id] && self.indicatorResults[indicator.id].strategyBacktest;
+      if (!result) return;
+      (result.executions || []).forEach(function (execution) {
+        if (execution.time >= first && execution.time <= last) executions.push(execution);
+      });
+    });
+    var strategyResults = this.document.indicators.map(function (indicator) {
+      return indicator.type === 'PINE_SCRIPT' && indicator.visible !== false ? self.indicatorResults[indicator.id] && self.indicatorResults[indicator.id].strategyBacktest : null;
+    }).filter(Boolean);
+    if (!executions.length && !strategyResults.some(function (result) {
+      return (result.stateCurve || []).some(function (point) { return point.time >= first && point.time <= last && Number.isFinite(point.position_avg_price); }) || (result.pendingOrders || []).length;
+    })) return;
+    var ctx = this.ctx;
+    ctx.save();
+    strategyResults.forEach(function (result) {
+      var points = (result.stateCurve || []).filter(function (point) {
+        return point.time >= first && point.time <= last && Number.isFinite(point.position_avg_price);
+      });
+      if (points.length) {
+        ctx.globalAlpha = 0.72;
+        ctx.strokeStyle = theme.drawing;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        points.forEach(function (point, index) {
+          var x = self.xForTime(point.time, rect);
+          var y = self.yForValue(point.position_avg_price, rect, range);
+          if (y == null) return;
+          if (!index) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      }
+      (result.pendingOrders || []).forEach(function (order) {
+        var bar = self.bars[Number(order.createdBarIndex)];
+        var price = Number.isFinite(order.limit) ? order.limit : order.stop;
+        if (!bar || !Number.isFinite(price) || bar.time < first || bar.time > last) return;
+        var x = self.xForTime(bar.time, rect);
+        var y = self.yForValue(price, rect, range);
+        if (y == null) return;
+        ctx.globalAlpha = 0.55;
+        ctx.strokeStyle = theme.mutedText;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(Math.max(rect.x, x - 10), y);
+        ctx.lineTo(Math.min(rect.x + rect.width, x + 32), y);
+        ctx.stroke();
+      });
+    });
+    ctx.setLineDash([]);
+    executions.forEach(function (execution) {
+      var x = self.xForTime(execution.time, rect);
+      var y = self.yForValue(execution.price, rect, range);
+      if (y == null || x < rect.x - 10 || x > rect.x + rect.width + 10) return;
+      var isLong = execution.direction === 'long';
+      var color = isLong ? theme.up : theme.down;
+      var markerY = y + (isLong ? -8 : 8);
+      ctx.globalAlpha = 0.88;
+      ctx.fillStyle = color;
+      ctx.strokeStyle = theme.paneBackground;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, markerY + (isLong ? -5 : 5));
+      ctx.lineTo(x - 5, markerY + (isLong ? 4 : -4));
+      ctx.lineTo(x + 5, markerY + (isLong ? 4 : -4));
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    });
+    ctx.restore();
   };
 
   Chart.prototype.drawPriceVolumeOverlays = function (rect, theme) {
@@ -11106,7 +11456,7 @@
     'strategy.opentrades.entry_price', 'strategy.opentrades.entry_size', 'strategy.closedtrades.entry_id',
     'strategy.closedtrades.exit_id', 'strategy.closedtrades.profit', 'strategy.convert_to_account',
     'strategy.convert_to_symbol', 'strategy.default_entry_qty'
-  ], 'Strategy order, trade, and performance API. Order execution is reference-only in this client runtime.');
+  ], 'Strategy order, trade, and performance API. The browser runtime executes the supported historical broker-emulator subset and reports unsupported execution modes as diagnostics.');
   registerPineReferenceFunctions([
     'plotarrow', 'plotcandle', 'plotbar', 'barcolor', 'alert', 'alertcondition', 'linefill.new', 'linefill.delete',
     'linefill.get_line1', 'linefill.get_line2', 'line.new', 'line.copy', 'line.delete', 'line.get_price',
@@ -11324,7 +11674,7 @@
       status: definition.status || 'Supported'
     };
   }).concat([
-    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script. Orders are recorded for the chart result without broker-side execution.', status: 'Supported', example: 'strategy("My strategy", overlay=true)' },
+    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script for the browser historical broker emulator. It does not place real broker orders.', status: 'Supported', example: 'strategy("My strategy", overlay=true)' },
     { name: 'library', type: 'Function', category: 'function', signature: 'library(title, overlay, dynamic_requests)', description: 'Declares a reusable Pine library script. Publishing is outside the browser runtime.', status: 'Supported' },
     { name: 'ta.highest', type: 'Function', category: 'function', signature: 'ta.highest(source, length)', description: 'Returns the highest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.highest(high, 20)' },
     { name: 'ta.lowest', type: 'Function', category: 'function', signature: 'ta.lowest(source, length)', description: 'Returns the lowest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.lowest(low, 20)' },

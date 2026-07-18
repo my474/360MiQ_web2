@@ -25,6 +25,7 @@
   var compileCache = Object.create(null);
   var compileCacheKeys = [];
   var activeBudget = null;
+  var backtestEngine = null;
 
   function consumeBudget(amount, line) {
     if (!activeBudget) return;
@@ -1824,6 +1825,9 @@
     options = options || {};
     bars = Array.isArray(bars) ? bars : [];
     var compiled = typeof compiledOrSource === 'string' ? compile(compiledOrSource) : compiledOrSource;
+    var isStrategyScript = (compiled.statements || []).some(function (statement) {
+      return statement.type === 'declaration' && statement.expression && statement.expression.callee && statement.expression.callee.name === 'strategy';
+    });
     activeBudget = { used: 0, max: MAX_OPERATIONS };
     var namespaces = createNamespaces();
     var inputDefinitions = [];
@@ -1846,7 +1850,9 @@
         value = String(value || 'close').toLowerCase();
         if (['open', 'high', 'low', 'close', 'volume', 'hl2', 'hlc3', 'ohlc4'].indexOf(value) === -1) value = 'close';
       }
-      inputDefinitions.push({ id: id, type: type, title: title, defaultValue: defaultValue, value: value, min: args.named.min, max: args.named.max, step: args.named.step });
+      var existingInput = inputDefinitions.filter(function (input) { return input.id === id; })[0];
+      if (existingInput) return type === 'source' ? (env[value] || env.close) : existingInput.value;
+      inputDefinitions.push({ id: id, type: type, title: title, defaultValue: defaultValue, value: value, min: args.named.minval, max: args.named.maxval, step: args.named.step });
       if (type === 'source') return env[value] || env.close;
       return value;
     }
@@ -2039,6 +2045,12 @@
     var securitySeriesCache = Object.create(null);
     var securityData = options.security || {};
     var strategyOrders = [];
+    var backtestSession = null;
+    var backtestBarOrders = [];
+    var currentStrategyBarIndex = 0;
+    var strategyStateHistory = [];
+    var backtestPlotCallCursor = 0;
+    var backtestHlineKeys = Object.create(null);
 
     function securityEntry(symbol) {
       var keys = Object.keys(securityData);
@@ -2107,25 +2119,128 @@
       security: function () { return NaN; }, security_lower_tf: function () { return []; }, currency_rate: function () { return NaN; }, dividends: function () { return NaN; },
       earnings: function () { return NaN; }, financial: function () { return NaN; }, quandl: function () { return NaN; }, seed: function () { return NaN; }, splits: function () { return NaN; }
     };
+    function strategyStateSeries(key, fallback) {
+      return new PineSeries(function (index) {
+        var state = strategyStateHistory[index];
+        return state && state[key] != null ? state[key] : fallback;
+      }, 'strategy.' + key);
+    }
+    function strategyScalar(value) {
+      return value instanceof PineSeries ? valueAt(value, currentStrategyBarIndex) : value;
+    }
+    function strategyOrder(type, args, fields) {
+      var order = { type: type, id: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), barIndex: currentStrategyBarIndex };
+      (fields || []).forEach(function (field) {
+        var positionalIndex = field === 'direction' ? 1 : field === 'quantity' ? 2 : field === 'limit' ? 3 : field === 'stop' ? 4 : -1;
+        var namedField = field === 'quantity' && args.named.qty != null ? 'qty' : field;
+        var value = args.named[namedField] != null ? args.named[namedField] : positionalIndex >= 0 ? args[positionalIndex] : null;
+        order[field] = strategyScalar(value);
+      });
+      strategyOrders.push(order);
+      backtestBarOrders.push(order);
+      return true;
+    }
+    var initialCapital = Number(options.backtest && options.backtest.initialCapital || options.initialCapital) || 100000;
     env.strategy = {
-      initial_capital: Number(options.initialCapital) || 100000,
-      equity: new PineSeries(function () { return Number(options.initialCapital) || 100000; }),
-      position_size: new PineSeries(function () { return 0; }), position_avg_price: new PineSeries(function () { return NaN; }),
-      wintrades: 0, losstrades: 0,
-      entry: function (args) { strategyOrders.push({ type: 'entry', id: String(args[0] || ''), direction: args[1], quantity: args.named.qty != null ? args.named.qty : args.named.quantity, price: args.named.limit || args.named.stop || null }); return true; },
-      order: function (args) { strategyOrders.push({ type: 'order', id: String(args[0] || ''), direction: args[1], quantity: args.named.qty != null ? args.named.qty : args.named.quantity }); return true; },
-      exit: function (args) { strategyOrders.push({ type: 'exit', id: String(args[0] || ''), from: args.named.from_entry || args[1] || '' }); return true; },
-      close: function (args) { strategyOrders.push({ type: 'close', id: String(args[0] || '') }); return true; }, close_all: function () { strategyOrders.push({ type: 'close_all' }); return true; },
-      cancel: function (args) { strategyOrders.push({ type: 'cancel', id: String(args[0] || '') }); return true; }, cancel_all: function () { strategyOrders.push({ type: 'cancel_all' }); return true; },
-      risk: { allow_entry_in: function () { return true; } }, opentrades: {}, closedtrades: {}, convert_to_account: function (args) { return args[0]; }, convert_to_symbol: function (args) { return args[0]; }, default_entry_qty: function (args) { return 1; }
+      long: 1,
+      short: -1,
+      fixed: 'fixed',
+      cash: 'cash',
+      percent_of_equity: 'percent_of_equity',
+      commission: { percent: 'percent', cash_per_order: 'cash_per_order', cash_per_contract: 'cash_per_contract' },
+      initial_capital: initialCapital,
+      equity: strategyStateSeries('equity', initialCapital),
+      netprofit: strategyStateSeries('netprofit', 0),
+      openprofit: strategyStateSeries('openprofit', 0),
+      position_size: strategyStateSeries('position_size', 0),
+      position_avg_price: strategyStateSeries('position_avg_price', NaN),
+      wintrades: strategyStateSeries('wintrades', 0),
+      losstrades: strategyStateSeries('losstrades', 0),
+      closedtrades: strategyStateSeries('closedtrades', 0),
+      opentrades: strategyStateSeries('opentrades', 0),
+      grossprofit: strategyStateSeries('grossprofit', 0),
+      grossloss: strategyStateSeries('grossloss', 0),
+      max_drawdown: strategyStateSeries('max_drawdown', 0),
+      max_runup: strategyStateSeries('max_runup', 0),
+      entry: function (args) { return strategyOrder('entry', args, ['direction', 'quantity', 'limit', 'stop', 'oca_name', 'oca_type', 'comment']); },
+      order: function (args) { return strategyOrder('order', args, ['direction', 'quantity', 'limit', 'stop', 'oca_name', 'oca_type', 'comment']); },
+      exit: function (args) {
+        var order = { type: 'exit', id: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), barIndex: currentStrategyBarIndex };
+        ['fromEntry', 'quantity', 'qty_percent', 'limit', 'stop', 'profit', 'loss', 'trail_points', 'trail_offset', 'trail_price', 'oca_name', 'oca_type', 'comment'].forEach(function (field) {
+          var pineName = field === 'fromEntry' ? 'from_entry' : field;
+          if (field === 'quantity' && args.named.qty != null) pineName = 'qty';
+          var value = args.named[pineName] != null ? args.named[pineName] : (field === 'fromEntry' ? args[1] : null);
+          order[field] = strategyScalar(value);
+        });
+        strategyOrders.push(order);
+        backtestBarOrders.push(order);
+        return true;
+      },
+      close: function (args) {
+        var order = { type: 'close', id: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), fromEntry: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), barIndex: currentStrategyBarIndex };
+        order.comment = strategyScalar(args.named.comment);
+        order.quantity = strategyScalar(args.named.qty != null ? args.named.qty : args.named.quantity);
+        order.qty_percent = strategyScalar(args.named.qty_percent);
+        strategyOrders.push(order);
+        backtestBarOrders.push(order);
+        return true;
+      },
+      close_all: function () { var order = { type: 'close_all', id: 'close_all', barIndex: currentStrategyBarIndex }; strategyOrders.push(order); backtestBarOrders.push(order); return true; },
+      cancel: function (args) { return strategyOrder('cancel', args, []); },
+      cancel_all: function () { var order = { type: 'cancel_all', id: 'cancel_all', barIndex: currentStrategyBarIndex }; strategyOrders.push(order); backtestBarOrders.push(order); return true; },
+      risk: { allow_entry_in: function () { return true; } },
+      convert_to_account: function (args) { return args[0]; },
+      convert_to_symbol: function (args) { return args[0]; },
+      default_entry_qty: function (args) {
+        var activeBacktest = strategyBacktestOptions || options.backtest || {};
+        return Number(activeBacktest.defaultQtyValue) || 1;
+      }
     };
-    env.strategy.opentrades.entry_id = function () { return ''; }; env.strategy.opentrades.entry_price = function () { return NaN; }; env.strategy.opentrades.entry_size = function () { return 0; };
-    env.strategy.closedtrades.entry_id = function () { return ''; }; env.strategy.closedtrades.exit_id = function () { return ''; }; env.strategy.closedtrades.profit = function () { return 0; };
+    env.strategy.opentrades.entry_id = function (args) { var trade = backtestSession && backtestSession.openTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.entryId : ''; };
+    env.strategy.opentrades.entry_price = function (args) { var trade = backtestSession && backtestSession.openTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.entryPrice : NaN; };
+    env.strategy.opentrades.entry_size = function (args) { var trade = backtestSession && backtestSession.openTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.direction * trade.quantity : 0; };
+    env.strategy.closedtrades.entry_id = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.entryId : ''; };
+    env.strategy.closedtrades.exit_id = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.exitId : ''; };
+    env.strategy.closedtrades.profit = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.netProfit : 0; };
+    var strategyBacktestOptions = {};
+    Object.keys(options.backtest || {}).forEach(function (key) { strategyBacktestOptions[key] = options.backtest[key]; });
+    if (isStrategyScript) {
+      var strategyDeclaration = (compiled.statements || []).filter(function (statement) {
+        return statement.type === 'declaration' && statement.expression && statement.expression.callee && statement.expression.callee.name === 'strategy';
+      })[0];
+      if (strategyDeclaration) {
+        var declarationSettings = argumentMap(strategyDeclaration.expression.args, env, 0).named || {};
+        var declarationToBacktest = {
+          initial_capital: 'initialCapital', default_qty_type: 'defaultQtyType', default_qty_value: 'defaultQtyValue',
+          pyramiding: 'pyramiding', commission_type: 'commissionType', commission_value: 'commissionValue',
+          slippage: 'slippageTicks', margin_long: 'marginLong', margin_short: 'marginShort',
+          process_orders_on_close: 'processOrdersOnClose', calc_on_order_fills: 'calcOnOrderFills', calc_on_every_tick: 'calcOnEveryTick'
+        };
+        if (strategyBacktestOptions.useDeclaration !== false) {
+          Object.keys(declarationToBacktest).forEach(function (pineName) {
+            var settingName = declarationToBacktest[pineName];
+            if (declarationSettings[pineName] != null) strategyBacktestOptions[settingName] = declarationSettings[pineName];
+          });
+        }
+        delete strategyBacktestOptions.useDeclaration;
+        initialCapital = Number(strategyBacktestOptions.initialCapital) || initialCapital;
+        env.strategy.initial_capital = initialCapital;
+      }
+    }
+    if (isStrategyScript && options.backtest && backtestEngine && typeof backtestEngine.createSession === 'function') {
+      backtestSession = backtestEngine.createSession(strategyBacktestOptions, bars);
+    }
+    if (isStrategyScript && options.backtest && !backtestSession) warnings.push('Strategy backtesting is unavailable because the broker emulator is not loaded.');
     env.__requestSecurity = requestSecurity;
     function named(args, key, fallback) { return args.named[key] == null ? fallback : args.named[key]; }
     function plotFunction(args) {
       if (plots.length >= MAX_PLOTS) throw new PineError('The script exceeded the maximum of ' + MAX_PLOTS + ' plots.');
       var source = args[0];
+      if (backtestSession) {
+        var plotSlot = backtestPlotCallCursor;
+        backtestPlotCallCursor += 1;
+        if (plots[plotSlot]) return source;
+      }
       var title = String(named(args, 'title', 'Plot ' + (plots.length + 1)) || 'Plot');
       var color = named(args, 'color', null);
       var width = Math.max(1, Math.min(8, Math.floor(asNumber(named(args, 'linewidth', 2))) || 2));
@@ -2136,7 +2251,11 @@
     }
     function hlineFunction(args) {
       var value = asNumber(args[0]);
-      if (Number.isFinite(value)) levels.push({ value: value, title: String(named(args, 'title', 'Level')), color: named(args, 'color', null) });
+      var key = String(value) + '|' + String(named(args, 'title', 'Level'));
+      if (Number.isFinite(value) && !backtestHlineKeys[key]) {
+        backtestHlineKeys[key] = true;
+        levels.push({ value: value, title: String(named(args, 'title', 'Level')), color: named(args, 'color', null) });
+      }
       return value;
     }
     function shapePlotFunction(args, characterMode) {
@@ -2376,11 +2495,19 @@
         }
         if (statement.type === 'function') continue;
         if (statement.type === 'assignment') {
+          if (statement.persistent && Object.prototype.hasOwnProperty.call(scope, statement.name)) {
+            lastValue = scope[statement.name];
+            continue;
+          }
           lastValue = evaluate(statement.expression, scope, index);
           scope[statement.name] = lastValue;
           continue;
         }
         if (statement.type === 'tuple-assignment') {
+          if (statement.persistent && statement.names.every(function (name) { return Object.prototype.hasOwnProperty.call(scope, name); })) {
+            lastValue = scope[statement.names[0]];
+            continue;
+          }
           var tupleValue = evaluate(statement.expression, scope, index);
           if (!Array.isArray(tupleValue)) throw new PineError('The expression does not return a tuple.', statement.line, 1);
           statement.names.forEach(function (name, tupleIndex) { scope[name] = tupleValue[tupleIndex]; });
@@ -2513,7 +2640,19 @@
         }, functionName);
       };
     });
-    executeStatements(compiled.statements, env, 0);
+    if (backtestSession) {
+      for (var backtestIndex = 0; backtestIndex < bars.length; backtestIndex += 1) {
+        currentStrategyBarIndex = backtestIndex;
+        backtestPlotCallCursor = 0;
+        backtestBarOrders = [];
+        strategyStateHistory[backtestIndex] = backtestSession.beginBar(backtestIndex);
+        executeStatements(compiled.statements, env, backtestIndex);
+        backtestSession.submit(backtestBarOrders, backtestIndex);
+        strategyStateHistory[backtestIndex] = backtestSession.endBar(backtestIndex);
+      }
+    } else {
+      executeStatements(compiled.statements, env, 0);
+    }
     var outputs = {};
     var render = [];
     plots.forEach(function (plot, index) {
@@ -2589,6 +2728,7 @@
       }),
       securityRequests: securityRequests,
       strategyOrders: strategyOrders,
+      strategyBacktest: backtestSession ? backtestSession.result() : null,
       alerts: alerts.map(function (alert) { return { output: alert.output, message: alert.message }; })
     };
     activeBudget = null;
@@ -2606,6 +2746,7 @@
 
   return {
     VERSION: VERSION,
+    setBacktestEngine: function (engine) { backtestEngine = engine || null; return backtestEngine; },
     PineError: PineError,
     PineSeries: PineSeries,
     tokenize: tokenize,
