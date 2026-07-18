@@ -2153,13 +2153,44 @@
     function strategyOrder(type, args, fields) {
       var order = { type: type, id: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), barIndex: currentStrategyBarIndex };
       (fields || []).forEach(function (field) {
-        var positionalIndex = field === 'direction' ? 1 : field === 'quantity' ? 2 : field === 'limit' ? 3 : field === 'stop' ? 4 : -1;
+        var positionalIndex = field === 'direction' ? 1 : field === 'quantity' ? 2 : field === 'limit' ? 3 : field === 'stop' ? 4 : field === 'oca_name' ? 5 : field === 'oca_type' ? 6 : field === 'comment' ? 7 : -1;
         var namedField = field === 'quantity' && args.named.qty != null ? 'qty' : field;
         var value = args.named[namedField] != null ? args.named[namedField] : positionalIndex >= 0 ? args[positionalIndex] : null;
         order[field] = strategyScalar(value);
       });
+      order.alert_message = strategyScalar(args.named.alert_message);
+      order.disable_alert = !!strategyScalar(args.named.disable_alert);
       strategyOrders.push(order);
       backtestBarOrders.push(order);
+      return true;
+    }
+    function strategyTradeAccessor(collectionName, field, fallback) {
+      return function (args) {
+        function read(tradeNumberValue) {
+          var collection = backtestSession && (collectionName === 'open' ? backtestSession.openTrades : backtestSession.closedTrades);
+          var tradeNumber = Math.floor(Number(tradeNumberValue));
+          var trade = collection && Number.isFinite(tradeNumber) ? collection[tradeNumber] : null;
+          if (!trade) return fallback;
+          var value = trade[field];
+          return value == null ? fallback : value;
+        }
+        var tradeIndex = args[0] instanceof PineSeries ? args[0] : null;
+        return new PineSeries(function (index) {
+          return read(tradeIndex ? valueAt(tradeIndex, index) : strategyScalar(args[0]));
+        }, 'strategy.' + collectionName + 'trades.' + field);
+      };
+    }
+    function strategyConversion(functionName, value) {
+      if (value instanceof PineSeries) return new PineSeries(function (index) {
+        var inputValue = value.get(index);
+        return backtestSession && typeof backtestSession[functionName] === 'function' ? backtestSession[functionName](inputValue) : inputValue;
+      }, 'strategy.' + functionName);
+      return backtestSession && typeof backtestSession[functionName] === 'function' ? backtestSession[functionName](value) : value;
+    }
+    function strategyRisk(name, args, typeIndex) {
+      var value = strategyScalar(args[0]);
+      var type = typeIndex == null ? null : strategyScalar(args[typeIndex]);
+      if (backtestSession && typeof backtestSession.configureRisk === 'function') backtestSession.configureRisk(name, value, type);
       return true;
     }
     var initialCapital = Number(options.backtest && options.backtest.initialCapital || options.initialCapital) || 100000;
@@ -2170,7 +2201,10 @@
       cash: 'cash',
       percent_of_equity: 'percent_of_equity',
       commission: { percent: 'percent', cash_per_order: 'cash_per_order', cash_per_contract: 'cash_per_contract' },
+      direction: { all: 0, long: 1, short: -1 },
+      oca: { cancel: 'cancel', reduce: 'reduce', none: 'none' },
       initial_capital: initialCapital,
+      account_currency: String(options.backtest && options.backtest.currency || options.currency || 'USD'),
       equity: strategyStateSeries('equity', initialCapital),
       netprofit: strategyStateSeries('netprofit', 0),
       openprofit: strategyStateSeries('openprofit', 0),
@@ -2186,46 +2220,132 @@
       max_runup: strategyStateSeries('max_runup', 0),
       margin_used: strategyStateSeries('margin_used', 0),
       free_margin: strategyStateSeries('free_margin', initialCapital),
+      margin_liquidation_price: strategyStateSeries('margin_liquidation_price', NaN),
+      position_entry_name: strategyStateSeries('position_entry_name', ''),
+      capital_held: strategyStateSeries('capital_held', NaN),
+      max_contracts_held_all: strategyStateSeries('max_contracts_held_all', 0),
+      max_contracts_held_long: strategyStateSeries('max_contracts_held_long', 0),
+      max_contracts_held_short: strategyStateSeries('max_contracts_held_short', 0),
+      eventrades: strategyStateSeries('eventrades', 0),
+      netprofit_percent: strategyStateSeries('netprofit_percent', 0),
+      grossprofit_percent: strategyStateSeries('grossprofit_percent', 0),
+      grossloss_percent: strategyStateSeries('grossloss_percent', 0),
+      openprofit_percent: strategyStateSeries('openprofit_percent', 0),
+      max_drawdown_percent: strategyStateSeries('max_drawdown_percent', 0),
+      max_runup_percent: strategyStateSeries('max_runup_percent', 0),
+      avg_trade: strategyStateSeries('avg_trade', 0),
+      avg_trade_percent: strategyStateSeries('avg_trade_percent', 0),
+      avg_winning_trade: strategyStateSeries('avg_winning_trade', 0),
+      avg_winning_trade_percent: strategyStateSeries('avg_winning_trade_percent', 0),
+      avg_losing_trade: strategyStateSeries('avg_losing_trade', 0),
+      avg_losing_trade_percent: strategyStateSeries('avg_losing_trade_percent', 0),
       entry: function (args) { return strategyOrder('entry', args, ['direction', 'quantity', 'limit', 'stop', 'oca_name', 'oca_type', 'comment']); },
       order: function (args) { return strategyOrder('order', args, ['direction', 'quantity', 'limit', 'stop', 'oca_name', 'oca_type', 'comment']); },
       exit: function (args) {
-        var order = { type: 'exit', id: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), barIndex: currentStrategyBarIndex };
-        ['fromEntry', 'quantity', 'qty_percent', 'limit', 'stop', 'profit', 'loss', 'trail_points', 'trail_offset', 'trail_price', 'oca_name', 'oca_type', 'comment'].forEach(function (field) {
+        var exitId = String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0]));
+        var order = { type: 'exit', id: exitId, displayId: exitId, barIndex: currentStrategyBarIndex };
+        ['fromEntry', 'quantity', 'qty_percent', 'limit', 'stop', 'profit', 'loss', 'trail_points', 'trail_offset', 'trail_price', 'oca_name', 'oca_type', 'comment', 'alert_message', 'alert_profit', 'alert_loss', 'alert_trailing', 'disable_alert'].forEach(function (field) {
           var pineName = field === 'fromEntry' ? 'from_entry' : field;
           if (field === 'quantity' && args.named.qty != null) pineName = 'qty';
           var value = args.named[pineName] != null ? args.named[pineName] : (field === 'fromEntry' ? args[1] : null);
           order[field] = strategyScalar(value);
         });
         strategyOrders.push(order);
-        backtestBarOrders.push(order);
+        var hasLimit = Number.isFinite(Number(order.limit)) || Number.isFinite(Number(order.profit));
+        var hasStop = Number.isFinite(Number(order.stop)) || Number.isFinite(Number(order.loss)) || Number.isFinite(Number(order.trail_points)) || Number.isFinite(Number(order.trail_offset)) || Number.isFinite(Number(order.trail_price));
+        function pushExitLeg(leg, suffix) {
+          var copy = {};
+          Object.keys(leg).forEach(function (key) { copy[key] = leg[key]; });
+          copy.id = exitId + '#' + suffix;
+          copy.displayId = exitId;
+          backtestBarOrders.push(copy);
+        }
+        if (hasLimit) {
+          var limitLeg = {};
+          Object.keys(order).forEach(function (key) { limitLeg[key] = order[key]; });
+          delete limitLeg.stop;
+          delete limitLeg.loss;
+          delete limitLeg.trail_points;
+          delete limitLeg.trail_offset;
+          delete limitLeg.trail_price;
+          pushExitLeg(limitLeg, 'limit');
+        }
+        if (hasStop) {
+          var stopLeg = {};
+          Object.keys(order).forEach(function (key) { stopLeg[key] = order[key]; });
+          delete stopLeg.limit;
+          delete stopLeg.profit;
+          pushExitLeg(stopLeg, 'stop');
+        }
+        if (!hasLimit && !hasStop) pushExitLeg(order, 'market');
         return true;
       },
       close: function (args) {
         var order = { type: 'close', id: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), fromEntry: String(strategyScalar(args[0]) == null ? '' : strategyScalar(args[0])), barIndex: currentStrategyBarIndex };
-        order.comment = strategyScalar(args.named.comment);
-        order.quantity = strategyScalar(args.named.qty != null ? args.named.qty : args.named.quantity);
-        order.qty_percent = strategyScalar(args.named.qty_percent);
+        order.comment = strategyScalar(args.named.comment != null ? args.named.comment : args[1]);
+        order.alert_message = strategyScalar(args.named.alert_message);
+        order.disable_alert = !!strategyScalar(args.named.disable_alert != null ? args.named.disable_alert : args[5]);
+        order.immediately = !!strategyScalar(args.named.immediately != null ? args.named.immediately : args[4]);
+        order.quantity = strategyScalar(args.named.qty != null ? args.named.qty : args.named.quantity != null ? args.named.quantity : args[2]);
+        order.qty_percent = strategyScalar(args.named.qty_percent != null ? args.named.qty_percent : args[3]);
         strategyOrders.push(order);
         backtestBarOrders.push(order);
         return true;
       },
-      close_all: function () { var order = { type: 'close_all', id: 'close_all', barIndex: currentStrategyBarIndex }; strategyOrders.push(order); backtestBarOrders.push(order); return true; },
+      close_all: function (args) { var order = { type: 'close_all', id: 'close_all', barIndex: currentStrategyBarIndex, comment: strategyScalar(args.named.comment != null ? args.named.comment : args[0]), alert_message: strategyScalar(args.named.alert_message), disable_alert: !!strategyScalar(args.named.disable_alert != null ? args.named.disable_alert : args[2]), immediately: !!strategyScalar(args.named.immediately != null ? args.named.immediately : args[1]) }; strategyOrders.push(order); backtestBarOrders.push(order); return true; },
       cancel: function (args) { return strategyOrder('cancel', args, []); },
       cancel_all: function () { var order = { type: 'cancel_all', id: 'cancel_all', barIndex: currentStrategyBarIndex }; strategyOrders.push(order); backtestBarOrders.push(order); return true; },
-      risk: { allow_entry_in: function () { return true; } },
-      convert_to_account: function (args) { return args[0]; },
-      convert_to_symbol: function (args) { return args[0]; },
+      risk: {
+        allow_entry_in: function (args) { return strategyRisk('allow_entry_in', args); },
+        max_cons_loss_days: function (args) { return strategyRisk('max_cons_loss_days', args); },
+        max_drawdown: function (args) { return strategyRisk('max_drawdown', args, 1); },
+        max_intraday_filled_orders: function (args) { return strategyRisk('max_intraday_filled_orders', args); },
+        max_intraday_loss: function (args) { return strategyRisk('max_intraday_loss', args, 1); },
+        max_position_size: function (args) { return strategyRisk('max_position_size', args); }
+      },
+      convert_to_account: function (args) { return strategyConversion('convertToAccount', args[0]); },
+      convert_to_symbol: function (args) { return strategyConversion('convertToSymbol', args[0]); },
       default_entry_qty: function (args) {
         var activeBacktest = strategyBacktestOptions || options.backtest || {};
+        if (backtestSession && typeof backtestSession.defaultEntryQty === 'function') return backtestSession.defaultEntryQty(strategyScalar(args[0]), env.close.get(currentStrategyBarIndex));
         return Number(activeBacktest.defaultQtyValue) || 1;
       }
     };
-    env.strategy.opentrades.entry_id = function (args) { var trade = backtestSession && backtestSession.openTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.entryId : ''; };
-    env.strategy.opentrades.entry_price = function (args) { var trade = backtestSession && backtestSession.openTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.entryPrice : NaN; };
-    env.strategy.opentrades.entry_size = function (args) { var trade = backtestSession && backtestSession.openTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.direction * trade.quantity : 0; };
-    env.strategy.closedtrades.entry_id = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.entryId : ''; };
-    env.strategy.closedtrades.exit_id = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.exitId : ''; };
-    env.strategy.closedtrades.profit = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.netProfit : 0; };
+    env.strategy.opentrades.entry_id = strategyTradeAccessor('open', 'entryId', '');
+    env.strategy.opentrades.entry_price = strategyTradeAccessor('open', 'entryPrice', NaN);
+    env.strategy.opentrades.entry_bar_index = strategyTradeAccessor('open', 'entryBarIndex', NaN);
+    env.strategy.opentrades.entry_time = strategyTradeAccessor('open', 'entryTime', NaN);
+    env.strategy.opentrades.entry_comment = strategyTradeAccessor('open', 'entryComment', '');
+    env.strategy.opentrades.entry_size = strategyTradeAccessor('open', 'size', 0);
+    env.strategy.opentrades.size = strategyTradeAccessor('open', 'size', 0);
+    env.strategy.opentrades.profit = strategyTradeAccessor('open', 'currentProfit', NaN);
+    env.strategy.opentrades.profit_percent = strategyTradeAccessor('open', 'currentProfitPercent', NaN);
+    env.strategy.opentrades.commission = strategyTradeAccessor('open', 'entryCommission', 0);
+    env.strategy.opentrades.max_runup = strategyTradeAccessor('open', 'maxRunup', NaN);
+    env.strategy.opentrades.max_runup_percent = strategyTradeAccessor('open', 'maxRunupPercent', NaN);
+    env.strategy.opentrades.max_drawdown = strategyTradeAccessor('open', 'maxDrawdown', NaN);
+    env.strategy.opentrades.max_drawdown_percent = strategyTradeAccessor('open', 'maxDrawdownPercent', NaN);
+    env.strategy.closedtrades.entry_id = strategyTradeAccessor('closed', 'entryId', '');
+    env.strategy.closedtrades.entry_price = strategyTradeAccessor('closed', 'entryPrice', NaN);
+    env.strategy.closedtrades.entry_bar_index = strategyTradeAccessor('closed', 'entryBarIndex', NaN);
+    env.strategy.closedtrades.entry_time = strategyTradeAccessor('closed', 'entryTime', NaN);
+    env.strategy.closedtrades.entry_comment = strategyTradeAccessor('closed', 'entryComment', '');
+    env.strategy.closedtrades.entry_size = strategyTradeAccessor('closed', 'size', 0);
+    env.strategy.closedtrades.size = strategyTradeAccessor('closed', 'size', 0);
+    env.strategy.closedtrades.exit_id = strategyTradeAccessor('closed', 'exitId', '');
+    env.strategy.closedtrades.exit_price = strategyTradeAccessor('closed', 'exitPrice', NaN);
+    env.strategy.closedtrades.exit_bar_index = strategyTradeAccessor('closed', 'exitBarIndex', NaN);
+    env.strategy.closedtrades.exit_time = strategyTradeAccessor('closed', 'exitTime', NaN);
+    env.strategy.closedtrades.exit_comment = strategyTradeAccessor('closed', 'exitComment', '');
+    env.strategy.closedtrades.profit = strategyTradeAccessor('closed', 'netProfit', 0);
+    env.strategy.closedtrades.profit_percent = strategyTradeAccessor('closed', 'profitPercent', 0);
+    env.strategy.closedtrades.commission = strategyTradeAccessor('closed', 'commission', 0);
+    env.strategy.closedtrades.max_runup = strategyTradeAccessor('closed', 'maxRunup', 0);
+    env.strategy.closedtrades.max_runup_percent = strategyTradeAccessor('closed', 'maxRunupPercent', 0);
+    env.strategy.closedtrades.max_drawdown = strategyTradeAccessor('closed', 'maxDrawdown', 0);
+    env.strategy.closedtrades.max_drawdown_percent = strategyTradeAccessor('closed', 'maxDrawdownPercent', 0);
+    env.strategy.opentrades.capital_held = strategyStateSeries('capital_held', NaN);
+    env.strategy.closedtrades.first_index = strategyStateSeries('closedtrades_first_index', NaN);
     var strategyBacktestOptions = {};
     Object.keys(options.backtest || {}).forEach(function (key) { strategyBacktestOptions[key] = options.backtest[key]; });
     /* Lower-timeframe bars are injected by the host for this run only. They
@@ -2241,7 +2361,9 @@
           initial_capital: 'initialCapital', default_qty_type: 'defaultQtyType', default_qty_value: 'defaultQtyValue',
           pyramiding: 'pyramiding', commission_type: 'commissionType', commission_value: 'commissionValue',
           slippage: 'slippageTicks', margin_long: 'marginLong', margin_short: 'marginShort',
-          process_orders_on_close: 'processOrdersOnClose', calc_on_order_fills: 'calcOnOrderFills', calc_on_every_tick: 'calcOnEveryTick'
+          process_orders_on_close: 'processOrdersOnClose', calc_on_order_fills: 'calcOnOrderFills', calc_on_every_tick: 'calcOnEveryTick',
+          close_entries_rule: 'closeEntriesRule', risk_free_rate: 'riskFreeRate', currency: 'currency',
+          backtest_fill_limits_assumption: 'limitVerificationTicks', use_bar_magnifier: 'barMagnifier'
         };
         if (strategyBacktestOptions.useDeclaration !== false) {
           Object.keys(declarationToBacktest).forEach(function (pineName) {
@@ -2252,6 +2374,7 @@
         delete strategyBacktestOptions.useDeclaration;
         initialCapital = Number(strategyBacktestOptions.initialCapital) || initialCapital;
         env.strategy.initial_capital = initialCapital;
+        env.strategy.account_currency = String(strategyBacktestOptions.currency || env.strategy.account_currency || 'USD');
       }
     }
     if (isStrategyScript && options.backtest && backtestEngine && typeof backtestEngine.createSession === 'function') {

@@ -51,6 +51,11 @@
     });
   }
 
+  function utcDayKey(time) {
+    var date = new Date(number(time, 0) > 100000000000 ? number(time, 0) : number(time, 0) * 1000);
+    return Number.isFinite(date.getTime()) ? date.getUTCFullYear() + '-' + String(date.getUTCMonth() + 1).padStart(2, '0') + '-' + String(date.getUTCDate()).padStart(2, '0') : '';
+  }
+
   function normalizeSettings(input) {
     input = input || {};
     var commissionType = String(input.commissionType || input.commission_type || 'percent').toLowerCase();
@@ -72,6 +77,9 @@
       tickSize: positive(input.tickSize != null ? input.tickSize : input.mintick, 0.01),
       marginLong: positive(input.marginLong != null ? input.marginLong : input.margin_long, 100),
       marginShort: positive(input.marginShort != null ? input.marginShort : input.margin_short, 100),
+      conversionRate: positive(input.conversionRate != null ? input.conversionRate : input.conversion_rate, 1),
+      closeEntriesRule: String(input.closeEntriesRule || input.close_entries_rule || 'FIFO').toUpperCase() === 'ANY' ? 'ANY' : 'FIFO',
+      riskFreeRate: number(input.riskFreeRate != null ? input.riskFreeRate : input.risk_free_rate, 0),
       processOrdersOnClose: input.processOrdersOnClose === true || input.process_orders_on_close === true,
       calcOnOrderFills: input.calcOnOrderFills === true || input.calc_on_order_fills === true,
       calcOnEveryTick: input.calcOnEveryTick === true || input.calc_on_every_tick === true,
@@ -169,12 +177,33 @@
       grossProfit: 0,
       grossLoss: 0,
       marginUsed: 0,
-      freeMargin: settings.initialCapital
+      freeMargin: settings.initialCapital,
+      capitalHeld: 0,
+      positionEntryName: '',
+      maxContractsHeldAll: 0,
+      maxContractsHeldLong: 0,
+      maxContractsHeldShort: 0,
+      evenTrades: 0
+    };
+    var risk = {
+      allowDirection: 0,
+      maxDrawdown: null,
+      maxIntradayLoss: null,
+      maxIntradayFilledOrders: null,
+      maxPositionSize: null,
+      maxConsecutiveLossDays: null,
+      halted: false,
+      haltReason: '',
+      dayKey: '',
+      dayStartEquity: settings.initialCapital,
+      dayStartNetProfit: 0,
+      dayFilledOrders: 0,
+      consecutiveLossDays: 0
     };
 
     function isEligible(index) {
       var bar = visibleBar(index);
-      if (!bar || index < settings.warmupBars) return false;
+      if (!bar || index < settings.warmupBars || risk.halted) return false;
       if (settings.dateFrom != null && bar.time < settings.dateFrom) return false;
       if (settings.dateTo != null && bar.time > settings.dateTo) return false;
       return true;
@@ -191,6 +220,19 @@
     function markToMarket(bar) {
       if (!bar) return;
       state.currentPrice = bar.close;
+      openTrades.forEach(function (trade) {
+        var closeProfit = (trade.direction > 0 ? bar.close - trade.entryPrice : trade.entryPrice - bar.close) * trade.quantity;
+        var highProfit = (trade.direction > 0 ? bar.high - trade.entryPrice : trade.entryPrice - bar.low) * trade.quantity;
+        var lowProfit = (trade.direction > 0 ? bar.low - trade.entryPrice : trade.entryPrice - bar.high) * trade.quantity;
+        trade.currentProfit = closeProfit;
+        trade.size = trade.direction * trade.quantity;
+        trade.maxRunup = Math.max(number(trade.maxRunup, 0), highProfit);
+        trade.maxDrawdown = Math.max(number(trade.maxDrawdown, 0), Math.max(0, -lowProfit));
+        var tradeNotional = Math.abs(trade.entryPrice * trade.quantity);
+        trade.currentProfitPercent = tradeNotional > 0 ? closeProfit / tradeNotional * 100 : NaN;
+        trade.maxRunupPercent = tradeNotional > 0 ? trade.maxRunup / tradeNotional * 100 : NaN;
+        trade.maxDrawdownPercent = tradeNotional > 0 ? trade.maxDrawdown / tradeNotional * 100 : NaN;
+      });
       state.openProfit = openTrades.reduce(function (total, trade) {
         return total + (trade.direction > 0 ? (bar.close - trade.entryPrice) : (trade.entryPrice - bar.close)) * trade.quantity;
       }, 0);
@@ -204,6 +246,7 @@
       } else {
         state.positionAvgPrice = NaN;
       }
+      state.positionEntryName = openTrades.length ? openTrades[0].entryId : '';
       state.equity = state.cash + state.positionSize * bar.close;
       state.peakEquity = Math.max(state.peakEquity, state.equity);
       state.maxRunup = Math.max(state.maxRunup, state.equity - settings.initialCapital);
@@ -213,31 +256,170 @@
         return total + Math.abs(bar.close * trade.quantity) * marginRate / 100;
       }, 0);
       state.freeMargin = state.equity - state.marginUsed;
+      state.capitalHeld = state.marginUsed;
+      state.maxContractsHeldAll = Math.max(state.maxContractsHeldAll, Math.abs(state.positionSize));
+      state.maxContractsHeldLong = Math.max(state.maxContractsHeldLong, Math.max(0, state.positionSize));
+      state.maxContractsHeldShort = Math.max(state.maxContractsHeldShort, Math.max(0, -state.positionSize));
     }
 
     function snapshot(executionBar) {
       var last = executionBar || visibleBar(state.currentBar);
       if (last) markToMarket(last);
+      var net = realizedNetProfit();
+      var winningTrades = closedTrades.filter(function (trade) { return trade.netProfit > 0; });
+      var losingTrades = closedTrades.filter(function (trade) { return trade.netProfit < 0; });
+      var averageTrade = closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / closedTrades.length : 0;
+      var averageTradePercent = closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + number(trade.profitPercent, 0); }, 0) / closedTrades.length : 0;
+      var averageWinningTrade = winningTrades.length ? winningTrades.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / winningTrades.length : 0;
+      var averageWinningTradePercent = winningTrades.length ? winningTrades.reduce(function (sum, trade) { return sum + number(trade.profitPercent, 0); }, 0) / winningTrades.length : 0;
+      var averageLosingTrade = losingTrades.length ? losingTrades.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / losingTrades.length : 0;
+      var averageLosingTradePercent = losingTrades.length ? losingTrades.reduce(function (sum, trade) { return sum + number(trade.profitPercent, 0); }, 0) / losingTrades.length : 0;
       return {
         initialCapital: settings.initialCapital,
         equity: state.equity,
-        netprofit: state.realizedGross - state.totalCommission,
+        netprofit: net,
+        netprofit_percent: settings.initialCapital ? net / settings.initialCapital * 100 : 0,
         openprofit: state.openProfit,
+        openprofit_percent: state.equity - state.openProfit !== 0 ? state.openProfit / (state.equity - state.openProfit) * 100 : 0,
         position_size: state.positionSize,
         position_avg_price: state.positionAvgPrice,
         wintrades: state.wins,
         losstrades: state.losses,
         closedtrades: closedTrades.length,
+        closedtrades_first_index: closedTrades.length ? 0 : NaN,
         opentrades: openTrades.length,
         grossprofit: state.grossProfit,
+        grossprofit_percent: settings.initialCapital ? state.grossProfit / settings.initialCapital * 100 : 0,
         grossloss: state.grossLoss,
+        grossloss_percent: settings.initialCapital ? state.grossLoss / settings.initialCapital * 100 : 0,
+        avg_trade: averageTrade,
+        avg_trade_percent: averageTradePercent,
+        avg_winning_trade: averageWinningTrade,
+        avg_winning_trade_percent: averageWinningTradePercent,
+        avg_losing_trade: averageLosingTrade,
+        avg_losing_trade_percent: averageLosingTradePercent,
         max_drawdown: state.maxDrawdown,
+        max_drawdown_percent: state.peakEquity ? state.maxDrawdown / state.peakEquity * 100 : 0,
         max_runup: state.maxRunup,
+        max_runup_percent: settings.initialCapital ? state.maxRunup / settings.initialCapital * 100 : 0,
         commission: state.totalCommission,
         cash: state.cash,
         margin_used: state.marginUsed,
-        free_margin: state.freeMargin
+        free_margin: state.freeMargin,
+        capital_held: settings.marginLong > 0 || settings.marginShort > 0 ? state.capitalHeld : NaN,
+        margin_liquidation_price: marginLiquidationPrice(),
+        position_entry_name: state.positionEntryName,
+        max_contracts_held_all: state.maxContractsHeldAll,
+        max_contracts_held_long: state.maxContractsHeldLong,
+        max_contracts_held_short: state.maxContractsHeldShort,
+        eventrades: state.evenTrades,
+        risk_halted: risk.halted,
+        risk_halt_reason: risk.haltReason
       };
+    }
+
+    function realizedNetProfit() {
+      return state.realizedGross - state.totalCommission;
+    }
+
+    function prepareRiskDay(index) {
+      var bar = visibleBar(index);
+      var key = bar ? utcDayKey(bar.time) : '';
+      if (!key || key === risk.dayKey) return;
+      if (risk.dayKey) {
+        var previousDayProfit = realizedNetProfit() - risk.dayStartNetProfit;
+        if (previousDayProfit < 0) risk.consecutiveLossDays += 1;
+        else if (previousDayProfit > 0) risk.consecutiveLossDays = 0;
+      }
+      risk.dayKey = key;
+      risk.dayStartEquity = state.equity;
+      risk.dayStartNetProfit = realizedNetProfit();
+      risk.dayFilledOrders = 0;
+      if (risk.maxConsecutiveLossDays && risk.consecutiveLossDays >= risk.maxConsecutiveLossDays) {
+        triggerRisk('max_cons_loss_days', 'Trading halted after reaching the maximum consecutive losing days.', index);
+      }
+    }
+
+    function triggerRisk(type, message, index) {
+      if (risk.halted) return;
+      risk.halted = true;
+      risk.haltReason = type;
+      pending.forEach(function (order) { order.status = 'cancelled'; });
+      pending.length = 0;
+      diagnostic('risk-halt', message, null, index);
+      if (Math.abs(state.positionSize) > 0) {
+        var bar = visibleBar(index);
+        if (bar) {
+          applyFill({
+            id: 'risk-' + type,
+            kind: 'close_all',
+            type: 'close',
+            direction: state.positionSize > 0 ? -1 : 1,
+            quantity: Math.abs(state.positionSize),
+            reduceOnly: true,
+            fromEntry: '',
+            reason: type,
+            comment: 'Risk rule: ' + type,
+            status: 'pending'
+          }, bar.close, index, 'close', bar);
+        }
+      }
+    }
+
+    function checkRisk(index) {
+      if (risk.halted) return;
+      var drawdownLimit = risk.maxDrawdown;
+      if (drawdownLimit && drawdownLimit.value > 0) {
+        var drawdownReached = String(drawdownLimit.type).toLowerCase().indexOf('percent') >= 0
+          ? state.peakEquity > 0 && state.maxDrawdown / state.peakEquity * 100 >= drawdownLimit.value
+          : state.maxDrawdown >= drawdownLimit.value;
+        if (drawdownReached) return triggerRisk('max_drawdown', 'Trading halted after the maximum drawdown risk limit was reached.', index);
+      }
+      var intradayLimit = risk.maxIntradayLoss;
+      if (intradayLimit && intradayLimit.value > 0) {
+        var dayLoss = Math.max(0, risk.dayStartEquity - state.equity);
+        var intradayReached = String(intradayLimit.type).toLowerCase().indexOf('percent') >= 0
+          ? risk.dayStartEquity > 0 && dayLoss / risk.dayStartEquity * 100 >= intradayLimit.value
+          : dayLoss >= intradayLimit.value;
+        if (intradayReached) return triggerRisk('max_intraday_loss', 'Trading halted after the maximum intraday loss risk limit was reached.', index);
+      }
+      if (risk.maxIntradayFilledOrders && risk.dayFilledOrders >= risk.maxIntradayFilledOrders) {
+        triggerRisk('max_intraday_filled_orders', 'Trading halted after the maximum intraday filled-order limit was reached.', index);
+      }
+    }
+
+    function configureRisk(name, value, type) {
+      var numericValue = number(value, NaN);
+      if (name === 'allow_entry_in') risk.allowDirection = normalizeDirection(value);
+      if (name === 'max_drawdown' && Number.isFinite(numericValue)) risk.maxDrawdown = { value: Math.max(0, numericValue), type: type || 'cash' };
+      if (name === 'max_intraday_loss' && Number.isFinite(numericValue)) risk.maxIntradayLoss = { value: Math.max(0, numericValue), type: type || 'cash' };
+      if (name === 'max_intraday_filled_orders' && Number.isFinite(numericValue)) risk.maxIntradayFilledOrders = Math.max(0, Math.floor(numericValue));
+      if (name === 'max_position_size' && Number.isFinite(numericValue)) risk.maxPositionSize = Math.max(0, numericValue);
+      if (name === 'max_cons_loss_days' && Number.isFinite(numericValue)) risk.maxConsecutiveLossDays = Math.max(0, Math.floor(numericValue));
+      return true;
+    }
+
+    function defaultEntryQty(direction, price) {
+      var bar = visibleBar(state.currentBar);
+      var currentPrice = number(price, bar ? bar.close : NaN);
+      return orderQuantity(settings, { quantity: null, direction: normalizeDirection(direction) }, currentPrice, snapshot(bar));
+    }
+
+    function convertToAccount(value) {
+      return number(value, NaN) * settings.conversionRate;
+    }
+
+    function convertToSymbol(value) {
+      return number(value, NaN) / settings.conversionRate;
+    }
+
+    function marginLiquidationPrice() {
+      var quantity = Math.abs(state.positionSize);
+      if (!(quantity > 0)) return NaN;
+      var rate = state.positionSize > 0 ? settings.marginLong / 100 : settings.marginShort / 100;
+      if (!(rate > 0) || rate >= 1) return NaN;
+      if (state.positionSize > 0) return -state.cash / (quantity * (1 - rate));
+      return state.cash / (quantity * (1 + rate));
     }
 
     function canUseOrderPrice(order, price) {
@@ -280,12 +462,16 @@
       var exitCommission = commission(settings, price, quantity);
       var entryCommission = trade.entryCommission * (quantity / trade.quantity);
       var net = gross - entryCommission - exitCommission;
+      var notional = Math.abs(trade.entryPrice * quantity);
       var closed = {
         number: closedTrades.length + 1,
         entryId: trade.entryId,
-        exitId: order.id || order.type,
+        entryComment: trade.entryComment || '',
+        exitId: order.displayId || order.id || order.type,
+        exitComment: order.comment || '',
         direction: trade.direction > 0 ? 'long' : 'short',
         quantity: quantity,
+        size: trade.direction * quantity,
         entryBarIndex: trade.entryBarIndex,
         exitBarIndex: index,
         entryTime: trade.entryTime,
@@ -295,6 +481,11 @@
         grossProfit: gross,
         commission: entryCommission + exitCommission,
         netProfit: net,
+        profitPercent: notional > 0 ? net / notional * 100 : NaN,
+        maxRunup: number(trade.maxRunup, 0) * (quantity / trade.quantity),
+        maxRunupPercent: notional > 0 ? number(trade.maxRunup, 0) * (quantity / trade.quantity) / notional * 100 : NaN,
+        maxDrawdown: number(trade.maxDrawdown, 0) * (quantity / trade.quantity),
+        maxDrawdownPercent: notional > 0 ? number(trade.maxDrawdown, 0) * (quantity / trade.quantity) / notional * 100 : NaN,
         barsHeld: Math.max(0, index - trade.entryBarIndex),
         exitReason: order.reason || order.type
       };
@@ -305,6 +496,7 @@
       state.totalCommission += exitCommission;
       if (net >= 0) {
         state.wins += 1;
+        if (net === 0) state.evenTrades += 1;
         state.grossProfit += Math.max(0, gross);
       } else {
         state.losses += 1;
@@ -315,21 +507,28 @@
 
     function openTrade(order, direction, quantity, price, index, time, entryCommission) {
       openTrades.push({
-        entryId: order.id || order.type,
+        entryId: order.displayId || order.id || order.type,
+        entryComment: order.comment || '',
         direction: direction,
         quantity: quantity,
+        initialQuantity: quantity,
         entryPrice: price,
         entryBarIndex: index,
         entryTime: time,
-        entryCommission: entryCommission
+        entryCommission: entryCommission,
+        currentProfit: 0,
+        maxRunup: 0,
+        maxDrawdown: 0
       });
     }
 
     function applyFill(order, rawPrice, index, phase, executionBar) {
       var bar = executionBar || visibleBar(index);
       var time = bar ? bar.time : index;
+      var kind = String(order.kind || order.type || '').toLowerCase();
+      var isCloseKind = kind === 'close' || kind === 'close_all' || kind === 'exit' || order.reduceOnly;
       var direction = normalizeDirection(order.direction);
-      if (!direction && (order.type === 'close' || order.type === 'exit')) direction = state.positionSize >= 0 ? -1 : 1;
+      if (!direction && isCloseKind) direction = state.positionSize >= 0 ? -1 : 1;
       if (!direction) {
         diagnostic('invalid-order', 'The order has no valid direction.', order, index);
         order.status = 'rejected';
@@ -342,20 +541,41 @@
         return false;
       }
       var snapshotBefore = snapshot(bar);
-      var quantity = order.quantity != null ? Math.abs(number(order.quantity, 0)) : orderQuantity(settings, order, price, snapshotBefore);
+      var quantity;
+      if (order.quantity != null) quantity = Math.abs(number(order.quantity, 0));
+      else if (kind === 'close_all') quantity = Math.abs(state.positionSize);
+      else if (kind === 'close' || kind === 'exit') {
+        var targetTrades = openTrades.filter(function (trade) { return trade.direction !== direction && (!order.fromEntry || trade.entryId === order.fromEntry); });
+        quantity = targetTrades.reduce(function (total, trade) { return total + trade.quantity; }, 0);
+      } else quantity = orderQuantity(settings, order, price, snapshotBefore);
       if (order.quantity == null && Number.isFinite(order.qtyPercent)) quantity = Math.abs(state.positionSize) * Math.max(0, Math.min(100, order.qtyPercent)) / 100;
+      if (kind === 'entry' && state.positionSize && direction !== (state.positionSize > 0 ? 1 : -1)) quantity += Math.abs(state.positionSize);
       if (!(quantity > 0)) {
+        if (kind === 'exit') return false;
         diagnostic('invalid-quantity', 'The order quantity must be greater than zero.', order, index);
         order.status = 'rejected';
         return false;
       }
-      if (order.reduceOnly || order.type === 'close' || order.type === 'exit') quantity = Math.min(quantity, Math.abs(state.positionSize));
+      if (isCloseKind) quantity = Math.min(quantity, Math.abs(state.positionSize));
+      if (!(quantity > 0)) {
+        order.status = 'cancelled';
+        return false;
+      }
+      if (kind === 'entry' && Number.isFinite(risk.maxPositionSize)) {
+        var currentSameDirection = openTrades.reduce(function (total, trade) { return total + (trade.direction === direction ? trade.quantity : 0); }, 0);
+        var requestedEntryQuantity = Math.max(0, quantity - (state.positionSize && direction !== (state.positionSize > 0 ? 1 : -1) ? Math.abs(state.positionSize) : 0));
+        var allowedEntryQuantity = Math.max(0, risk.maxPositionSize - currentSameDirection);
+        if (requestedEntryQuantity > allowedEntryQuantity) {
+          diagnostic('risk', 'The entry quantity was reduced by strategy.risk.max_position_size.', order, index);
+          quantity -= requestedEntryQuantity - allowedEntryQuantity;
+        }
+      }
       if (!(quantity > 0)) {
         order.status = 'cancelled';
         return false;
       }
       var margin = Math.abs(price * quantity) * (direction > 0 ? settings.marginLong : settings.marginShort) / 100;
-      if (margin > snapshotBefore.equity && order.type !== 'close' && order.type !== 'exit') {
+      if (margin > snapshotBefore.equity && !isCloseKind) {
         diagnostic('margin', 'The order was rejected because required margin exceeds equity.', order, index);
         order.status = 'rejected';
         return false;
@@ -363,9 +583,11 @@
       var commissionValue = commission(settings, price, quantity);
       var remaining = quantity;
       if (state.positionSize && direction !== (state.positionSize > 0 ? 1 : -1)) {
-        var opposite = openTrades.filter(function (trade) {
-          return trade.direction !== direction && (!order.fromEntry || trade.entryId === order.fromEntry);
-        });
+        var opposite = openTrades.filter(function (trade) { return trade.direction !== direction; });
+        if (kind === 'exit' && order.fromEntry) opposite = opposite.filter(function (trade) { return trade.entryId === order.fromEntry; });
+        if (kind === 'close' && order.fromEntry && settings.closeEntriesRule === 'ANY') {
+          opposite.sort(function (left, right) { return (left.entryId === order.fromEntry ? 0 : 1) - (right.entryId === order.fromEntry ? 0 : 1) || left.entryBarIndex - right.entryBarIndex; });
+        }
         for (var oppositeIndex = 0; oppositeIndex < opposite.length && remaining > 0; oppositeIndex += 1) {
           var trade = opposite[oppositeIndex];
           var closeQuantity = Math.min(remaining, trade.quantity);
@@ -376,9 +598,9 @@
           if (trade.quantity <= 1e-12) openTrades.splice(openTrades.indexOf(trade), 1);
         }
       }
-      if (remaining > 0 && order.type !== 'close' && order.type !== 'exit') {
+      if (remaining > 0 && !isCloseKind) {
         var sameDirectionCount = openTrades.filter(function (trade) { return trade.direction === direction; }).length;
-        if (sameDirectionCount > 0 && sameDirectionCount >= Math.max(1, settings.pyramiding + 1) && order.type === 'entry') {
+        if (sameDirectionCount > 0 && sameDirectionCount >= Math.max(1, settings.pyramiding + 1) && kind === 'entry') {
           diagnostic('pyramiding', 'The order was ignored because the pyramiding limit was reached.', order, index);
           order.status = 'cancelled';
           return false;
@@ -390,7 +612,7 @@
       state.cash -= direction * price * quantity + commissionValue;
       state.totalSlippage += Math.abs(price - rawPrice) * quantity;
       executions.push({
-        orderId: order.id || order.type,
+        orderId: order.displayId || order.id || order.type,
         type: order.type,
         direction: direction > 0 ? 'long' : 'short',
         quantity: quantity,
@@ -405,11 +627,21 @@
         reason: order.reason || order.type
       });
       order.status = 'filled';
+      order.filledQuantity = quantity;
+      risk.dayFilledOrders += 1;
       if (order.ocaName) {
         pending.slice().forEach(function (sibling) {
-          if (sibling !== order && sibling.status === 'pending' && sibling.ocaName === order.ocaName && String(order.ocaType || 'cancel').toLowerCase() === 'cancel') {
+          if (sibling === order || sibling.status !== 'pending' || sibling.ocaName !== order.ocaName) return;
+          var ocaType = String(order.ocaType || 'cancel').toLowerCase();
+          if (ocaType === 'cancel') {
             sibling.status = 'cancelled';
             pending.splice(pending.indexOf(sibling), 1);
+          } else if (ocaType === 'reduce') {
+            sibling.quantity = Math.max(0, number(sibling.quantity, 0) - number(order.filledQuantity, 0));
+            if (!(sibling.quantity > 0)) {
+              sibling.status = 'cancelled';
+              pending.splice(pending.indexOf(sibling), 1);
+            }
           }
         });
       }
@@ -477,6 +709,8 @@
       var type = String(intent.type || 'order').toLowerCase();
       var order = {
         id: String(intent.id || type + '-' + index + '-' + (pending.length + executions.length + 1)),
+        displayId: String(intent.displayId || intent.id || type),
+        kind: type,
         type: type,
         direction: normalizeDirection(intent.direction),
         quantity: intent.quantity == null ? null : Math.abs(number(intent.quantity, 0)),
@@ -494,8 +728,23 @@
         trailOffset: number(intent.trail_offset != null ? intent.trail_offset : intent.trailOffset, NaN),
         trailPrice: number(intent.trail_price != null ? intent.trail_price : intent.trailPrice, NaN),
         ocaName: String(intent.oca_name != null ? intent.oca_name : intent.ocaName || ''),
-        ocaType: String(intent.oca_type != null ? intent.oca_type : intent.ocaType || 'cancel')
+        ocaType: String(intent.oca_type != null ? intent.oca_type : intent.ocaType || 'cancel'),
+        comment: String(intent.comment || ''),
+        alertMessage: String(intent.alert_message != null ? intent.alert_message : intent.alertMessage || ''),
+        alertProfit: String(intent.alert_profit != null ? intent.alert_profit : intent.alertProfit || ''),
+        alertLoss: String(intent.alert_loss != null ? intent.alert_loss : intent.alertLoss || ''),
+        alertTrailing: String(intent.alert_trailing != null ? intent.alert_trailing : intent.alertTrailing || ''),
+        disableAlert: !!(intent.disable_alert != null ? intent.disable_alert : intent.disableAlert),
+        immediately: !!intent.immediately
       };
+      if (order.quantity == null && !Number.isFinite(order.qtyPercent) && (type === 'close' || type === 'close_all' || type === 'exit')) {
+        var targetDirection = state.positionSize >= 0 ? 1 : -1;
+        var targetTrades = openTrades.filter(function (trade) {
+          return trade.direction === targetDirection && (!order.fromEntry || trade.entryId === order.fromEntry);
+        });
+        var targetQuantity = targetTrades.reduce(function (total, trade) { return total + trade.quantity; }, 0);
+        if (targetQuantity > 0 || type !== 'exit') order.quantity = targetQuantity;
+      }
       if (type === 'close_all') {
         order.type = 'close';
         order.direction = state.positionSize >= 0 ? -1 : 1;
@@ -520,6 +769,8 @@
         if (Number.isFinite(order.limit)) order.type = 'limit';
         else if (Number.isFinite(order.stop)) order.type = 'stop';
         else order.type = 'close';
+        if (!order.ocaName) order.ocaName = '__exit_' + order.displayId;
+        if (!intent.oca_type && !intent.ocaType) order.ocaType = 'reduce';
       }
       if (order.type === 'entry' || order.type === 'order') {
         if (Number.isFinite(order.stop) && Number.isFinite(order.limit)) order.type = 'stop_limit';
@@ -531,6 +782,7 @@
     }
 
     function submit(intents, index) {
+      var replacements = Object.create(null);
       (Array.isArray(intents) ? intents : []).forEach(function (intent) {
         if (pending.length + executions.length >= 100000) {
           diagnostic('limit', 'The run reached the broker order limit; additional orders were ignored.', intent, index);
@@ -546,6 +798,16 @@
           diagnostic('risk', 'The order was rejected by the selected trading direction filter.', intent, index);
           return;
         }
+        if (risk.halted && intentType !== 'cancel' && intentType !== 'cancel_all') return;
+        if (intentType === 'entry' && risk.allowDirection && requestedDirection && requestedDirection !== risk.allowDirection) {
+          if (state.positionSize && state.positionSize * requestedDirection < 0) {
+            intent = { type: 'close_all', id: String(intent.id || 'risk-close'), comment: 'strategy.risk.allow_entry_in' };
+            intentType = 'close_all';
+          } else {
+            diagnostic('risk', 'The entry was rejected by strategy.risk.allow_entry_in.', intent, index);
+            return;
+          }
+        }
         var type = String(intent && intent.type || '').toLowerCase();
         if (type === 'cancel_all') {
           pending.forEach(function (order) { order.status = 'cancelled'; });
@@ -554,19 +816,32 @@
         }
         if (type === 'cancel') {
           pending.slice().forEach(function (order) {
-            if (order.id === String(intent.id || '')) { order.status = 'cancelled'; pending.splice(pending.indexOf(order), 1); }
+            if (order.id === String(intent.id || '') || order.displayId === String(intent.id || '')) { order.status = 'cancelled'; pending.splice(pending.indexOf(order), 1); }
           });
           return;
         }
+        if (type === 'entry' || type === 'order' || type === 'exit') {
+          var replacementId = String(intent.displayId || intent.id || '');
+          if (replacementId && !replacements[replacementId]) {
+            pending.slice().forEach(function (existing) {
+              if (existing.displayId === replacementId || existing.id === replacementId) {
+                existing.status = 'cancelled';
+                pending.splice(pending.indexOf(existing), 1);
+              }
+            });
+            replacements[replacementId] = true;
+          }
+        }
         var order = makeOrder(intent, index);
         pending.push(order);
-        if (settings.processOrdersOnClose && (order.type === 'market' || order.type === 'close')) fillPending(index, 'close', lastExecutionBar(index));
+        if ((settings.processOrdersOnClose || order.immediately) && (order.type === 'market' || order.type === 'close')) fillPending(index, 'close', lastExecutionBar(index));
       });
     }
 
     function beginBar(index) {
       state.currentBar = index;
       state.currentTime = visibleBar(index) && visibleBar(index).time;
+      prepareRiskDay(index);
       var executionBars = executionBarsFor(index);
       executionBars.forEach(function (executionBar, executionIndex) {
         fillPending(index, executionIndex === 0 ? 'open' : 'intrabar', executionBar);
@@ -578,6 +853,7 @@
     function endBar(index) {
       state.currentBar = index;
       markToMarket(visibleBar(index));
+      checkRisk(index);
       equityCurve.push({ time: visibleBar(index).time, value: state.equity, barIndex: index });
       drawdownCurve.push({ time: visibleBar(index).time, value: state.peakEquity - state.equity, barIndex: index });
       var current = snapshot();
@@ -592,11 +868,21 @@
         wintrades: current.wintrades,
         losstrades: current.losstrades,
         closedtrades: current.closedtrades,
+        closedtrades_first_index: current.closedtrades_first_index,
         opentrades: current.opentrades,
         max_drawdown: current.max_drawdown,
         max_runup: current.max_runup,
         margin_used: current.margin_used,
-        free_margin: current.free_margin
+        free_margin: current.free_margin,
+        capital_held: current.capital_held,
+        margin_liquidation_price: current.margin_liquidation_price,
+        position_entry_name: current.position_entry_name,
+        max_contracts_held_all: current.max_contracts_held_all,
+        max_contracts_held_long: current.max_contracts_held_long,
+        max_contracts_held_short: current.max_contracts_held_short,
+        eventrades: current.eventrades,
+        risk_halted: current.risk_halted,
+        risk_halt_reason: current.risk_halt_reason
       });
       return current;
     }
@@ -615,6 +901,13 @@
       var shortTrades = closedTrades.filter(function (trade) { return trade.direction === 'short'; });
       var winning = closedTrades.filter(function (trade) { return trade.netProfit > 0; });
       var losing = closedTrades.filter(function (trade) { return trade.netProfit < 0; });
+      var even = closedTrades.filter(function (trade) { return trade.netProfit === 0; });
+      var average = closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / closedTrades.length : 0;
+      var averagePercent = closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + number(trade.profitPercent, 0); }, 0) / closedTrades.length : 0;
+      var averageWinning = winning.length ? winning.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / winning.length : 0;
+      var averageWinningPercent = winning.length ? winning.reduce(function (sum, trade) { return sum + number(trade.profitPercent, 0); }, 0) / winning.length : 0;
+      var averageLosing = losing.length ? losing.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / losing.length : 0;
+      var averageLosingPercent = losing.length ? losing.reduce(function (sum, trade) { return sum + number(trade.profitPercent, 0); }, 0) / losing.length : 0;
       function periodReturns(unit) {
         var groups = Object.create(null);
         equityCurve.forEach(function (point) {
@@ -639,10 +932,14 @@
         totalTrades: closedTrades.length,
         winningTrades: state.wins,
         losingTrades: state.losses,
+        evenTrades: even.length,
         winRatePercent: closedTrades.length ? state.wins / closedTrades.length * 100 : 0,
-        averageTrade: closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / closedTrades.length : 0,
-        averageWinningTrade: winning.length ? winning.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / winning.length : 0,
-        averageLosingTrade: losing.length ? losing.reduce(function (sum, trade) { return sum + trade.netProfit; }, 0) / losing.length : 0,
+        averageTrade: average,
+        averageTradePercent: averagePercent,
+        averageWinningTrade: averageWinning,
+        averageWinningTradePercent: averageWinningPercent,
+        averageLosingTrade: averageLosing,
+        averageLosingTradePercent: averageLosingPercent,
         largestWinningTrade: closedTrades.reduce(function (max, trade) { return Math.max(max, trade.netProfit); }, 0),
         largestLosingTrade: closedTrades.reduce(function (min, trade) { return Math.min(min, trade.netProfit); }, 0),
         longTrades: longTrades.length,
@@ -654,8 +951,17 @@
         maxDrawdown: state.maxDrawdown,
         maxDrawdownPercent: state.peakEquity ? state.maxDrawdown / state.peakEquity * 100 : 0,
         maxRunup: state.maxRunup,
+        maxRunupPercent: settings.initialCapital ? state.maxRunup / settings.initialCapital * 100 : 0,
         endingEquity: state.equity,
         openProfit: state.openProfit,
+        openProfitPercent: state.equity - state.openProfit !== 0 ? state.openProfit / (state.equity - state.openProfit) * 100 : 0,
+        netProfitPercent: settings.initialCapital ? net / settings.initialCapital * 100 : 0,
+        grossProfitPercent: settings.initialCapital ? state.grossProfit / settings.initialCapital * 100 : 0,
+        grossLossPercent: settings.initialCapital ? state.grossLoss / settings.initialCapital * 100 : 0,
+        maxContractsHeldAll: state.maxContractsHeldAll,
+        maxContractsHeldLong: state.maxContractsHeldLong,
+        maxContractsHeldShort: state.maxContractsHeldShort,
+        marginLiquidationPrice: marginLiquidationPrice(),
         averageBarsInTrade: closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + trade.barsHeld; }, 0) / closedTrades.length : 0,
         sharpe: variance > 0 ? mean / Math.sqrt(variance) * Math.sqrt(returns.length || 1) : 0,
         sortino: downsideVariance > 0 ? mean / Math.sqrt(downsideVariance) * Math.sqrt(returns.length || 1) : 0,
@@ -695,6 +1001,17 @@
           return copy;
         }),
         pendingOrders: pending.slice(),
+        risk: {
+          halted: risk.halted,
+          haltReason: risk.haltReason,
+          allowDirection: risk.allowDirection,
+          maxDrawdown: risk.maxDrawdown,
+          maxIntradayLoss: risk.maxIntradayLoss,
+          maxIntradayFilledOrders: risk.maxIntradayFilledOrders,
+          maxPositionSize: risk.maxPositionSize,
+          maxConsecutiveLossDays: risk.maxConsecutiveLossDays,
+          consecutiveLossDays: risk.consecutiveLossDays
+        },
         equityCurve: equityCurve.slice(),
         drawdownCurve: drawdownCurve.slice(),
         stateCurve: stateCurve.slice(),
@@ -714,6 +1031,10 @@
       submit: submit,
       endBar: endBar,
       snapshot: snapshot,
+      configureRisk: configureRisk,
+      defaultEntryQty: defaultEntryQty,
+      convertToAccount: convertToAccount,
+      convertToSymbol: convertToSymbol,
       result: result,
       get pendingOrders() { return pending; },
       get executions() { return executions; },

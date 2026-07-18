@@ -410,6 +410,34 @@ const namedQtyPreview = PineScriptRuntime.run(`strategy("Named quantity")
 if close > close[1]
     strategy.entry("Named", strategy.long, qty=2)`, backtestBars, { backtest: { initialCapital: 1000 } });
 assert.ok(namedQtyPreview.strategyBacktest.executions.some((execution) => execution.quantity === 2));
+const strategyNamespacePreview = PineScriptRuntime.run(`strategy("Namespace coverage", initial_capital=1000, margin_long=50)
+if bar_index == 0
+    strategy.entry("Long", strategy.long, qty=2, comment="Entry")
+if bar_index == 1
+    strategy.exit("Bracket", "Long", limit=104, stop=98, comment="Bracket")
+plot(strategy.position_size, title="Position")
+plot(strategy.opentrades.capital_held, title="Capital held")
+plot(strategy.netprofit_percent, title="Net percent")
+plot(strategy.closedtrades.profit(0), title="Trade profit")`, backtestBars, { backtest: { initialCapital: 1000 } });
+assert.strictEqual(strategyNamespacePreview.strategyBacktest.trades.length, 1);
+assert.strictEqual(strategyNamespacePreview.strategyBacktest.trades[0].entryComment, 'Entry');
+assert.strictEqual(strategyNamespacePreview.strategyBacktest.trades[0].exitComment, 'Bracket');
+assert.ok(strategyNamespacePreview.strategyBacktest.trades[0].netProfit > 0);
+assert.ok(strategyNamespacePreview.outputs.plot2.some((point) => point.value > 0));
+assert.ok(strategyNamespacePreview.outputs.plot4.some((point) => point.value > 0));
+const strategyRiskPreview = PineScriptRuntime.run(`strategy("Risk coverage", initial_capital=1000)
+strategy.risk.max_position_size(1)
+if bar_index == 0
+    strategy.entry("Capped", strategy.long, qty=5)`, backtestBars, { backtest: { initialCapital: 1000 } });
+assert.ok(strategyRiskPreview.strategyBacktest.executions.some((execution) => execution.quantity === 1));
+assert.ok(strategyRiskPreview.strategyBacktest.diagnostics.some((item) => item.type === 'risk'));
+const immediateClosePreview = PineScriptRuntime.run(`strategy("Immediate close", process_orders_on_close=false)
+if bar_index == 0
+    strategy.entry("Long", strategy.long, qty=1)
+if bar_index == 1
+    strategy.close("Long", immediately=true)`, backtestBars, { backtest: { initialCapital: 1000 } });
+assert.strictEqual(immediateClosePreview.strategyBacktest.trades.length, 1);
+assert.strictEqual(immediateClosePreview.strategyBacktest.trades[0].exitBarIndex, 1);
 const brokerSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyType: 'fixed', defaultQtyValue: 1, commissionType: 'percent', commissionValue: 0 }, [
   { time: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
   { time: 2, open: 100, high: 105, low: 100, close: 104, volume: 1 },
@@ -913,6 +941,15 @@ assert.ok(pineDocsList.innerHTML.includes('Reference'));
 pineDocsSearch.value = 'ta.ema';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.strictEqual(pineDocsList.innerHTML.includes('Reference'), false);
+pineDocsSearch.value = 'strategy.exit';
+pineDocsFilter.value = 'function';
+chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
+assert.ok(pineDocsList.innerHTML.includes('strategy.exit'));
+assert.ok(pineDocsDetail.innerHTML.includes('alert_profit'));
+pineDocsSearch.value = 'strategy.long';
+pineDocsFilter.value = 'constant';
+chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
+assert.ok(pineDocsList.innerHTML.includes('strategy.long'));
 pineDocsFilter.value = 'syntax';
 chart.renderPineDocumentation('', pineDocsFilter.value);
 assert.strictEqual(pineDocsList.innerHTML.includes('import / export'), false);

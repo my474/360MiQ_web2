@@ -11303,7 +11303,13 @@
     'type': true, 'method': true, 'var': true, 'varip': true, 'const': true, 'struct': true, 'enum': true
   };
   var PINE_EDITOR_CONSTANTS = {
-    'true': true, 'false': true, 'na': true
+    'true': true, 'false': true, 'na': true,
+    'strategy.long': true, 'strategy.short': true,
+    'strategy.direction.all': true, 'strategy.direction.long': true, 'strategy.direction.short': true,
+    'strategy.oca.cancel': true, 'strategy.oca.reduce': true, 'strategy.oca.none': true,
+    'strategy.fixed': true, 'strategy.cash': true, 'strategy.percent_of_equity': true,
+    'strategy.commission.percent': true, 'strategy.commission.cash_per_order': true,
+    'strategy.commission.cash_per_contract': true
   };
   var PINE_EDITOR_BUILT_IN_VARIABLES = {
     'open': true, 'high': true, 'low': true, 'close': true,
@@ -11596,11 +11602,21 @@
   }
   registerPineReferenceFunctions([
     'strategy.entry', 'strategy.order', 'strategy.exit', 'strategy.close', 'strategy.close_all',
-    'strategy.cancel', 'strategy.cancel_all', 'strategy.risk.allow_entry_in', 'strategy.opentrades.entry_id',
-    'strategy.opentrades.entry_price', 'strategy.opentrades.entry_size', 'strategy.closedtrades.entry_id',
-    'strategy.closedtrades.exit_id', 'strategy.closedtrades.profit', 'strategy.convert_to_account',
+    'strategy.cancel', 'strategy.cancel_all', 'strategy.risk.allow_entry_in', 'strategy.risk.max_cons_loss_days',
+    'strategy.risk.max_drawdown', 'strategy.risk.max_intraday_filled_orders', 'strategy.risk.max_intraday_loss',
+    'strategy.risk.max_position_size', 'strategy.opentrades.entry_id', 'strategy.opentrades.entry_price',
+    'strategy.opentrades.entry_bar_index', 'strategy.opentrades.entry_time', 'strategy.opentrades.entry_comment',
+    'strategy.opentrades.size', 'strategy.opentrades.profit', 'strategy.opentrades.profit_percent',
+    'strategy.opentrades.commission', 'strategy.opentrades.max_runup', 'strategy.opentrades.max_runup_percent',
+    'strategy.opentrades.max_drawdown', 'strategy.opentrades.max_drawdown_percent', 'strategy.closedtrades.entry_id',
+    'strategy.closedtrades.entry_price', 'strategy.closedtrades.entry_bar_index', 'strategy.closedtrades.entry_time',
+    'strategy.closedtrades.entry_comment', 'strategy.closedtrades.size', 'strategy.closedtrades.exit_id',
+    'strategy.closedtrades.exit_price', 'strategy.closedtrades.exit_bar_index', 'strategy.closedtrades.exit_time',
+    'strategy.closedtrades.exit_comment', 'strategy.closedtrades.profit', 'strategy.closedtrades.profit_percent',
+    'strategy.closedtrades.commission', 'strategy.closedtrades.max_runup', 'strategy.closedtrades.max_runup_percent',
+    'strategy.closedtrades.max_drawdown', 'strategy.closedtrades.max_drawdown_percent', 'strategy.convert_to_account',
     'strategy.convert_to_symbol', 'strategy.default_entry_qty'
-  ], 'Strategy order, trade, and performance API. The browser runtime executes the supported historical broker-emulator subset and reports unsupported execution modes as diagnostics.');
+  ], 'Strategy order, trade, risk, and performance API. The browser runtime executes these commands through its historical broker emulator and exposes the resulting trade records and state series.');
   registerPineReferenceFunctions([
     'plotarrow', 'plotcandle', 'plotbar', 'barcolor', 'alert', 'alertcondition', 'linefill.new', 'linefill.delete',
     'linefill.get_line1', 'linefill.get_line2', 'line.new', 'line.copy', 'line.delete', 'line.get_price',
@@ -11688,15 +11704,27 @@
     ['barstate.isconfirmed', 'Whether the current bar is confirmed.'], ['barstate.isfirst', 'Whether this is the first bar.'],
     ['barstate.ishistory', 'Whether the current bar is historical.'], ['barstate.islast', 'Whether this is the last chart bar.'],
     ['barstate.islastconfirmedhistory', 'Whether this is the last confirmed historical bar.'], ['barstate.isnew', 'Whether this is a new bar.'],
-    ['barstate.isrealtime', 'Whether the current bar is realtime.'], ['strategy.equity', 'Strategy equity series.'],
-    ['strategy.netprofit', 'Cumulative realized net profit after costs.'], ['strategy.openprofit', 'Open position profit at the current bar.'],
-    ['strategy.initial_capital', 'Strategy initial capital.'], ['strategy.position_size', 'Open position size.'],
-    ['strategy.position_avg_price', 'Average open position price.'], ['strategy.wintrades', 'Number of winning trades.'],
-    ['strategy.losstrades', 'Number of losing trades.'], ['strategy.closedtrades', 'Number of closed trades.'],
-    ['strategy.opentrades', 'Number of open trades.'], ['strategy.grossprofit', 'Gross profit before costs.'],
-    ['strategy.grossloss', 'Gross loss before costs.'], ['strategy.max_drawdown', 'Maximum equity drawdown.'],
-    ['strategy.max_runup', 'Maximum equity run-up.'], ['strategy.margin_used', 'Margin currently used by open positions.'],
-    ['strategy.free_margin', 'Equity available after margin.'], ['color.red', 'Named red color.'], ['color.green', 'Named green color.'],
+    ['barstate.isrealtime', 'Whether the current bar is realtime.'], ['strategy.account_currency', 'Strategy account currency code.'],
+    ['strategy.initial_capital', 'Strategy initial capital.'], ['strategy.equity', 'Strategy equity series.'],
+    ['strategy.netprofit', 'Cumulative realized net profit after costs.'], ['strategy.netprofit_percent', 'Cumulative net profit as a percentage of initial capital.'],
+    ['strategy.grossprofit', 'Gross profit before costs.'], ['strategy.grossprofit_percent', 'Gross profit as a percentage of initial capital.'],
+    ['strategy.grossloss', 'Gross loss before costs.'], ['strategy.grossloss_percent', 'Gross loss as a percentage of initial capital.'],
+    ['strategy.openprofit', 'Open position profit at the current bar.'], ['strategy.openprofit_percent', 'Open position profit as a percentage of capital invested.'],
+    ['strategy.max_drawdown', 'Maximum equity drawdown.'], ['strategy.max_drawdown_percent', 'Maximum equity drawdown as a percentage.'],
+    ['strategy.max_runup', 'Maximum equity run-up.'], ['strategy.max_runup_percent', 'Maximum equity run-up as a percentage.'],
+    ['strategy.position_size', 'Signed open position size.'], ['strategy.position_avg_price', 'Average open position price.'],
+    ['strategy.position_entry_name', 'Entry ID of the current position.'], ['strategy.margin_used', 'Margin currently used by open positions.'],
+    ['strategy.free_margin', 'Equity available after margin.'], ['strategy.capital_held', 'Capital held as margin for open positions.'],
+    ['strategy.margin_liquidation_price', 'Estimated price at which the open position would be liquidated.'],
+    ['strategy.wintrades', 'Number of winning trades.'], ['strategy.losstrades', 'Number of losing trades.'],
+    ['strategy.eventrades', 'Number of closed trades with zero net profit.'], ['strategy.closedtrades', 'Number of closed trades.'],
+    ['strategy.closedtrades.first_index', 'Index of the first closed trade, or na when none exists.'],
+    ['strategy.opentrades', 'Number of open trades.'], ['strategy.opentrades.capital_held', 'Capital held for the open trades.'],
+    ['strategy.avg_trade', 'Average net profit per closed trade.'], ['strategy.avg_trade_percent', 'Average net profit percentage per closed trade.'],
+    ['strategy.avg_winning_trade', 'Average net profit of winning trades.'], ['strategy.avg_winning_trade_percent', 'Average profit percentage of winning trades.'],
+    ['strategy.avg_losing_trade', 'Average net profit of losing trades.'], ['strategy.avg_losing_trade_percent', 'Average loss percentage of losing trades.'],
+    ['strategy.max_contracts_held_all', 'Maximum absolute position size held.'], ['strategy.max_contracts_held_long', 'Maximum long position size held.'],
+    ['strategy.max_contracts_held_short', 'Maximum short position size held.'], ['color.red', 'Named red color.'], ['color.green', 'Named green color.'],
     ['color.blue', 'Named blue color.'], ['color.orange', 'Named orange color.'], ['color.yellow', 'Named yellow color.'],
     ['color.purple', 'Named purple color.'], ['color.white', 'Named white color.'], ['color.black', 'Named black color.']
   ];
@@ -11727,6 +11755,16 @@
     PINE_EDITOR_SIGNATURES[name].signature = signature;
     PINE_EDITOR_SIGNATURES[name].parameters = pineReferenceParameters(parameterNames);
   }
+  function definePineStrategySignature(name, signature, description, parameters) {
+    if (!PINE_EDITOR_SIGNATURES[name]) PINE_EDITOR_SIGNATURES[name] = {};
+    PINE_EDITOR_SIGNATURES[name].signature = signature;
+    PINE_EDITOR_SIGNATURES[name].description = description;
+    PINE_EDITOR_SIGNATURES[name].parameters = (parameters || []).map(function (parameter) {
+      return { name: parameter[0], description: parameter[1] };
+    });
+    PINE_EDITOR_SIGNATURES[name].status = 'Supported';
+    PINE_EDITOR_SIGNATURES[name].supportNote = 'Executed by the browser historical broker emulator.';
+  }
   refinePineReferenceSignature('ta.ema2', 'ta.ema2(source, length)', ['source', 'length']);
   PINE_EDITOR_SIGNATURES['ta.ema2'].description = 'Calculates an EMA with a length that may vary from bar to bar. This is a compatibility extension based on TradingView\'s ta library.';
   refinePineReferenceSignature('ta.frama', 'ta.frama(source, length)', ['source', 'length']);
@@ -11748,9 +11786,93 @@
   refinePineReferenceSignature('array.push', 'array.push(id, value)', ['id', 'value']);
   refinePineReferenceSignature('map.put', 'map.put(id, key, value)', ['id', 'key', 'value']);
 
-  setPineCapability(PINE_EDITOR_REFERENCE_FUNCTIONS, 'Supported', 'Executed by the browser runtime for the documented compatibility subset.');
+  var strategyParam = {
+    id: ['id', 'Unique order identifier used by later exit, close, or cancel calls.'],
+    direction: ['direction', 'Order direction, usually strategy.long or strategy.short.'],
+    qty: ['qty', 'Order quantity in contracts or shares.'],
+    limit: ['limit', 'Limit price for the order.'],
+    stop: ['stop', 'Stop trigger price for the order.'],
+    ocaName: ['oca_name', 'Optional one-cancels-another group name.'],
+    ocaType: ['oca_type', 'OCA behavior: strategy.oca.cancel, reduce, or none.'],
+    comment: ['comment', 'Optional comment stored with the order and trade.'],
+    alertMessage: ['alert_message', 'Optional message used when an alert is triggered.'],
+    alertProfit: ['alert_profit', 'Optional alert message used when a profit target fills.'],
+    alertLoss: ['alert_loss', 'Optional alert message used when a stop-loss fills.'],
+    alertTrailing: ['alert_trailing', 'Optional alert message used when a trailing stop fills.'],
+    disableAlert: ['disable_alert', 'When true, suppresses the order alert message.'],
+    fromEntry: ['from_entry', 'Entry ID whose open trade(s) the exit should manage.'],
+    qtyPercent: ['qty_percent', 'Percentage of the targeted position to close.'],
+    profit: ['profit', 'Profit target expressed in ticks from the entry price.'],
+    loss: ['loss', 'Stop-loss distance expressed in ticks from the entry price.'],
+    trailPrice: ['trail_price', 'Price that activates a trailing stop.'],
+    trailPoints: ['trail_points', 'Activation distance in ticks for a trailing stop.'],
+    trailOffset: ['trail_offset', 'Trailing stop distance in ticks after activation.'],
+    tradeNum: ['trade_num', 'Zero-based index of the open or closed trade to inspect.'],
+    value: ['value', 'Risk rule value or direction, depending on the function.'],
+    riskType: ['type', 'Risk measurement type, such as strategy.percent_of_equity.']
+  };
+  definePineStrategySignature('strategy.entry', 'strategy.entry(id, direction, qty, limit, stop, oca_name, oca_type, comment, alert_message, disable_alert)', 'Places a market, limit, stop, or stop-limit entry order. An opposite-direction entry reverses the current position in the historical broker emulator.', [
+    strategyParam.id, strategyParam.direction, strategyParam.qty, strategyParam.limit, strategyParam.stop,
+    strategyParam.ocaName, strategyParam.ocaType, strategyParam.comment, strategyParam.alertMessage, strategyParam.disableAlert
+  ]);
+  definePineStrategySignature('strategy.order', 'strategy.order(id, direction, qty, limit, stop, oca_name, oca_type, comment, alert_message, disable_alert)', 'Places an order that can add to, reduce, or reverse a position without applying the strategy.entry pyramiding rule.', [
+    strategyParam.id, strategyParam.direction, strategyParam.qty, strategyParam.limit, strategyParam.stop,
+    strategyParam.ocaName, strategyParam.ocaType, strategyParam.comment, strategyParam.alertMessage, strategyParam.disableAlert
+  ]);
+  definePineStrategySignature('strategy.exit', 'strategy.exit(id, from_entry, qty, qty_percent, profit, limit, loss, stop, trail_price, trail_points, trail_offset, oca_name, comment, alert_message, alert_profit, alert_loss, alert_trailing, disable_alert)', 'Places one or more exit orders for an entry. A limit and stop together create take-profit and stop-loss legs in the same reduce-only OCA group.', [
+    strategyParam.id, strategyParam.fromEntry, strategyParam.qty, strategyParam.qtyPercent, strategyParam.profit, strategyParam.limit,
+    strategyParam.loss, strategyParam.stop, strategyParam.trailPrice, strategyParam.trailPoints, strategyParam.trailOffset,
+    strategyParam.ocaName, strategyParam.comment, strategyParam.alertMessage, strategyParam.alertProfit,
+    strategyParam.alertLoss, strategyParam.alertTrailing, strategyParam.disableAlert
+  ]);
+  definePineStrategySignature('strategy.close', 'strategy.close(id, comment, qty, qty_percent, immediately, disable_alert)', 'Creates a market order that closes trades opened by the specified entry ID.', [
+    strategyParam.id, strategyParam.comment, strategyParam.qty, strategyParam.qtyPercent,
+    ['immediately', 'When true, fills the market close on the current bar close.'], strategyParam.disableAlert
+  ]);
+  definePineStrategySignature('strategy.close_all', 'strategy.close_all(comment, immediately, disable_alert)', 'Creates a market order that closes the entire open position.', [
+    strategyParam.comment, ['immediately', 'When true, fills the market close on the current bar close.'], strategyParam.disableAlert
+  ]);
+  definePineStrategySignature('strategy.cancel', 'strategy.cancel(id)', 'Cancels pending orders with the specified order ID before they fill.', [strategyParam.id]);
+  definePineStrategySignature('strategy.cancel_all', 'strategy.cancel_all()', 'Cancels all pending orders placed by the strategy.', []);
+  definePineStrategySignature('strategy.risk.allow_entry_in', 'strategy.risk.allow_entry_in(value)', 'Restricts strategy.entry calls to all directions, long entries, or short entries.', [strategyParam.value]);
+  definePineStrategySignature('strategy.risk.max_cons_loss_days', 'strategy.risk.max_cons_loss_days(count)', 'Stops placing new orders after the configured number of consecutive losing days.', [['count', 'Maximum number of consecutive losing days.']]);
+  definePineStrategySignature('strategy.risk.max_drawdown', 'strategy.risk.max_drawdown(value, type)', 'Halts the strategy after the maximum equity drawdown is reached.', [strategyParam.value, strategyParam.riskType]);
+  definePineStrategySignature('strategy.risk.max_intraday_filled_orders', 'strategy.risk.max_intraday_filled_orders(count)', 'Limits the number of filled orders per UTC trading day.', [['count', 'Maximum filled orders allowed per day.']]);
+  definePineStrategySignature('strategy.risk.max_intraday_loss', 'strategy.risk.max_intraday_loss(value, type)', 'Halts the strategy after the configured intraday equity loss is reached.', [strategyParam.value, strategyParam.riskType]);
+  definePineStrategySignature('strategy.risk.max_position_size', 'strategy.risk.max_position_size(contracts)', 'Caps the size of a position opened by strategy.entry.', [['contracts', 'Maximum number of contracts or shares allowed in the position.']]);
+
+  var openTradeDefinitions = [
+    ['entry_id', 'Returns the entry ID for an open trade.'], ['entry_price', 'Returns the open trade entry price.'],
+    ['entry_bar_index', 'Returns the bar index where the open trade entered.'], ['entry_time', 'Returns the timestamp where the open trade entered.'],
+    ['entry_comment', 'Returns the entry comment for an open trade.'], ['size', 'Returns the signed size of an open trade.'],
+    ['profit', 'Returns the current unrealized profit of an open trade.'], ['profit_percent', 'Returns the current unrealized profit percentage.'],
+    ['commission', 'Returns the commission charged for an open trade entry.'], ['max_runup', 'Returns the maximum favorable excursion of an open trade.'],
+    ['max_runup_percent', 'Returns the maximum favorable excursion as a percentage.'], ['max_drawdown', 'Returns the maximum adverse excursion of an open trade.'],
+    ['max_drawdown_percent', 'Returns the maximum adverse excursion as a percentage.']
+  ];
+  openTradeDefinitions.forEach(function (entry) {
+    definePineStrategySignature('strategy.opentrades.' + entry[0], 'strategy.opentrades.' + entry[0] + '(trade_num)', entry[1], [strategyParam.tradeNum]);
+  });
+  var closedTradeDefinitions = [
+    ['entry_id', 'Returns the entry ID for a closed trade.'], ['entry_price', 'Returns the closed trade entry price.'],
+    ['entry_bar_index', 'Returns the bar index where the closed trade entered.'], ['entry_time', 'Returns the timestamp where the closed trade entered.'],
+    ['entry_comment', 'Returns the entry comment for a closed trade.'], ['size', 'Returns the signed size of a closed trade.'],
+    ['exit_id', 'Returns the exit order ID that closed the trade.'], ['exit_price', 'Returns the closed trade exit price.'],
+    ['exit_bar_index', 'Returns the bar index where the closed trade exited.'], ['exit_time', 'Returns the timestamp where the closed trade exited.'],
+    ['exit_comment', 'Returns the exit comment for a closed trade.'], ['profit', 'Returns the net profit of a closed trade after commissions.'],
+    ['profit_percent', 'Returns the net profit percentage of a closed trade.'], ['commission', 'Returns the total commission charged for a closed trade.'],
+    ['max_runup', 'Returns the maximum favorable excursion of a closed trade.'], ['max_runup_percent', 'Returns the maximum favorable excursion as a percentage.'],
+    ['max_drawdown', 'Returns the maximum adverse excursion of a closed trade.'], ['max_drawdown_percent', 'Returns the maximum adverse excursion as a percentage.']
+  ];
+  closedTradeDefinitions.forEach(function (entry) {
+    definePineStrategySignature('strategy.closedtrades.' + entry[0], 'strategy.closedtrades.' + entry[0] + '(trade_num)', entry[1], [strategyParam.tradeNum]);
+  });
+  definePineStrategySignature('strategy.convert_to_account', 'strategy.convert_to_account(value)', 'Converts a symbol-denominated value to the strategy account currency using the configured conversion rate.', [['value', 'Numeric value denominated in the chart symbol currency.']]);
+  definePineStrategySignature('strategy.convert_to_symbol', 'strategy.convert_to_symbol(value)', 'Converts an account-currency value to the chart symbol currency using the configured conversion rate.', [['value', 'Numeric value denominated in the strategy account currency.']]);
+  definePineStrategySignature('strategy.default_entry_qty', 'strategy.default_entry_qty(fill_price)', 'Returns the default entry quantity calculated from the strategy order-size settings and a hypothetical fill price.', [['fill_price', 'Hypothetical fill price used for the quantity calculation.']]);
+
+  setPineCapability(PINE_EDITOR_REFERENCE_FUNCTIONS, 'Supported', 'Executed by the browser runtime for the historical chart compatibility contract.');
   setPineCapability([
-    'strategy.risk.allow_entry_in', 'strategy.convert_to_account', 'strategy.convert_to_symbol',
     'linefill.new', 'linefill.delete', 'linefill.get_line1', 'linefill.get_line2', 'polyline.new', 'polyline.delete',
     'polyline.copy', 'table.new', 'table.cell', 'table.cell_set_text', 'table.cell_set_bgcolor',
     'table.cell_set_text_color', 'table.cell_set_text_size', 'table.clear', 'table.delete', 'table.get_position',
@@ -11791,7 +11913,7 @@
   ];
   PINE_EDITOR_REFERENCE_FUNCTIONS.forEach(function (name) {
     if (!PINE_EDITOR_COMPLETIONS.some(function (item) { return item.value === name; })) {
-      PINE_EDITOR_COMPLETIONS.push({ value: name, label: 'Pine reference function' });
+      PINE_EDITOR_COMPLETIONS.push({ value: name, label: name.indexOf('strategy.') === 0 ? 'Strategy API' : 'Pine reference function' });
     }
   });
   Object.keys(PINE_EDITOR_KEYWORDS).concat(Object.keys(PINE_EDITOR_BUILT_IN_VARIABLES), Object.keys(PINE_EDITOR_CONSTANTS)).forEach(function (name) {
@@ -11820,7 +11942,20 @@
       supportNote: definition.supportNote || ''
     };
   }).concat([
-    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script for the browser historical broker emulator. It does not place real broker orders.', status: 'Supported', example: 'strategy("My strategy", overlay=true)' },
+    { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, format, precision, scale, pyramiding, calc_on_order_fills, calc_on_every_tick, max_bars_back, backtest_fill_limits_assumption, default_qty_type, default_qty_value, initial_capital, currency, slippage, commission_type, commission_value, process_orders_on_close, close_entries_rule, margin_long, margin_short, explicit_plot_zorder, max_lines_count, max_labels_count, max_boxes_count, calc_bars_count, risk_free_rate, use_bar_magnifier, fill_orders_on_standard_ohlc, max_polylines_count, dynamic_requests, behind_chart)', description: 'Declares a strategy script for the browser historical broker emulator. It does not place real broker orders; fills, costs, risk halts, and trade records are simulated from historical bars.', status: 'Supported', parameters: [
+      { name: 'title', description: 'Required strategy display name.' }, { name: 'shorttitle', description: 'Short name used in compact legends.' },
+      { name: 'overlay', description: 'Places strategy plots over the price pane when true.' }, { name: 'format', description: 'Default output format for strategy plots.' },
+      { name: 'precision', description: 'Default decimal precision for strategy plots.' }, { name: 'scale', description: 'Price scale placement for strategy plots.' },
+      { name: 'pyramiding', description: 'Maximum number of same-direction strategy.entry entries.' }, { name: 'calc_on_order_fills', description: 'Recalculates after a simulated order fill.' },
+      { name: 'calc_on_every_tick', description: 'Accepted for compatibility; historical bars remain the calculation boundary.' }, { name: 'max_bars_back', description: 'Historical bars reserved for calculations.' },
+      { name: 'backtest_fill_limits_assumption', description: 'Ticks of price improvement required to verify a limit fill.' }, { name: 'default_qty_type', description: 'Default order sizing mode.' },
+      { name: 'default_qty_value', description: 'Default order sizing value.' }, { name: 'initial_capital', description: 'Starting simulated account capital.' },
+      { name: 'currency', description: 'Account currency code.' }, { name: 'slippage', description: 'Simulated slippage in ticks.' },
+      { name: 'commission_type', description: 'Commission model: percent, cash per order, or cash per contract.' }, { name: 'commission_value', description: 'Commission value for the selected model.' },
+      { name: 'process_orders_on_close', description: 'Allows market orders to fill on the current bar close.' }, { name: 'close_entries_rule', description: 'FIFO or ANY selection rule for closing entries.' },
+      { name: 'margin_long', description: 'Margin percentage required for long positions.' }, { name: 'margin_short', description: 'Margin percentage required for short positions.' },
+      { name: 'risk_free_rate', description: 'Risk-free annual rate used by performance calculations.' }, { name: 'use_bar_magnifier', description: 'Uses supplied lower-timeframe bars for historical fill sequencing.' }
+    ], example: 'strategy("My strategy", overlay=true, initial_capital=100000)' },
     { name: 'library', type: 'Function', category: 'function', signature: 'library(title, overlay, dynamic_requests)', description: 'Declares a reusable Pine library script. Publishing is outside the browser runtime.', status: 'Supported' },
     { name: 'ta.highest', type: 'Function', category: 'function', signature: 'ta.highest(source, length)', description: 'Returns the highest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.highest(high, 20)' },
     { name: 'ta.lowest', type: 'Function', category: 'function', signature: 'ta.lowest(source, length)', description: 'Returns the lowest value in a rolling window.', parameters: [{ name: 'source', description: 'Series to inspect.' }, { name: 'length', description: 'Number of bars in the rolling window.' }], example: 'ta.lowest(low, 20)' },
