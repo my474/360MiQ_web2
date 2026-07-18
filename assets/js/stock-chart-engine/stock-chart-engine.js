@@ -3931,7 +3931,7 @@
       '<div class="sce-pine-docs-filters">',
       '<input type="search" data-sce-pine-doc-search placeholder="Search functions, keywords, or content" aria-label="Search Pine Script documentation">',
       '<select data-sce-pine-doc-filter aria-label="Filter documentation category">',
-      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="namespace">Namespaces</option><option value="syntax">Syntax</option>',
+      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="namespace">Namespaces</option><option value="syntax">Syntax</option><option value="reference">Reference items</option>',
       '</select>',
       '</div>',
       '<div class="sce-pine-docs-content">',
@@ -4006,7 +4006,7 @@
     var item = PINE_EDITOR_DOCUMENTATION[Number(index)];
     if (!detail || !item) return;
     detail.innerHTML = [
-      '<div class="sce-pine-doc-detail-heading">', this.pineDocumentationNameHtml(item, Number(index), true), '<span>', escapeHtml(item.type), item.status ? '<em class="sce-pine-doc-status ' + (item.status === 'Supported' ? 'is-supported' : 'is-reference') + '">' + escapeHtml(item.status) + '</em>' : '', '</span></div>',
+      '<div class="sce-pine-doc-detail-heading">', this.pineDocumentationNameHtml(item, Number(index), true), '<span>', escapeHtml(item.type), this.pineDocumentationStatusHtml(item), '</span></div>',
       item.signature ? '<code class="sce-pine-doc-signature">' + escapeHtml(item.signature) + '</code>' : '',
       '<p>', escapeHtml(item.description), '</p>',
       item.parameters && item.parameters.length ? '<div class="sce-pine-doc-parameters">' + item.parameters.map(function (parameter) {
@@ -4038,13 +4038,19 @@
     var items = this.pineDocumentationInsertItems(item);
     if (items.length <= 1) {
       var text = items.length ? items[0].text : '';
-      var tag = detail ? 'button type="button"' : 'strong';
-      return '<' + tag + ' class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + escapeHtml(index) + '" title="Insert ' + escapeHtml(text) + ' into the editor">' + escapeHtml(item.name) + '</' + (detail ? 'button' : 'strong') + '>';
+      if (!detail) return '<strong>' + escapeHtml(item.name) + '</strong>';
+      return '<button type="button" class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + escapeHtml(index) + '" title="Insert ' + escapeHtml(text) + ' into the editor">' + escapeHtml(item.name) + '</button>';
     }
     return '<span class="sce-pine-doc-name-group" aria-label="' + escapeHtml(item.name) + '">' + items.map(function (itemPart) {
-      var tag = detail ? 'button type="button"' : 'span role="button" tabindex="0"';
-      return '<' + tag + ' class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + escapeHtml(index) + '" data-sce-pine-doc-insert-text="' + escapeHtml(itemPart.text) + '" title="Insert ' + escapeHtml(itemPart.text) + ' into the editor">' + escapeHtml(itemPart.label) + '</' + (detail ? 'button' : 'span') + '>';
+      if (!detail) return '<span>' + escapeHtml(itemPart.label) + '</span>';
+      return '<button type="button" class="sce-pine-doc-insert" data-sce-pine-doc-insert="' + escapeHtml(index) + '" data-sce-pine-doc-insert-text="' + escapeHtml(itemPart.text) + '" title="Insert ' + escapeHtml(itemPart.text) + ' into the editor">' + escapeHtml(itemPart.label) + '</button>';
     }).join('<span class="sce-pine-doc-name-separator" aria-hidden="true">/</span>') + '</span>';
+  };
+
+  Chart.prototype.pineDocumentationStatusHtml = function (item) {
+    return item && item.status === 'Reference'
+      ? '<em class="sce-pine-doc-status is-reference">Reference</em>'
+      : '';
   };
 
   Chart.prototype.insertPineDocumentation = function (index, textOverride) {
@@ -4073,10 +4079,12 @@
       keyword: 'Keywords',
       'built-in': 'Built-ins',
       namespace: 'Namespaces',
-      syntax: 'Syntax'
+      syntax: 'Syntax',
+      reference: 'Reference items'
     };
     var matches = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
-      if (normalizedCategory !== 'all' && item.category !== normalizedCategory) return false;
+      if (normalizedCategory === 'reference' && item.status !== 'Reference') return false;
+      if (normalizedCategory !== 'all' && normalizedCategory !== 'reference' && item.category !== normalizedCategory) return false;
       if (!normalizedQuery) return true;
       var searchable = [item.name, item.type, item.signature, item.description, item.example]
         .concat((item.parameters || []).map(function (parameter) { return parameter.name + ' ' + parameter.description; }))
@@ -4085,20 +4093,19 @@
     });
     if (normalizedCategory === 'all' && !normalizedQuery) {
       list.innerHTML = Object.keys(categoryLabels).map(function (categoryId) {
-        var count = PINE_EDITOR_DOCUMENTATION.filter(function (item) { return item.category === categoryId; }).length;
+        var count = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
+          return categoryId === 'reference' ? item.status === 'Reference' : item.category === categoryId;
+        }).length;
         return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
       }).join('');
       var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
-      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, keyword, or description.</p><p><strong>Supported</strong> entries run in this chart runtime. <strong>Reference</strong> entries identify Pine language constructs that still need a dedicated parser or broker/data integration.</p>';
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>All listed API entries run in this chart runtime. Use <strong>Reference items</strong> to see the small set of language constructs that still need external library or platform integration.</p>';
       return;
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
       var index = PINE_EDITOR_DOCUMENTATION.indexOf(item);
-      var insertText = this.pineDocumentationInsertText(item);
       var nameHtml = this.pineDocumentationNameHtml(item, index, false);
-      var rowTag = this.pineDocumentationInsertItems(item).length > 1 ? 'div' : 'button';
-      var rowClass = rowTag === 'div' ? ' class="sce-pine-doc-list-item"' : '';
-      return '<' + rowTag + (rowTag === 'button' ? ' type="button"' : '') + rowClass + ' data-sce-pine-doc-index="' + index + '" role="option"' + (rowTag === 'div' ? ' tabindex="0"' : '') + '>' + nameHtml + '<span class="sce-pine-doc-meta"><span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span>' + (item.status ? '<span class="sce-pine-doc-status ' + (item.status === 'Supported' ? 'is-supported' : 'is-reference') + '">' + escapeHtml(item.status) + '</span>' : '') + '</span></' + rowTag + '>';
+      return '<button type="button" class="sce-pine-doc-list-item" data-sce-pine-doc-index="' + index + '" role="option">' + nameHtml + '<span class="sce-pine-doc-meta"><span class="sce-pine-doc-type">' + escapeHtml(item.type) + '</span>' + this.pineDocumentationStatusHtml(item) + '</span></button>';
     }, this).join('') : '<div class="sce-pine-doc-empty">No matching documentation.</div>';
     if (matches.length) this.showPineDocumentationEntry(PINE_EDITOR_DOCUMENTATION.indexOf(matches[0]));
     else {
