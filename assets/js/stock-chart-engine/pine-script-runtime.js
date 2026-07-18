@@ -2032,6 +2032,263 @@
       var length = args.named.length != null ? args.named.length : args[1];
       return rollingFrama(source, length, 16);
     };
+    function optionalSourceAndLength(args, fallbackSource, fallbackLength) {
+      var source = fallbackSource;
+      var lengthValue = args.named.length;
+      if (args[0] instanceof PineSeries) {
+        source = args[0];
+        if (args[1] != null) lengthValue = args[1];
+      } else if (args[0] != null) {
+        lengthValue = args[0];
+      }
+      var length = Math.max(1, Math.floor(asNumber(lengthValue)) || fallbackLength);
+      return { source: source, length: length };
+    }
+    namespaces.ta.vwap = function (args) {
+      var source = taSource(args, 0, env.hlc3);
+      var anchor = args.named.anchor != null ? args.named.anchor : args[1];
+      var vwap = new PineSeries(function (index) {
+        var priceVolume = 0;
+        var totalVolume = 0;
+        for (var cursor = 0; cursor <= index; cursor += 1) {
+          if (cursor > 0 && anchor != null && !!valueAt(anchor, cursor)) {
+            priceVolume = 0;
+            totalVolume = 0;
+          }
+          var price = asNumber(valueAt(source, cursor));
+          var volume = asNumber(valueAt(env.volume, cursor));
+          if (!Number.isFinite(price) || !Number.isFinite(volume)) return NaN;
+          priceVolume += price * volume;
+          totalVolume += volume;
+        }
+        return totalVolume === 0 ? NaN : priceVolume / totalVolume;
+      });
+      return vwap;
+    };
+    namespaces.ta.cmf = function (args) {
+      var options = optionalSourceAndLength(args, env.hlc3, 20);
+      var moneyFlow = new PineSeries(function (index) {
+        var high = asNumber(valueAt(env.high, index));
+        var low = asNumber(valueAt(env.low, index));
+        var close = asNumber(valueAt(env.close, index));
+        var volume = asNumber(valueAt(env.volume, index));
+        if (![high, low, close, volume].every(Number.isFinite)) return NaN;
+        return high === low ? 0 : ((2 * close - low - high) / (high - low)) * volume;
+      });
+      return binarySeries(rollingSum(moneyFlow, options.length), rollingSum(env.volume, options.length), function (flow, volume) {
+        return volume === 0 ? NaN : flow / volume;
+      });
+    };
+    namespaces.ta.donchian = function (args) {
+      var length = taLength(args, 0, 20);
+      var upper = rollingHighest(env.high, length);
+      var lower = rollingLowest(env.low, length);
+      return [upper, binarySeries(upper, lower, function (high, low) { return (high + low) / 2; }), lower];
+    };
+    namespaces.ta.ichimoku = function (args) {
+      var conversionLength = Math.max(1, Math.floor(asNumber(args.named.conversionLength != null ? args.named.conversionLength : args[0])) || 9);
+      var baseLength = Math.max(1, Math.floor(asNumber(args.named.baseLength != null ? args.named.baseLength : args[1])) || 26);
+      var spanLength = Math.max(1, Math.floor(asNumber(args.named.spanBLength != null ? args.named.spanBLength : args[2])) || 52);
+      var midpoint = function (length) { return binarySeries(rollingHighest(env.high, length), rollingLowest(env.low, length), function (high, low) { return (high + low) / 2; }); };
+      var conversion = midpoint(conversionLength);
+      var base = midpoint(baseLength);
+      var spanA = binarySeries(conversion, base, function (shortValue, longValue) { return (shortValue + longValue) / 2; });
+      var spanB = midpoint(spanLength);
+      return [conversion, base, spanA, spanB];
+    };
+    namespaces.ta.sar = function (args) {
+      var start = asNumber(args.named.start != null ? args.named.start : args[0]);
+      var increment = asNumber(args.named.inc != null ? args.named.inc : (args.named.increment != null ? args.named.increment : args[1]));
+      var maximum = asNumber(args.named.max != null ? args.named.max : (args.named.maximum != null ? args.named.maximum : args[2]));
+      start = Number.isFinite(start) ? start : 0.02;
+      increment = Number.isFinite(increment) ? increment : 0.02;
+      maximum = Number.isFinite(maximum) ? maximum : 0.2;
+      var stateCache = [];
+      function stateAt(index) {
+        for (var cursor = stateCache.length; cursor <= index; cursor += 1) {
+          var high = asNumber(valueAt(env.high, cursor));
+          var low = asNumber(valueAt(env.low, cursor));
+          if (!Number.isFinite(high) || !Number.isFinite(low)) {
+            stateCache.push({ sar: NaN, rising: true, extreme: NaN, factor: start });
+            continue;
+          }
+          if (cursor === 0) {
+            var initiallyRising = asNumber(valueAt(env.close, cursor)) >= asNumber(valueAt(env.open, cursor));
+            stateCache.push({ sar: initiallyRising ? low : high, rising: initiallyRising, extreme: initiallyRising ? high : low, factor: start });
+            continue;
+          }
+          var previous = stateCache[cursor - 1];
+          var sar = previous.sar + previous.factor * (previous.extreme - previous.sar);
+          var rising = previous.rising;
+          var extreme = previous.extreme;
+          var factor = previous.factor;
+          var priorLow = asNumber(valueAt(env.low, cursor - 1));
+          var twoBarsAgoLow = asNumber(valueAt(env.low, cursor - 2));
+          var priorHigh = asNumber(valueAt(env.high, cursor - 1));
+          var twoBarsAgoHigh = asNumber(valueAt(env.high, cursor - 2));
+          if (rising) {
+            sar = Math.min(sar, priorLow, Number.isFinite(twoBarsAgoLow) ? twoBarsAgoLow : priorLow);
+            if (low < sar) {
+              rising = false;
+              sar = previous.extreme;
+              extreme = low;
+              factor = start;
+            } else if (high > previous.extreme) {
+              extreme = high;
+              factor = Math.min(maximum, previous.factor + increment);
+            }
+          } else {
+            sar = Math.max(sar, priorHigh, Number.isFinite(twoBarsAgoHigh) ? twoBarsAgoHigh : priorHigh);
+            if (high > sar) {
+              rising = true;
+              sar = previous.extreme;
+              extreme = high;
+              factor = start;
+            } else if (low < previous.extreme) {
+              extreme = low;
+              factor = Math.min(maximum, previous.factor + increment);
+            }
+          }
+          stateCache.push({ sar: sar, rising: rising, extreme: extreme, factor: factor });
+        }
+        return stateCache[index] || { sar: NaN };
+      }
+      return new PineSeries(function (index) { return stateAt(index).sar; });
+    };
+    namespaces.ta.ao = function (args) {
+      var fast = taLength(args, 0, 5);
+      var slow = Math.max(fast + 1, taLength(args, 1, 34));
+      return binarySeries(rollingSma(env.hl2, fast), rollingSma(env.hl2, slow), function (shortValue, longValue) { return shortValue - longValue; });
+    };
+    namespaces.ta.stochrsi = function (args) {
+      var source = taSource(args, 0, env.close);
+      var length = Math.max(1, Math.floor(asNumber(args.named.length != null ? args.named.length : args[1])) || 14);
+      var smoothK = Math.max(1, Math.floor(asNumber(args.named.smoothK != null ? args.named.smoothK : args[2])) || 3);
+      var smoothD = Math.max(1, Math.floor(asNumber(args.named.smoothD != null ? args.named.smoothD : args[3])) || 3);
+      var rsi = computeRsi(source, length);
+      var lowest = rollingLowest(rsi, length);
+      var highest = rollingHighest(rsi, length);
+      var raw = new PineSeries(function (index) {
+        var value = asNumber(rsi.get(index));
+        var low = asNumber(lowest.get(index));
+        var high = asNumber(highest.get(index));
+        if (![value, low, high].every(Number.isFinite)) return NaN;
+        return high === low ? 0 : (value - low) / (high - low) * 100;
+      });
+      var k = rollingSma(raw, smoothK);
+      return [k, rollingSma(k, smoothD)];
+    };
+    namespaces.ta.uo = function (args) {
+      var fast = taLength(args, 0, 7);
+      var middle = Math.max(fast + 1, taLength(args, 1, 14));
+      var slow = Math.max(middle + 1, taLength(args, 2, 28));
+      var buyingPressure = new PineSeries(function (index) {
+        var close = asNumber(valueAt(env.close, index));
+        var low = asNumber(valueAt(env.low, index));
+        var previousClose = asNumber(valueAt(env.close, index - 1));
+        return Number.isFinite(close) && Number.isFinite(low) && Number.isFinite(previousClose) ? close - Math.min(low, previousClose) : NaN;
+      });
+      var trueRange = new PineSeries(function (index) {
+        var high = asNumber(valueAt(env.high, index));
+        var low = asNumber(valueAt(env.low, index));
+        var previousClose = asNumber(valueAt(env.close, index - 1));
+        return Number.isFinite(high) && Number.isFinite(low) && Number.isFinite(previousClose) ? Math.max(high, previousClose) - Math.min(low, previousClose) : NaN;
+      });
+      var fastAverage = binarySeries(rollingSum(buyingPressure, fast), rollingSum(trueRange, fast), function (bp, range) { return range === 0 ? NaN : bp / range; });
+      var middleAverage = binarySeries(rollingSum(buyingPressure, middle), rollingSum(trueRange, middle), function (bp, range) { return range === 0 ? NaN : bp / range; });
+      var slowAverage = binarySeries(rollingSum(buyingPressure, slow), rollingSum(trueRange, slow), function (bp, range) { return range === 0 ? NaN : bp / range; });
+      return new PineSeries(function (index) {
+        var first = asNumber(fastAverage.get(index));
+        var second = asNumber(middleAverage.get(index));
+        var third = asNumber(slowAverage.get(index));
+        return [first, second, third].every(Number.isFinite) ? 100 * (4 * first + 2 * second + third) / 7 : NaN;
+      });
+    };
+    namespaces.ta.fisher = function (args) {
+      var source = taSource(args, 0, env.hl2);
+      var length = taLength(args, 1, 10);
+      var stateCache = [];
+      var result = new PineSeries(function (index) {
+        for (var cursor = stateCache.length; cursor <= index; cursor += 1) {
+          var values = rollingValues(source, length, cursor);
+          var previousValue = cursor > 0 ? stateCache[cursor - 1].value : 0;
+          var previousFish = cursor > 0 ? stateCache[cursor - 1].fish : 0;
+          if (!values) { stateCache.push({ value: NaN, fish: NaN }); continue; }
+          var highest = Math.max.apply(Math, values);
+          var lowest = Math.min.apply(Math, values);
+          var range = highest - lowest;
+          var normalized = range === 0 ? 0 : 2 * ((asNumber(valueAt(source, cursor)) - lowest) / range - 0.5);
+          var value = 0.33 * normalized + 0.67 * (Number.isFinite(previousValue) ? previousValue : 0);
+          value = Math.max(-0.999, Math.min(0.999, value));
+          var fish = 0.5 * Math.log((1 + value) / (1 - value)) + 0.5 * (Number.isFinite(previousFish) ? previousFish : 0);
+          stateCache.push({ value: value, fish: fish });
+        }
+        return stateCache[index] ? stateCache[index].fish : NaN;
+      });
+      return result;
+    };
+    namespaces.ta.kst = function (args) {
+      var source = taSource(args, 0, env.close);
+      var signalLength = Math.max(1, Math.floor(asNumber(args.named.signal != null ? args.named.signal : args[1])) || 9);
+      var roc10 = namespaces.ta.roc({ 0: source, 1: 10, named: {} });
+      var roc15 = namespaces.ta.roc({ 0: source, 1: 15, named: {} });
+      var roc20 = namespaces.ta.roc({ 0: source, 1: 20, named: {} });
+      var roc30 = namespaces.ta.roc({ 0: source, 1: 30, named: {} });
+      var roc10Average = rollingSma(roc10, 10);
+      var roc15Average = rollingSma(roc15, 10);
+      var roc20Average = rollingSma(roc20, 10);
+      var roc30Average = rollingSma(roc30, 15);
+      var kst = new PineSeries(function (index) {
+        var first = roc10Average.get(index);
+        var second = roc15Average.get(index);
+        var third = roc20Average.get(index);
+        var fourth = roc30Average.get(index);
+        return [first, second, third, fourth].every(Number.isFinite) ? first + 2 * second + 3 * third + 4 * fourth : NaN;
+      });
+      return [kst, rollingSma(kst, signalLength)];
+    };
+    namespaces.ta.tsi = function (args) {
+      var source = taSource(args, 0, env.close);
+      var shortLength = Math.max(1, Math.floor(asNumber(args.named.short_length != null ? args.named.short_length : args[1])) || 13);
+      var longLength = Math.max(shortLength + 1, Math.floor(asNumber(args.named.long_length != null ? args.named.long_length : args[2])) || 25);
+      var signalLength = Math.max(1, Math.floor(asNumber(args.named.signal != null ? args.named.signal : args[3])) || 7);
+      var momentum = namespaces.ta.change({ 0: source, 1: 1, named: {} });
+      var absoluteMomentum = mapSeries(momentum, function (value) { return Math.abs(asNumber(value)); });
+      var value = binarySeries(rollingEma(rollingEma(momentum, longLength), shortLength), rollingEma(rollingEma(absoluteMomentum, longLength), shortLength), function (numerator, denominator) {
+        return denominator === 0 ? NaN : 100 * numerator / denominator;
+      });
+      return [value, rollingEma(value, signalLength)];
+    };
+    namespaces.ta.pivot = function () {
+      return [
+        new PineSeries(function (index) { if (index < 1) return NaN; return (env.high.get(index - 1) + env.low.get(index - 1) + env.close.get(index - 1)) / 3; }),
+        new PineSeries(function (index) { if (index < 1) return NaN; var pivot = (env.high.get(index - 1) + env.low.get(index - 1) + env.close.get(index - 1)) / 3; return 2 * pivot - env.low.get(index - 1); }),
+        new PineSeries(function (index) { if (index < 1) return NaN; var pivot = (env.high.get(index - 1) + env.low.get(index - 1) + env.close.get(index - 1)) / 3; return 2 * pivot - env.high.get(index - 1); })
+      ];
+    };
+    namespaces.ta.obv = new PineSeries(function (index) {
+      var total = 0;
+      for (var cursor = 1; cursor <= index; cursor += 1) {
+        var current = asNumber(env.close.get(cursor));
+        var previous = asNumber(env.close.get(cursor - 1));
+        var volume = asNumber(env.volume.get(cursor));
+        if (![current, previous, volume].every(Number.isFinite)) return NaN;
+        total += current > previous ? volume : current < previous ? -volume : 0;
+      }
+      return total;
+    }, 'obv');
+    namespaces.ta.accdist = new PineSeries(function (index) {
+      var total = 0;
+      for (var cursor = 0; cursor <= index; cursor += 1) {
+        var high = asNumber(env.high.get(cursor));
+        var low = asNumber(env.low.get(cursor));
+        var close = asNumber(env.close.get(cursor));
+        var volume = asNumber(env.volume.get(cursor));
+        if (![high, low, close, volume].every(Number.isFinite)) return NaN;
+        total += high === low ? 0 : ((2 * close - low - high) / (high - low)) * volume;
+      }
+      return total;
+    }, 'accdist');
     var metadata = { title: options.title || 'Pine Script', overlay: false, shorttitle: null };
     var plots = [];
     var shapePlots = [];

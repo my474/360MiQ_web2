@@ -2069,6 +2069,54 @@
     }
   });
 
+  // One contract for the Advanced Chart catalog and Pine/backtest coverage.
+  // A compatibility helper is intentionally named separately from official
+  // TradingView built-ins so the editor does not imply a nonexistent API.
+  var PINE_INDICATOR_PARITY = {
+    SMA: { api: 'ta.sma', mode: 'direct', outputs: ['value'] },
+    EMA: { api: 'ta.ema', mode: 'direct', outputs: ['value'] },
+    RSI: { api: 'ta.rsi', mode: 'direct', outputs: ['value'] },
+    RELATIVE_STRENGTH: { api: 'request.security', mode: 'recipe', outputs: ['value'], recipe: 'benchmark = input.symbol("SPY", "Benchmark")\nbenchmarkClose = request.security(benchmark, timeframe.period, close)\nplot(close / benchmarkClose)' },
+    MACD: { api: 'ta.macd', mode: 'direct', outputs: ['macd', 'signal', 'histogram'] },
+    BBANDS: { api: 'ta.bb', mode: 'direct', outputs: ['upper', 'basis', 'lower'] },
+    VOLUME: { api: 'volume', mode: 'built-in', outputs: ['value'] },
+    PINE_SCRIPT: { api: 'indicator/strategy', mode: 'script', outputs: ['plots'] },
+    ATR: { api: 'ta.atr', mode: 'direct', outputs: ['value'] },
+    STOCH: { api: 'ta.stoch', mode: 'direct', outputs: ['k', 'd'] },
+    VWAP: { api: 'ta.vwap', mode: 'compatibility', outputs: ['value'] },
+    WMA: { api: 'ta.wma', mode: 'direct', outputs: ['value'] },
+    HMA: { api: 'ta.hma', mode: 'direct', outputs: ['value'] },
+    DEMA: { api: 'ta.dema', mode: 'compatibility', outputs: ['value'] },
+    TEMA: { api: 'ta.tema', mode: 'compatibility', outputs: ['value'] },
+    ROC: { api: 'ta.roc', mode: 'direct', outputs: ['value'] },
+    MOM: { api: 'ta.mom', mode: 'direct', outputs: ['value'] },
+    CCI: { api: 'ta.cci', mode: 'direct', outputs: ['value'] },
+    MFI: { api: 'ta.mfi', mode: 'direct', outputs: ['value'] },
+    ADX: { api: 'ta.dmi', mode: 'direct', outputs: ['adx', 'plusDI', 'minusDI'] },
+    OBV: { api: 'ta.obv', mode: 'built-in', outputs: ['value'] },
+    ADL: { api: 'ta.accdist', mode: 'built-in', outputs: ['value'] },
+    CMF: { api: 'ta.cmf', mode: 'compatibility', outputs: ['value'] },
+    WILLIAMS: { api: 'ta.wpr', mode: 'direct', outputs: ['value'] },
+    DONCHIAN: { api: 'ta.donchian', mode: 'compatibility', outputs: ['upper', 'middle', 'lower'] },
+    KELTNER: { api: 'ta.kc', mode: 'direct', outputs: ['upper', 'basis', 'lower'] },
+    ICHIMOKU: { api: 'ta.ichimoku', mode: 'compatibility', outputs: ['conversion', 'base', 'spanA', 'spanB'] },
+    SUPERTREND: { api: 'ta.supertrend', mode: 'direct', outputs: ['value', 'direction'] },
+    PIVOTS: { api: 'ta.pivot', mode: 'compatibility', outputs: ['pivot', 'r1', 's1'] },
+    PSAR: { api: 'ta.sar', mode: 'compatibility', outputs: ['value'] },
+    TRIX: { api: 'ta.trix', mode: 'direct', outputs: ['value'] },
+    AROON: { api: 'ta.aroon', mode: 'direct', outputs: ['up', 'down'] },
+    AO: { api: 'ta.ao', mode: 'compatibility', outputs: ['value'] },
+    STOCHRSI: { api: 'ta.stochrsi', mode: 'compatibility', outputs: ['k', 'd'] },
+    UO: { api: 'ta.uo', mode: 'compatibility', outputs: ['value'] },
+    VORTEX: { api: 'ta.vi', mode: 'direct', outputs: ['plus', 'minus'] },
+    VWMA: { api: 'ta.vwma', mode: 'direct', outputs: ['value'] },
+    LSMA: { api: 'ta.linreg', mode: 'direct', outputs: ['value'] },
+    FISHER: { api: 'ta.fisher', mode: 'compatibility', outputs: ['value'] },
+    PPO: { api: 'ta.ppo', mode: 'compatibility', outputs: ['value'] },
+    KST: { api: 'ta.kst', mode: 'compatibility', outputs: ['value', 'signal'] },
+    TSI: { api: 'ta.tsi', mode: 'compatibility', outputs: ['value', 'signal'] }
+  };
+
   function EventBus() {
     this.listeners = {};
   }
@@ -11640,7 +11688,7 @@
     'volume': true, 'time': true, 'time_close': true, 'time_tradingday': true, 'bar_index': true,
     'last_bar_index': true, 'last_bar_time': true, 'timenow': true, 'year': true, 'month': true,
     'weekofyear': true, 'dayofmonth': true, 'dayofweek': true, 'hour': true, 'minute': true, 'second': true,
-    'hl2': true, 'hlc3': true, 'ohlc4': true
+    'hl2': true, 'hlc3': true, 'ohlc4': true, 'ta.obv': true, 'ta.accdist': true
   };
   var PINE_EDITOR_NAMESPACES = {
     'ta': true, 'math': true, 'input': true, 'request': true, 'color': true, 'str': true, 'array': true,
@@ -11685,7 +11733,9 @@
     weekofyear: 'ISO-like week number of the current bar in exchange time.', dayofmonth: 'Day of month of the current bar.',
     dayofweek: 'Day of week of the current bar.', hour: 'Hour of the current bar.', minute: 'Minute of the current bar.',
     second: 'Second of the current bar.', hl2: 'Average of the current bar high and low.',
-    hlc3: 'Average of the current bar high, low, and close.', ohlc4: 'Average of the current bar open, high, low, and close.'
+    hlc3: 'Average of the current bar high, low, and close.', ohlc4: 'Average of the current bar open, high, low, and close.',
+    'ta.obv': 'On-balance volume series; cumulative volume signed by close-to-close direction.',
+    'ta.accdist': 'Accumulation/distribution line; cumulative money-flow volume.'
   };
   var PINE_EDITOR_CONSTANT_DETAILS = {
     true: 'Boolean literal representing true.', false: 'Boolean literal representing false.', na: 'Undefined numeric or reference value.',
@@ -12031,7 +12081,8 @@
     'ta.falling', 'ta.rising', 'ta.cross', 'ta.crossover', 'ta.crossunder', 'ta.valuewhen', 'ta.pivothigh',
     'ta.pivotlow', 'ta.highestbars', 'ta.lowestbars', 'ta.linreg', 'ta.slope', 'ta.variance', 'ta.stdev',
     'ta.sum', 'ta.median', 'ta.mode', 'ta.percentile_linear_interpolation', 'ta.percentile_nearest_rank',
-    'ta.range', 'ta.ema2', 'ta.frama', 'ta.dema', 'ta.tema', 'ta.trima'
+    'ta.range', 'ta.ema2', 'ta.frama', 'ta.dema', 'ta.tema', 'ta.trima', 'ta.vwap', 'ta.cmf',
+    'ta.donchian', 'ta.ichimoku', 'ta.sar', 'ta.ao', 'ta.stochrsi', 'ta.uo', 'ta.fisher', 'ta.kst', 'ta.pivot'
   ], 'Technical-analysis calculations and rolling series utilities.');
   registerPineReferenceFunctions([
     'math.abs', 'math.acos', 'math.asin', 'math.atan', 'math.avg', 'math.ceil', 'math.cos', 'math.exp',
@@ -12316,12 +12367,23 @@
     'ta.hma': ['ta.hma(source, length)', 'Returns a Hull moving average.', ['source', 'length']],
     'ta.swma': ['ta.swma(source)', 'Returns the four-bar symmetrically weighted moving average.', ['source']],
     'ta.tr': ['ta.tr(handle_na)', 'Returns true range using the current and previous close.', ['handle_na']],
+    'ta.vwap': ['ta.vwap(source, anchor)', 'Returns the cumulative volume-weighted average price. The optional anchor resets the accumulation when true.', ['source', 'anchor']],
+    'ta.cmf': ['ta.cmf(length)', 'Returns the Chaikin Money Flow using the chart high, low, close, and volume series.', ['length']],
+    'ta.donchian': ['ta.donchian(length)', 'Returns upper, middle, and lower Donchian Channel series.', ['length']],
+    'ta.ichimoku': ['ta.ichimoku(conversion_length, base_length, span_b_length)', 'Returns conversion, base, leading Span A, and leading Span B compatibility series for the native Ichimoku indicator.', ['conversion_length', 'base_length', 'span_b_length']],
+    'ta.sar': ['ta.sar(start, inc, max)', 'Returns the Parabolic SAR compatibility series using the standard acceleration-factor rules.', ['start', 'inc', 'max']],
+    'ta.ao': ['ta.ao(fast_length, slow_length)', 'Returns the Awesome Oscillator: the fast minus slow SMA of hl2.', ['fast_length', 'slow_length']],
+    'ta.stochrsi': ['ta.stochrsi(source, length, smooth_k, smooth_d)', 'Returns smoothed Stochastic RSI %K and %D compatibility series.', ['source', 'length', 'smooth_k', 'smooth_d']],
+    'ta.uo': ['ta.uo(fast_length, middle_length, slow_length)', 'Returns the Ultimate Oscillator using weighted fast, middle, and slow buying-pressure averages.', ['fast_length', 'middle_length', 'slow_length']],
+    'ta.fisher': ['ta.fisher(source, length)', 'Returns the Fisher Transform of a rolling normalized source.', ['source', 'length']],
+    'ta.kst': ['ta.kst(source, signal_length)', 'Returns the Know Sure Thing value and signal compatibility series.', ['source', 'signal_length']],
+    'ta.pivot': ['ta.pivot()', 'Returns the previous-bar pivot, first resistance, and first support compatibility series.', []],
     'ta.cci': ['ta.cci(source, length)', 'Returns the Commodity Channel Index.', ['source', 'length']],
     'ta.mfi': ['ta.mfi(series, length)', 'Returns the Money Flow Index.', ['series', 'length']],
     'ta.mom': ['ta.mom(source, length)', 'Returns momentum as the difference from a prior bar.', ['source', 'length']],
     'ta.roc': ['ta.roc(source, length)', 'Returns percentage rate of change.', ['source', 'length']],
     'ta.cmo': ['ta.cmo(source, length)', 'Returns the Chande Momentum Oscillator.', ['source', 'length']],
-    'ta.tsi': ['ta.tsi(source, short_length, long_length)', 'Returns the True Strength Index.', ['source', 'short_length', 'long_length']],
+    'ta.tsi': ['ta.tsi(source, short_length, long_length, signal_length)', 'Returns the True Strength Index value and signal compatibility series.', ['source', 'short_length', 'long_length', 'signal_length']],
     'ta.wpr': ['ta.wpr(length)', 'Returns Williams Percent Range.', ['length']],
     'ta.ppo': ['ta.ppo(source, fast_length, slow_length)', 'Returns the Percentage Price Oscillator.', ['source', 'fast_length', 'slow_length']],
     'ta.kc': ['ta.kc(series, length, mult)', 'Returns Keltner Channel basis, upper, and lower series.', ['series', 'length', 'mult']],
@@ -12632,6 +12694,20 @@
       'ta.ema': 'plot(ta.ema(close, 20))',
       'ta.rsi': 'plot(ta.rsi(close, 14))',
       'ta.macd': '[macdLine, signalLine, histogram] = ta.macd(close, 12, 26, 9)',
+      'ta.vwap': 'plot(ta.vwap(hlc3))',
+      'ta.obv': 'plot(ta.obv)',
+      'ta.accdist': 'plot(ta.accdist)',
+      'ta.cmf': 'plot(ta.cmf(20))',
+      'ta.donchian': '[upper, middle, lower] = ta.donchian(20)\nplot(upper)',
+      'ta.ichimoku': '[conversion, base, spanA, spanB] = ta.ichimoku(9, 26, 52)\nplot(conversion)',
+      'ta.sar': 'plot(ta.sar(0.02, 0.02, 0.2))',
+      'ta.ao': 'plot(ta.ao(5, 34))',
+      'ta.stochrsi': '[k, d] = ta.stochrsi(close, 14, 3, 3)\nplot(k)',
+      'ta.uo': 'plot(ta.uo(7, 14, 28))',
+      'ta.fisher': 'plot(ta.fisher(hl2, 10))',
+      'ta.kst': '[kst, signal] = ta.kst(close, 9)\nplot(kst)',
+      'ta.tsi': '[value, signal] = ta.tsi(close, 13, 25, 7)\nplot(value)',
+      'ta.pivot': '[pivot, r1, s1] = ta.pivot()\nplot(pivot)',
       'ta.highest': 'highestHigh = ta.highest(high, 20)',
       'ta.lowest': 'lowestLow = ta.lowest(low, 20)',
       'math.abs': 'distance = math.abs(close - open)',
@@ -12725,7 +12801,6 @@
     var technicalExamples = {
       'ta.tr': 'trueRange = ta.tr(true)',
       'ta.stoch': 'stochastic = ta.stoch(close, high, low, 14)',
-      'ta.tsi': 'tsiValue = ta.tsi(close, 13, 25)',
       'ta.ppo': 'ppoValue = ta.ppo(close, 12, 26)',
       'ta.dmi': '[plusDI, minusDI, adx] = ta.dmi(14, 14)',
       'ta.supertrend': '[trend, direction] = ta.supertrend(3, 10)',
@@ -13386,6 +13461,7 @@
     createDefaultDocument: createDefaultDocument,
     migrateDocument: migrateDocument,
     computeIndicatorGraph: computeIndicatorGraph,
+    pineIndicatorParity: PINE_INDICATOR_PARITY,
     aggregateBars: aggregateBars,
     normalizeBars: normalizeBars,
     createDemoData: createDemoData,

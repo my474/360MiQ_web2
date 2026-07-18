@@ -31,6 +31,8 @@ const inputIntDocumentation = StockChartEngine.pineScriptDocumentation.find((ite
 assert.ok(inputIntDocumentation.example.includes('input.int(20, "Length"'));
 const strategyEntryDocumentation = StockChartEngine.pineScriptDocumentation.find((item) => item.name === 'strategy.entry');
 assert.ok(strategyEntryDocumentation.example.includes('strategy.entry("Long", strategy.long)'));
+assert.deepStrictEqual(Object.keys(StockChartEngine.Indicators).sort(), Object.keys(StockChartEngine.pineIndicatorParity).sort());
+assert.ok(Object.values(StockChartEngine.pineIndicatorParity).every((item) => item && item.api && item.mode && Array.isArray(item.outputs)));
 
 class FakeClassList {
   constructor(element) {
@@ -385,6 +387,41 @@ assert.strictEqual(pinePreview.metadata.title, 'RSI Average');
 assert.strictEqual(pinePreview.plots.length, 2);
 assert.ok(pinePreview.outputs.plot1.length > 0);
 assert.ok(pinePreview.render.some((item) => item.type === 'level' && item.value === 50));
+const indicatorParityPreview = PineScriptRuntime.run(`//@version=5
+indicator("Indicator parity", overlay=false)
+plot(ta.vwap(hlc3), title="VWAP")
+plot(ta.obv, title="OBV")
+plot(ta.accdist, title="ADL")
+plot(ta.cmf(20), title="CMF")
+[donchianUpper, donchianMiddle, donchianLower] = ta.donchian(20)
+plot(donchianUpper, title="Donchian")
+[conversion, base, spanA, spanB] = ta.ichimoku(9, 26, 52)
+plot(conversion, title="Ichimoku")
+plot(ta.sar(0.02, 0.02, 0.2), title="PSAR")
+plot(ta.ao(5, 34), title="AO")
+[stochK, stochD] = ta.stochrsi(close, 14, 3, 3)
+plot(stochK, title="Stoch RSI")
+plot(ta.uo(7, 14, 28), title="UO")
+plot(ta.fisher(hl2, 10), title="Fisher")
+[kstValue, kstSignal] = ta.kst(close, 9)
+plot(kstValue, title="KST")
+[tsiValue, tsiSignal] = ta.tsi(close, 13, 25, 7)
+plot(tsiValue, title="TSI")
+[pivotValue, pivotR1, pivotS1] = ta.pivot()
+plot(pivotValue, title="Pivot")`, data);
+assert.strictEqual(indicatorParityPreview.error, undefined);
+assert.strictEqual(indicatorParityPreview.plots.length, 14);
+assert.ok(indicatorParityPreview.outputs.plot1.length > 0);
+assert.ok(indicatorParityPreview.outputs.plot14.length > 0);
+const strategyIndicatorParityPreview = PineScriptRuntime.run(`strategy("Indicator parity strategy", overlay=false)
+plot(ta.uo(7, 14, 28), title="UO")
+plot(ta.fisher(hl2, 10), title="Fisher")
+if ta.crossover(ta.uo(7, 14, 28), 50)
+    strategy.entry("Long", strategy.long)
+if ta.crossunder(ta.uo(7, 14, 28), 50)
+    strategy.close("Long")`, data, { symbol: 'TEST', timeframe: '1D', backtest: {} });
+assert.strictEqual(strategyIndicatorParityPreview.error, undefined);
+assert.ok(strategyIndicatorParityPreview.strategyBacktest);
 const backtestBars = [
   { time: 1, open: 100, high: 103, low: 99, close: 102, volume: 10 },
   { time: 2, open: 102, high: 106, low: 101, close: 105, volume: 10 },
