@@ -548,6 +548,7 @@ chart.settingsPopup.appendChild(pineDocsDetail);
 assert.strictEqual(chart.openPineDocumentation(), true);
 assert.strictEqual(pineDocsPanel.hidden, false);
 assert.ok(pineDocsList.innerHTML.includes('Functions'));
+assert.strictEqual(chart.settingsPopup.innerHTML.includes('value="namespace"'), false);
 pineDocsSearch.value = 'moving average';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.ok(pineDocsList.innerHTML.includes('ta.sma'));

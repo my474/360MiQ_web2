@@ -3933,7 +3933,7 @@
       '<div class="sce-pine-docs-filters">',
       '<input type="search" data-sce-pine-doc-search placeholder="Search functions, keywords, or content" aria-label="Search Pine Script documentation">',
       '<select data-sce-pine-doc-filter aria-label="Filter documentation category">',
-      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="namespace">Namespaces</option><option value="syntax">Syntax</option>',
+      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="syntax">Syntax</option>',
       '</select>',
       '</div>',
       '<div class="sce-pine-docs-content">',
@@ -4083,7 +4083,6 @@
       function: 'Functions',
       keyword: 'Keywords',
       'built-in': 'Built-ins',
-      namespace: 'Namespaces',
       syntax: 'Syntax'
     };
     var matches = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
@@ -11339,15 +11338,6 @@
     return { name: name, type: 'Keyword', category: 'keyword', signature: name, description: 'Reserved Pine language word.' };
   })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
     return { name: name, type: 'Built-in', category: 'built-in', signature: name, description: 'Built-in Pine series or constant.' };
-  })).concat(Object.keys(PINE_EDITOR_NAMESPACES).map(function (name) {
-    return {
-      name: name,
-      type: 'Namespace',
-      category: 'namespace',
-      signature: name + '.*',
-      description: PINE_EDITOR_RUNTIME_NAMESPACES[name] ? 'Runtime namespace containing supported Pine functions or values.' : 'Reference namespace not exposed by the client runtime.',
-      status: PINE_EDITOR_RUNTIME_NAMESPACES[name] ? 'Supported' : 'Reference'
-    };
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
     return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {
