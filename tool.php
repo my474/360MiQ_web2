@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <link rel="stylesheet" href="assets/css/inlinehelp.css">
     <link rel="stylesheet" href="assets/css/help-tip2.css">
-    <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css?v=20260718.34">
+    <link rel="stylesheet" href="assets/js/stock-chart-engine/stock-chart-engine.css?v=20260718.35">
     
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

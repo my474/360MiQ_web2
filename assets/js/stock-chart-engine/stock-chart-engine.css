@@ -1350,7 +1350,10 @@
 }
 
 .sce-pine-docs-filters select {
-  flex: 0 0 205px;
+  flex: 0 0 auto;
+  min-width: 190px;
+  width: max-content;
+  max-width: 100%;
   white-space: nowrap;
 }
 
@@ -1592,6 +1595,7 @@
 
   .sce-pine-docs-filters select {
     flex-basis: auto;
+    align-self: flex-start;
   }
 
   .sce-pine-docs-content {
