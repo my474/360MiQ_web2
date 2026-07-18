@@ -11,7 +11,8 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.2.0';
+  var VERSION = '0.2.1';
+  var INTRABAR_PATH_POLICY = 'open-nearest-extreme';
 
   function number(value, fallback) {
     var result = Number(value);
@@ -426,6 +427,43 @@
       return Number.isFinite(price) && price > 0;
     }
 
+    function inferredIntrabarPath(bar) {
+      if (!bar) return ['open', 'close'];
+      return Math.abs(bar.open - bar.high) < Math.abs(bar.open - bar.low)
+        ? ['open', 'high', 'low', 'close']
+        : ['open', 'low', 'high', 'close'];
+    }
+
+    function intrabarTriggerIndex(order, bar) {
+      if (!order || !bar) return Number.POSITIVE_INFINITY;
+      var type = String(order.type || '').toLowerCase();
+      if (type === 'market' || type === 'close') return 0;
+      var direction = order.direction || (state.positionSize >= 0 ? -1 : 1);
+      var path = inferredIntrabarPath(bar);
+      var open = bar.open;
+      var limit = number(order.limit, NaN);
+      var stop = number(order.stop, NaN);
+      if (type === 'limit' && Number.isFinite(limit)) {
+        if ((direction > 0 && open <= limit) || (direction < 0 && open >= limit)) return 0;
+        var limitExtreme = direction > 0 ? 'low' : 'high';
+        return path.indexOf(limitExtreme) === -1 ? Number.POSITIVE_INFINITY : path.indexOf(limitExtreme);
+      }
+      if (type === 'stop' && Number.isFinite(stop)) {
+        if ((direction > 0 && open >= stop) || (direction < 0 && open <= stop)) return 0;
+        var stopExtreme = direction > 0 ? 'high' : 'low';
+        return path.indexOf(stopExtreme) === -1 ? Number.POSITIVE_INFINITY : path.indexOf(stopExtreme);
+      }
+      if (type === 'stop_limit' && Number.isFinite(stop) && Number.isFinite(limit)) {
+        var stopExtremeName = direction > 0 ? 'high' : 'low';
+        var limitExtremeName = direction > 0 ? 'low' : 'high';
+        var stopIndex = ((direction > 0 && open >= stop) || (direction < 0 && open <= stop)) ? 0 : path.indexOf(stopExtremeName);
+        var limitIndex = ((direction > 0 && open <= limit) || (direction < 0 && open >= limit)) ? 0 : path.indexOf(limitExtremeName);
+        if (stopIndex === -1 || limitIndex === -1 || limitIndex < stopIndex) return Number.POSITIVE_INFINITY;
+        return limitIndex;
+      }
+      return Number.POSITIVE_INFINITY;
+    }
+
     function fillPrice(order, bar, phase) {
       if (!bar) return NaN;
       if (order.type === 'market' || order.type === 'close') return phase === 'close' ? bar.close : bar.open;
@@ -659,7 +697,9 @@
     function fillPending(index, phase, executionBar) {
       var bar = executionBar || visibleBar(index);
       if (!bar || !isEligible(index)) return;
-      pending.slice().forEach(function (order) {
+      pending.slice().sort(function (left, right) {
+        return intrabarTriggerIndex(left, bar) - intrabarTriggerIndex(right, bar);
+      }).forEach(function (order) {
         if (!shouldFillOnBar(order, bar, phase, index)) return;
         if (order.trailing && Number.isFinite(order.trailOffset)) {
           var trailingDistance = order.trailOffset * settings.tickSize;
@@ -988,11 +1028,20 @@
       }
       var config = {};
       Object.keys(settings).forEach(function (key) { config[key] = settings[key]; });
+      config.intrabarPathPolicy = INTRABAR_PATH_POLICY;
       config.lowerBarCount = lowerBars.length;
       config.barMagnifierFallbacks = barMagnifierFallbacks.slice();
       return {
         engineVersion: VERSION,
         config: config,
+        assumptions: {
+          data: 'End-of-day OHLCV bars',
+          intrabarPath: INTRABAR_PATH_POLICY,
+          intrabarPathDescription: 'When no lower-timeframe bars are supplied, the emulator infers open to high to low to close when the high is closer to the open; otherwise it infers open to low to high to close.',
+          sameBarStopTarget: 'If a daily candle touches both a stop and a target, the first level touched along the inferred path fills first. OCA siblings are then cancelled or reduced according to their OCA rule.',
+          gapFill: 'If a price order is crossed between the previous close and the current open, it fills at the current open rather than at the requested level.',
+          lowerTimeframeOverride: 'Host-supplied lower-timeframe bars override the inferred path for covered chart bars.'
+        },
         executions: executions.slice(),
         trades: closedTrades.slice(),
         openTrades: openTrades.map(function (trade) {

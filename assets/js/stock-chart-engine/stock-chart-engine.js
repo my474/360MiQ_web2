@@ -7234,6 +7234,18 @@
     return '<div class="sce-strategy-metric"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>';
   };
 
+  Chart.prototype.strategyDiagnosticSeverity = function (item) {
+    var type = String(item && item.type || '').toLowerCase();
+    if (['data', 'data-order', 'duplicate-time', 'bar-magnifier-data', 'bar-magnifier-fallback', 'execution-mode', 'ledger-integrity'].indexOf(type) !== -1) return 'warning';
+    if (['risk', 'margin', 'invalid-order', 'invalid-price', 'invalid-quantity', 'date-range', 'limit', 'pyramiding'].indexOf(type) !== -1) return 'event';
+    return 'info';
+  };
+
+  Chart.prototype.strategyAssumptionsHtml = function (result) {
+    var assumptions = result && result.assumptions || {};
+    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small></section>';
+  };
+
   Chart.prototype.strategyCurveHtml = function (label, points, colorClass, zeroBaseline) {
     var values = (Array.isArray(points) ? points : []).filter(function (point) { return point && Number.isFinite(Number(point.value)); }).slice(-180);
     if (!values.length) return '<div class="sce-strategy-curve"><div class="sce-strategy-curve-header"><strong>' + escapeHtml(label) + '</strong><span>No data</span></div></div>';
@@ -7281,19 +7293,26 @@
     ];
     var content = '';
     if (view === 'overview') {
+      var overviewDiagnostics = result.diagnostics || [];
+      var overviewHalted = result.risk && result.risk.halted;
+      var overviewStatus = overviewHalted ? 'Halted by risk rule' : overviewDiagnostics.length ? 'Completed with diagnostics' : 'Completed';
+      var overviewStatusClass = overviewHalted ? 'is-halted' : overviewDiagnostics.length ? 'is-warning' : 'is-complete';
       content = '<div class="sce-strategy-metric-grid">' +
         this.strategyMetric('Net profit', formatNumber(metrics.netProfit)) +
         this.strategyMetric('Return', formatNumber(metrics.netReturnPercent) + '%') +
         this.strategyMetric('Max drawdown', formatNumber(metrics.maxDrawdown)) +
         this.strategyMetric('Trades', String(metrics.totalTrades || 0)) +
         this.strategyMetric('Win rate', formatNumber(metrics.winRatePercent) + '%') +
+        this.strategyMetric('Profit factor', metrics.profitFactor === Infinity ? '∞' : formatNumber(metrics.profitFactor)) +
         this.strategyMetric('Ending equity', formatNumber(metrics.endingEquity)) +
+        this.strategyMetric('Buy & hold', formatNumber(metrics.buyAndHoldPercent) + '%') +
         '</div>' +
+        '<div class="sce-strategy-run-status ' + overviewStatusClass + '"><strong>' + escapeHtml(overviewStatus) + '</strong><span>' + escapeHtml((result.equityCurve || []).length + ' EOD bars • ' + overviewDiagnostics.length + ' diagnostic event' + (overviewDiagnostics.length === 1 ? '' : 's')) + '</span></div>' +
         '<div class="sce-strategy-curves">' +
         this.strategyCurveHtml('Equity', result.equityCurve, 'is-equity', false) +
         this.strategyCurveHtml('Drawdown', result.drawdownCurve, 'is-drawdown', true) +
         '</div>' +
-        '<p class="sce-strategy-property-note">' + escapeHtml((result.equityCurve || []).length + ' bars calculated') + (result.diagnostics && result.diagnostics.length ? ', ' + result.diagnostics.length + ' diagnostic event(s)' : '') + '.</p>';
+        this.strategyAssumptionsHtml(result);
     } else if (view === 'performance') {
       var monthlyReturns = (metrics.monthlyReturns || []).slice(-12);
       var yearlyReturns = (metrics.yearlyReturns || []).slice(-8);
@@ -7302,18 +7321,28 @@
           return '<span><em>' + escapeHtml(row.period) + '</em><b class="' + (row.value >= 0 ? 'is-positive' : 'is-negative') + '">' + escapeHtml(formatNumber(row.value)) + '%</b></span>';
         }).join('') : '<small>No completed periods.</small>') + '</div>';
       };
-      content = '<div class="sce-strategy-performance-table">' + [
-        ['Net profit', metrics.netProfit], ['Net return', (metrics.netReturnPercent || 0) + '%'],
-        ['Gross profit', metrics.grossProfit], ['Gross loss', metrics.grossLoss], ['Profit factor', metrics.profitFactor],
-        ['Total trades', metrics.totalTrades], ['Winning trades', metrics.winningTrades], ['Losing trades', metrics.losingTrades],
-        ['Long trades', metrics.longTrades], ['Short trades', metrics.shortTrades], ['Long net profit', metrics.longNetProfit], ['Short net profit', metrics.shortNetProfit],
-        ['Average trade', metrics.averageTrade], ['Largest winning trade', metrics.largestWinningTrade],
-        ['Average winning trade', metrics.averageWinningTrade], ['Average losing trade', metrics.averageLosingTrade],
-        ['Largest losing trade', metrics.largestLosingTrade], ['Commission', metrics.commission], ['Slippage', metrics.slippage],
-        ['Max drawdown', metrics.maxDrawdown], ['Max drawdown %', (metrics.maxDrawdownPercent || 0) + '%'],
-        ['Max run-up', metrics.maxRunup], ['Buy and hold', (metrics.buyAndHoldPercent || 0) + '%'], ['Sharpe', metrics.sharpe],
-        ['Sortino', metrics.sortino], ['Recovery factor', metrics.recoveryFactor], ['Calmar', metrics.calmar]
-      ].map(function (row) { return '<div><span>' + escapeHtml(row[0]) + '</span><strong>' + escapeHtml(formatNumber(row[1])) + '</strong></div>'; }).join('') + '</div>' + returnTable('Monthly returns', monthlyReturns) + returnTable('Yearly returns', yearlyReturns);
+      var performanceGroups = [
+        ['Returns', [
+          ['Net profit', metrics.netProfit], ['Net return', (metrics.netReturnPercent || 0) + '%'], ['Gross profit', metrics.grossProfit],
+          ['Gross loss', metrics.grossLoss], ['Profit factor', metrics.profitFactor], ['Buy and hold', (metrics.buyAndHoldPercent || 0) + '%']
+        ]],
+        ['Trades', [
+          ['Total trades', metrics.totalTrades], ['Winning trades', metrics.winningTrades], ['Losing trades', metrics.losingTrades],
+          ['Win rate', (metrics.winRatePercent || 0) + '%'], ['Average trade', metrics.averageTrade], ['Average bars in trade', metrics.averageBarsInTrade],
+          ['Long trades', metrics.longTrades], ['Short trades', metrics.shortTrades], ['Long net profit', metrics.longNetProfit], ['Short net profit', metrics.shortNetProfit]
+        ]],
+        ['Risk and costs', [
+          ['Max drawdown', metrics.maxDrawdown], ['Max drawdown %', (metrics.maxDrawdownPercent || 0) + '%'], ['Max run-up', metrics.maxRunup],
+          ['Commission', metrics.commission], ['Slippage', metrics.slippage], ['Sharpe', metrics.sharpe], ['Sortino', metrics.sortino],
+          ['Recovery factor', metrics.recoveryFactor], ['Calmar', metrics.calmar], ['Largest winning trade', metrics.largestWinningTrade], ['Largest losing trade', metrics.largestLosingTrade]
+        ]]
+      ];
+      content = performanceGroups.map(function (group) {
+        return '<section class="sce-strategy-performance-group"><h3>' + escapeHtml(group[0]) + '</h3><div class="sce-strategy-performance-table">' + group[1].map(function (row) {
+          var display = typeof row[1] === 'string' ? row[1] : row[1] === Infinity ? '∞' : formatNumber(row[1]);
+          return '<div><span>' + escapeHtml(row[0]) + '</span><strong>' + escapeHtml(display) + '</strong></div>';
+        }).join('') + '</div></section>';
+      }).join('') + returnTable('Monthly returns', monthlyReturns) + returnTable('Yearly returns', yearlyReturns);
     } else if (view === 'trades') {
       var trades = result.trades || [];
       content = trades.length ? '<div class="sce-strategy-trades-table"><div class="sce-strategy-trade-row is-header"><span>#</span><span>Entry</span><span>Exit</span><span>Side</span><span>Qty</span><span>P&amp;L</span></div>' + trades.map(function (trade, index) {
@@ -7345,13 +7374,31 @@
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="processOrdersOnClose"' + (config.processOrdersOnClose ? ' checked' : '') + '> Process orders on close</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnOrderFills"' + (config.calcOnOrderFills ? ' checked' : '') + '> Recalculate after order fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnEveryTick"' + (config.calcOnEveryTick ? ' checked' : '') + '> Recalculate on every tick</label>' +
-        '<p class="sce-strategy-property-note">' + (config.barMagnifier ? 'Lower-timeframe fills use host-provided bars; missing coverage falls back to chart OHLC. ' : 'Historical fills use standard OHLC bars. ') + 'Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
+        '<p class="sce-strategy-property-note">' + (config.barMagnifier ? 'Lower-timeframe fills use host-provided bars; missing coverage falls back to chart OHLC. ' : 'Historical fills use standard OHLC bars. When a daily candle touches both a stop and target, the first level on the inferred open-nearest-extreme path fills first. ') + 'Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
         '</div>';
     } else {
       var diagnostics = result.diagnostics || [];
+      var diagnosticGroups = diagnostics.reduce(function (groups, item) {
+        var type = String(item && item.type || 'unknown');
+        if (!groups[type]) groups[type] = { type: type, severity: this.strategyDiagnosticSeverity(item), items: [] };
+        groups[type].items.push(item);
+        return groups;
+      }.bind(this), {});
+      var diagnosticGroupList = Object.keys(diagnosticGroups).sort().map(function (type) { return diagnosticGroups[type]; });
+      var warningCount = diagnostics.filter(function (item) { return this.strategyDiagnosticSeverity(item) === 'warning'; }, this).length;
+      var eventCount = diagnostics.filter(function (item) { return this.strategyDiagnosticSeverity(item) === 'event'; }, this).length;
       content = '<div class="sce-strategy-diagnostics">' +
-        '<p>Engine ' + escapeHtml(result.engineVersion || 'unknown') + '. ' + escapeHtml(diagnostics.length ? diagnostics.length + ' diagnostic event(s).' : 'No diagnostic events.') + '</p>' +
-        (diagnostics.length ? diagnostics.map(function (item) { return '<div><strong>' + escapeHtml(item.type) + '</strong><span>' + escapeHtml(item.message) + '</span><small>Bar ' + escapeHtml(String(item.barIndex)) + '</small></div>'; }).join('') : '<p class="sce-strategy-empty">The run completed without warnings from the broker emulator.</p>') +
+        '<div class="sce-strategy-diagnostic-summary">' +
+        this.strategyMetric('Total events', String(diagnostics.length)) +
+        this.strategyMetric('Warnings', String(warningCount)) +
+        this.strategyMetric('Order/risk events', String(eventCount)) +
+        this.strategyMetric('Types', String(diagnosticGroupList.length)) +
+        '</div>' +
+        '<p>Engine ' + escapeHtml(result.engineVersion || 'unknown') + '. Diagnostics are grouped by type so repeated order events remain scannable.</p>' +
+        (diagnosticGroupList.length ? diagnosticGroupList.map(function (group) {
+          return '<section class="sce-strategy-diagnostic-group ' + escapeHtml('is-' + group.severity) + '"><header><strong>' + escapeHtml(group.type) + '</strong><span>' + escapeHtml(group.severity) + ' • ' + escapeHtml(String(group.items.length)) + '</span></header>' + group.items.slice(0, 80).map(function (item) { return '<div><span>' + escapeHtml(item.message) + '</span><small>' + escapeHtml(item.barIndex == null || item.barIndex < 0 ? 'Run-level' : 'Bar ' + String(item.barIndex)) + (item.orderId ? ' • ' + item.orderId : '') + '</small></div>'; }).join('') + (group.items.length > 80 ? '<small class="sce-strategy-diagnostic-more">+' + escapeHtml(String(group.items.length - 80)) + ' more events</small>' : '') + '</section>';
+        }).join('') : '<p class="sce-strategy-empty">The run completed without diagnostics from the broker emulator.</p>') +
+        this.strategyAssumptionsHtml(result) +
         '</div>';
     }
     popup.innerHTML = '<div class="sce-strategy-tester-header"><strong>Strategy Tester</strong><span>' + escapeHtml(indicator.inputs && indicator.inputs.title || 'Pine strategy') + '</span><button type="button" data-sce-strategy-close title="Close Strategy Tester" aria-label="Close Strategy Tester">' + paneControlIconSvg('close') + '</button></div>' +

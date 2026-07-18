@@ -458,6 +458,33 @@ assert.strictEqual(brokerResult.pendingOrders.length, 0);
 assert.strictEqual(brokerResult.state.cash, 1004);
 assert.strictEqual(brokerResult.state.equity, 1004);
 assert.strictEqual(brokerResult.state.margin_used, 0);
+assert.strictEqual(brokerResult.assumptions.intrabarPath, 'open-nearest-extreme');
+assert.ok(brokerResult.assumptions.sameBarStopTarget.indexOf('first level touched') >= 0);
+function runSameBarBracket(bar) {
+  const session = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
+    { time: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+    { time: 2, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+    bar
+  ]);
+  session.beginBar(0);
+  session.submit([{ type: 'entry', id: 'BracketLong', direction: 1, quantity: 1 }], 0);
+  session.endBar(0);
+  session.beginBar(1);
+  session.submit([
+    { type: 'exit', id: 'Target', fromEntry: 'BracketLong', limit: 110, qty_percent: 100, oca_name: 'Bracket', oca_type: 'reduce' },
+    { type: 'exit', id: 'Stop', fromEntry: 'BracketLong', stop: 90, qty_percent: 100, oca_name: 'Bracket', oca_type: 'reduce' }
+  ], 1);
+  session.endBar(1);
+  session.beginBar(2);
+  session.endBar(2);
+  return session.result();
+}
+const targetFirstBracket = runSameBarBracket({ time: 3, open: 103, high: 110, low: 90, close: 105, volume: 1 });
+assert.strictEqual(targetFirstBracket.trades[0].exitId, 'Target');
+assert.strictEqual(targetFirstBracket.trades[0].exitPrice, 110);
+const stopFirstBracket = runSameBarBracket({ time: 3, open: 97, high: 110, low: 90, close: 95, volume: 1 });
+assert.strictEqual(stopFirstBracket.trades[0].exitId, 'Stop');
+assert.strictEqual(stopFirstBracket.trades[0].exitPrice, 90);
 const trailingSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
   { time: 1, open: 100, high: 101, low: 99, close: 100 },
   { time: 2, open: 100, high: 102, low: 99, close: 101 },
@@ -574,6 +601,12 @@ assert.strictEqual(chart.strategyIndicator().id, strategyIndicatorId);
 assert.strictEqual(chart.openStrategyTester(), true);
 assert.strictEqual(chart.strategyTesterPopup.hasAttribute('hidden'), false);
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Strategy Tester'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('EOD fill policy'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Completed'));
+chart.strategyTesterState.view = 'diagnostics';
+chart.renderStrategyTester();
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Total events'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Diagnostics are grouped by type'));
 chart.draw();
 assert.ok(chart.strategyHitZones.length > 0);
 const executionZone = chart.strategyHitZones[0];
