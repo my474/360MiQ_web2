@@ -14,7 +14,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.4.0';
+  var VERSION = '0.4.1';
   var MAX_SOURCE_LENGTH = 120000;
   var MAX_PLOTS = 64;
   var MAX_LOOPS = 1000;
@@ -777,6 +777,57 @@
     return ema;
   }
 
+  function adaptiveEma(source, lengthSource, fallbackLength) {
+    var ema = new PineSeries(function (index) {
+      var value = asNumber(valueAt(source, index));
+      if (!Number.isFinite(value)) return NaN;
+      var length = Math.max(1, asNumber(valueAt(lengthSource, index)) || fallbackLength || 1);
+      var previous = ema.get(index - 1);
+      if (!Number.isFinite(previous)) return value;
+      var alpha = 2 / (length + 1);
+      return value * alpha + previous * (1 - alpha);
+    });
+    return ema;
+  }
+
+  function rollingFrama(source, lengthSource, fallbackLength) {
+    var frama = new PineSeries(function (index) {
+      var value = asNumber(valueAt(source, index));
+      if (!Number.isFinite(value)) return NaN;
+      var requestedLength = Math.max(2, Math.floor(asNumber(valueAt(lengthSource, index))) || fallbackLength || 16);
+      var halfLength = Math.max(1, Math.floor(requestedLength / 2));
+      var length = halfLength * 2;
+      if (index < length - 1) return NaN;
+      var recentHigh = -Infinity;
+      var recentLow = Infinity;
+      var olderHigh = -Infinity;
+      var olderLow = Infinity;
+      for (var offset = 0; offset < length; offset += 1) {
+        var sample = asNumber(valueAt(source, index - offset));
+        if (!Number.isFinite(sample)) return NaN;
+        if (offset < halfLength) {
+          recentHigh = Math.max(recentHigh, sample);
+          recentLow = Math.min(recentLow, sample);
+        } else {
+          olderHigh = Math.max(olderHigh, sample);
+          olderLow = Math.min(olderLow, sample);
+        }
+      }
+      var recentDimension = (recentHigh - recentLow) / halfLength;
+      var olderDimension = (olderHigh - olderLow) / halfLength;
+      var fullDimension = (Math.max(recentHigh, olderHigh) - Math.min(recentLow, olderLow)) / length;
+      var alpha = 1;
+      if (recentDimension + olderDimension > 0 && fullDimension > 0) {
+        var dimension = (Math.log(recentDimension + olderDimension) - Math.log(fullDimension)) / Math.log(2);
+        alpha = Math.exp(-4.6 * (dimension - 1));
+      }
+      alpha = Math.max(0.01, Math.min(1, alpha));
+      var previous = frama.get(index - 1);
+      return Number.isFinite(previous) ? alpha * value + (1 - alpha) * previous : value;
+    });
+    return frama;
+  }
+
   function rollingRma(source, length) {
     var alpha = 1 / length;
     var rma = new PineSeries(function (index) {
@@ -1312,6 +1363,209 @@
     };
     ['float', 'int', 'bool', 'string', 'color'].forEach(function (type) { array['new_' + type] = array.new; });
     function matrixShape(value) { return Array.isArray(value) ? { rows: value.length, columns: value.length && Array.isArray(value[0]) ? value[0].length : 0 } : { rows: 0, columns: 0 }; }
+    function numericMatrix(value) {
+      var shape = matrixShape(value);
+      if (!shape.rows || !shape.columns) return null;
+      var result = [];
+      for (var row = 0; row < shape.rows; row += 1) {
+        if (!Array.isArray(value[row]) || value[row].length !== shape.columns) return null;
+        result[row] = [];
+        for (var column = 0; column < shape.columns; column += 1) {
+          var item = asNumber(value[row][column]);
+          if (!Number.isFinite(item)) return null;
+          result[row][column] = item;
+        }
+      }
+      return result;
+    }
+    function identityMatrix(size) {
+      var result = [];
+      for (var row = 0; row < size; row += 1) {
+        result[row] = [];
+        for (var column = 0; column < size; column += 1) result[row][column] = row === column ? 1 : 0;
+      }
+      return result;
+    }
+    function transposeNumericMatrix(value) {
+      var rows = value.length;
+      var columns = rows ? value[0].length : 0;
+      var result = [];
+      for (var column = 0; column < columns; column += 1) {
+        result[column] = [];
+        for (var row = 0; row < rows; row += 1) result[column][row] = value[row][column];
+      }
+      return result;
+    }
+    function multiplyNumericMatrices(left, right) {
+      if (!left.length || !right.length || left[0].length !== right.length) return null;
+      var result = [];
+      for (var row = 0; row < left.length; row += 1) {
+        result[row] = [];
+        for (var column = 0; column < right[0].length; column += 1) {
+          var total = 0;
+          for (var offset = 0; offset < right.length; offset += 1) total += left[row][offset] * right[offset][column];
+          result[row][column] = total;
+        }
+      }
+      return result;
+    }
+    function determinantMatrix(value) {
+      var data = numericMatrix(value);
+      if (!data || data.length !== data[0].length) return NaN;
+      var size = data.length;
+      var determinant = 1;
+      var sign = 1;
+      for (var column = 0; column < size; column += 1) {
+        var pivot = column;
+        for (var row = column + 1; row < size; row += 1) {
+          if (Math.abs(data[row][column]) > Math.abs(data[pivot][column])) pivot = row;
+        }
+        if (Math.abs(data[pivot][column]) <= Number.EPSILON) return 0;
+        if (pivot !== column) {
+          var swapped = data[column];
+          data[column] = data[pivot];
+          data[pivot] = swapped;
+          sign *= -1;
+        }
+        var pivotValue = data[column][column];
+        determinant *= pivotValue;
+        for (var lower = column + 1; lower < size; lower += 1) {
+          var factor = data[lower][column] / pivotValue;
+          for (var trailing = column + 1; trailing < size; trailing += 1) data[lower][trailing] -= factor * data[column][trailing];
+        }
+      }
+      return determinant * sign;
+    }
+    function inverseMatrix(value) {
+      var data = numericMatrix(value);
+      if (!data || data.length !== data[0].length) return NaN;
+      var size = data.length;
+      var inverse = identityMatrix(size);
+      for (var column = 0; column < size; column += 1) {
+        var pivot = column;
+        for (var row = column + 1; row < size; row += 1) {
+          if (Math.abs(data[row][column]) > Math.abs(data[pivot][column])) pivot = row;
+        }
+        if (Math.abs(data[pivot][column]) <= Number.EPSILON) return NaN;
+        if (pivot !== column) {
+          var dataSwap = data[column];
+          data[column] = data[pivot];
+          data[pivot] = dataSwap;
+          var inverseSwap = inverse[column];
+          inverse[column] = inverse[pivot];
+          inverse[pivot] = inverseSwap;
+        }
+        var pivotValue = data[column][column];
+        for (var normalize = 0; normalize < size; normalize += 1) {
+          data[column][normalize] /= pivotValue;
+          inverse[column][normalize] /= pivotValue;
+        }
+        for (var eliminate = 0; eliminate < size; eliminate += 1) {
+          if (eliminate === column) continue;
+          var factor = data[eliminate][column];
+          for (var item = 0; item < size; item += 1) {
+            data[eliminate][item] -= factor * data[column][item];
+            inverse[eliminate][item] -= factor * inverse[column][item];
+          }
+        }
+      }
+      return inverse;
+    }
+    function rankMatrix(value) {
+      var data = numericMatrix(value);
+      if (!data) return NaN;
+      var rows = data.length;
+      var columns = data[0].length;
+      var scale = Math.max.apply(Math, [].concat.apply([], data).map(Math.abs));
+      var tolerance = Math.max(rows, columns) * Number.EPSILON * Math.max(1, scale);
+      var rank = 0;
+      for (var column = 0; column < columns && rank < rows; column += 1) {
+        var pivot = rank;
+        for (var row = rank + 1; row < rows; row += 1) {
+          if (Math.abs(data[row][column]) > Math.abs(data[pivot][column])) pivot = row;
+        }
+        if (Math.abs(data[pivot][column]) <= tolerance) continue;
+        var swapped = data[rank];
+        data[rank] = data[pivot];
+        data[pivot] = swapped;
+        for (var lower = rank + 1; lower < rows; lower += 1) {
+          var factor = data[lower][column] / data[rank][column];
+          for (var trailing = column; trailing < columns; trailing += 1) data[lower][trailing] -= factor * data[rank][trailing];
+        }
+        rank += 1;
+      }
+      return rank;
+    }
+    function traceMatrix(value) {
+      var data = numericMatrix(value);
+      if (!data || data.length !== data[0].length) return NaN;
+      var total = 0;
+      for (var index = 0; index < data.length; index += 1) total += data[index][index];
+      return total;
+    }
+    function symmetricEigenDecomposition(value) {
+      var data = value.map(function (row) { return row.slice(); });
+      var size = data.length;
+      var vectors = identityMatrix(size);
+      var maxIterations = Math.max(24, size * size * 20);
+      for (var iteration = 0; iteration < maxIterations; iteration += 1) {
+        var pivotRow = 0;
+        var pivotColumn = 1;
+        var largest = 0;
+        for (var row = 0; row < size; row += 1) {
+          for (var column = row + 1; column < size; column += 1) {
+            if (Math.abs(data[row][column]) > largest) {
+              largest = Math.abs(data[row][column]);
+              pivotRow = row;
+              pivotColumn = column;
+            }
+          }
+        }
+        if (largest <= Number.EPSILON * 100) break;
+        var angle = 0.5 * Math.atan2(2 * data[pivotRow][pivotColumn], data[pivotColumn][pivotColumn] - data[pivotRow][pivotRow]);
+        var cosine = Math.cos(angle);
+        var sine = Math.sin(angle);
+        for (var offset = 0; offset < size; offset += 1) {
+          var rowValue = data[offset][pivotRow];
+          var columnValue = data[offset][pivotColumn];
+          data[offset][pivotRow] = cosine * rowValue - sine * columnValue;
+          data[offset][pivotColumn] = sine * rowValue + cosine * columnValue;
+        }
+        for (var inner = 0; inner < size; inner += 1) {
+          var topValue = data[pivotRow][inner];
+          var bottomValue = data[pivotColumn][inner];
+          data[pivotRow][inner] = cosine * topValue - sine * bottomValue;
+          data[pivotColumn][inner] = sine * topValue + cosine * bottomValue;
+          var vectorRow = vectors[inner][pivotRow];
+          var vectorColumn = vectors[inner][pivotColumn];
+          vectors[inner][pivotRow] = cosine * vectorRow - sine * vectorColumn;
+          vectors[inner][pivotColumn] = sine * vectorRow + cosine * vectorColumn;
+        }
+      }
+      return { values: data.map(function (row, index) { return row[index]; }), vectors: vectors };
+    }
+    function pseudoInverseMatrix(value) {
+      var data = numericMatrix(value);
+      if (!data) return NaN;
+      var transposed = transposeNumericMatrix(data);
+      var gram = multiplyNumericMatrices(transposed, data);
+      var decomposition = symmetricEigenDecomposition(gram);
+      var largest = Math.max.apply(Math, decomposition.values.map(function (item) { return Math.abs(item); }));
+      var tolerance = Math.max(data.length, data[0].length) * Number.EPSILON * Math.max(1, largest);
+      var diagonalInverse = decomposition.values.map(function (item) { return item > tolerance ? 1 / item : 0; });
+      var gramInverse = [];
+      for (var row = 0; row < decomposition.vectors.length; row += 1) {
+        gramInverse[row] = [];
+        for (var column = 0; column < decomposition.vectors.length; column += 1) {
+          var total = 0;
+          for (var offset = 0; offset < diagonalInverse.length; offset += 1) {
+            total += decomposition.vectors[row][offset] * diagonalInverse[offset] * decomposition.vectors[column][offset];
+          }
+          gramInverse[row][column] = total;
+        }
+      }
+      return multiplyNumericMatrices(gramInverse, transposed);
+    }
     var matrix = {
       new: function (args) { var rows = Math.max(0, Math.floor(asNumber(args[0])) || 0); var columns = Math.max(0, Math.floor(asNumber(args[1])) || 0); var initial = args[2]; return Array.apply(null, Array(rows)).map(function () { return Array.apply(null, Array(columns)).map(function () { return initial; }); }); },
       rows: function (args) { return matrixShape(args[0]).rows; },
@@ -1334,7 +1588,11 @@
       median: function (args) { return array.median([].concat.apply([], args[0] || [])); },
       mode: function (args) { return array.mode([].concat.apply([], args[0] || [])); },
       pow: function (args) { return (args[0] || []).map(function (row) { return row.map(function (value) { return Math.pow(asNumber(value), asNumber(args[1])); }); }); },
-      det: function () { return NaN; }, inv: function () { return NaN; }, pinv: function () { return NaN; }, rank: function () { return NaN; }, trace: function () { return NaN; }
+      det: function (args) { return determinantMatrix(args[0]); },
+      inv: function (args) { return inverseMatrix(args[0]); },
+      pinv: function (args) { return pseudoInverseMatrix(args[0]); },
+      rank: function (args) { return rankMatrix(args[0]); },
+      trace: function (args) { return traceMatrix(args[0]); }
     };
     function matrixBinary(left, right, mapper) { var rows = Math.min((left || []).length, (right || []).length); var result = []; for (var row = 0; row < rows; row += 1) { var columns = Math.min((left[row] || []).length, (right[row] || []).length); result[row] = []; for (var column = 0; column < columns; column += 1) result[row][column] = mapper(left[row][column], right[row][column]); } return result; }
     ['float', 'int', 'bool', 'string'].forEach(function (type) { matrix['new_' + type] = matrix.new; });
@@ -1381,7 +1639,7 @@
     }, field);
   }
 
-  function seriesEnvironment(bars) {
+  function seriesEnvironment(bars, timeframe) {
     var environment = {
       open: baseSeries(bars, 'open'),
       high: baseSeries(bars, 'high'),
@@ -1389,7 +1647,9 @@
       close: baseSeries(bars, 'close'),
       volume: baseSeries(bars, 'volume'),
       bar_index: new PineSeries(function (index) { return index; }, 'bar_index'),
-      time: new PineSeries(function (index) { return securityTime(bars[index], index); }, 'time')
+      time: new PineSeries(function (index) { return pineTimestamp(securityTime(bars[index], index)); }, 'time'),
+      time_close: new PineSeries(function (index) { return barCloseTimestamp(bars, index, timeframe); }, 'time_close'),
+      time_tradingday: new PineSeries(function (index) { return tradingDayTimestamp(barCloseTimestamp(bars, index, timeframe)); }, 'time_tradingday')
     };
     environment.hl2 = binarySeries(environment.high, environment.low, function (high, low) { return (high + low) / 2; });
     environment.hlc3 = new PineSeries(function (index) {
@@ -1404,6 +1664,66 @@
   function securityTime(bar, index) {
     var time = bar && Number(bar.time);
     return Number.isFinite(time) ? time : index;
+  }
+
+  function pineTimestamp(value) {
+    value = Number(value);
+    if (!Number.isFinite(value)) return NaN;
+    return Math.abs(value) < 100000000000 ? value * 1000 : value;
+  }
+
+  function explicitBarCloseTimestamp(bar) {
+    var fields = ['time_close', 'timeClose', 'close_time', 'closeTime', 'end_time', 'endTime'];
+    for (var index = 0; bar && index < fields.length; index += 1) {
+      var value = Number(bar[fields[index]]);
+      if (Number.isFinite(value)) return pineTimestamp(value);
+    }
+    return NaN;
+  }
+
+  function addUtcMonths(timestamp, months) {
+    var date = new Date(timestamp);
+    if (!Number.isFinite(date.getTime())) return NaN;
+    date.setUTCMonth(date.getUTCMonth() + months);
+    return date.getTime();
+  }
+
+  function timeframeCloseTimestamp(openTimestamp, timeframe) {
+    var normalized = String(timeframe == null ? '' : timeframe).trim().toUpperCase();
+    if (!normalized) normalized = 'D';
+    var match;
+    if (/^\d+$/.test(normalized)) return openTimestamp + Math.max(1, Number(normalized)) * 60000;
+    match = normalized.match(/^(\d+)S$/);
+    if (match) return openTimestamp + Math.max(1, Number(match[1])) * 1000;
+    match = normalized.match(/^(\d+)H$/);
+    if (match) return openTimestamp + Math.max(1, Number(match[1])) * 3600000;
+    match = normalized.match(/^(\d+)D$/);
+    if (match) return openTimestamp + Math.max(1, Number(match[1])) * 86400000;
+    match = normalized.match(/^(\d+)W$/);
+    if (match) return openTimestamp + Math.max(1, Number(match[1])) * 7 * 86400000;
+    if (normalized === 'D' || normalized === 'DAY' || normalized === 'DAILY') return openTimestamp + 86400000;
+    if (normalized === 'W' || normalized === 'WEEK' || normalized === 'WEEKLY') return openTimestamp + 7 * 86400000;
+    if (normalized === 'M' || normalized === '1M' || normalized === 'MONTH' || normalized === 'MONTHLY') return addUtcMonths(openTimestamp, 1);
+    if (normalized === 'Q' || normalized === '1Q' || normalized === '3M' || normalized === 'QUARTERLY') return addUtcMonths(openTimestamp, 3);
+    if (normalized === 'Y' || normalized === '1Y' || normalized === '12M' || normalized === 'YEAR' || normalized === 'YEARLY') return addUtcMonths(openTimestamp, 12);
+    return NaN;
+  }
+
+  function barCloseTimestamp(bars, index, timeframe) {
+    var bar = bars[index];
+    var explicit = explicitBarCloseTimestamp(bar);
+    if (Number.isFinite(explicit)) return explicit;
+    var openTimestamp = pineTimestamp(securityTime(bar, index));
+    var derived = timeframeCloseTimestamp(openTimestamp, timeframe);
+    if (Number.isFinite(derived)) return derived;
+    if (index + 1 < bars.length) return pineTimestamp(securityTime(bars[index + 1], index + 1));
+    return NaN;
+  }
+
+  function tradingDayTimestamp(closeTimestamp) {
+    closeTimestamp = Number(closeTimestamp);
+    if (!Number.isFinite(closeTimestamp)) return NaN;
+    return Math.floor((closeTimestamp - 1) / 86400000) * 86400000;
   }
 
   function securityPeriod(timeframe) {
@@ -1543,6 +1863,7 @@
       enum: function (args) { return registerInput('string', args, ''); },
       text_area: function (args) { return registerInput('string', args, ''); }
     };
+    var chartTimeframe = String(options.timeframe || options.period || 'D');
     var env = {
       open: baseSeries(bars, 'open'), high: baseSeries(bars, 'high'), low: baseSeries(bars, 'low'),
       close: baseSeries(bars, 'close'), volume: baseSeries(bars, 'volume'), bar_index: null, time: null, hl2: null, hlc3: null, ohlc4: null,
@@ -1552,7 +1873,9 @@
     };
     env.hl2 = binarySeries(env.high, env.low, function (high, low) { return (high + low) / 2; });
     env.bar_index = new PineSeries(function (index) { return index; }, 'bar_index');
-    env.time = new PineSeries(function (index) { return securityTime(bars[index], index); }, 'time');
+    env.time = new PineSeries(function (index) { return pineTimestamp(securityTime(bars[index], index)); }, 'time');
+    env.time_close = new PineSeries(function (index) { return barCloseTimestamp(bars, index, chartTimeframe); }, 'time_close');
+    env.time_tradingday = new PineSeries(function (index) { return tradingDayTimestamp(barCloseTimestamp(bars, index, chartTimeframe)); }, 'time_tradingday');
     env.hlc3 = new PineSeries(function (index) { return (env.high.get(index) + env.low.get(index) + env.close.get(index)) / 3; });
     env.ohlc4 = new PineSeries(function (index) { return (env.open.get(index) + env.high.get(index) + env.low.get(index) + env.close.get(index)) / 4; });
     var inputNamespace = namespaces.input;
@@ -1573,10 +1896,8 @@
     env.second = function (args) { return timeSeriesMapper(function (date) { return date.getUTCSeconds(); }, args[0]); };
     env.year = function (args) { return timeSeriesMapper(function (date) { return date.getUTCFullYear(); }, args[0]); };
     env.weekofyear = function (args) { return timeSeriesMapper(function (date) { var start = new Date(Date.UTC(date.getUTCFullYear(), 0, 1)); return Math.ceil((((date - start) / 86400000) + start.getUTCDay() + 1) / 7); }, args[0]); };
-    env.time_close = env.time;
-    env.time_tradingday = env.time;
     env.last_bar_index = Math.max(0, bars.length - 1);
-    env.last_bar_time = bars.length ? securityTime(bars[bars.length - 1], bars.length - 1) : NaN;
+    env.last_bar_time = bars.length ? pineTimestamp(securityTime(bars[bars.length - 1], bars.length - 1)) : NaN;
     env.timenow = Date.now();
     env.syminfo = {
       basecurrency: String(options.basecurrency || ''), currency: String(options.currency || ''), description: String(options.description || options.symbol || ''),
@@ -1584,7 +1905,7 @@
       prefix: String(options.symbol || '').split(':')[0] || '', root: String(options.symbol || '').split(':').pop() || '', session: String(options.session || 'regular'),
       ticker: String(options.symbol || '').split(':').pop() || '', tickerid: String(options.symbol || ''), timezone: String(options.timezone || 'UTC'), type: String(options.symbolType || 'stock')
     };
-    var timeframeName = String(options.timeframe || options.period || 'D').toUpperCase();
+    var timeframeName = chartTimeframe.toUpperCase();
     env.timeframe = {
       isseconds: /S$/.test(timeframeName), isminutes: /\d*M$/.test(timeframeName), isintraday: /[SMH]/.test(timeframeName),
       isdaily: timeframeName === 'D' || timeframeName === '1D', isweekly: timeframeName === 'W' || timeframeName === '1W', ismonthly: timeframeName === 'M' || timeframeName === '1M',
@@ -1691,11 +2012,19 @@
     namespaces.ta.aroon = function (args) { var length = taLength(args, 0, 14); var highs = rollingBars(env.high, length, true); var lows = rollingBars(env.low, length, false); return [mapSeries(highs, function (value) { return (length - value) / length * 100; }), mapSeries(lows, function (value) { return (length - value) / length * 100; })]; };
     namespaces.ta.pivothigh = function (args) { var source = taSource(args, 0, env.high); var left = Math.max(1, Math.floor(asNumber(args[1])) || 5); var right = Math.max(1, Math.floor(asNumber(args[2])) || 5); return new PineSeries(function (index) { var pivot = index - right; var value = asNumber(valueAt(source, pivot)); if (!Number.isFinite(value)) return NaN; for (var offset = 1; offset <= left; offset += 1) if (value <= asNumber(valueAt(source, pivot - offset))) return NaN; for (var future = 1; future <= right; future += 1) if (value <= asNumber(valueAt(source, pivot + future))) return NaN; return value; }); };
     namespaces.ta.pivotlow = function (args) { var source = taSource(args, 0, env.low); var left = Math.max(1, Math.floor(asNumber(args[1])) || 5); var right = Math.max(1, Math.floor(asNumber(args[2])) || 5); return new PineSeries(function (index) { var pivot = index - right; var value = asNumber(valueAt(source, pivot)); if (!Number.isFinite(value)) return NaN; for (var offset = 1; offset <= left; offset += 1) if (value >= asNumber(valueAt(source, pivot - offset))) return NaN; for (var future = 1; future <= right; future += 1) if (value >= asNumber(valueAt(source, pivot + future))) return NaN; return value; }); };
-    namespaces.ta.ema2 = namespaces.ta.ema;
+    namespaces.ta.ema2 = function (args) {
+      var source = taSource(args, 0, env.close);
+      var length = args.named.length != null ? args.named.length : args[1];
+      return adaptiveEma(source, length, 14);
+    };
     namespaces.ta.dema = function (args) { var source = taSource(args, 0, env.close); var length = taLength(args, 1, 14); var first = rollingEma(source, length); return binarySeries(first, rollingEma(first, length), function (a, b) { return 2 * a - b; }); };
     namespaces.ta.tema = function (args) { var source = taSource(args, 0, env.close); var length = taLength(args, 1, 14); var first = rollingEma(source, length); var second = rollingEma(first, length); var third = rollingEma(second, length); return new PineSeries(function (index) { return 3 * first.get(index) - 3 * second.get(index) + third.get(index); }); };
     namespaces.ta.trima = function (args) { var source = taSource(args, 0, env.close); var length = taLength(args, 1, 14); return rollingSma(rollingSma(source, Math.max(1, Math.ceil(length / 2))), Math.max(1, Math.floor(length / 2))); };
-    namespaces.ta.frama = namespaces.ta.ema;
+    namespaces.ta.frama = function (args) {
+      var source = taSource(args, 0, env.close);
+      var length = args.named.length != null ? args.named.length : args[1];
+      return rollingFrama(source, length, 16);
+    };
     var metadata = { title: options.title || 'Pine Script', overlay: false, shorttitle: null };
     var plots = [];
     var shapePlots = [];
@@ -1764,7 +2093,7 @@
         return securitySeriesCache[key];
       }
       var securityEnv = Object.create(env);
-      var securityFields = seriesEnvironment(sourceBars);
+      var securityFields = seriesEnvironment(sourceBars, timeframe === 'chart' ? chartTimeframe : timeframe);
       Object.keys(securityFields).forEach(function (field) {
         securityEnv[field] = securityFields[field];
       });

@@ -1197,7 +1197,8 @@
       var result = runtime.run(code || '', context.bars, {
         title: indicator.inputs && indicator.inputs.title,
         inputs: indicator.inputs && indicator.inputs.pineValues || {},
-        security: context.comparisonSourceBars || context.comparisonBars || {}
+        security: context.comparisonSourceBars || context.comparisonBars || {},
+        timeframe: context.timeframe || '1D'
       });
       return pineIndicatorResultFromRuntime(indicator, result);
     } catch (error) {
@@ -2144,11 +2145,12 @@
     return sorted;
   }
 
-  function computeIndicatorGraph(bars, indicators, comparisonBars, comparisonSourceBars) {
+  function computeIndicatorGraph(bars, indicators, comparisonBars, comparisonSourceBars, timeframe) {
     var context = {
       bars: bars,
       comparisonBars: comparisonBars || {},
       comparisonSourceBars: comparisonSourceBars || comparisonBars || {},
+      timeframe: timeframe || '1D',
       indicatorResults: {}
     };
     topoSortIndicators(indicators).forEach(function (indicator) {
@@ -6751,7 +6753,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260717.4';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.1';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -6786,7 +6788,8 @@
           options: {
             title: indicator.inputs && indicator.inputs.title,
             inputs: clone(indicator.inputs && indicator.inputs.pineValues || {}),
-            security: clone(self.comparisonSourceBars || self.comparisonBars || {})
+            security: clone(self.comparisonSourceBars || self.comparisonBars || {}),
+            timeframe: self.document.interval || '1D'
           }
         });
       } catch (error) {
@@ -6860,7 +6863,7 @@
 
   Chart.prototype.compute = function () {
     this.pineComputeRevision += 1;
-    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars);
+    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars, this.document.interval);
     this.queuePineSecurityLoads();
     this.queuePineWorkerComputations();
   };
@@ -11116,13 +11119,13 @@
   ], 'Visual and object API for plots, drawings, labels, boxes, polylines, and tables.');
   registerPineReferenceFunctions([
     'ta.rma', 'ta.wma', 'ta.vwma', 'ta.hma', 'ta.swma', 'ta.tr', 'ta.atr', 'ta.stoch',
-    'ta.cci', 'ta.mfi', 'ta.mom', 'ta.roc', 'ta.cmo', 'ta.tsi', 'ta.wpr', 'ta.willr', 'ta.ppo', 'ta.kc',
+    'ta.cci', 'ta.mfi', 'ta.mom', 'ta.roc', 'ta.cmo', 'ta.tsi', 'ta.wpr', 'ta.ppo', 'ta.kc',
     'ta.kcw', 'ta.bbw', 'ta.bb', 'ta.dmi', 'ta.supertrend', 'ta.vhf', 'ta.vi', 'ta.trix', 'ta.aroon',
     'ta.barssince', 'ta.change', 'ta.correlation', 'ta.covariance', 'ta.dev',
     'ta.falling', 'ta.rising', 'ta.cross', 'ta.crossover', 'ta.crossunder', 'ta.valuewhen', 'ta.pivothigh',
     'ta.pivotlow', 'ta.highestbars', 'ta.lowestbars', 'ta.linreg', 'ta.slope', 'ta.variance', 'ta.stdev',
     'ta.sum', 'ta.median', 'ta.mode', 'ta.percentile_linear_interpolation', 'ta.percentile_nearest_rank',
-    'ta.range', 'ta.dev', 'ta.ema2', 'ta.frama', 'ta.dema', 'ta.tema', 'ta.trima'
+    'ta.range', 'ta.ema2', 'ta.frama', 'ta.dema', 'ta.tema', 'ta.trima'
   ], 'Technical-analysis calculations and rolling series utilities.');
   registerPineReferenceFunctions([
     'math.abs', 'math.acos', 'math.asin', 'math.atan', 'math.avg', 'math.ceil', 'math.cos', 'math.exp',
@@ -11219,6 +11222,10 @@
     PINE_EDITOR_SIGNATURES[name].signature = signature;
     PINE_EDITOR_SIGNATURES[name].parameters = pineReferenceParameters(parameterNames);
   }
+  refinePineReferenceSignature('ta.ema2', 'ta.ema2(source, length)', ['source', 'length']);
+  PINE_EDITOR_SIGNATURES['ta.ema2'].description = 'Calculates an EMA with a length that may vary from bar to bar. This is a compatibility extension based on TradingView\'s ta library.';
+  refinePineReferenceSignature('ta.frama', 'ta.frama(source, length)', ['source', 'length']);
+  PINE_EDITOR_SIGNATURES['ta.frama'].description = 'Calculates the Fractal Adaptive Moving Average using the source series\' fractal dimension.';
   refinePineReferenceSignature('plotarrow', 'plotarrow(series, title, colorup, colordown, offset, minheight, maxheight, editable, show_last, display)', ['series', 'title', 'colorup', 'colordown', 'offset', 'minheight', 'maxheight', 'editable', 'show_last', 'display']);
   refinePineReferenceSignature('plotcandle', 'plotcandle(open, high, low, close, title, color, wickcolor, editable, show_last, bordercolor, display)', ['open', 'high', 'low', 'close', 'title', 'color', 'wickcolor', 'editable', 'show_last', 'bordercolor', 'display']);
   refinePineReferenceSignature('plotbar', 'plotbar(open, high, low, close, title, color, editable, show_last, display)', ['open', 'high', 'low', 'close', 'title', 'color', 'editable', 'show_last', 'display']);

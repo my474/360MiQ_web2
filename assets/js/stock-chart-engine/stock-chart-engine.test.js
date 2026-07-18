@@ -435,6 +435,49 @@ assert.strictEqual(expandedRuntimePreview.metadata.kind, 'strategy');
 assert.ok(expandedRuntimePreview.outputs.plot1.length > 0);
 assert.ok(expandedRuntimePreview.strategyOrders.length > 0);
 assert.strictEqual(expandedRuntimePreview.drawings[0].color, '#ef4444');
+const distinctRuntimePreview = PineScriptRuntime.run(`indicator("Distinct compatibility functions")
+dynamicLength = close > open ? 3 : 9
+plot(ta.ema(close, 5), title="EMA")
+plot(ta.ema2(close, dynamicLength), title="EMA2")
+plot(ta.frama(close, 8), title="FRAMA")
+plot(ta.wpr(14), title="WPR")
+plot(ta.willr(14), title="WILLR")
+plot(time, title="Open time")
+plot(time_close, title="Close time")
+plot(time_tradingday, title="Trading day")`, data, { timeframe: '1D' });
+const distinctOutputMap = (points) => new Map(points.map((point) => [point.time, point.value]));
+const emaValues = distinctOutputMap(distinctRuntimePreview.outputs.plot1);
+const ema2Values = distinctOutputMap(distinctRuntimePreview.outputs.plot2);
+const framaValues = distinctOutputMap(distinctRuntimePreview.outputs.plot3);
+assert.ok(Array.from(ema2Values.keys()).some((time) => emaValues.has(time) && Math.abs(ema2Values.get(time) - emaValues.get(time)) > 1e-8));
+assert.ok(Array.from(framaValues.keys()).some((time) => emaValues.has(time) && Math.abs(framaValues.get(time) - emaValues.get(time)) > 1e-8));
+assert.deepStrictEqual(distinctRuntimePreview.outputs.plot4, distinctRuntimePreview.outputs.plot5);
+assert.strictEqual(distinctRuntimePreview.outputs.plot6[0].value, data[0].time * 1000);
+assert.strictEqual(distinctRuntimePreview.outputs.plot7[0].value - distinctRuntimePreview.outputs.plot6[0].value, 86400000);
+assert.strictEqual(distinctRuntimePreview.outputs.plot8[0].value, Math.floor((distinctRuntimePreview.outputs.plot7[0].value - 1) / 86400000) * 86400000);
+const matrixRuntimePreview = PineScriptRuntime.run(`indicator("Matrix calculations")
+m = matrix.new(2, 2, 0)
+matrix.set(m, 0, 0, 4)
+matrix.set(m, 0, 1, 7)
+matrix.set(m, 1, 0, 2)
+matrix.set(m, 1, 1, 6)
+inverse = matrix.inv(m)
+singular = matrix.new(2, 2, 0)
+matrix.set(singular, 0, 0, 1)
+matrix.set(singular, 0, 1, 2)
+matrix.set(singular, 1, 0, 2)
+matrix.set(singular, 1, 1, 4)
+pseudo = matrix.pinv(singular)
+plot(matrix.det(m), title="Determinant")
+plot(matrix.get(inverse, 0, 0), title="Inverse")
+plot(matrix.rank(m), title="Rank")
+plot(matrix.trace(m), title="Trace")
+plot(matrix.get(pseudo, 0, 0), title="Pseudoinverse")`, data);
+assert.strictEqual(matrixRuntimePreview.outputs.plot1[0].value, 10);
+assert.ok(Math.abs(matrixRuntimePreview.outputs.plot2[0].value - 0.6) < 1e-10);
+assert.strictEqual(matrixRuntimePreview.outputs.plot3[0].value, 2);
+assert.strictEqual(matrixRuntimePreview.outputs.plot4[0].value, 10);
+assert.ok(Math.abs(matrixRuntimePreview.outputs.plot5[0].value - 0.04) < 1e-10);
 const workerSecurityPreview = PineScriptRuntime.runInWorker({
   source: `indicator("Worker security")
 plot(request.security("SPY", "W", close))`,
@@ -2448,6 +2491,7 @@ const workerIndicatorId = workerChart.addIndicator('PINE_SCRIPT', {
 assert.ok(workerChart.pineWorker instanceof FakePineWorker);
 assert.ok(workerChart.pineWorker.url.indexOf('pine-script-worker.js') !== -1);
 assert.ok(workerChart.pineWorker.messages.length > 0);
+assert.strictEqual(workerChart.pineWorker.messages[0].options.timeframe, '1D');
 assert.strictEqual(workerChart.indicatorResults[workerIndicatorId].computeMode, 'worker');
 const workerAdvancedIndicatorId = workerChart.addIndicator('PINE_SCRIPT', {
   placement: 'new',

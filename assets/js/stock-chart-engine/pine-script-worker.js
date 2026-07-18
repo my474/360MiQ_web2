@@ -1,5 +1,5 @@
 /* Web Worker entry point for the Pine-compatible runtime. */
-importScripts('pine-script-runtime.js?v=20260718.5');
+importScripts('pine-script-runtime.js?v=20260718.6');
 
 self.onmessage = function (event) {
   var message = event && event.data || {};
