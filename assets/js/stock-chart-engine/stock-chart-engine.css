@@ -6,6 +6,7 @@
   --sce-latest-bg: rgba(37, 99, 235, 0.92);
   --sce-latest-border: rgba(30, 64, 175, 0.9);
   --sce-latest-glow: rgba(37, 99, 235, 0.48);
+  --sce-pine-beta: #b45309;
   --sce-text: #111827;
   --sce-muted: #6b7280;
   border: 1px solid var(--sce-border);
@@ -29,6 +30,7 @@
   --sce-latest-bg: rgba(37, 99, 235, 0.94);
   --sce-latest-border: rgba(147, 197, 253, 0.9);
   --sce-latest-glow: rgba(96, 165, 250, 0.72);
+  --sce-pine-beta: #fbbf24;
   --sce-text: #f9fafb;
   --sce-muted: #cbd5e1;
   color-scheme: dark;
@@ -1783,6 +1785,16 @@
   flex: 0 0 auto;
   touch-action: none;
   user-select: none;
+}
+
+.sce-pine-beta {
+  color: var(--sce-pine-beta);
+  font-size: 0.58em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-left: 0.35em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 .sce-pine-window-controls {

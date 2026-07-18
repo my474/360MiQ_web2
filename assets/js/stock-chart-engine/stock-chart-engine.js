@@ -3986,7 +3986,7 @@
     }
     this.settingsPopup.innerHTML = [
       '<div class="sce-settings-title sce-pine-window-titlebar" data-sce-pine-drag-handle>',
-      '<strong>Pine Script</strong>',
+      '<strong>Pine Script <span class="sce-pine-beta" aria-label="Beta">Beta</span></strong>',
       '<span class="sce-pine-window-controls">',
       '<button type="button" data-sce-pine-window-action="minimize" title="Minimize" aria-label="Minimize">', paneControlIconSvg('minimize'), '</button>',
       '<button type="button" data-sce-pine-window-action="maximize" title="Maximize" aria-label="Maximize">', paneControlIconSvg('maximize'), '</button>',
@@ -12600,7 +12600,7 @@
     { name: '// comments', type: 'Syntax', category: 'syntax', signature: '// comment text', description: 'Marks the rest of a line as a comment.' },
     { name: 'open / high / low / close / volume', type: 'Built-in variable', category: 'built-in-variable', signature: 'close', description: 'Built-in OHLCV series from the chart symbol.', example: 'plot(close)' },
     { name: 'time / bar_index', type: 'Built-in variable', category: 'built-in-variable', signature: 'bar_index', description: 'Built-in bar timestamp and zero-based bar index series.' },
-    { name: 'true / false / na', type: 'Constant', category: 'constant', signature: 'na', description: 'Boolean literals and the undefined-value constant.' }
+    { name: 'true / false / na', type: 'Constant', category: 'constant', signature: 'true | false | na', description: 'Boolean literals and the undefined-value constant: true represents a true condition, false represents a false condition, and na represents an undefined value.', example: 'signal = close > open ? true : na' }
   ]).concat(Object.keys(PINE_EDITOR_KEYWORDS).filter(function (name) {
     return ['and', 'or', 'not', 'if', 'else', 'for', 'while', 'var', 'const'].indexOf(name) === -1;
   }).map(function (name) {
