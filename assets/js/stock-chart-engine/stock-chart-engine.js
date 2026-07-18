@@ -3931,9 +3931,9 @@
       '<button type="button" data-sce-pine-doc-action="close" title="Close documentation" aria-label="Close documentation">', paneControlIconSvg('close'), '</button>',
       '</span></div>',
       '<div class="sce-pine-docs-filters">',
-      '<input type="search" data-sce-pine-doc-search placeholder="Search functions, keywords, or content" aria-label="Search Pine Script documentation">',
+      '<input type="search" data-sce-pine-doc-search placeholder="Search functions, variables, constants, or content" aria-label="Search Pine Script documentation">',
       '<select data-sce-pine-doc-filter aria-label="Filter documentation category">',
-      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="syntax">Syntax</option>',
+      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in-variable">Built-in variables</option><option value="constant">Constants &amp; enums</option><option value="syntax">Syntax</option>',
       '</select>',
       '</div>',
       '<div class="sce-pine-docs-content">',
@@ -4082,7 +4082,8 @@
     var categoryLabels = {
       function: 'Functions',
       keyword: 'Keywords',
-      'built-in': 'Built-ins',
+      'built-in-variable': 'Built-in variables',
+      constant: 'Constants & enums',
       syntax: 'Syntax'
     };
     var matches = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
@@ -10818,7 +10819,10 @@
     'type': true, 'method': true, 'var': true, 'varip': true, 'const': true, 'struct': true, 'enum': true
   };
   var PINE_EDITOR_CONSTANTS = {
-    'true': true, 'false': true, 'na': true, 'open': true, 'high': true, 'low': true, 'close': true,
+    'true': true, 'false': true, 'na': true
+  };
+  var PINE_EDITOR_BUILT_IN_VARIABLES = {
+    'open': true, 'high': true, 'low': true, 'close': true,
     'volume': true, 'time': true, 'time_close': true, 'time_tradingday': true, 'bar_index': true,
     'last_bar_index': true, 'last_bar_time': true, 'timenow': true, 'year': true, 'month': true,
     'weekofyear': true, 'dayofmonth': true, 'dayofweek': true, 'hour': true, 'minute': true, 'second': true,
@@ -10832,6 +10836,9 @@
     'font': true, 'location': true, 'size': true, 'shape': true, 'text': true, 'xloc': true, 'yloc': true,
     'alert': true, 'session': true, 'scale': true
   };
+  function pineIsConstantName(name) {
+    return !!PINE_EDITOR_CONSTANTS[name] || String(name || '').indexOf('color.') === 0;
+  }
   // These names are exposed by the client runtime as objects or callable
   // namespace members. The namespace badge describes availability of the
   // container; individual entries still describe member-level coverage.
@@ -11292,9 +11299,12 @@
       PINE_EDITOR_COMPLETIONS.push({ value: name, label: 'Pine reference function' });
     }
   });
-  Object.keys(PINE_EDITOR_KEYWORDS).concat(Object.keys(PINE_EDITOR_CONSTANTS)).forEach(function (name) {
+  Object.keys(PINE_EDITOR_KEYWORDS).concat(Object.keys(PINE_EDITOR_BUILT_IN_VARIABLES), Object.keys(PINE_EDITOR_CONSTANTS)).forEach(function (name) {
     if (!PINE_EDITOR_COMPLETIONS.some(function (item) { return item.value === name; })) {
-      PINE_EDITOR_COMPLETIONS.push({ value: name, label: PINE_EDITOR_KEYWORDS[name] ? 'Pine language keyword' : 'Built-in series or constant' });
+      PINE_EDITOR_COMPLETIONS.push({
+        value: name,
+        label: PINE_EDITOR_KEYWORDS[name] ? 'Pine language keyword' : (pineIsConstantName(name) ? 'Pine constant or enum' : 'Built-in variable')
+      });
     }
   });
   Object.keys(PINE_EDITOR_NAMESPACES).forEach(function (name) {
@@ -11329,17 +11339,20 @@
     { name: '[]', type: 'Syntax', category: 'syntax', signature: 'series[barsBack]', description: 'Reads a historical value from a series. Index 0 is the current bar.', example: 'close[1]' },
     { name: '//@version=5', type: 'Syntax', category: 'syntax', signature: '//@version=5', description: 'Selects the Pine language version understood by the editor.' },
     { name: '// comments', type: 'Syntax', category: 'syntax', signature: '// comment text', description: 'Marks the rest of a line as a comment.' },
-    { name: 'open / high / low / close / volume', type: 'Built-in', category: 'built-in', signature: 'close', description: 'Built-in OHLCV series from the chart symbol.', example: 'plot(close)' },
-    { name: 'time / bar_index', type: 'Built-in', category: 'built-in', signature: 'bar_index', description: 'Built-in bar timestamp and zero-based bar index series.' },
-    { name: 'true / false / na', type: 'Built-in', category: 'built-in', signature: 'na', description: 'Boolean and missing-value constants.' }
+    { name: 'open / high / low / close / volume', type: 'Built-in variable', category: 'built-in-variable', signature: 'close', description: 'Built-in OHLCV series from the chart symbol.', example: 'plot(close)' },
+    { name: 'time / bar_index', type: 'Built-in variable', category: 'built-in-variable', signature: 'bar_index', description: 'Built-in bar timestamp and zero-based bar index series.' },
+    { name: 'true / false / na', type: 'Constant', category: 'constant', signature: 'na', description: 'Boolean literals and the undefined-value constant.' }
   ]).concat(Object.keys(PINE_EDITOR_KEYWORDS).filter(function (name) {
     return ['and', 'or', 'not', 'if', 'else', 'for', 'while', 'var', 'const'].indexOf(name) === -1;
   }).map(function (name) {
     return { name: name, type: 'Keyword', category: 'keyword', signature: name, description: 'Reserved Pine language word.' };
+  })).concat(Object.keys(PINE_EDITOR_BUILT_IN_VARIABLES).map(function (name) {
+    return { name: name, type: 'Built-in variable', category: 'built-in-variable', signature: name, description: 'Built-in Pine series variable.' };
   })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
-    return { name: name, type: 'Built-in', category: 'built-in', signature: name, description: 'Built-in Pine series or constant.' };
+    return { name: name, type: 'Constant', category: 'constant', signature: name, description: 'Built-in Pine constant or literal.' };
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
-    return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Supported' };
+    var constant = pineIsConstantName(entry[0]);
+    return { name: entry[0], type: constant ? 'Constant' : 'Built-in variable', category: constant ? 'constant' : 'built-in-variable', signature: entry[0], description: entry[1], status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {
     return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: 'Supported' };
   }));
@@ -11409,7 +11422,7 @@
         var lowerIdentifier = identifier.toLowerCase();
         var lookahead = index + identifier.length;
         while (/\s/.test(text.charAt(lookahead)) && text.charAt(lookahead) !== '\n') lookahead += 1;
-        var tokenClass = PINE_EDITOR_KEYWORDS[lowerIdentifier] ? 'keyword' : (PINE_EDITOR_CONSTANTS[lowerIdentifier] ? 'constant' : (PINE_EDITOR_NAMESPACES[lowerIdentifier] ? 'namespace' : (text.charAt(lookahead) === '(' ? 'function' : 'identifier')));
+        var tokenClass = PINE_EDITOR_KEYWORDS[lowerIdentifier] ? 'keyword' : (PINE_EDITOR_CONSTANTS[lowerIdentifier] || PINE_EDITOR_BUILT_IN_VARIABLES[lowerIdentifier] ? 'constant' : (PINE_EDITOR_NAMESPACES[lowerIdentifier] ? 'namespace' : (text.charAt(lookahead) === '(' ? 'function' : 'identifier')));
         html += '<span class="sce-pine-token-' + tokenClass + '">' + escapeHtml(identifier) + '</span>';
         index += identifier.length;
         continue;

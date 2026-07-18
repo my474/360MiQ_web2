@@ -549,6 +549,9 @@ assert.strictEqual(chart.openPineDocumentation(), true);
 assert.strictEqual(pineDocsPanel.hidden, false);
 assert.ok(pineDocsList.innerHTML.includes('Functions'));
 assert.strictEqual(chart.settingsPopup.innerHTML.includes('value="namespace"'), false);
+assert.ok(chart.settingsPopup.innerHTML.includes('value="built-in-variable">Built-in variables'));
+assert.ok(chart.settingsPopup.innerHTML.includes('value="constant">Constants &amp; enums'));
+assert.strictEqual(chart.settingsPopup.innerHTML.includes('value="built-in">Built-ins'), false);
 pineDocsSearch.value = 'moving average';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.ok(pineDocsList.innerHTML.includes('ta.sma'));
@@ -662,16 +665,16 @@ const groupedPineDocumentationEntries = [
   { category: 'keyword', query: 'for / while', token: 'while' },
   { category: 'keyword', query: 'var / const', token: 'var' },
   { category: 'keyword', query: 'var / const', token: 'const' },
-  { category: 'built-in', query: 'open / high / low / close / volume', token: 'open' },
-  { category: 'built-in', query: 'open / high / low / close / volume', token: 'high' },
-  { category: 'built-in', query: 'open / high / low / close / volume', token: 'low' },
-  { category: 'built-in', query: 'open / high / low / close / volume', token: 'close' },
-  { category: 'built-in', query: 'open / high / low / close / volume', token: 'volume' },
-  { category: 'built-in', query: 'time / bar_index', token: 'time' },
-  { category: 'built-in', query: 'time / bar_index', token: 'bar_index' },
-  { category: 'built-in', query: 'true / false / na', token: 'true' },
-  { category: 'built-in', query: 'true / false / na', token: 'false' },
-  { category: 'built-in', query: 'true / false / na', token: 'na' }
+  { category: 'built-in-variable', query: 'open / high / low / close / volume', token: 'open' },
+  { category: 'built-in-variable', query: 'open / high / low / close / volume', token: 'high' },
+  { category: 'built-in-variable', query: 'open / high / low / close / volume', token: 'low' },
+  { category: 'built-in-variable', query: 'open / high / low / close / volume', token: 'close' },
+  { category: 'built-in-variable', query: 'open / high / low / close / volume', token: 'volume' },
+  { category: 'built-in-variable', query: 'time / bar_index', token: 'time' },
+  { category: 'built-in-variable', query: 'time / bar_index', token: 'bar_index' },
+  { category: 'constant', query: 'true / false / na', token: 'true' },
+  { category: 'constant', query: 'true / false / na', token: 'false' },
+  { category: 'constant', query: 'true / false / na', token: 'na' }
 ];
 groupedPineDocumentationEntries.forEach(function (entry) {
   pineDocsSearch.value = entry.query;
@@ -701,9 +704,13 @@ assert.strictEqual(pineDocsList.innerHTML.includes('Supported'), false);
 assert.strictEqual(chart.pineDocumentationNameHtml({ name: 'tuples', category: 'syntax' }, 0, true).includes('data-sce-pine-doc-insert'), false);
 assert.ok(chart.pineDocumentationNameHtml({ name: 'if', category: 'syntax' }, 0, true).includes('data-sce-pine-doc-insert'));
 pineDocsSearch.value = 'barstate.isconfirmed';
-pineDocsFilter.value = 'built-in';
+pineDocsFilter.value = 'built-in-variable';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.ok(pineDocsList.innerHTML.includes('barstate.isconfirmed'));
+pineDocsSearch.value = 'color.green';
+pineDocsFilter.value = 'constant';
+chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
+assert.ok(pineDocsList.innerHTML.includes('color.green'));
 pineSignatureField.value = 'ta.w';
 pineSignatureField.selectionStart = pineSignatureField.value.length;
 pineSignatureField.selectionEnd = pineSignatureField.value.length;
