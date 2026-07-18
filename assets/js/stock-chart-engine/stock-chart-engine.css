@@ -1843,7 +1843,10 @@
 }
 
 .sce-pine-code-pane > label {
+  display: block;
   flex: 0 0 auto;
+  line-height: 1.45;
+  margin: 0;
 }
 
 .sce-pine-code-pane .sce-pine-editor-shell {
