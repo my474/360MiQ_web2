@@ -9,12 +9,9 @@ The editor catalog mirrors the executable runtime for the supported API surface 
 - Functions: declarations, plots, alerts, inputs, technical analysis, math, strings, requests, arrays, matrices, maps, colors, time, tickers, strategies, lines, labels, boxes, polylines, tables, and line fills.
 - Built-ins: OHLCV and derived price series, time and bar indexes, symbol information, timeframe information, bar states, strategy values, and named colors.
 - Namespaces: `ta`, `math`, `input`, `request`, `color`, `str`, `array`, `matrix`, `map`, `strategy`, `syminfo`, `barstate`, `timeframe`, `chart`, `line`, `linefill`, `label`, `box`, `polyline`, `table`, `ticker`, `runtime`, `log`, `display`, `format`, `font`, `location`, `size`, `shape`, `text`, `xloc`, `yloc`, `alert`, `session`, and `scale`.
-- Language syntax: version directives, comments, indentation, assignments, tuple declarations, history references, type qualifiers, user-defined types, enums, methods, imports/exports, conditionals, loops, `switch`, `for ... in`, and user-defined functions.
+- Language syntax: version directives, comments, indentation, assignments, tuple declarations, history references, type qualifiers, user-defined types, enums, methods, conditionals, loops, `switch`, `for ... in`, and user-defined functions.
 
-Search the `Pine Script reference` panel with a function name, parameter, namespace, keyword, or description. Select a category to browse a manageable list instead of loading every topic at once. Click a function or keyword name to insert it at the editor cursor. Each entry is labeled `Supported` or `Reference`:
-
-- `Supported` means the current client runtime can execute that feature.
-- `Reference` means the catalog describes a Pine language construct that is intentionally documented but still needs a dedicated parser or broker/data integration. API functions and objects listed as `Supported` execute in the browser runtime.
+Search the `Pine Script reference` panel with a function name, parameter, namespace, keyword, or description. Select a category to browse a manageable list instead of loading every topic at once. Click a function or exact reserved-word name in the detail header to insert it at the editor cursor. All listed entries execute in the browser runtime.
 
 ## Supported in the client runtime
 
@@ -66,4 +63,4 @@ The catalog follows TradingView's official Pine Script v6 documentation:
 - Pine Script language and built-ins: https://www.tradingview.com/pine-script-docs/language/built-ins/
 - Pine Script language overview: https://www.tradingview.com/pine-script-docs/language/
 
-The official manual remains authoritative for exact overloads, type qualifiers, limits, version changes, and behavior that is marked `Reference` in this client.
+The official manual remains authoritative for exact overloads, type qualifiers, limits, version changes, and behavior differences from the browser runtime.

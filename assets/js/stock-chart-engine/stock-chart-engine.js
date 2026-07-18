@@ -3931,7 +3931,7 @@
       '<div class="sce-pine-docs-filters">',
       '<input type="search" data-sce-pine-doc-search placeholder="Search functions, keywords, or content" aria-label="Search Pine Script documentation">',
       '<select data-sce-pine-doc-filter aria-label="Filter documentation category">',
-      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="namespace">Namespaces</option><option value="syntax">Syntax</option><option value="reference">Reference items</option>',
+      '<option value="all">All topics</option><option value="function">Functions</option><option value="keyword">Keywords</option><option value="built-in">Built-ins</option><option value="namespace">Namespaces</option><option value="syntax">Syntax</option>',
       '</select>',
       '</div>',
       '<div class="sce-pine-docs-content">',
@@ -4036,6 +4036,9 @@
 
   Chart.prototype.pineDocumentationNameHtml = function (item, index, detail) {
     var items = this.pineDocumentationInsertItems(item);
+    if (detail && item.category === 'syntax' && !PINE_EDITOR_KEYWORDS[item.name]) {
+      return '<strong>' + escapeHtml(item.name) + '</strong>';
+    }
     if (items.length <= 1) {
       var text = items.length ? items[0].text : '';
       if (!detail) return '<strong>' + escapeHtml(item.name) + '</strong>';
@@ -4079,12 +4082,10 @@
       keyword: 'Keywords',
       'built-in': 'Built-ins',
       namespace: 'Namespaces',
-      syntax: 'Syntax',
-      reference: 'Reference items'
+      syntax: 'Syntax'
     };
     var matches = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
-      if (normalizedCategory === 'reference' && item.status !== 'Reference') return false;
-      if (normalizedCategory !== 'all' && normalizedCategory !== 'reference' && item.category !== normalizedCategory) return false;
+      if (normalizedCategory !== 'all' && item.category !== normalizedCategory) return false;
       if (!normalizedQuery) return true;
       var searchable = [item.name, item.type, item.signature, item.description, item.example]
         .concat((item.parameters || []).map(function (parameter) { return parameter.name + ' ' + parameter.description; }))
@@ -4094,12 +4095,12 @@
     if (normalizedCategory === 'all' && !normalizedQuery) {
       list.innerHTML = Object.keys(categoryLabels).map(function (categoryId) {
         var count = PINE_EDITOR_DOCUMENTATION.filter(function (item) {
-          return categoryId === 'reference' ? item.status === 'Reference' : item.category === categoryId;
+          return item.category === categoryId;
         }).length;
         return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
       }).join('');
       var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
-      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>All listed API entries run in this chart runtime. Use <strong>Reference items</strong> to see the small set of language constructs that still need external library or platform integration.</p>';
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>All listed entries run in this chart runtime.</p>';
       return;
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
@@ -10811,7 +10812,7 @@
 
   var PINE_EDITOR_KEYWORDS = {
     'and': true, 'or': true, 'not': true, 'if': true, 'else': true, 'for': true, 'while': true,
-    'switch': true, 'break': true, 'continue': true, 'return': true, 'import': true, 'export': true,
+    'switch': true, 'break': true, 'continue': true, 'return': true,
     'type': true, 'method': true, 'var': true, 'varip': true, 'const': true, 'struct': true, 'enum': true
   };
   var PINE_EDITOR_CONSTANTS = {
@@ -11200,7 +11201,6 @@
     { name: 'user-defined type', signature: 'type pivot\n    int x\n    float price', description: 'Defines a custom object type with fields.' },
     { name: 'enum declaration', signature: 'enum signal\n    buy\n    sell', description: 'Defines a finite set of named enum members.' },
     { name: 'method declaration', signature: 'method average(array<float> source) => ...', description: 'Declares a user function that can be called with method syntax.' },
-    { name: 'import / export', signature: 'import user/library/1 as lib', description: 'Imports or exports library code. Publishing is reference-only in this client runtime.' },
     { name: 'switch', signature: 'switch expression\n    condition => value', description: 'Selects one expression or block from multiple cases.' },
     { name: 'for in', signature: 'for item in collection', description: 'Iterates over the values in an array, matrix, or map.' },
     { name: 'history operator', signature: 'series[barsBack]', description: 'Reads a previous value from a time series.' },
@@ -11344,7 +11344,7 @@
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
     return { name: entry[0], type: 'Built-in', category: 'built-in', signature: entry[0], description: entry[1], status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {
-    return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: entry.name === 'import / export' ? 'Reference' : 'Supported' };
+    return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: 'Supported' };
   }));
   var PINE_EDITOR_DOCUMENTATION_UNIQUE = [];
   PINE_EDITOR_DOCUMENTATION.forEach(function (item) {
