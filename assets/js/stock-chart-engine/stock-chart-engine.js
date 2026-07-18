@@ -1203,6 +1203,7 @@
         symbol: context.symbol || '',
         mintick: context.mintick,
         description: context.description || '',
+        backtestLowerTimeframeBars: context.backtestLowerTimeframeBars || null,
         backtest: indicator.inputs && indicator.inputs.backtest || null
       });
       return pineIndicatorResultFromRuntime(indicator, result);
@@ -1385,6 +1386,8 @@
           processOrdersOnClose: false,
           calcOnOrderFills: false,
           calcOnEveryTick: false,
+          barMagnifier: false,
+          lowerTimeframe: '',
           fillMode: 'ohlc'
         },
         code: '//@version=5\nindicator("Custom Pine", overlay=false)\nplot(ta.sma(close, 20), title="SMA 20")'
@@ -2175,12 +2178,17 @@
     return sorted;
   }
 
-  function computeIndicatorGraph(bars, indicators, comparisonBars, comparisonSourceBars, timeframe) {
+  function computeIndicatorGraph(bars, indicators, comparisonBars, comparisonSourceBars, timeframe, computeOptions) {
+    computeOptions = computeOptions || {};
     var context = {
       bars: bars,
       comparisonBars: comparisonBars || {},
       comparisonSourceBars: comparisonSourceBars || comparisonBars || {},
       timeframe: timeframe || '1D',
+      symbol: computeOptions.symbol || '',
+      description: computeOptions.description || '',
+      mintick: computeOptions.mintick,
+      backtestLowerTimeframeBars: computeOptions.backtestLowerTimeframeBars || null,
       indicatorResults: {}
     };
     topoSortIndicators(indicators).forEach(function (indicator) {
@@ -6824,13 +6832,34 @@
     return merge({}, base, this.options.themeTokens || {});
   };
 
+  Chart.prototype.setBacktestLowerTimeframeBars = function (bars, timeframe) {
+    this.options.backtestLowerTimeframeBars = Array.isArray(bars) ? bars : null;
+    if (timeframe != null) this.options.backtestLowerTimeframe = String(timeframe || '');
+    this.compute();
+    this.draw();
+    return this.options.backtestLowerTimeframeBars;
+  };
+
+  Chart.prototype.loadBacktestLowerTimeframe = function (timeframe) {
+    var loader = this.options.onBacktestLowerTimeframeLoad;
+    if (typeof loader !== 'function') return Promise.reject(new Error('No lower-timeframe loader was configured for this chart.'));
+    var self = this;
+    var requestedTimeframe = String(timeframe || this.options.backtestLowerTimeframe || '');
+    return Promise.resolve(loader(requestedTimeframe, this.document.symbol, clone(this.bars))).then(function (payload) {
+      var bars = Array.isArray(payload) ? payload : payload && payload.bars;
+      if (!Array.isArray(bars)) throw new Error('The lower-timeframe loader returned no bars.');
+      self.setBacktestLowerTimeframeBars(bars, requestedTimeframe);
+      return bars;
+    });
+  };
+
   Chart.prototype.ensurePineWorker = function () {
     if (this.pineWorker || this.pineWorkerDisabled || this.options.pineWorker === false) return this.pineWorker;
     if (!this.document.indicators.some(function (indicator) { return indicator.type === 'PINE_SCRIPT'; })) return null;
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.3';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.4';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -6870,6 +6899,10 @@
             inputs: clone(indicator.inputs && indicator.inputs.pineValues || {}),
             security: clone(self.comparisonSourceBars || self.comparisonBars || {}),
             timeframe: self.document.interval || '1D',
+            symbol: self.options.symbol || self.document.symbol || '',
+            mintick: self.options.mintick,
+            description: self.options.symbolInfo && (self.options.symbolInfo.name_en || self.options.symbolInfo.description) || '',
+            backtestLowerTimeframeBars: clone(self.options.backtestLowerTimeframeBars || null),
             backtest: clone(indicator.inputs && indicator.inputs.backtest || null)
           }
         });
@@ -6948,7 +6981,12 @@
 
   Chart.prototype.compute = function () {
     this.pineComputeRevision += 1;
-    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars, this.document.interval);
+    this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars, this.document.interval, {
+      symbol: this.options.symbol || this.document.symbol || '',
+      description: this.options.symbolInfo && (this.options.symbolInfo.name_en || this.options.symbolInfo.description) || '',
+      mintick: this.options.mintick,
+      backtestLowerTimeframeBars: this.options.backtestLowerTimeframeBars || null
+    });
     this.updateStrategyTester();
     this.queuePineSecurityLoads();
     this.queuePineWorkerComputations();
@@ -7235,7 +7273,8 @@
         ['Average winning trade', metrics.averageWinningTrade], ['Average losing trade', metrics.averageLosingTrade],
         ['Largest losing trade', metrics.largestLosingTrade], ['Commission', metrics.commission], ['Slippage', metrics.slippage],
         ['Max drawdown', metrics.maxDrawdown], ['Max drawdown %', (metrics.maxDrawdownPercent || 0) + '%'],
-        ['Max run-up', metrics.maxRunup], ['Buy and hold', (metrics.buyAndHoldPercent || 0) + '%'], ['Sharpe', metrics.sharpe]
+        ['Max run-up', metrics.maxRunup], ['Buy and hold', (metrics.buyAndHoldPercent || 0) + '%'], ['Sharpe', metrics.sharpe],
+        ['Sortino', metrics.sortino], ['Recovery factor', metrics.recoveryFactor], ['Calmar', metrics.calmar]
       ].map(function (row) { return '<div><span>' + escapeHtml(row[0]) + '</span><strong>' + escapeHtml(formatNumber(row[1])) + '</strong></div>'; }).join('') + '</div>' + returnTable('Monthly returns', monthlyReturns) + returnTable('Yearly returns', yearlyReturns);
     } else if (view === 'trades') {
       var trades = result.trades || [];
@@ -7262,11 +7301,13 @@
         '<label>Date from<input type="date" data-sce-backtest-field="dateFrom" value="' + escapeHtml(dateFrom) + '"></label>' +
         '<label>Date to<input type="date" data-sce-backtest-field="dateTo" value="' + escapeHtml(dateTo) + '"></label>' +
         '<label>Warm-up bars<input type="number" min="0" step="1" data-sce-backtest-field="warmupBars" value="' + escapeHtml(config.warmupBars) + '"></label>' +
+        '<label>Lower timeframe<input type="text" placeholder="e.g. 5" data-sce-backtest-field="lowerTimeframe" value="' + escapeHtml(config.lowerTimeframe || '') + '"></label>' +
         '<label>Fill model<select data-sce-backtest-field="fillMode"><option value="ohlc"' + (config.fillMode === 'ohlc' ? ' selected' : '') + '>OHLC bars</option><option value="next_open"' + (config.fillMode === 'next_open' ? ' selected' : '') + '>Next open</option></select></label>' +
+        '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="barMagnifier"' + (config.barMagnifier ? ' checked' : '') + '> Use lower-timeframe fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="processOrdersOnClose"' + (config.processOrdersOnClose ? ' checked' : '') + '> Process orders on close</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnOrderFills"' + (config.calcOnOrderFills ? ' checked' : '') + '> Recalculate after order fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnEveryTick"' + (config.calcOnEveryTick ? ' checked' : '') + '> Recalculate on every tick</label>' +
-        '<p class="sce-strategy-property-note">Historical fills use standard OHLC bars. Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
+        '<p class="sce-strategy-property-note">' + (config.barMagnifier ? 'Lower-timeframe fills use host-provided bars; missing coverage falls back to chart OHLC. ' : 'Historical fills use standard OHLC bars. ') + 'Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
         '</div>';
     } else {
       var diagnostics = result.diagnostics || [];
@@ -7299,6 +7340,11 @@
     this.compute();
     this.draw();
     this.updateStrategyTester();
+    if ((field === 'barMagnifier' || field === 'lowerTimeframe') && indicator.inputs.backtest.barMagnifier && typeof this.options.onBacktestLowerTimeframeLoad === 'function') {
+      this.loadBacktestLowerTimeframe(indicator.inputs.backtest.lowerTimeframe).catch(function () {
+        /* The broker result retains its explicit fallback diagnostics. */
+      });
+    }
     this.emitChange('strategy:settings', { indicatorId: indicator.id, field: field });
   };
 

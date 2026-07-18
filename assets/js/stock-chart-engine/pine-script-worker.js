@@ -1,6 +1,6 @@
 /* Web Worker entry point for the Pine-compatible runtime. */
-importScripts('pine-backtest-engine.js?v=20260718.3');
-importScripts('pine-script-runtime.js?v=20260718.7');
+importScripts('pine-backtest-engine.js?v=20260718.4');
+importScripts('pine-script-runtime.js?v=20260718.8');
 self.PineScriptRuntime.setBacktestEngine(self.PineBacktestEngine);
 
 self.onmessage = function (event) {

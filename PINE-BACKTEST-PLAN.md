@@ -38,7 +38,7 @@ The implementation has now started replacing the original intent-only strategy p
 - `PINE-SCRIPT.md` documents the supported subset and explicitly calls out unsupported tick-level and lower-timeframe behavior.
 - The existing worker architecture is retained so strategy runs do not block chart interaction, and request revisions prevent stale results from overwriting a newer run.
 
-The remaining phases are deliberate fidelity work: fill-triggered/tick re-execution, lower-timeframe Bar Magnifier data loading, richer order tooltips and optional equity panes, broader capability metadata, and additional compatibility fixtures.
+The remaining phases are deliberate fidelity work: lower-timeframe Bar Magnifier endpoint loading, richer order tooltips and optional equity panes, broader capability metadata, and additional compatibility fixtures. The runtime now supports host-injected lower bars, bounded fill-triggered recalculation, and `request.security_lower_tf()` array results.
 
 The first implementation must replace intent recording with a deterministic event pipeline while keeping the current indicator runtime working unchanged.
 

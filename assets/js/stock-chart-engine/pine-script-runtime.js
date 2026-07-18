@@ -2086,7 +2086,7 @@
       return String(symbol) + '|' + String(timeframe) + '|' + expressionText;
     }
 
-    function requestSecurity(args, requestEnv, index) {
+    function requestSecurity(args, requestEnv, index, callNode) {
       var symbolValue = args[0] ? evaluate(args[0].value, requestEnv, index) : '';
       var timeframeValue = args[1] ? evaluate(args[1].value, requestEnv, index) : 'chart';
       var symbol = String(valueAt(symbolValue, index) == null ? '' : valueAt(symbolValue, index)).trim().toUpperCase();
@@ -2094,6 +2094,28 @@
       var expressionArgument = args[2] || args.filter(function (arg) { return arg.name === 'expression'; })[0];
       if (!expressionArgument) {
         throw new PineError('request.security() requires an expression argument.', 1, 1);
+      }
+      if (callNode && callNode.callee && callNode.callee.property === 'security_lower_tf') {
+        var lowerSymbol = symbol || String(options.symbol || '').trim().toUpperCase();
+        var lowerEntry = securityEntry(lowerSymbol);
+        var lowerSourceBars = lowerSymbol === String(options.symbol || '').trim().toUpperCase() && Array.isArray(options.backtestLowerTimeframeBars)
+          ? options.backtestLowerTimeframeBars
+          : securityBars(lowerEntry);
+        if (!Array.isArray(lowerSourceBars) || !lowerSourceBars.length || !bars[index]) return [];
+        var lowerFields = seriesEnvironment(lowerSourceBars, timeframe);
+        var lowerExpression = evaluate(expressionArgument.value, Object.keys(lowerFields).reduce(function (scope, field) {
+          scope[field] = lowerFields[field];
+          return scope;
+        }, Object.create(env)), 0);
+        var lowerStart = Number(bars[index].time);
+        var lowerEnd = index < bars.length - 1 ? Number(bars[index + 1].time) : Infinity;
+        var lowerValues = [];
+        for (var lowerIndex = 0; lowerIndex < lowerSourceBars.length; lowerIndex += 1) {
+          var lowerTime = Number(lowerSourceBars[lowerIndex] && lowerSourceBars[lowerIndex].time);
+          if (!Number.isFinite(lowerTime) || lowerTime < lowerStart || lowerTime >= lowerEnd) continue;
+          lowerValues.push(valueAt(lowerExpression, lowerIndex));
+        }
+        return lowerValues;
       }
       var key = securityExpressionKey(symbol, timeframe, expressionArgument.value);
       if (securitySeriesCache[key]) return securitySeriesCache[key];
@@ -2162,6 +2184,8 @@
       grossloss: strategyStateSeries('grossloss', 0),
       max_drawdown: strategyStateSeries('max_drawdown', 0),
       max_runup: strategyStateSeries('max_runup', 0),
+      margin_used: strategyStateSeries('margin_used', 0),
+      free_margin: strategyStateSeries('free_margin', initialCapital),
       entry: function (args) { return strategyOrder('entry', args, ['direction', 'quantity', 'limit', 'stop', 'oca_name', 'oca_type', 'comment']); },
       order: function (args) { return strategyOrder('order', args, ['direction', 'quantity', 'limit', 'stop', 'oca_name', 'oca_type', 'comment']); },
       exit: function (args) {
@@ -2204,6 +2228,9 @@
     env.strategy.closedtrades.profit = function (args) { var trade = backtestSession && backtestSession.closedTrades[Math.floor(Number(strategyScalar(args[0])) || 0)]; return trade ? trade.netProfit : 0; };
     var strategyBacktestOptions = {};
     Object.keys(options.backtest || {}).forEach(function (key) { strategyBacktestOptions[key] = options.backtest[key]; });
+    /* Lower-timeframe bars are injected by the host for this run only. They
+     * intentionally never enter the indicator's saved inputs or share URL. */
+    if (Array.isArray(options.backtestLowerTimeframeBars)) strategyBacktestOptions.lowerTimeframeBars = options.backtestLowerTimeframeBars;
     if (isStrategyScript) {
       var strategyDeclaration = (compiled.statements || []).filter(function (statement) {
         return statement.type === 'declaration' && statement.expression && statement.expression.callee && statement.expression.callee.name === 'strategy';
@@ -2641,13 +2668,27 @@
       };
     });
     if (backtestSession) {
-      for (var backtestIndex = 0; backtestIndex < bars.length; backtestIndex += 1) {
-        currentStrategyBarIndex = backtestIndex;
+      function executeStrategyPass(backtestIndex) {
         backtestPlotCallCursor = 0;
         backtestBarOrders = [];
-        strategyStateHistory[backtestIndex] = backtestSession.beginBar(backtestIndex);
         executeStatements(compiled.statements, env, backtestIndex);
         backtestSession.submit(backtestBarOrders, backtestIndex);
+        strategyStateHistory[backtestIndex] = backtestSession.snapshot();
+      }
+      for (var backtestIndex = 0; backtestIndex < bars.length; backtestIndex += 1) {
+        currentStrategyBarIndex = backtestIndex;
+        var executionsBeforeBar = backtestSession.executions.length;
+        strategyStateHistory[backtestIndex] = backtestSession.beginBar(backtestIndex);
+        var fillPasses = 0;
+        if (strategyBacktestOptions.calcOnOrderFills && backtestSession.executions.length > executionsBeforeBar) {
+          executeStrategyPass(backtestIndex);
+          fillPasses += 1;
+        }
+        executeStrategyPass(backtestIndex);
+        while (strategyBacktestOptions.calcOnOrderFills && fillPasses < 2 && backtestSession.executions.length > executionsBeforeBar) {
+          executeStrategyPass(backtestIndex);
+          fillPasses += 1;
+        }
         strategyStateHistory[backtestIndex] = backtestSession.endBar(backtestIndex);
       }
     } else {

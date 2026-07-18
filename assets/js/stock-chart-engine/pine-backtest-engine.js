@@ -81,7 +81,9 @@
       dateTo: input.dateTo == null ? null : number(input.dateTo, null),
       warmupBars: Math.max(0, Math.floor(number(input.warmupBars != null ? input.warmupBars : input.warmup_bars, 0))),
       symbol: String(input.symbol || ''),
-      timeframe: String(input.timeframe || '1D')
+      timeframe: String(input.timeframe || '1D'),
+      barMagnifier: input.barMagnifier === true || input.useBarMagnifier === true || input.use_bar_magnifier === true,
+      lowerTimeframe: String(input.lowerTimeframe || input.lower_timeframe || '')
     };
   }
 
@@ -109,6 +111,11 @@
   function createSession(settingsInput, barsInput) {
     var settings = normalizeSettings(settingsInput);
     var bars = normalizeBars(barsInput);
+    var lowerBarsInput = settingsInput && Array.isArray(settingsInput.lowerTimeframeBars) ? settingsInput.lowerTimeframeBars : [];
+    var lowerBars = normalizeBars(lowerBarsInput);
+    var lowerBarsByChart = bars.map(function () { return []; });
+    var barMagnifierFallbacks = [];
+    var barMagnifierFallbackKeys = Object.create(null);
     var pending = [];
     var executions = [];
     var closedTrades = [];
@@ -132,6 +139,16 @@
       seenTimes[String(time)] = true;
       previousTime = time;
     });
+    if (settings.barMagnifier && lowerBarsInput.length !== lowerBars.length) {
+      diagnostics.push({ type: 'bar-magnifier-data', message: 'Some lower-timeframe bars were ignored because they were missing a valid OHLC field.', orderId: null, barIndex: -1 });
+    }
+    if (settings.barMagnifier && lowerBars.length) {
+      var chartCursor = 0;
+      lowerBars.forEach(function (lowerBar) {
+        while (chartCursor < bars.length - 1 && lowerBar.time >= bars[chartCursor + 1].time) chartCursor += 1;
+        if (bars[chartCursor] && lowerBar.time >= bars[chartCursor].time) lowerBarsByChart[chartCursor].push(lowerBar);
+      });
+    }
     var state = {
       cash: settings.initialCapital,
       realizedGross: 0,
@@ -150,7 +167,9 @@
       wins: 0,
       losses: 0,
       grossProfit: 0,
-      grossLoss: 0
+      grossLoss: 0,
+      marginUsed: 0,
+      freeMargin: settings.initialCapital
     };
 
     function isEligible(index) {
@@ -185,14 +204,19 @@
       } else {
         state.positionAvgPrice = NaN;
       }
-      state.equity = settings.initialCapital + state.realizedGross - state.totalCommission + state.openProfit;
+      state.equity = state.cash + state.positionSize * bar.close;
       state.peakEquity = Math.max(state.peakEquity, state.equity);
       state.maxRunup = Math.max(state.maxRunup, state.equity - settings.initialCapital);
       state.maxDrawdown = Math.max(state.maxDrawdown, state.peakEquity - state.equity);
+      state.marginUsed = openTrades.reduce(function (total, trade) {
+        var marginRate = trade.direction > 0 ? settings.marginLong : settings.marginShort;
+        return total + Math.abs(bar.close * trade.quantity) * marginRate / 100;
+      }, 0);
+      state.freeMargin = state.equity - state.marginUsed;
     }
 
-    function snapshot() {
-      var last = visibleBar(state.currentBar);
+    function snapshot(executionBar) {
+      var last = executionBar || visibleBar(state.currentBar);
       if (last) markToMarket(last);
       return {
         initialCapital: settings.initialCapital,
@@ -210,7 +234,9 @@
         max_drawdown: state.maxDrawdown,
         max_runup: state.maxRunup,
         commission: state.totalCommission,
-        cash: state.cash
+        cash: state.cash,
+        margin_used: state.marginUsed,
+        free_margin: state.freeMargin
       };
     }
 
@@ -299,8 +325,8 @@
       });
     }
 
-    function applyFill(order, rawPrice, index, phase) {
-      var bar = visibleBar(index);
+    function applyFill(order, rawPrice, index, phase, executionBar) {
+      var bar = executionBar || visibleBar(index);
       var time = bar ? bar.time : index;
       var direction = normalizeDirection(order.direction);
       if (!direction && (order.type === 'close' || order.type === 'exit')) direction = state.positionSize >= 0 ? -1 : 1;
@@ -315,7 +341,7 @@
         order.status = 'rejected';
         return false;
       }
-      var snapshotBefore = snapshot();
+      var snapshotBefore = snapshot(bar);
       var quantity = order.quantity != null ? Math.abs(number(order.quantity, 0)) : orderQuantity(settings, order, price, snapshotBefore);
       if (order.quantity == null && Number.isFinite(order.qtyPercent)) quantity = Math.abs(state.positionSize) * Math.max(0, Math.min(100, order.qtyPercent)) / 100;
       if (!(quantity > 0)) {
@@ -361,6 +387,7 @@
         openTrade(order, direction, remaining, price, index, time, entryCommission);
         state.totalCommission += entryCommission;
       }
+      state.cash -= direction * price * quantity + commissionValue;
       state.totalSlippage += Math.abs(price - rawPrice) * quantity;
       executions.push({
         orderId: order.id || order.type,
@@ -372,6 +399,8 @@
         commission: commissionValue,
         barIndex: index,
         time: time,
+        executionBarIndex: executionBar && executionBar.index != null ? executionBar.index : null,
+        executionTime: time,
         phase: phase || 'open',
         reason: order.reason || order.type
       });
@@ -388,18 +417,18 @@
       return true;
     }
 
-    function shouldFillOnBar(order, bar, phase) {
+    function shouldFillOnBar(order, bar, phase, chartIndex) {
       if (!order || order.status !== 'pending') return false;
-      if (order.createdBarIndex >= bar.index && phase === 'open' && order.type === 'market') return false;
-      if (order.createdBarIndex > bar.index) return false;
+      if (order.createdBarIndex >= chartIndex && phase === 'open' && order.type === 'market') return false;
+      if (order.createdBarIndex > chartIndex) return false;
       return true;
     }
 
-    function fillPending(index, phase) {
-      var bar = visibleBar(index);
+    function fillPending(index, phase, executionBar) {
+      var bar = executionBar || visibleBar(index);
       if (!bar || !isEligible(index)) return;
       pending.slice().forEach(function (order) {
-        if (!shouldFillOnBar(order, bar, phase)) return;
+        if (!shouldFillOnBar(order, bar, phase, index)) return;
         if (order.trailing && Number.isFinite(order.trailOffset)) {
           var trailingDistance = order.trailOffset * settings.tickSize;
           if (!order.trailingActive) {
@@ -420,9 +449,27 @@
         var price = fillPrice(order, bar, phase);
         if (!Number.isFinite(price)) return;
         if (order.type === 'limit' && settings.limitVerificationTicks > 0 && Math.abs(price - number(order.limit, price)) < settings.limitVerificationTicks * settings.tickSize) return;
-        applyFill(order, price, index, phase);
+        applyFill(order, price, index, phase, bar);
         if (order.status !== 'pending') pending.splice(pending.indexOf(order), 1);
       });
+    }
+
+    function executionBarsFor(index) {
+      var mainBar = visibleBar(index);
+      if (!mainBar || !settings.barMagnifier) return mainBar ? [mainBar] : [];
+      var intrabars = lowerBarsByChart[index] || [];
+      if (intrabars.length) return intrabars;
+      if (!barMagnifierFallbackKeys[index]) {
+        barMagnifierFallbackKeys[index] = true;
+        barMagnifierFallbacks.push(index);
+        diagnostic('bar-magnifier-fallback', 'No lower-timeframe bars covered chart bar ' + index + '; the chart OHLC bar was used for fills.', null, index);
+      }
+      return [mainBar];
+    }
+
+    function lastExecutionBar(index) {
+      var executionBars = executionBarsFor(index);
+      return executionBars.length ? executionBars[executionBars.length - 1] : visibleBar(index);
     }
 
     function makeOrder(intent, index) {
@@ -513,14 +560,17 @@
         }
         var order = makeOrder(intent, index);
         pending.push(order);
-        if (settings.processOrdersOnClose && (order.type === 'market' || order.type === 'close')) fillPending(index, 'close');
+        if (settings.processOrdersOnClose && (order.type === 'market' || order.type === 'close')) fillPending(index, 'close', lastExecutionBar(index));
       });
     }
 
     function beginBar(index) {
       state.currentBar = index;
       state.currentTime = visibleBar(index) && visibleBar(index).time;
-      fillPending(index, 'open');
+      var executionBars = executionBarsFor(index);
+      executionBars.forEach(function (executionBar, executionIndex) {
+        fillPending(index, executionIndex === 0 ? 'open' : 'intrabar', executionBar);
+      });
       markToMarket(visibleBar(index));
       return snapshot();
     }
@@ -544,7 +594,9 @@
         closedtrades: current.closedtrades,
         opentrades: current.opentrades,
         max_drawdown: current.max_drawdown,
-        max_runup: current.max_runup
+        max_runup: current.max_runup,
+        margin_used: current.margin_used,
+        free_margin: current.free_margin
       });
       return current;
     }
@@ -558,6 +610,7 @@
       });
       var mean = returns.length ? returns.reduce(function (sum, value) { return sum + value; }, 0) / returns.length : 0;
       var variance = returns.length > 1 ? returns.reduce(function (sum, value) { return sum + Math.pow(value - mean, 2); }, 0) / (returns.length - 1) : 0;
+      var downsideVariance = returns.length ? returns.reduce(function (sum, value) { return sum + Math.pow(Math.min(0, value), 2); }, 0) / returns.length : 0;
       var longTrades = closedTrades.filter(function (trade) { return trade.direction === 'long'; });
       var shortTrades = closedTrades.filter(function (trade) { return trade.direction === 'short'; });
       var winning = closedTrades.filter(function (trade) { return trade.netProfit > 0; });
@@ -605,6 +658,9 @@
         openProfit: state.openProfit,
         averageBarsInTrade: closedTrades.length ? closedTrades.reduce(function (sum, trade) { return sum + trade.barsHeld; }, 0) / closedTrades.length : 0,
         sharpe: variance > 0 ? mean / Math.sqrt(variance) * Math.sqrt(returns.length || 1) : 0,
+        sortino: downsideVariance > 0 ? mean / Math.sqrt(downsideVariance) * Math.sqrt(returns.length || 1) : 0,
+        recoveryFactor: state.maxDrawdown > 0 ? net / state.maxDrawdown : 0,
+        calmar: state.maxDrawdown > 0 && settings.initialCapital > 0 ? (net / settings.initialCapital) / (state.maxDrawdown / settings.initialCapital) : 0,
         buyAndHoldPercent: bars.length && bars[0].close ? (bars[bars.length - 1].close / bars[0].close - 1) * 100 : 0,
         monthlyReturns: periodReturns('month'),
         yearlyReturns: periodReturns('year')
@@ -613,9 +669,24 @@
 
     function result() {
       markToMarket(visibleBar(state.currentBar));
+      var tradeNet = closedTrades.reduce(function (total, trade) { return total + number(trade.netProfit, 0); }, 0);
+      var closedGross = closedTrades.reduce(function (total, trade) { return total + number(trade.grossProfit, 0); }, 0);
+      var closedCommission = closedTrades.reduce(function (total, trade) { return total + number(trade.commission, 0); }, 0);
+      var expectedNet = closedGross - closedCommission;
+      if (Math.abs(tradeNet - expectedNet) > 1e-8) {
+        diagnostic('ledger-integrity', 'Closed-trade net profit does not reconcile with realized profit and costs.', null, state.currentBar);
+      }
+      var markedEquity = state.cash + state.positionSize * state.currentPrice;
+      if (Number.isFinite(markedEquity) && Math.abs(markedEquity - state.equity) > 1e-8) {
+        diagnostic('ledger-integrity', 'Equity does not reconcile with cash and the marked position value.', null, state.currentBar);
+      }
+      var config = {};
+      Object.keys(settings).forEach(function (key) { config[key] = settings[key]; });
+      config.lowerBarCount = lowerBars.length;
+      config.barMagnifierFallbacks = barMagnifierFallbacks.slice();
       return {
         engineVersion: VERSION,
-        config: settings,
+        config: config,
         executions: executions.slice(),
         trades: closedTrades.slice(),
         openTrades: openTrades.map(function (trade) {
@@ -633,8 +704,7 @@
       };
     }
 
-    if (settings.calcOnEveryTick) diagnostic('execution-mode', 'calc_on_every_tick is accepted, but historical bars are evaluated once per bar in this browser engine.', null, -1);
-    if (settings.calcOnOrderFills) diagnostic('execution-mode', 'calc_on_order_fills is accepted, but fill-triggered recalculation is not available in the current historical runtime.', null, -1);
+    if (settings.calcOnEveryTick) diagnostic('execution-mode', 'calc_on_every_tick is accepted, but historical chart bars are still the primary calculation boundary in this browser engine.', null, -1);
 
     return {
       version: VERSION,

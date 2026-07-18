@@ -392,6 +392,15 @@ if close < close[1]
 assert.strictEqual(declarationBacktestPreview.strategyBacktest.config.initialCapital, 500);
 assert.strictEqual(declarationBacktestPreview.strategyBacktest.config.defaultQtyType, 'cash');
 assert.strictEqual(declarationBacktestPreview.strategyBacktest.config.processOrdersOnClose, true);
+const fillRecalculationPreview = PineScriptRuntime.run(`strategy("Fill recalculation", process_orders_on_close=true, calc_on_order_fills=true)
+if bar_index == 0
+    strategy.entry("Immediate", strategy.long)
+plot(strategy.position_size, title="Position")`, backtestBars, {
+  backtest: { initialCapital: 1000 }
+});
+assert.ok(fillRecalculationPreview.strategyBacktest.executions.length >= 1);
+assert.ok(!fillRecalculationPreview.strategyBacktest.diagnostics.some((item) => item.message && item.message.indexOf('fill-triggered recalculation is not available') >= 0));
+assert.ok(fillRecalculationPreview.outputs.plot1[0].value > 0);
 const defaultQtyPreview = PineScriptRuntime.run(`strategy("Default quantity", default_qty_value=7)
 plot(strategy.default_entry_qty(strategy.long))`, backtestBars, {
   backtest: { initialCapital: 100000, defaultQtyValue: 1 }
@@ -418,6 +427,9 @@ const brokerResult = brokerSession.result();
 assert.strictEqual(brokerResult.trades.length, 1);
 assert.strictEqual(brokerResult.trades[0].exitPrice, 104);
 assert.strictEqual(brokerResult.pendingOrders.length, 0);
+assert.strictEqual(brokerResult.state.cash, 1004);
+assert.strictEqual(brokerResult.state.equity, 1004);
+assert.strictEqual(brokerResult.state.margin_used, 0);
 const trailingSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
   { time: 1, open: 100, high: 101, low: 99, close: 100 },
   { time: 2, open: 100, high: 102, low: 99, close: 101 },
@@ -433,6 +445,60 @@ trailingSession.beginBar(2);
 trailingSession.endBar(2);
 assert.strictEqual(trailingSession.result().trades.length, 1);
 assert.strictEqual(trailingSession.result().trades[0].exitReason, 'exit');
+const magnifierBars = [
+  { time: 0, open: 100, high: 102, low: 99, close: 101 },
+  { time: 60, open: 101, high: 103, low: 100, close: 102 },
+  { time: 120, open: 102, high: 106, low: 101, close: 105 }
+];
+const lowerTimeframeBars = [
+  { time: 0, open: 100, high: 101, low: 99, close: 100 },
+  { time: 30, open: 100, high: 101, low: 99, close: 101 },
+  { time: 60, open: 101, high: 102, low: 100, close: 101 },
+  { time: 90, open: 101, high: 102, low: 100, close: 102 },
+  { time: 120, open: 102, high: 103, low: 101, close: 102 },
+  { time: 150, open: 102, high: 106, low: 101, close: 105 }
+];
+const magnifierSession = PineBacktestEngine.createSession({
+  initialCapital: 1000,
+  defaultQtyValue: 1,
+  barMagnifier: true,
+  lowerTimeframe: '30S',
+  lowerTimeframeBars: lowerTimeframeBars
+}, magnifierBars);
+magnifierSession.beginBar(0);
+magnifierSession.submit([{ type: 'entry', id: 'MagnifiedLong', direction: 1, quantity: 1 }], 0);
+magnifierSession.endBar(0);
+magnifierSession.beginBar(1);
+magnifierSession.submit([{ type: 'exit', id: 'MagnifiedTarget', fromEntry: 'MagnifiedLong', limit: 106, qty_percent: 100 }], 1);
+magnifierSession.endBar(1);
+magnifierSession.beginBar(2);
+magnifierSession.endBar(2);
+const magnifierResult = magnifierSession.result();
+assert.strictEqual(magnifierResult.config.barMagnifier, true);
+assert.strictEqual(magnifierResult.config.lowerBarCount, lowerTimeframeBars.length);
+assert.strictEqual(magnifierResult.config.barMagnifierFallbacks.length, 0);
+assert.strictEqual(magnifierResult.trades.length, 1);
+assert.strictEqual(magnifierResult.trades[0].exitTime, 150);
+assert.strictEqual(magnifierResult.executions[1].executionBarIndex, 5);
+const lowerRequestPreview = PineScriptRuntime.run(`indicator("Lower data", overlay=false)
+lower = request.security_lower_tf(syminfo.tickerid, "30S", close)
+plot(array.size(lower), title="Lower bars")`, magnifierBars, {
+  symbol: 'TEST',
+  timeframe: '1M',
+  backtestLowerTimeframeBars: lowerTimeframeBars
+});
+assert.deepStrictEqual(lowerRequestPreview.outputs.plot1.map((point) => point.value), [2, 2, 2]);
+const fallbackSession = PineBacktestEngine.createSession({
+  initialCapital: 1000,
+  barMagnifier: true,
+  lowerTimeframe: '30S',
+  lowerTimeframeBars: [{ time: 0, open: 100, high: 101, low: 99, close: 100 }]
+}, magnifierBars);
+fallbackSession.beginBar(0);
+fallbackSession.endBar(0);
+fallbackSession.beginBar(1);
+fallbackSession.endBar(1);
+assert.ok(fallbackSession.result().diagnostics.some((item) => item.type === 'bar-magnifier-fallback'));
 const boundedSession = PineBacktestEngine.createSession({
   initialCapital: 1000,
   defaultQtyType: 'fixed',
