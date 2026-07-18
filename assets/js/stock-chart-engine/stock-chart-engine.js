@@ -4187,7 +4187,7 @@
         return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
       }).join('');
       var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
-      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>All listed entries run in this chart runtime.</p>';
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>Supported entries execute in this chart runtime; Reference entries are documented compatibility targets.</p>';
       return;
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
@@ -6874,7 +6874,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.4';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.5';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -7234,6 +7234,29 @@
     return '<div class="sce-strategy-metric"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>';
   };
 
+  Chart.prototype.strategyCurveHtml = function (label, points, colorClass, zeroBaseline) {
+    var values = (Array.isArray(points) ? points : []).filter(function (point) { return point && Number.isFinite(Number(point.value)); }).slice(-180);
+    if (!values.length) return '<div class="sce-strategy-curve"><div class="sce-strategy-curve-header"><strong>' + escapeHtml(label) + '</strong><span>No data</span></div></div>';
+    var numbers = values.map(function (point) { return Number(point.value); });
+    var minimum = zeroBaseline ? 0 : Math.min.apply(Math, numbers);
+    var maximum = Math.max.apply(Math, numbers);
+    if (!Number.isFinite(minimum)) minimum = 0;
+    if (!Number.isFinite(maximum)) maximum = minimum + 1;
+    if (maximum === minimum) maximum = minimum + 1;
+    var width = 640;
+    var height = 128;
+    var padding = 8;
+    var path = values.map(function (point, index) {
+      var x = values.length === 1 ? width / 2 : padding + index / (values.length - 1) * (width - padding * 2);
+      var y = height - padding - (Number(point.value) - minimum) / (maximum - minimum) * (height - padding * 2);
+      return (index ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
+    }).join(' ');
+    var latest = numbers[numbers.length - 1];
+    var baseline = zeroBaseline ? '<line x1="8" y1="' + (height - padding) + '" x2="632" y2="' + (height - padding) + '" class="is-baseline"></line>' : '';
+    return '<div class="sce-strategy-curve"><div class="sce-strategy-curve-header"><strong>' + escapeHtml(label) + '</strong><span>' + escapeHtml(formatNumber(latest)) + '</span></div>' +
+      '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="none" role="img" aria-label="' + escapeHtml(label) + '">' + baseline + '<path d="' + path + '" class="' + colorClass + '"></path></svg></div>';
+  };
+
   Chart.prototype.strategyDateLabel = function (time) {
     var value = Number(time);
     if (!Number.isFinite(value)) return '';
@@ -7266,11 +7289,11 @@
         this.strategyMetric('Win rate', formatNumber(metrics.winRatePercent) + '%') +
         this.strategyMetric('Ending equity', formatNumber(metrics.endingEquity)) +
         '</div>' +
-        '<div class="sce-strategy-equity-summary"><strong>Equity curve</strong><span>' + escapeHtml((result.equityCurve || []).length + ' bars') + '</span></div>' +
-        '<div class="sce-strategy-equity-strip">' + (result.equityCurve || []).slice(-120).map(function (point, index, points) {
-          var previous = index ? points[index - 1].value : point.value;
-          return '<i class="' + (point.value >= previous ? 'is-up' : 'is-down') + '" style="height:' + Math.max(3, Math.min(100, Math.abs(point.value - previous) * 2 + 8)) + '%"></i>';
-        }).join('') + '</div>';
+        '<div class="sce-strategy-curves">' +
+        this.strategyCurveHtml('Equity', result.equityCurve, 'is-equity', false) +
+        this.strategyCurveHtml('Drawdown', result.drawdownCurve, 'is-drawdown', true) +
+        '</div>' +
+        '<p class="sce-strategy-property-note">' + escapeHtml((result.equityCurve || []).length + ' bars calculated') + (result.diagnostics && result.diagnostics.length ? ', ' + result.diagnostics.length + ' diagnostic event(s)' : '') + '.</p>';
     } else if (view === 'performance') {
       var monthlyReturns = (metrics.monthlyReturns || []).slice(-12);
       var yearlyReturns = (metrics.yearlyReturns || []).slice(-8);
@@ -7390,7 +7413,8 @@
   Chart.prototype.showStrategyTooltip = function (execution, pointer) {
     if (!this.strategyTooltip || !execution || !pointer) return;
     var direction = execution.direction === 'long' ? 'Long' : 'Short';
-    this.strategyTooltip.innerHTML = '<strong>' + escapeHtml(direction + ' ' + execution.type) + '</strong>' +
+    var status = execution.status === 'pending' ? 'Pending ' : '';
+    this.strategyTooltip.innerHTML = '<strong>' + escapeHtml(status + direction + ' ' + execution.type) + '</strong>' +
       '<span>' + escapeHtml(String(execution.orderId || '')) + '</span>' +
       '<span>Qty ' + escapeHtml(formatNumber(execution.quantity)) + ' at ' + escapeHtml(formatNumber(execution.price)) + '</span>' +
       '<span>' + escapeHtml(this.strategyDateLabel(execution.time)) + (execution.reason ? ' · ' + escapeHtml(execution.reason) : '') + '</span>';
@@ -9080,6 +9104,22 @@
         ctx.moveTo(Math.max(rect.x, x - 10), y);
         ctx.lineTo(Math.min(rect.x + rect.width, x + 32), y);
         ctx.stroke();
+        self.strategyHitZones.push({
+          x: Math.max(rect.x, x - 12),
+          y: y - 8,
+          width: 44,
+          height: 16,
+          execution: {
+            orderId: order.id,
+            type: String(order.type || 'order') + ' pending',
+            direction: Number(order.direction) < 0 ? 'short' : 'long',
+            quantity: order.quantity,
+            price: price,
+            time: bar.time,
+            reason: order.reason || 'pending',
+            status: order.status || 'pending'
+          }
+        });
       });
     });
     ctx.setLineDash([]);
@@ -11526,6 +11566,16 @@
   // runtime. Reference-only language constructs remain explicitly marked;
   // executable API entries are promoted to Supported below.
   var PINE_EDITOR_REFERENCE_FUNCTIONS = [];
+  var PINE_EDITOR_CAPABILITIES = Object.create(null);
+  function setPineCapability(names, status, note) {
+    (names || []).forEach(function (name) {
+      PINE_EDITOR_CAPABILITIES[name] = { status: status, note: note || '' };
+      if (PINE_EDITOR_SIGNATURES[name]) {
+        PINE_EDITOR_SIGNATURES[name].status = status;
+        if (note) PINE_EDITOR_SIGNATURES[name].supportNote = note;
+      }
+    });
+  }
   function pineReferenceParameters(names) {
     return (names || []).map(function (name) {
       return { name: name, description: 'Parameter documented by TradingView for this function.' };
@@ -11639,9 +11689,14 @@
     ['barstate.ishistory', 'Whether the current bar is historical.'], ['barstate.islast', 'Whether this is the last chart bar.'],
     ['barstate.islastconfirmedhistory', 'Whether this is the last confirmed historical bar.'], ['barstate.isnew', 'Whether this is a new bar.'],
     ['barstate.isrealtime', 'Whether the current bar is realtime.'], ['strategy.equity', 'Strategy equity series.'],
+    ['strategy.netprofit', 'Cumulative realized net profit after costs.'], ['strategy.openprofit', 'Open position profit at the current bar.'],
     ['strategy.initial_capital', 'Strategy initial capital.'], ['strategy.position_size', 'Open position size.'],
     ['strategy.position_avg_price', 'Average open position price.'], ['strategy.wintrades', 'Number of winning trades.'],
-    ['strategy.losstrades', 'Number of losing trades.'], ['color.red', 'Named red color.'], ['color.green', 'Named green color.'],
+    ['strategy.losstrades', 'Number of losing trades.'], ['strategy.closedtrades', 'Number of closed trades.'],
+    ['strategy.opentrades', 'Number of open trades.'], ['strategy.grossprofit', 'Gross profit before costs.'],
+    ['strategy.grossloss', 'Gross loss before costs.'], ['strategy.max_drawdown', 'Maximum equity drawdown.'],
+    ['strategy.max_runup', 'Maximum equity run-up.'], ['strategy.margin_used', 'Margin currently used by open positions.'],
+    ['strategy.free_margin', 'Equity available after margin.'], ['color.red', 'Named red color.'], ['color.green', 'Named green color.'],
     ['color.blue', 'Named blue color.'], ['color.orange', 'Named orange color.'], ['color.yellow', 'Named yellow color.'],
     ['color.purple', 'Named purple color.'], ['color.white', 'Named white color.'], ['color.black', 'Named black color.']
   ];
@@ -11693,19 +11748,15 @@
   refinePineReferenceSignature('array.push', 'array.push(id, value)', ['id', 'value']);
   refinePineReferenceSignature('map.put', 'map.put(id, key, value)', ['id', 'key', 'value']);
 
-  PINE_EDITOR_REFERENCE_FUNCTIONS.forEach(function (name) {
-    var definition = PINE_EDITOR_SIGNATURES[name];
-    if (definition) definition.status = 'Supported';
-  });
-  [
-    'input.int', 'input.float', 'input.bool', 'input.string', 'input.source', 'input.color', 'request.security',
-    'ta.rma', 'ta.wma', 'ta.highest', 'ta.lowest', 'ta.change', 'ta.roc', 'ta.sum', 'ta.stdev',
-    'ta.crossover', 'ta.crossunder', 'math.pow', 'math.sqrt', 'math.log', 'math.log10', 'math.round',
-    'math.floor', 'math.ceil', 'math.abs', 'math.max', 'math.min', 'color.new', 'color.rgb', 'alertcondition',
-    'line.new', 'label.new', 'box.new'
-  ].forEach(function (name) {
-    if (PINE_EDITOR_SIGNATURES[name]) PINE_EDITOR_SIGNATURES[name].status = 'Supported';
-  });
+  setPineCapability(PINE_EDITOR_REFERENCE_FUNCTIONS, 'Supported', 'Executed by the browser runtime for the documented compatibility subset.');
+  setPineCapability([
+    'strategy.risk.allow_entry_in', 'strategy.convert_to_account', 'strategy.convert_to_symbol',
+    'linefill.new', 'linefill.delete', 'linefill.get_line1', 'linefill.get_line2', 'polyline.new', 'polyline.delete',
+    'polyline.copy', 'table.new', 'table.cell', 'table.cell_set_text', 'table.cell_set_bgcolor',
+    'table.cell_set_text_color', 'table.cell_set_text_size', 'table.clear', 'table.delete', 'table.get_position',
+    'table.set_position', 'request.currency_rate', 'request.dividends', 'request.earnings', 'request.financial',
+    'request.quandl', 'request.seed', 'request.splits'
+  ], 'Reference', 'The name is documented, but this runtime does not yet provide TradingView-equivalent execution for it.');
   var PINE_EDITOR_COMPLETIONS = [
     { value: 'indicator', label: 'Declare an indicator' },
     { value: 'strategy', label: 'Declare a strategy' },
@@ -11765,7 +11816,8 @@
       signature: definition.signature,
       description: definition.description,
       parameters: definition.parameters,
-      status: definition.status || 'Supported'
+      status: definition.status || 'Supported',
+      supportNote: definition.supportNote || ''
     };
   }).concat([
     { name: 'strategy', type: 'Function', category: 'function', signature: 'strategy(title, shorttitle, overlay, ...)', description: 'Declares a strategy script for the browser historical broker emulator. It does not place real broker orders.', status: 'Supported', example: 'strategy("My strategy", overlay=true)' },

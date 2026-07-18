@@ -2430,7 +2430,36 @@
     env.box = { new: boxNewFunction, delete: removeDrawing, copy: copyDrawing, get_left: objectGetter('left'), get_top: objectGetter('top'), get_right: objectGetter('right'), get_bottom: objectGetter('bottom'), set_left: objectSetter('left'), set_top: objectSetter('top'), set_right: objectSetter('right'), set_bottom: objectSetter('bottom'), set_bgcolor: objectSetter('background'), set_border_color: objectSetter('borderColor'), set_border_style: objectSetter('borderStyle'), set_border_width: objectSetter('borderWidth'), set_text: objectSetter('text'), set_text_color: objectSetter('textColor'), set_text_size: objectSetter('textSize'), set_text_halign: objectSetter('textHalign'), set_text_valign: objectSetter('textValign') };
     env.linefill = { new: function (args) { var fill = { type: 'linefill', line1: args[0], line2: args[1], color: args[2] || '#2563eb' }; pineDrawings.push(fill); return fill; }, delete: removeDrawing, get_line1: objectGetter('line1'), get_line2: objectGetter('line2') };
     env.polyline = { new: function (args) { var polyline = { type: 'polyline', points: args[0] || [], color: args.named && args.named.line_color || args[1] || '#2563eb', width: args.named && args.named.line_width || 2 }; pineDrawings.push(polyline); return polyline; }, delete: removeDrawing, copy: copyDrawing };
-    env.table = { new: function (args) { var table = { type: 'table', position: args[0], columns: Math.max(1, Number(args[1]) || 1), rows: Math.max(1, Number(args[2]) || 1), cells: {} }; pineDrawings.push(table); return table; }, cell: function (args) { if (args[0]) args[0].cells[String(args[1]) + ':' + String(args[2])] = { text: args[3], bgcolor: args[4], textColor: args[5] }; return args[0]; }, cell_set_text: function (args) { if (args[0] && args[0].cells[String(args[1]) + ':' + String(args[2])]) args[0].cells[String(args[1]) + ':' + String(args[2])].text = args[3]; return args[0]; }, cell_set_bgcolor: function (args) { return args[0]; }, cell_set_text_color: function (args) { return args[0]; }, cell_set_text_size: function (args) { return args[0]; }, clear: function (args) { if (args[0]) args[0].cells = {}; return args[0]; }, delete: removeDrawing, get_position: objectGetter('position'), set_position: objectSetter('position') };
+    function tableCell(table, column, row) {
+      if (!table || !table.cells) return null;
+      var key = String(column) + ':' + String(row);
+      if (!table.cells[key]) table.cells[key] = {};
+      return table.cells[key];
+    }
+    env.table = {
+      new: function (args) {
+        var table = { type: 'table', position: args[0], columns: Math.max(1, Number(args[1]) || 1), rows: Math.max(1, Number(args[2]) || 1), cells: {} };
+        pineDrawings.push(table);
+        return table;
+      },
+      cell: function (args) {
+        var cell = tableCell(args[0], args[1], args[2]);
+        if (cell) {
+          cell.text = args[3];
+          cell.bgcolor = args[4];
+          cell.textColor = args[5];
+        }
+        return args[0];
+      },
+      cell_set_text: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.text = args[3]; return args[0]; },
+      cell_set_bgcolor: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.bgcolor = args[3]; return args[0]; },
+      cell_set_text_color: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.textColor = args[3]; return args[0]; },
+      cell_set_text_size: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.textSize = args[3]; return args[0]; },
+      clear: function (args) { if (args[0]) args[0].cells = {}; return args[0]; },
+      delete: removeDrawing,
+      get_position: objectGetter('position'),
+      set_position: objectSetter('position')
+    };
     env.shape = { circle: 'circle', square: 'square', diamond: 'diamond', triangleup: 'triangleup', triangledown: 'triangledown', cross: 'cross', xcross: 'xcross' };
     env.location = { abovebar: 'abovebar', belowbar: 'belowbar', top: 'top', bottom: 'bottom', absolute: 'absolute' };
     env.size = { tiny: 'tiny', small: 'small', normal: 'normal', large: 'large', huge: 'huge' };

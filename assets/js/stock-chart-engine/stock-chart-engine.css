@@ -2395,6 +2395,66 @@
   background: #ef4444;
 }
 
+.sce-strategy-curves {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sce-strategy-curve {
+  border: 1px solid var(--sce-border);
+  border-radius: 5px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.sce-strategy-curve-header {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.sce-strategy-curve-header span {
+  color: var(--sce-muted);
+  font-size: 11px;
+}
+
+.sce-strategy-curve svg {
+  display: block;
+  height: 92px;
+  width: 100%;
+}
+
+.sce-strategy-curve path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.sce-strategy-curve path.is-equity {
+  stroke: #2563eb;
+}
+
+.sce-strategy-curve path.is-drawdown {
+  stroke: #dc2626;
+}
+
+.sce-strategy-curve .is-baseline {
+  stroke: var(--sce-border);
+  stroke-dasharray: 4 4;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-strategy-curve path.is-equity {
+  stroke: #60a5fa;
+}
+
+.sce-root[data-sce-theme="dark"] .sce-strategy-curve path.is-drawdown {
+  stroke: #f87171;
+}
+
 .sce-strategy-performance-table {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

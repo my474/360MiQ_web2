@@ -488,6 +488,15 @@ plot(array.size(lower), title="Lower bars")`, magnifierBars, {
   backtestLowerTimeframeBars: lowerTimeframeBars
 });
 assert.deepStrictEqual(lowerRequestPreview.outputs.plot1.map((point) => point.value), [2, 2, 2]);
+const tablePreview = PineScriptRuntime.run(`indicator("Table mutation", overlay=false)
+t = table.new("top_right", 1, 1)
+table.cell(t, 0, 0, "A")
+table.cell_set_text(t, 0, 0, "B")
+table.cell_set_bgcolor(t, 0, 0, color.blue)
+table.cell_set_text_color(t, 0, 0, color.white)`, backtestBars);
+assert.strictEqual(tablePreview.drawings[0].cells['0:0'].text, 'B');
+assert.strictEqual(tablePreview.drawings[0].cells['0:0'].bgcolor, '#2563eb');
+assert.strictEqual(tablePreview.drawings[0].cells['0:0'].textColor, '#ffffff');
 const fallbackSession = PineBacktestEngine.createSession({
   initialCapital: 1000,
   barMagnifier: true,
@@ -897,6 +906,13 @@ pineDocsFilter.value = 'function';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.ok(pineDocsList.innerHTML.includes('ta.supertrend'));
 assert.strictEqual(pineDocsList.innerHTML.includes('Supported'), false);
+pineDocsSearch.value = 'request.currency_rate';
+pineDocsFilter.value = 'function';
+chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
+assert.ok(pineDocsList.innerHTML.includes('Reference'));
+pineDocsSearch.value = 'ta.ema';
+chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
+assert.strictEqual(pineDocsList.innerHTML.includes('Reference'), false);
 pineDocsFilter.value = 'syntax';
 chart.renderPineDocumentation('', pineDocsFilter.value);
 assert.strictEqual(pineDocsList.innerHTML.includes('import / export'), false);
