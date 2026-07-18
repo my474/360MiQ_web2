@@ -7294,7 +7294,7 @@
 
   Chart.prototype.strategyDiagnosticSeverity = function (item) {
     var type = String(item && item.type || '').toLowerCase();
-    if (['data', 'data-geometry', 'data-order', 'data-basis', 'data-gap', 'duplicate-time', 'bar-magnifier-data', 'bar-magnifier-fallback', 'execution-mode', 'ledger-integrity'].indexOf(type) !== -1) return 'warning';
+    if (['data', 'data-geometry', 'data-order', 'data-basis', 'data-gap', 'duplicate-time', 'bar-magnifier-data', 'bar-magnifier-fallback', 'execution-mode', 'ledger-integrity', 'same-bar-ambiguity'].indexOf(type) !== -1) return 'warning';
     if (['risk', 'risk-halt', 'margin', 'invalid-order', 'invalid-price', 'invalid-quantity', 'date-range', 'limit', 'pyramiding'].indexOf(type) !== -1) return 'event';
     return 'info';
   };
@@ -7302,8 +7302,9 @@
   Chart.prototype.strategyAssumptionsHtml = function (result) {
     var assumptions = result && result.assumptions || {};
     var quality = result && result.dataQuality || {};
+    var ambiguityCount = Array.isArray(result && result.sameBarAmbiguities) ? result.sameBarAmbiguities.length : 0;
     var qualitySummary = Number.isFinite(Number(quality.inputBars)) ? 'Data quality: ' + String(quality.validBars || 0) + '/' + String(quality.inputBars || 0) + ' valid bars, ' + String(quality.largeCalendarGaps && quality.largeCalendarGaps.length || 0) + ' large calendar gap(s), ' + String(quality.priceBasis || 'unspecified') + ' prices, ' + String(quality.timezone || 'UTC') + '.' : '';
-    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + '</section>';
+    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small><small>Ambiguous daily bars: ' + escapeHtml(String(ambiguityCount)) + '.</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + '</section>';
   };
 
   Chart.prototype.strategyCurveHtml = function (label, points, colorClass, zeroBaseline) {
@@ -7499,7 +7500,6 @@
         '<label>Date to<input type="date" data-sce-backtest-field="dateTo" value="' + escapeHtml(dateTo) + '"></label>' +
         '<label>Warm-up bars<input type="number" min="0" step="1" data-sce-backtest-field="warmupBars" value="' + escapeHtml(config.warmupBars) + '"></label>' +
         '<label>Lower timeframe<input type="text" placeholder="e.g. 5" data-sce-backtest-field="lowerTimeframe" value="' + escapeHtml(config.lowerTimeframe || '') + '"></label>' +
-        '<label>Fill model<select data-sce-backtest-field="fillMode"><option value="ohlc"' + (config.fillMode === 'ohlc' ? ' selected' : '') + '>OHLC bars</option><option value="next_open"' + (config.fillMode === 'next_open' ? ' selected' : '') + '>Next open</option></select></label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="barMagnifier"' + (config.barMagnifier ? ' checked' : '') + '> Use lower-timeframe fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="processOrdersOnClose"' + (config.processOrdersOnClose ? ' checked' : '') + '> Process orders on close</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnOrderFills"' + (config.calcOnOrderFills ? ' checked' : '') + '> Recalculate after order fills</label>' +

@@ -38,7 +38,7 @@ The implementation has now started replacing the original intent-only strategy p
 - `PINE-SCRIPT.md` documents the supported subset and explicitly calls out unsupported tick-level and lower-timeframe behavior.
 - The existing worker architecture is retained so strategy runs do not block chart interaction, and request revisions prevent stale results from overwriting a newer run.
 
-The remaining phases are deliberate fidelity work: lower-timeframe Bar Magnifier endpoint loading, broader compatibility fixtures, and deeper TradingView object parity. The runtime supports host-injected lower bars, bounded fill-triggered recalculation, `request.security_lower_tf()` array results, a conservative executable/reference capability registry, Strategy Tester equity and drawdown curves, and interactive pending-order/fill details.
+The EOD portion is implemented: daily OHLC execution uses the documented open-nearest-extreme path, next-open market timing, gap-aware fills, explicit same-bar stop/target ambiguity diagnostics, and Strategy Tester assumptions metadata. The remaining phases are deliberate fidelity work: lower-timeframe Bar Magnifier endpoint loading, broader compatibility fixtures, and deeper TradingView object parity. The runtime supports host-injected lower bars, bounded fill-triggered recalculation, `request.security_lower_tf()` array results, a conservative executable/reference capability registry, Strategy Tester equity and drawdown curves, and interactive pending-order/fill details.
 
 The first implementation must replace intent recording with a deterministic event pipeline while keeping the current indicator runtime working unchanged.
 

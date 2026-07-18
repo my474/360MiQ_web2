@@ -11,8 +11,9 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.3.0';
+  var VERSION = '0.3.1';
   var INTRABAR_PATH_POLICY = 'open-nearest-extreme';
+  var EOD_FILL_MODE = 'ohlc';
 
   function number(value, fallback) {
     if (value == null || value === '') return fallback;
@@ -77,6 +78,8 @@
     if (['fixed', 'cash', 'percent_of_equity'].indexOf(orderQtyType) === -1) orderQtyType = 'fixed';
     var directionMode = String(input.directionMode || input.direction_mode || 'both').toLowerCase();
     if (['both', 'long', 'short'].indexOf(directionMode) === -1) directionMode = 'both';
+    var fillMode = String(input.fillMode || input.fill_mode || EOD_FILL_MODE).toLowerCase();
+    if (fillMode !== EOD_FILL_MODE) fillMode = EOD_FILL_MODE;
     return {
       initialCapital: positive(input.initialCapital != null ? input.initialCapital : input.initial_capital, 100000),
       currency: String(input.currency || 'USD'),
@@ -96,7 +99,7 @@
       processOrdersOnClose: input.processOrdersOnClose === true || input.process_orders_on_close === true,
       calcOnOrderFills: input.calcOnOrderFills === true || input.calc_on_order_fills === true,
       calcOnEveryTick: input.calcOnEveryTick === true || input.calc_on_every_tick === true,
-      fillMode: String(input.fillMode || input.fill_mode || 'ohlc').toLowerCase(),
+      fillMode: fillMode,
       limitVerificationTicks: Math.max(0, number(input.limitVerificationTicks != null ? input.limitVerificationTicks : input.backtest_fill_limits_assumption, 0)),
       dateFrom: input.dateFrom == null ? null : number(input.dateFrom, null),
       dateTo: input.dateTo == null ? null : number(input.dateTo, null),
@@ -143,6 +146,8 @@
     var closedTrades = [];
     var openTrades = [];
     var diagnostics = [];
+    var sameBarAmbiguities = [];
+    var sameBarAmbiguityKeys = Object.create(null);
     var equityCurve = [];
     var drawdownCurve = [];
     var buyAndHoldCurve = [];
@@ -285,8 +290,10 @@
       return true;
     }
 
-    function diagnostic(type, message, order, index) {
-      diagnostics.push({ type: type, message: message, orderId: order && order.id || null, barIndex: index == null ? state.currentBar : index });
+    function diagnostic(type, message, order, index, details) {
+      var item = { type: type, message: message, orderId: order && order.id || null, barIndex: index == null ? state.currentBar : index };
+      if (details) item.details = details;
+      diagnostics.push(item);
     }
 
     function visibleBar(index) {
@@ -539,6 +546,56 @@
       return Number.POSITIVE_INFINITY;
     }
 
+    function orderLabel(order) {
+      return String(order && (order.displayId || order.id || order.type) || 'order');
+    }
+
+    function isExitPriceOrder(order) {
+      return !!order && order.status === 'pending' && (order.kind === 'exit' || order.reduceOnly || order.fromEntry) && (order.type === 'limit' || order.type === 'stop');
+    }
+
+    function sameExitGroup(left, right) {
+      if (left.ocaName && right.ocaName && left.ocaName === right.ocaName) return true;
+      return !!(left.fromEntry && right.fromEntry && left.fromEntry === right.fromEntry && left.reduceOnly && right.reduceOnly);
+    }
+
+    function recordSameBarAmbiguities(index, bar) {
+      if (!bar || !isEligible(index)) return;
+      var candidates = pending.filter(function (order) {
+        return isExitPriceOrder(order) && shouldFillOnBar(order, bar, 'intrabar', index) && Number.isFinite(intrabarTriggerIndex(order, bar));
+      });
+      for (var leftIndex = 0; leftIndex < candidates.length; leftIndex += 1) {
+        for (var rightIndex = leftIndex + 1; rightIndex < candidates.length; rightIndex += 1) {
+          var left = candidates[leftIndex];
+          var right = candidates[rightIndex];
+          if (left.type === right.type || !sameExitGroup(left, right)) continue;
+          var pair = [orderLabel(left), orderLabel(right)].sort();
+          var key = String(index) + '|' + pair.join('|');
+          if (sameBarAmbiguityKeys[key]) continue;
+          sameBarAmbiguityKeys[key] = true;
+          var leftTrigger = intrabarTriggerIndex(left, bar);
+          var rightTrigger = intrabarTriggerIndex(right, bar);
+          var first = leftTrigger <= rightTrigger ? left : right;
+          var second = first === left ? right : left;
+          var path = inferredIntrabarPath(bar);
+          var firstKind = first.type === 'stop' ? 'stop' : 'target';
+          var secondKind = second.type === 'stop' ? 'stop' : 'target';
+          var sameSegment = leftTrigger === rightTrigger;
+          var message = 'Daily bar touched both ' + firstKind + ' ' + orderLabel(first) + ' and ' + secondKind + ' ' + orderLabel(second) + '; ' + firstKind + ' fills first under the ' + path.join(' -> ') + ' path' + (sameSegment ? ' (same path segment, submission order used).' : '.');
+          var details = {
+            path: path.slice(),
+            orders: [
+              { id: orderLabel(left), type: left.type, triggerIndex: leftTrigger },
+              { id: orderLabel(right), type: right.type, triggerIndex: rightTrigger }
+            ],
+            selectedFirst: orderLabel(first)
+          };
+          sameBarAmbiguities.push({ barIndex: index, time: bar.time, path: path.slice(), selectedFirst: orderLabel(first), orders: details.orders });
+          diagnostic('same-bar-ambiguity', message, first, index, details);
+        }
+      }
+    }
+
     function fillPrice(order, bar, phase) {
       if (!bar) return NaN;
       if (order.type === 'market' || order.type === 'close') return phase === 'close' ? bar.close : bar.open;
@@ -778,6 +835,7 @@
     function fillPending(index, phase, executionBar) {
       var bar = executionBar || visibleBar(index);
       if (!bar || !isEligible(index)) return;
+      if (executionBar === visibleBar(index)) recordSameBarAmbiguities(index, bar);
       pending.slice().sort(function (left, right) {
         return intrabarTriggerIndex(left, bar) - intrabarTriggerIndex(right, bar);
       }).forEach(function (order) {
@@ -1112,6 +1170,8 @@
       var config = {};
       Object.keys(settings).forEach(function (key) { config[key] = settings[key]; });
       config.intrabarPathPolicy = INTRABAR_PATH_POLICY;
+      config.executionMode = settings.barMagnifier && lowerBars.length ? 'lower-timeframe' : 'eod-ohlc';
+      config.sameBarAmbiguityCount = sameBarAmbiguities.length;
       config.lowerBarCount = lowerBars.length;
       config.barMagnifierFallbacks = barMagnifierFallbacks.slice();
       return {
@@ -1119,9 +1179,11 @@
         config: config,
         assumptions: {
           data: 'End-of-day OHLCV bars',
+          executionMode: config.executionMode,
+          fillMode: EOD_FILL_MODE,
           intrabarPath: INTRABAR_PATH_POLICY,
           intrabarPathDescription: 'When no lower-timeframe bars are supplied, the emulator infers open to high to low to close when the high is closer to the open; otherwise it infers open to low to high to close.',
-          sameBarStopTarget: 'If a daily candle touches both a stop and a target, the first level touched along the inferred path fills first. OCA siblings are then cancelled or reduced according to their OCA rule.',
+          sameBarStopTarget: 'If a daily candle touches both a stop and a target, the first level touched along the inferred path fills first. The run emits a same-bar-ambiguity warning, and OCA siblings are then cancelled or reduced according to their OCA rule.',
           gapFill: 'If a price order is crossed between the previous close and the current open, it fills at the current open rather than at the requested level.',
           lowerTimeframeOverride: 'Host-supplied lower-timeframe bars override the inferred path for covered chart bars.'
         },
@@ -1134,6 +1196,7 @@
           return copy;
         }),
         pendingOrders: pending.slice(),
+        sameBarAmbiguities: sameBarAmbiguities.slice(),
         risk: {
           halted: risk.halted,
           haltReason: risk.haltReason,

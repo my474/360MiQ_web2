@@ -489,6 +489,8 @@ assert.strictEqual(brokerResult.state.cash, 1004);
 assert.strictEqual(brokerResult.state.equity, 1004);
 assert.strictEqual(brokerResult.state.margin_used, 0);
 assert.strictEqual(brokerResult.assumptions.intrabarPath, 'open-nearest-extreme');
+assert.strictEqual(brokerResult.config.executionMode, 'eod-ohlc');
+assert.strictEqual(brokerResult.config.fillMode, 'ohlc');
 assert.ok(brokerResult.assumptions.sameBarStopTarget.indexOf('first level touched') >= 0);
 function runSameBarBracket(bar) {
   const session = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
@@ -512,9 +514,24 @@ function runSameBarBracket(bar) {
 const targetFirstBracket = runSameBarBracket({ time: 3, open: 103, high: 110, low: 90, close: 105, volume: 1 });
 assert.strictEqual(targetFirstBracket.trades[0].exitId, 'Target');
 assert.strictEqual(targetFirstBracket.trades[0].exitPrice, 110);
+assert.strictEqual(targetFirstBracket.sameBarAmbiguities.length, 1);
+assert.ok(targetFirstBracket.diagnostics.some((item) => item.type === 'same-bar-ambiguity' && item.message.indexOf('Target') >= 0));
 const stopFirstBracket = runSameBarBracket({ time: 3, open: 97, high: 110, low: 90, close: 95, volume: 1 });
 assert.strictEqual(stopFirstBracket.trades[0].exitId, 'Stop');
 assert.strictEqual(stopFirstBracket.trades[0].exitPrice, 90);
+assert.strictEqual(stopFirstBracket.sameBarAmbiguities.length, 1);
+assert.ok(stopFirstBracket.diagnostics.some((item) => item.type === 'same-bar-ambiguity' && item.message.indexOf('Stop') >= 0));
+const gapLimitSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100 },
+  { time: 2, open: 95, high: 98, low: 94, close: 97 }
+]);
+gapLimitSession.beginBar(0);
+gapLimitSession.submit([{ type: 'order', id: 'GapLimit', direction: 1, limit: 99, quantity: 1 }], 0);
+gapLimitSession.endBar(0);
+gapLimitSession.beginBar(1);
+gapLimitSession.endBar(1);
+assert.strictEqual(gapLimitSession.result().executions[0].price, 95);
+assert.strictEqual(gapLimitSession.result().executions[0].phase, 'open');
 const qualitySession = PineBacktestEngine.createSession({ initialCapital: 1000 }, [
   { time: 1, open: 100, high: 102, low: 99, close: 101, adjusted: true, splitFactor: 2 },
   { time: 2, open: 101, high: 103, low: 100, close: 102, dividend: 1 },
@@ -710,6 +727,7 @@ assert.strictEqual(chart.openStrategyTester(), true);
 assert.strictEqual(chart.strategyTesterPopup.hasAttribute('hidden'), false);
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Strategy Tester'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('EOD fill policy'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Ambiguous daily bars'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Completed'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('data-sce-strategy-export="csv"'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Buy &amp; hold'));
