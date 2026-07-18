@@ -1350,7 +1350,8 @@
 }
 
 .sce-pine-docs-filters select {
-  flex: 0 0 120px;
+  flex: 0 0 205px;
+  white-space: nowrap;
 }
 
 .sce-pine-docs-content {
