@@ -2242,6 +2242,7 @@
     this.indicatorResults = {};
     this.paneRects = [];
     this.legendHitZones = [];
+    this.strategyHitZones = [];
     this.scaleHitZones = [];
     this.scaleDragHitZones = [];
     this.paneControlHitZones = [];
@@ -2414,6 +2415,9 @@
     this.strategyTesterPopup = document.createElement('div');
     this.strategyTesterPopup.className = 'sce-strategy-tester';
     this.strategyTesterPopup.setAttribute('hidden', 'hidden');
+    this.strategyTooltip = document.createElement('div');
+    this.strategyTooltip.className = 'sce-strategy-tooltip';
+    this.strategyTooltip.setAttribute('hidden', 'hidden');
     this.latestMarker = document.createElement('button');
     this.latestMarker.className = 'sce-latest-marker';
     this.latestMarker.type = 'button';
@@ -2430,6 +2434,7 @@
     this.canvasWrap.appendChild(this.canvas);
     this.canvasWrap.appendChild(this.settingsPopup);
     this.canvasWrap.appendChild(this.strategyTesterPopup);
+    this.canvasWrap.appendChild(this.strategyTooltip);
     this.canvasWrap.appendChild(this.paneControlsLayer);
     this.canvasWrap.appendChild(this.drawingToolsLayer);
     this.canvasWrap.appendChild(this.latestMarker);
@@ -2676,6 +2681,7 @@
       self.pointer = null;
       self.hoverDrawingId = null;
       self.hoverPaneResize = null;
+      self.hideStrategyTooltip();
       self.draw();
     });
     this.canvas.addEventListener('click', function (event) {
@@ -6448,6 +6454,11 @@
       openSettingsOnTap: false
     };
     if (this.hitTestPaneControl(this.pointer)) return;
+    var strategyHit = this.hitTestStrategyExecution(this.pointer);
+    if (strategyHit) {
+      this.focusStrategyExecution(strategyHit.execution);
+      return;
+    }
     var paneResizeHit = this.hitTestPaneResize(this.pointer);
     if (paneResizeHit) {
       this.tapState = null;
@@ -6537,13 +6548,17 @@
     }
     var hit = this.hitTestDrawing(this.pointer);
     var paneResizeHit = this.hitTestPaneResize(this.pointer);
+    var strategyHit = this.hitTestStrategyExecution(this.pointer);
     this.hoverDrawingId = hit ? hit.drawing.id : null;
     this.hoverPaneResize = paneResizeHit ? {
       upperPaneId: paneResizeHit.upperPaneId,
       lowerPaneId: paneResizeHit.lowerPaneId
     } : null;
+    if (strategyHit) this.showStrategyTooltip(strategyHit.execution, this.pointer);
+    else this.hideStrategyTooltip();
     if (paneResizeHit) this.canvas.style.cursor = 'ns-resize';
     else if (this.hitTestPaneControl(this.pointer)) this.canvas.style.cursor = 'pointer';
+    else if (strategyHit) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestLegend(this.pointer)) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestScaleMode(this.pointer)) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestScaleDrag(this.pointer)) this.canvas.style.cursor = 'ns-resize';
@@ -7359,6 +7374,31 @@
     this.draw();
   };
 
+  Chart.prototype.hitTestStrategyExecution = function (pointer) {
+    if (!pointer) return null;
+    for (var index = this.strategyHitZones.length - 1; index >= 0; index -= 1) {
+      var zone = this.strategyHitZones[index];
+      if (pointer.x >= zone.x && pointer.x <= zone.x + zone.width && pointer.y >= zone.y && pointer.y <= zone.y + zone.height) return zone;
+    }
+    return null;
+  };
+
+  Chart.prototype.hideStrategyTooltip = function () {
+    if (this.strategyTooltip) this.strategyTooltip.setAttribute('hidden', 'hidden');
+  };
+
+  Chart.prototype.showStrategyTooltip = function (execution, pointer) {
+    if (!this.strategyTooltip || !execution || !pointer) return;
+    var direction = execution.direction === 'long' ? 'Long' : 'Short';
+    this.strategyTooltip.innerHTML = '<strong>' + escapeHtml(direction + ' ' + execution.type) + '</strong>' +
+      '<span>' + escapeHtml(String(execution.orderId || '')) + '</span>' +
+      '<span>Qty ' + escapeHtml(formatNumber(execution.quantity)) + ' at ' + escapeHtml(formatNumber(execution.price)) + '</span>' +
+      '<span>' + escapeHtml(this.strategyDateLabel(execution.time)) + (execution.reason ? ' · ' + escapeHtml(execution.reason) : '') + '</span>';
+    this.strategyTooltip.style.left = Math.max(4, pointer.x + 12) + 'px';
+    this.strategyTooltip.style.top = Math.max(4, pointer.y - 12) + 'px';
+    this.strategyTooltip.removeAttribute('hidden');
+  };
+
   Chart.prototype.stockInfoHref = function () {
     var symbol = String(this.document && this.document.symbol || '').trim();
     if (!symbol) return '';
@@ -8129,6 +8169,7 @@
     this.scaleDragHitZones = [];
     this.paneControlHitZones = [];
     this.paneResizeHitZones = [];
+    this.strategyHitZones = [];
     for (var i = 0; i < this.paneRects.length; i += 1) {
       this.drawPane(this.paneRects[i], theme, i);
     }
@@ -9060,6 +9101,13 @@
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+      self.strategyHitZones.push({
+        x: x - 9,
+        y: markerY - 9,
+        width: 18,
+        height: 18,
+        execution: execution
+      });
     });
     ctx.restore();
   };

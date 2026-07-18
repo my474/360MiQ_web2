@@ -2199,6 +2199,32 @@
   display: none;
 }
 
+.sce-strategy-tooltip {
+  background: var(--sce-panel);
+  border: 1px solid var(--sce-border);
+  border-radius: 5px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+  color: var(--sce-text);
+  display: grid;
+  font-size: 11px;
+  gap: 2px;
+  max-width: 220px;
+  padding: 7px 9px;
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(-100%);
+  white-space: nowrap;
+  z-index: 116;
+}
+
+.sce-strategy-tooltip[hidden] {
+  display: none;
+}
+
+.sce-strategy-tooltip span {
+  color: var(--sce-muted);
+}
+
 .sce-strategy-tester-header {
   align-items: center;
   border-bottom: 1px solid var(--sce-border);
