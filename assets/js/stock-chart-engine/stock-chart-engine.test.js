@@ -8,6 +8,8 @@ assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => ite
 assert.strictEqual(pineAuditGeneric.length, 0);
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => item.status === 'Supported'));
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => ['Function', 'Built-in variable', 'Constant', 'Syntax', 'Keyword'].includes(item.type)));
+assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => item.example && item.example.trim().length > 0));
+assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => !/\.\.\./.test(item.example)));
 assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => ['true', 'false', 'na'].includes(item.name)).length, 0);
 assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'true'));
 assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'false'));
@@ -18,6 +20,10 @@ assert.ok(lineSetX1Documentation.description.includes('first point x-coordinate'
 assert.ok(lineSetX1Documentation.example.includes('line.set_x1(trend, bar_index - 20)'));
 assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'line.set_x1'));
 assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'line.all'));
+const inputIntDocumentation = StockChartEngine.pineScriptDocumentation.find((item) => item.name === 'input.int');
+assert.ok(inputIntDocumentation.example.includes('input.int(20, "Length"'));
+const strategyEntryDocumentation = StockChartEngine.pineScriptDocumentation.find((item) => item.name === 'strategy.entry');
+assert.ok(strategyEntryDocumentation.example.includes('strategy.entry("Long", strategy.long)'));
 
 class FakeClassList {
   constructor(element) {

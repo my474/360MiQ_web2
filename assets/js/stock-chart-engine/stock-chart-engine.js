@@ -12556,6 +12556,389 @@
       PINE_EDITOR_COMPLETIONS.push({ value: entry[0], label: entry[1] });
     }
   });
+  function pineDocumentationExample(name, definition) {
+    var itemName = String(name || '');
+    var category = String((definition && definition.category) || '').toLowerCase();
+    var type = String((definition && definition.type) || '').toLowerCase();
+    var overrides = {
+      indicator: 'indicator("Example indicator", overlay=true)',
+      strategy: 'strategy("Example strategy", overlay=true, initial_capital=100000)',
+      library: 'library("Example library")',
+      plot: 'plot(ta.sma(close, 20), title="SMA 20")',
+      plotshape: 'plotshape(close > open, style=shape.triangleup, location=location.belowbar)',
+      plotchar: 'plotchar(close > open, char="▲", location=location.abovebar)',
+      plotarrow: 'plotarrow(close - open)',
+      plotcandle: 'plotcandle(open, high, low, close)',
+      plotbar: 'plotbar(open, high, low, close)',
+      hline: 'hline(50, "Midline", color=color.gray)',
+      bgcolor: 'bgcolor(close > open ? color.new(color.green, 90) : na)',
+      fill: 'upper = plot(high)\nlower = plot(low)\nfill(upper, lower, color=color.new(color.blue, 90))',
+      barcolor: 'barcolor(close > open ? color.green : color.red)',
+      alert: 'alert("Close crossed above open", alert.freq_once_per_bar_close)',
+      alertcondition: 'alertcondition(close > open, "Bullish bar", "Close is above open")',
+      'request.security': 'dailyClose = request.security(syminfo.tickerid, "D", close)',
+      'request.security_lower_tf': 'intrabarCloses = request.security_lower_tf(syminfo.tickerid, "5", close)',
+      'input.int': 'length = input.int(20, "Length", minval=1)',
+      'input.float': 'mult = input.float(2.0, "Multiplier", minval=0.1)',
+      'input.bool': 'showPlot = input.bool(true, "Show plot")',
+      'input.string': 'mode = input.string("Close", "Source", options=["Close", "Open"])',
+      'input.color': 'lineColor = input.color(color.blue, "Line color")',
+      input: 'source = input.source(close, "Source")',
+      'input.source': 'source = input.source(close, "Source")',
+      'input.time': 'start = input.time(timestamp(2024, 1, 1, 0, 0), "Start")',
+      'input.symbol': 'symbol = input.symbol("NASDAQ:AAPL", "Symbol")',
+      'input.session': 'sessionInput = input.session("0930-1600", "Session")',
+      'input.enum': 'enum Signal\n    buy\n    sell\nselected = input.enum(Signal.buy, "Signal")',
+      'input.text_area': 'notes = input.text_area("Example", "Notes")',
+      'ta.sma': 'plot(ta.sma(close, 20))',
+      'ta.ema': 'plot(ta.ema(close, 20))',
+      'ta.rsi': 'plot(ta.rsi(close, 14))',
+      'ta.macd': '[macdLine, signalLine, histogram] = ta.macd(close, 12, 26, 9)',
+      'ta.highest': 'highestHigh = ta.highest(high, 20)',
+      'ta.lowest': 'lowestLow = ta.lowest(low, 20)',
+      'math.abs': 'distance = math.abs(close - open)',
+      'math.max': 'upper = math.max(high, close)',
+      'math.min': 'lower = math.min(low, close)',
+      'math.round_to_mintick': 'rounded = math.round_to_mintick(close)',
+      'line.new': 'var trend = line.new(bar_index - 1, low[1], bar_index, high)',
+      'line.copy': 'copied = line.copy(trend)',
+      'line.delete': 'line.delete(trend)',
+      'line.set_x1': 'line.set_x1(trend, bar_index - 20)',
+      'line.set_x2': 'line.set_x2(trend, bar_index)',
+      'line.set_y1': 'line.set_y1(trend, low[20])',
+      'line.set_y2': 'line.set_y2(trend, high)',
+      'line.set_xy1': 'line.set_xy1(trend, bar_index - 20, low[20])',
+      'line.set_xy2': 'line.set_xy2(trend, bar_index, high)',
+      'line.set_color': 'line.set_color(trend, color.blue)',
+      'line.set_style': 'line.set_style(trend, line.style_dashed)',
+      'line.set_width': 'line.set_width(trend, 2)',
+      'line.set_extend': 'line.set_extend(trend, extend.right)',
+      'label.new': 'label.new(bar_index, high, "High")',
+      'box.new': 'box.new(bar_index - 10, high, bar_index, low)',
+      'polyline.new': 'polyline.new(array.from(chart.point.from_index(bar_index - 2, low), chart.point.now(high)))',
+      'table.new': 'var dashboard = table.new(position.top_right, 1, 1)',
+      'table.cell': 'table.cell(dashboard, 0, 0, "Close: " + str.tostring(close))',
+      'chart.point.from_index': 'point = chart.point.from_index(bar_index, close)',
+      'chart.point.from_time': 'point = chart.point.from_time(time, close)',
+      'chart.point.now': 'point = chart.point.now(close)',
+      'linefill.new': 'var upper = line.new(bar_index - 1, high, bar_index, high)\nvar lower = line.new(bar_index - 1, low, bar_index, low)\nfillId = linefill.new(upper, lower, color.new(color.blue, 80))',
+      'array.new': 'var values = array.new<float>(3, 0.0)',
+      'array.from': 'var values = array.from(1, 2, 3)',
+      'array.push': 'array.push(values, close)',
+      'array.get': 'current = array.get(values, 0)',
+      'array.set': 'array.set(values, 0, close)',
+      'array.size': 'count = array.size(values)',
+      'matrix.new': 'var matrixId = matrix.new<float>(2, 2, 0.0)',
+      'map.new': 'var levels = map.new<string, float>()',
+      'map.put': 'map.put(levels, "high", high)',
+      'map.get': 'level = map.get(levels, "high")',
+      'color.new': 'plot(close, color=color.new(color.blue, 30))',
+      'color.rgb': 'plot(close, color=color.rgb(33, 150, 243, 0))',
+      'color.from_gradient': 'plot(close, color=color.from_gradient(close, low, high, color.red, color.green))',
+      'str.tostring': 'label.new(bar_index, high, str.tostring(close))',
+      'str.format': 'label.new(bar_index, high, str.format("Close: {0}", close))',
+      'ticker.new': 'symbolId = ticker.new("NASDAQ", "AAPL")',
+      time: 'barTime = time("D")',
+      time_close: 'closeTime = time_close("D")',
+      timestamp: 'start = timestamp(2024, 1, 1, 0, 0)',
+      'strategy.entry': 'strategy.entry("Long", strategy.long)',
+      'strategy.order': 'strategy.order("Long", strategy.long, qty=1)',
+      'strategy.exit': 'strategy.exit("Exit", "Long", profit=100, loss=50)',
+      'strategy.close': 'strategy.close("Long")',
+      'strategy.close_all': 'strategy.close_all()',
+      'strategy.cancel': 'strategy.cancel("Long")',
+      'strategy.cancel_all': 'strategy.cancel_all()',
+      'strategy.risk.allow_entry_in': 'strategy.risk.allow_entry_in(strategy.direction.all)',
+      'strategy.risk.max_drawdown': 'strategy.risk.max_drawdown(20, strategy.percent_of_equity)',
+      'strategy.risk.max_cons_loss_days': 'strategy.risk.max_cons_loss_days(3)',
+      'strategy.risk.max_intraday_filled_orders': 'strategy.risk.max_intraday_filled_orders(10)',
+      'strategy.risk.max_intraday_loss': 'strategy.risk.max_intraday_loss(5, strategy.percent_of_equity)',
+      'strategy.risk.max_position_size': 'strategy.risk.max_position_size(10)',
+      'and / or / not': 'bullish = close > open and volume > volume[1]\nconfirmed = bullish or barstate.isconfirmed\nnotBullish = not bullish',
+      'if / else': 'signal = if close > open\n    1\nelse\n    0',
+      'for / while': 'var total = 0.0\nfor i = 0 to 10\n    total += i',
+      'var / const': 'var count = 0\nconst int limit = 10',
+      'true / false / na': 'signal = close > open ? true : na',
+      '//@version=5': '//@version=5\nindicator("Example")',
+      '//@version=6': '//@version=6\nindicator("Example")',
+      '// comments': '// Explain the next calculation\nplot(close)',
+      'open / high / low / close / volume': 'plot(close)\nplot(volume)',
+      'time / bar_index': 'plot(time)\nplot(bar_index)',
+      'tuples': '[macdLine, signalLine, histogram] = ta.macd(close, 12, 26, 9)',
+      'type qualifiers': 'input int length = 20\nseries float source = close',
+      'user-defined type': 'type Pivot\n    int index\n    float price',
+      'enum declaration': 'enum Signal\n    buy\n    sell',
+      'method declaration': 'method average(array<float> values) => array.avg(values)',
+      switch: 'result = switch\n    close > open => 1\n    => 0',
+      'for in': 'for value in values\n    total += value',
+      'history operator': 'previousClose = close[1]',
+      'arithmetic operators': 'range = high - low\nscaled = range * 2',
+      'comparison operators': 'isHigher = close > open',
+      'assignment operators': 'value = close\nvalue := value + 1',
+      'conditional operator': 'colorValue = close >= open ? color.green : color.red',
+      'explicit type': 'float source = close',
+      'function call': 'average = ta.sma(close, 20)',
+      'line wrapping': 'average = ta.sma(\n    close, 20)',
+      comments: '// line comment\n/* block comment */'
+    };
+    if (Object.prototype.hasOwnProperty.call(overrides, itemName)) return overrides[itemName];
+
+    var technicalExamples = {
+      'ta.tr': 'trueRange = ta.tr(true)',
+      'ta.stoch': 'stochastic = ta.stoch(close, high, low, 14)',
+      'ta.tsi': 'tsiValue = ta.tsi(close, 13, 25)',
+      'ta.ppo': 'ppoValue = ta.ppo(close, 12, 26)',
+      'ta.dmi': '[plusDI, minusDI, adx] = ta.dmi(14, 14)',
+      'ta.supertrend': '[trend, direction] = ta.supertrend(3, 10)',
+      'ta.aroon': '[up, down] = ta.aroon(14)',
+      'ta.ema2': 'plot(ta.ema2(close, 20))',
+      'ta.frama': 'plot(ta.frama(close, 20))'
+    };
+    if (Object.prototype.hasOwnProperty.call(technicalExamples, itemName)) return technicalExamples[itemName];
+
+    if (itemName.indexOf('str.') === 0) {
+      var stringExamples = {
+        'str.contains': 'hasPine = str.contains("Hello Pine", "Pine")',
+        'str.endswith': 'isCsv = str.endswith("prices.csv", ".csv")',
+        'str.startswith': 'isTicker = str.startswith("NASDAQ:AAPL", "NASDAQ:")',
+        'str.length': 'length = str.length("Pine Script")',
+        'str.lower': 'lower = str.lower("Pine Script")',
+        'str.upper': 'upper = str.upper("Pine Script")',
+        'str.replace': 'result = str.replace("NASDAQ:AAPL", "NASDAQ:", "")',
+        'str.replace_all': 'result = str.replace_all("AAPL AAPL", "AAPL", "MSFT")',
+        'str.substring': 'prefix = str.substring("Pine", 0, 2)',
+        'str.split': 'parts = str.split("AAPL,MSFT", ",")',
+        'str.format': 'message = str.format("Close: {0}", close)',
+        'str.format_time': 'dateText = str.format_time(time, "yyyy-MM-dd")',
+        'str.tonumber': 'value = str.tonumber("123.45")',
+        'str.tostring': 'message = str.tostring(close)',
+        'str.trim': 'clean = str.trim("  Pine  ")',
+        'str.pos': 'index = str.pos("Pine Script", "Script")',
+        'str.match': 'match = str.match("AAPL-123", "[A-Z]+")'
+      };
+      if (Object.prototype.hasOwnProperty.call(stringExamples, itemName)) return stringExamples[itemName];
+    }
+
+    if (itemName.indexOf('request.') === 0) {
+      var requestExamples = {
+        'request.currency_rate': 'rate = request.currency_rate("USD", "HKD")',
+        'request.dividends': 'dividend = request.dividends(syminfo.tickerid, dividends.gross)',
+        'request.earnings': 'actual = request.earnings(syminfo.tickerid, earnings.actual)',
+        'request.financial': 'revenue = request.financial(syminfo.tickerid, financial.total_revenue, "FQ")',
+        'request.quandl': 'series = request.quandl("FRED/DFF")',
+        'request.seed': 'seedValue = request.seed("seed", "user/script", close)',
+        'request.splits': 'split = request.splits(syminfo.tickerid, splits.denominator)'
+      };
+      if (Object.prototype.hasOwnProperty.call(requestExamples, itemName)) return requestExamples[itemName];
+    }
+
+    if (itemName.indexOf('array.') === 0) {
+      var arrayExamples = {
+        'array.new': 'var values = array.new<float>(3, 0.0)',
+        'array.from': 'var values = array.from(1, 2, 3)',
+        'array.size': 'var values = array.from(1, 2, 3)\ncount = array.size(values)',
+        'array.get': 'var values = array.from(1, 2, 3)\ncurrent = array.get(values, 0)',
+        'array.set': 'var values = array.from(1, 2, 3)\narray.set(values, 0, close)',
+        'array.push': 'var values = array.new<float>()\narray.push(values, close)',
+        'array.pop': 'var values = array.from(1, 2, 3)\nlast = array.pop(values)',
+        'array.shift': 'var values = array.from(1, 2, 3)\nfirst = array.shift(values)',
+        'array.unshift': 'var values = array.from(1, 2, 3)\narray.unshift(values, close)',
+        'array.insert': 'var values = array.from(1, 2, 3)\narray.insert(values, 0, close)',
+        'array.remove': 'var values = array.from(1, 2, 3)\nremoved = array.remove(values, 0)',
+        'array.clear': 'var values = array.from(1, 2, 3)\narray.clear(values)',
+        'array.copy': 'var values = array.from(1, 2, 3)\ncopy = array.copy(values)',
+        'array.sort': 'var values = array.from(3, 1, 2)\narray.sort(values)',
+        'array.reverse': 'var values = array.from(1, 2, 3)\narray.reverse(values)',
+        'array.slice': 'var values = array.from(1, 2, 3)\nslice = array.slice(values, 0, 2)',
+        'array.concat': 'left = array.from(1, 2)\nright = array.from(3, 4)\nall = array.concat(left, right)',
+        'array.binary_search': 'values = array.from(1, 2, 3)\nindex = array.binary_search(values, 2)',
+        'array.binary_search_leftmost': 'values = array.from(1, 2, 2)\nindex = array.binary_search_leftmost(values, 2)',
+        'array.binary_search_rightmost': 'values = array.from(1, 2, 2)\nindex = array.binary_search_rightmost(values, 2)',
+        'array.range': 'values = array.range(1, 5, 1)',
+        'array.avg': 'values = array.from(1.0, 2.0, 3.0)\naverage = array.avg(values)',
+        'array.covariance': 'x = array.from(1.0, 2.0)\ny = array.from(2.0, 4.0)\nvalue = array.covariance(x, y)',
+        'array.max': 'values = array.from(1.0, 2.0, 3.0)\nvalue = array.max(values)',
+        'array.min': 'values = array.from(1.0, 2.0, 3.0)\nvalue = array.min(values)',
+        'array.median': 'values = array.from(1.0, 2.0, 3.0)\nvalue = array.median(values)',
+        'array.mode': 'values = array.from(1.0, 2.0, 2.0)\nvalue = array.mode(values)',
+        'array.percentile_linear_interpolation': 'values = array.from(1.0, 2.0, 3.0)\nvalue = array.percentile_linear_interpolation(values, 50)',
+        'array.percentile_nearest_rank': 'values = array.from(1.0, 2.0, 3.0)\nvalue = array.percentile_nearest_rank(values, 50)',
+        'array.stdev': 'values = array.from(1.0, 2.0, 3.0)\nvalue = array.stdev(values)',
+        'array.standardize': 'values = array.from(1.0, 2.0, 3.0)\nstandardized = array.standardize(values)',
+        'array.sum': 'values = array.from(1.0, 2.0, 3.0)\ntotal = array.sum(values)',
+        'array.join': 'values = array.from("A", "B")\ntext = array.join(values, ",")'
+      };
+      if (Object.prototype.hasOwnProperty.call(arrayExamples, itemName)) return arrayExamples[itemName];
+    }
+
+    if (itemName.indexOf('matrix.') === 0) {
+      var matrixOperation = itemName === 'matrix.new' ? 'var matrixId = matrix.new<float>(2, 2, 0.0)' : '';
+      if (itemName !== 'matrix.new') {
+        if (itemName === 'matrix.add' || itemName === 'matrix.sub' || itemName === 'matrix.mult') matrixOperation = 'left = matrix.new<float>(2, 2, 1.0)\nright = matrix.new<float>(2, 2, 2.0)\nresult = ' + itemName + '(left, right)';
+        else if (itemName === 'matrix.set') matrixOperation = 'm = matrix.new<float>(2, 2, 0.0)\nmatrix.set(m, 0, 0, close)';
+        else if (itemName === 'matrix.get') matrixOperation = 'm = matrix.new<float>(2, 2, 0.0)\nvalue = matrix.get(m, 0, 0)';
+        else if (itemName === 'matrix.reshape') matrixOperation = 'm = matrix.new<float>(2, 2, 0.0)\nreshaped = matrix.reshape(m, 1, 4)';
+        else if (itemName === 'matrix.fill') matrixOperation = 'm = matrix.new<float>(2, 2, 0.0)\nmatrix.fill(m, close)';
+        else if (itemName === 'matrix.sort') matrixOperation = 'm = matrix.new<float>(2, 2, 0.0)\nmatrix.sort(m)';
+        else if (itemName === 'matrix.pow') matrixOperation = 'm = matrix.new<float>(2, 2, 2.0)\nresult = matrix.pow(m, 2)';
+        else matrixOperation = 'm = matrix.new<float>(2, 2, 0.0)\nresult = ' + itemName + '(m)';
+      }
+      return matrixOperation;
+    }
+
+    if (itemName.indexOf('map.') === 0) {
+      if (itemName === 'map.new') return 'var levels = map.new<string, float>()';
+      if (itemName === 'map.put') return 'levels = map.new<string, float>()\nmap.put(levels, "high", high)';
+      if (itemName === 'map.get') return 'levels = map.new<string, float>()\nmap.put(levels, "high", high)\nvalue = map.get(levels, "high")';
+      if (itemName === 'map.remove' || itemName === 'map.contains') return 'levels = map.new<string, float>()\nresult = ' + itemName + '(levels, "high")';
+      if (itemName === 'map.clear') return 'levels = map.new<string, float>()\nmap.clear(levels)';
+      if (itemName === 'map.keys' || itemName === 'map.values') return 'levels = map.new<string, float>()\nitems = ' + itemName + '(levels)';
+      if (itemName === 'map.copy') return 'levels = map.new<string, float>()\ncopy = map.copy(levels)';
+      return 'levels = map.new<string, float>()\ncount = map.size(levels)';
+    }
+
+    if (itemName.indexOf('strategy.opentrades.') === 0 || itemName.indexOf('strategy.closedtrades.') === 0) {
+      return 'tradeValue = ' + itemName + '(0)';
+    }
+
+    if (itemName.indexOf('linefill.') === 0) {
+      if (itemName === 'linefill.new') return overrides['linefill.new'];
+      return 'var upper = line.new(bar_index - 1, high, bar_index, high)\nvar lower = line.new(bar_index - 1, low, bar_index, low)\nfillId = linefill.new(upper, lower, color.new(color.blue, 80))\n' + itemName + '(fillId' + (itemName === 'linefill.set_color' ? ', color.blue' : '') + ')';
+    }
+    if (itemName.indexOf('line.') === 0) {
+      return 'var trend = line.new(bar_index - 1, low[1], bar_index, high)\n' + (overrides[itemName] || itemName + '(trend)');
+    }
+    if (itemName.indexOf('label.') === 0) {
+      if (itemName === 'label.new') return overrides['label.new'];
+      return 'var marker = label.new(bar_index, high, "High")\n' + (itemName.indexOf('.get_') >= 0 ? 'value = ' : '') + itemName + '(marker' + (itemName.indexOf('.set_') >= 0 ? (itemName === 'label.set_xy' ? ', bar_index, high' : (itemName === 'label.set_text' || itemName === 'label.set_tooltip' ? ', "Example"' : (itemName === 'label.set_textcolor' || itemName === 'label.set_color' ? ', color.blue' : (itemName === 'label.set_style' ? ', label.style_label_down' : ', size.normal')))) : '') + ')';
+    }
+    if (itemName.indexOf('box.') === 0) {
+      if (itemName === 'box.new') return overrides['box.new'];
+      return 'var region = box.new(bar_index - 10, high, bar_index, low)\n' + (itemName.indexOf('.get_') >= 0 ? 'value = ' : '') + itemName + '(region' + (itemName.indexOf('.set_') >= 0 ? (itemName === 'box.set_text' ? ', "Example"' : (itemName === 'box.set_bgcolor' || itemName === 'box.set_border_color' ? ', color.blue' : (itemName === 'box.set_border_style' ? ', line.style_dashed' : (itemName === 'box.set_text_size' ? ', size.normal' : (itemName === 'box.set_text_halign' || itemName === 'box.set_text_valign' ? ', text.align_center' : ', 2'))))) : '') + ')';
+    }
+    if (itemName.indexOf('polyline.') === 0) {
+      if (itemName === 'polyline.new') return overrides['polyline.new'];
+      return 'var shape = polyline.new(array.from(chart.point.from_index(bar_index - 2, low), chart.point.now(high)))\n' + itemName + '(shape)';
+    }
+    if (itemName.indexOf('table.') === 0) {
+      if (itemName === 'table.new') return overrides['table.new'];
+      return 'var dashboard = table.new(position.top_right, 1, 1)\n' + (itemName === 'table.cell' ? 'table.cell(dashboard, 0, 0, "Close: " + str.tostring(close))' : itemName + '(dashboard' + (itemName === 'table.clear' ? ', 0, 0, 0, 0' : (itemName === 'table.set_position' ? ', position.bottom_right' : (itemName.indexOf('cell_set_') >= 0 ? ', 0, 0, "Example"' : ''))) + ')');
+    }
+
+    if (category === 'function' || type === 'function') {
+      var parameterNames = (definition && definition.parameters || []).map(function (parameter) {
+        return typeof parameter === 'string' ? parameter : parameter && parameter.name;
+      }).filter(Boolean);
+      if (!parameterNames.length && definition && definition.signature) {
+        var openIndex = String(definition.signature).indexOf('(');
+        var closeIndex = String(definition.signature).lastIndexOf(')');
+        if (openIndex >= 0 && closeIndex > openIndex) {
+          parameterNames = String(definition.signature).slice(openIndex + 1, closeIndex).split(',').map(function (parameter) {
+            return parameter.trim();
+          }).filter(function (parameter) { return parameter && parameter !== '...'; });
+        }
+      }
+      var args = parameterNames.map(function (parameter, index) {
+        var token = String(parameter).replace(/<[^>]+>/g, '').replace(/^\[|\]$/g, '').trim().toLowerCase();
+        if (token === 'id' || token === 'line1' || token === 'line2') return itemName.indexOf('line') === 0 ? 'trend' : (itemName.indexOf('table') === 0 ? 'dashboard' : 'values');
+        if (token === 'table_id') return 'dashboard';
+        if (token === 'source' || token === 'series' || token === 'expression' || token === 'price') return 'close';
+        if (token === 'source1') return 'close';
+        if (token === 'source2') return 'open';
+        if (token === 'open') return 'open';
+        if (token === 'high') return 'high';
+        if (token === 'low') return 'low';
+        if (token === 'close') return 'close';
+        if (token === 'volume') return 'volume';
+        if (token === 'condition' || token === 'when' || token === 'series_bool') return 'close > open';
+        if (token === 'symbol' || token === 'ticker') return 'syminfo.tickerid';
+        if (token === 'timeframe') return '"D"';
+        if (token === 'session') return 'session.regular';
+        if (token === 'timezone') return 'syminfo.timezone';
+        if (token === 'title' || token === 'shorttitle') return '"Example"';
+        if (token === 'text' || token === 'message' || token === 'comment' || token === 'tooltip') return '"Example"';
+        if (token === 'separator') return '","';
+        if (token === 'color' || token.indexOf('color') >= 0 || token === 'bgcolor' || token === 'bordercolor') return 'color.blue';
+        if (token === 'colorup') return 'color.green';
+        if (token === 'colordown') return 'color.red';
+        if (token === 'xloc') return 'xloc.bar_index';
+        if (token === 'yloc') return 'yloc.price';
+        if (token === 'extend') return 'extend.right';
+        if (token === 'style' || token === 'linestyle' || token === 'line_style') return 'line.style_solid';
+        if (token === 'size' || token === 'text_size') return 'size.normal';
+        if (token === 'position') return 'position.top_right';
+        if (token === 'textalign' || token === 'align' || token === 'text_halign' || token === 'text_valign') return 'text.align_center';
+        if (token === 'display') return 'display.all';
+        if (token === 'format') return 'format.price';
+        if (token === 'scale') return 'scale.right';
+        if (token === 'direction') return 'strategy.long';
+        if (token === 'freq') return 'alert.freq_once_per_bar_close';
+        if (token === 'type') return 'strategy.percent_of_equity';
+        if (token === 'point') return 'chart.point.now(close)';
+        if (token === 'key') return '"key"';
+        if (token === 'index' || token === 'row' || token === 'column' || token === 'start_column' || token === 'start_row' || token === 'end_column' || token === 'end_row' || token === 'begin' || token === 'end') return '0';
+        if (token === 'x' || token === 'x1' || token === 'x2' || token === 'left' || token === 'right') return 'bar_index';
+        if (token === 'y' || token === 'y1' || token === 'y2' || token === 'top' || token === 'bottom') return 'close';
+        if (token === 'length' || token === 'period' || token === 'bars' || token === 'count' || token === 'rows' || token === 'columns' || token === 'width' || token === 'height' || token === 'offset') return '20';
+        if (token === 'fast') return '12';
+        if (token === 'slow') return '26';
+        if (token === 'signal') return '9';
+        if (token === 'mult' || token === 'factor') return '2.0';
+        if (token === 'transp' || token === 'percentage') return '30';
+        if (token === 'red' || token === 'green' || token === 'blue') return '255';
+        if (token === 'value' || token === 'number' || token === 'initial_value' || token === 'defval') return '0';
+        if (token === 'bool' || token === 'ignore_invalid_symbol' || token === 'ignore_invalid_timeframe') return 'true';
+        if (token === 'options') return '[1, 2, 3]';
+        return index === 0 ? 'close' : '0';
+      });
+      return itemName + '(' + args.join(', ') + ')';
+    }
+
+    if (category === 'built-in-variable') {
+      if (itemName.indexOf('.all') >= 0) return 'count = array.size(' + itemName + ')';
+      if (itemName.indexOf('syminfo.') === 0) return 'label.new(bar_index, high, str.tostring(' + itemName + '))';
+      if (itemName.indexOf('barstate.') === 0 || itemName.indexOf('timeframe.') === 0) return 'plotshape(' + itemName + ')';
+      if (itemName.indexOf('strategy.') === 0) return 'plot(' + itemName + ')';
+      return 'plot(' + itemName + ')';
+    }
+
+    if (category === 'constant') {
+      if (itemName.indexOf('color.') === 0) return 'plot(close, color=' + itemName + ')';
+      if (itemName.indexOf('shape.') === 0) return 'plotshape(close > open, style=' + itemName + ')';
+      if (itemName.indexOf('position.') === 0) return 'table.new(' + itemName + ', 1, 1)';
+      if (itemName.indexOf('line.style_') === 0) return 'line.new(bar_index - 1, low, bar_index, high, style=' + itemName + ')';
+      if (itemName.indexOf('box.style_') === 0) return 'box.new(bar_index - 1, high, bar_index, low, border_style=' + itemName + ')';
+      if (itemName.indexOf('alert.freq_') === 0) return 'alert("Example", ' + itemName + ')';
+      if (itemName.indexOf('strategy.direction.') === 0) return 'strategy.risk.allow_entry_in(' + itemName + ')';
+      if (itemName === 'strategy.long' || itemName === 'strategy.short') return 'strategy.entry("Entry", ' + itemName + ')';
+      if (itemName.indexOf('strategy.commission.') === 0) return 'strategy("Example", commission_type=' + itemName + ')';
+      if (itemName === 'strategy.fixed' || itemName === 'strategy.cash' || itemName === 'strategy.percent_of_equity') return 'strategy("Example", default_qty_type=' + itemName + ')';
+      if (itemName.indexOf('display.') === 0) return 'plot(close, display=' + itemName + ')';
+      if (itemName.indexOf('format.') === 0) return 'plot(close, format=' + itemName + ')';
+      if (itemName.indexOf('scale.') === 0) return 'indicator("Example", scale=' + itemName + ')';
+      if (itemName.indexOf('location.') === 0) return 'plotshape(close > open, location=' + itemName + ')';
+      if (itemName.indexOf('size.') === 0) return 'plotshape(close > open, size=' + itemName + ')';
+      if (itemName.indexOf('xloc.') === 0 || itemName.indexOf('yloc.') === 0 || itemName.indexOf('extend.') === 0) return 'line.new(bar_index - 1, low, bar_index, high, ' + itemName + ')';
+      if (itemName.indexOf('text.align_') === 0) return 'label.new(bar_index, high, "Example", textalign=' + itemName + ')';
+      return 'value = ' + itemName;
+    }
+
+    if (category === 'keyword') {
+      if (itemName === 'switch') return 'result = switch\n    close > open => 1\n    => 0';
+      if (itemName === 'break') return 'for i = 0 to 10\n    if i == 5\n        break';
+      if (itemName === 'continue') return 'for i = 0 to 10\n    if i == 5\n        continue';
+      if (itemName === 'return') return 'double(value) =>\n    return value * 2';
+      if (itemName === 'type') return 'type Pivot\n    int index\n    float price';
+      if (itemName === 'method') return 'method average(array<float> values) => array.avg(values)';
+      if (itemName === 'struct') return 'struct Signal\n    bool buy';
+      if (itemName === 'enum') return 'enum Signal\n    buy\n    sell';
+      return itemName + ' condition';
+    }
+
+    if (category === 'syntax') return 'value = ta.sma(close, 20)';
+    return 'plot(close)';
+  }
+
   var PINE_EDITOR_DOCUMENTATION = Object.keys(PINE_EDITOR_SIGNATURES).map(function (name) {
     var definition = PINE_EDITOR_SIGNATURES[name];
     return {
@@ -12618,6 +13001,9 @@
   })).concat(PINE_EDITOR_REFERENCE_SYNTAX.map(function (entry) {
     return { name: entry.name, type: 'Syntax', category: 'syntax', signature: entry.signature, description: entry.description, status: 'Supported' };
   }));
+  PINE_EDITOR_DOCUMENTATION.forEach(function (item) {
+    if (!item.example || !String(item.example).trim()) item.example = pineDocumentationExample(item.name, item);
+  });
   var PINE_EDITOR_DOCUMENTATION_UNIQUE = [];
   PINE_EDITOR_DOCUMENTATION.forEach(function (item) {
     if (!item.status) item.status = item.name === 'strategy' || item.name === 'library' ? 'Reference' : 'Supported';
