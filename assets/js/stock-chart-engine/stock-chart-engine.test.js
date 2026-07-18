@@ -668,6 +668,58 @@ plot(array.size(lower), title="Lower bars")`, magnifierBars, {
   backtestLowerTimeframeBars: lowerTimeframeBars
 });
 assert.deepStrictEqual(lowerRequestPreview.outputs.plot1.map((point) => point.value), [2, 2, 2]);
+const weeklyChartBars = [
+  { time: 1000, open: 100, high: 103, low: 99, close: 102 },
+  { time: 7000, open: 100, high: 110, low: 99, close: 108 },
+  { time: 14000, open: 108, high: 110, low: 105, close: 109 },
+  { time: 21000, open: 109, high: 112, low: 106, close: 111 }
+];
+const dailyBarsForWeeklyMagnifier = [
+  { time: 1000, open: 100, high: 102, low: 99, close: 101 },
+  { time: 2000, open: 101, high: 103, low: 100, close: 102 },
+  { time: 7000, open: 100, high: 101, low: 99, close: 100 },
+  { time: 8000, open: 100, high: 110, low: 100, close: 109 },
+  { time: 9000, open: 109, high: 110, low: 107, close: 108 },
+  { time: 14000, open: 108, high: 108, low: 106, close: 108 },
+  { time: 15000, open: 108, high: 110, low: 107, close: 109 },
+  { time: 21000, open: 109, high: 112, low: 106, close: 111 }
+];
+const dailyEodMagnifierPreview = PineScriptRuntime.run(`strategy("Daily EOD magnifier")
+if bar_index == 0
+    strategy.entry("Long", strategy.long)`, weeklyChartBars, {
+  symbol: 'TEST',
+  timeframe: '1W',
+  backtestDailyEodMagnifier: true,
+  backtestLowerTimeframe: '1D',
+  backtestLowerTimeframeBars: dailyBarsForWeeklyMagnifier,
+  backtest: { initialCapital: 1000 }
+});
+assert.strictEqual(dailyEodMagnifierPreview.strategyBacktest.config.executionMode, 'daily-eod-magnifier');
+assert.strictEqual(dailyEodMagnifierPreview.strategyBacktest.config.lowerTimeframe, '1D');
+assert.strictEqual(dailyEodMagnifierPreview.strategyBacktest.config.lowerTimeframeCoverage.coveredChartBars, 4);
+assert.strictEqual(dailyEodMagnifierPreview.strategyBacktest.executions[0].executionTime, 7000);
+const dailyEodMagnifierSession = PineBacktestEngine.createSession({
+  initialCapital: 1000,
+  defaultQtyValue: 1,
+  barMagnifier: true,
+  barMagnifierMode: 'daily-eod',
+  lowerTimeframe: '1D',
+  lowerTimeframeBars: dailyBarsForWeeklyMagnifier
+}, weeklyChartBars);
+dailyEodMagnifierSession.beginBar(0);
+dailyEodMagnifierSession.submit([{ type: 'entry', id: 'DailyLong', direction: 1, quantity: 1 }], 0);
+dailyEodMagnifierSession.endBar(0);
+dailyEodMagnifierSession.beginBar(1);
+dailyEodMagnifierSession.submit([{ type: 'exit', id: 'DailyTarget', fromEntry: 'DailyLong', limit: 109, qty_percent: 100 }], 1);
+dailyEodMagnifierSession.endBar(1);
+dailyEodMagnifierSession.beginBar(2);
+dailyEodMagnifierSession.endBar(2);
+dailyEodMagnifierSession.beginBar(3);
+dailyEodMagnifierSession.endBar(3);
+const dailyEodMagnifierSessionResult = dailyEodMagnifierSession.result();
+assert.strictEqual(dailyEodMagnifierSessionResult.trades.length, 1);
+assert.strictEqual(dailyEodMagnifierSessionResult.trades[0].exitTime, 15000);
+assert.strictEqual(dailyEodMagnifierSessionResult.executions[1].executionBarIndex, 6);
 const tablePreview = PineScriptRuntime.run(`indicator("Table mutation", overlay=false)
 t = table.new("top_right", 1, 1)
 table.cell(t, 0, 0, "A")
@@ -1522,7 +1574,14 @@ chart.toolbar.dispatchEvent({
   }
 });
 assert.strictEqual(chart.document.settings.period, 'weekly');
+const weeklyBacktestExecutionData = chart.getPineBacktestExecutionData();
+assert.strictEqual(weeklyBacktestExecutionData.dailyEodMagnifier, true);
+assert.strictEqual(weeklyBacktestExecutionData.timeframe, '1D');
+assert.strictEqual(weeklyBacktestExecutionData.bars, chart.sourceBars);
 chart.setPeriod('daily');
+const dailyBacktestExecutionData = chart.getPineBacktestExecutionData();
+assert.strictEqual(dailyBacktestExecutionData.dailyEodMagnifier, false);
+assert.strictEqual(dailyBacktestExecutionData.bars, null);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stocks-picker') !== -1);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-recent-stock="SPY"') !== -1);
 const indicatorSearchForFocusTest = new FakeElement('input');

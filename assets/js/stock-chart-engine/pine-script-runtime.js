@@ -2421,7 +2421,7 @@
     env.strategy.closedtrades.first_index = strategyStateSeries('closedtrades_first_index', NaN);
     var strategyBacktestOptions = {};
     Object.keys(options.backtest || {}).forEach(function (key) { strategyBacktestOptions[key] = options.backtest[key]; });
-    /* Lower-timeframe bars are injected by the host for this run only. They
+    /* Lower-timeframe or daily EOD magnifier bars are injected by the host for this run only. They
      * intentionally never enter the indicator's saved inputs or share URL. */
     if (Array.isArray(options.backtestLowerTimeframeBars)) strategyBacktestOptions.lowerTimeframeBars = options.backtestLowerTimeframeBars;
     if (isStrategyScript) {
@@ -2451,6 +2451,14 @@
       }
     }
     if (isStrategyScript && options.backtest && backtestEngine && typeof backtestEngine.createSession === 'function') {
+      if (options.backtestDailyEodMagnifier === true &&
+          Array.isArray(options.backtestLowerTimeframeBars) &&
+          options.backtestLowerTimeframeBars.length &&
+          strategyBacktestOptions.barMagnifier == null) {
+        strategyBacktestOptions.barMagnifier = true;
+        strategyBacktestOptions.barMagnifierMode = 'daily-eod';
+        strategyBacktestOptions.lowerTimeframe = String(options.backtestLowerTimeframe || '1D');
+      }
       backtestSession = backtestEngine.createSession(strategyBacktestOptions, bars);
     }
     if (isStrategyScript && options.backtest && !backtestSession) warnings.push('Strategy backtesting is unavailable because the broker emulator is not loaded.');

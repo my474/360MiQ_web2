@@ -11,7 +11,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.3.2';
+  var VERSION = '0.3.3';
   var INTRABAR_PATH_POLICY = 'open-nearest-extreme';
   var EOD_FILL_MODE = 'ohlc';
   var DEFAULT_MAX_BARS = 100000;
@@ -122,6 +122,7 @@
       maxExecutions: boundedLimit(input.maxExecutions != null ? input.maxExecutions : input.max_executions, DEFAULT_MAX_EXECUTIONS, DEFAULT_MAX_EXECUTIONS),
       maxTrades: boundedLimit(input.maxTrades != null ? input.maxTrades : input.max_trades, DEFAULT_MAX_TRADES, DEFAULT_MAX_TRADES),
       barMagnifier: input.barMagnifier === true || input.useBarMagnifier === true || input.use_bar_magnifier === true,
+      barMagnifierMode: String(input.barMagnifierMode || input.bar_magnifier_mode || '').toLowerCase(),
       lowerTimeframe: String(input.lowerTimeframe || input.lower_timeframe || '')
     };
   }
@@ -154,6 +155,7 @@
     var lowerBarsInput = settingsInput && Array.isArray(settingsInput.lowerTimeframeBars) ? settingsInput.lowerTimeframeBars : [];
     var lowerBars = normalizeBars(lowerBarsInput);
     var lowerBarsByChart = bars.map(function () { return []; });
+    var lowerBarsCoveredChartBars = 0;
     var barMagnifierFallbacks = [];
     var barMagnifierFallbackKeys = Object.create(null);
     var pending = [];
@@ -249,7 +251,7 @@
     if (dataQuality.largeCalendarGaps.length) diagnostics.push({ type: 'data-gap', message: dataQuality.largeCalendarGaps.length + ' calendar gap(s) exceed three times the preceding bar interval; no synthetic bars were inserted.', orderId: null, barIndex: -1 });
     if (dataQuality.truncatedBars > 0) diagnostic('limit', 'The input was truncated at the maximum backtest bar limit; later bars were not evaluated.', null, -1, { limit: settings.maxBars, truncatedBars: dataQuality.truncatedBars });
     if (settings.barMagnifier && lowerBarsInput.length !== lowerBars.length) {
-      diagnostics.push({ type: 'bar-magnifier-data', message: 'Some lower-timeframe bars were ignored because they were missing a valid OHLC field.', orderId: null, barIndex: -1 });
+      diagnostics.push({ type: 'bar-magnifier-data', message: 'Some ' + (settings.barMagnifierMode === 'daily-eod' ? 'daily EOD magnifier bars' : 'lower-timeframe bars') + ' were ignored because they were missing a valid OHLC field.', orderId: null, barIndex: -1 });
     }
     if (settings.barMagnifier && lowerBars.length) {
       var chartCursor = 0;
@@ -257,6 +259,9 @@
         while (chartCursor < bars.length - 1 && lowerBar.time >= bars[chartCursor + 1].time) chartCursor += 1;
         if (bars[chartCursor] && lowerBar.time >= bars[chartCursor].time) lowerBarsByChart[chartCursor].push(lowerBar);
       });
+      lowerBarsCoveredChartBars = lowerBarsByChart.reduce(function (count, chartBars) {
+        return count + (chartBars.length ? 1 : 0);
+      }, 0);
     }
     var state = {
       cash: settings.initialCapital,
@@ -905,7 +910,7 @@
       if (!barMagnifierFallbackKeys[index]) {
         barMagnifierFallbackKeys[index] = true;
         barMagnifierFallbacks.push(index);
-        diagnostic('bar-magnifier-fallback', 'No lower-timeframe bars covered chart bar ' + index + '; the chart OHLC bar was used for fills.', null, index);
+        diagnostic('bar-magnifier-fallback', 'No ' + (settings.barMagnifierMode === 'daily-eod' ? 'daily EOD magnifier bars' : 'lower-timeframe bars') + ' covered chart bar ' + index + '; the chart OHLC bar was used for fills.', null, index);
       }
       return [mainBar];
     }
@@ -1211,9 +1216,19 @@
       var config = {};
       Object.keys(settings).forEach(function (key) { config[key] = settings[key]; });
       config.intrabarPathPolicy = INTRABAR_PATH_POLICY;
-      config.executionMode = settings.barMagnifier && lowerBars.length ? 'lower-timeframe' : 'eod-ohlc';
+      config.executionMode = settings.barMagnifier && lowerBars.length
+        ? (settings.barMagnifierMode === 'daily-eod' ? 'daily-eod-magnifier' : 'lower-timeframe')
+        : 'eod-ohlc';
       config.sameBarAmbiguityCount = sameBarAmbiguities.length;
       config.lowerBarCount = lowerBars.length;
+      config.lowerTimeframeCoverage = {
+        chartBars: bars.length,
+        coveredChartBars: lowerBarsCoveredChartBars,
+        uncoveredChartBars: Math.max(0, bars.length - lowerBarsCoveredChartBars),
+        lowerBars: lowerBars.length,
+        timeframe: settings.lowerTimeframe || null,
+        source: settings.barMagnifierMode === 'daily-eod' ? 'host daily EOD bars' : settings.lowerTimeframe ? 'host-supplied bars' : null
+      };
       config.barMagnifierFallbacks = barMagnifierFallbacks.slice();
       return {
         engineVersion: VERSION,
@@ -1226,6 +1241,7 @@
           intrabarPathDescription: 'When no lower-timeframe bars are supplied, the emulator infers open to high to low to close when the high is closer to the open; otherwise it infers open to low to high to close.',
           sameBarStopTarget: 'If a daily candle touches both a stop and a target, the first level touched along the inferred path fills first. The run emits a same-bar-ambiguity warning, and OCA siblings are then cancelled or reduced according to their OCA rule.',
           gapFill: 'If a price order is crossed between the previous close and the current open, it fills at the current open rather than at the requested level.',
+          dailyEodMagnifier: 'On weekly, monthly, quarterly, and yearly chart bars, host-loaded daily EOD bars can refine the order sequence inside each chart bar. Daily candles still use the documented OHLC path.',
           lowerTimeframeOverride: 'Host-supplied lower-timeframe bars override the inferred path for covered chart bars.'
         },
         dataQuality: dataQuality,

@@ -737,6 +737,10 @@
     return CHART_PERIODS[normalized].interval;
   }
 
+  function usesDailyEodMagnifier(period) {
+    return normalizePeriod(period) !== 'daily';
+  }
+
   function chartPeriodLabel(period) {
     return CHART_PERIODS[normalizePeriod(period)].label;
   }
@@ -1230,6 +1234,8 @@
         mintick: context.mintick,
         description: context.description || '',
         backtestLowerTimeframeBars: context.backtestLowerTimeframeBars || null,
+        backtestLowerTimeframe: context.backtestLowerTimeframe || null,
+        backtestDailyEodMagnifier: context.backtestDailyEodMagnifier === true,
         backtest: indicator.inputs && indicator.inputs.backtest || null
       });
       return pineIndicatorResultFromRuntime(indicator, result);
@@ -2213,6 +2219,8 @@
       description: computeOptions.description || '',
       mintick: computeOptions.mintick,
       backtestLowerTimeframeBars: computeOptions.backtestLowerTimeframeBars || null,
+      backtestLowerTimeframe: computeOptions.backtestLowerTimeframe || null,
+      backtestDailyEodMagnifier: computeOptions.backtestDailyEodMagnifier === true,
       requestData: computeOptions.requestData || {},
       indicatorResults: {}
     };
@@ -5626,7 +5634,16 @@
         return indicator.id === indicatorId && indicator.type === 'PINE_SCRIPT';
       })[0];
       var backtestSettings = merge({}, Indicators.PINE_SCRIPT.defaultInputs.backtest, existingForBacktest && existingForBacktest.inputs && existingForBacktest.inputs.backtest || {});
-      var preview = runtime.run(compiled, this.bars, { title: titleField && titleField.value, inputs: pineValues, backtest: backtestSettings, timeframe: this.document.interval || '1D' });
+      var backtestExecutionData = this.getPineBacktestExecutionData();
+      var preview = runtime.run(compiled, this.bars, {
+        title: titleField && titleField.value,
+        inputs: pineValues,
+        backtest: backtestSettings,
+        timeframe: this.document.interval || '1D',
+        backtestLowerTimeframeBars: backtestExecutionData.bars,
+        backtestLowerTimeframe: backtestExecutionData.timeframe,
+        backtestDailyEodMagnifier: backtestExecutionData.dailyEodMagnifier
+      });
       if (indicatorId) {
         var existingIndicator = this.document.indicators.filter(function (indicator) {
           return indicator.id === indicatorId && indicator.type === 'PINE_SCRIPT';
@@ -6909,7 +6926,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.6';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260719.1';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -6926,6 +6943,7 @@
     if (!worker || typeof worker.postMessage !== 'function') return;
     var revision = this.pineComputeRevision;
     var self = this;
+    var backtestExecutionData = this.getPineBacktestExecutionData();
     this.document.indicators.forEach(function (indicator) {
       if (indicator.type !== 'PINE_SCRIPT') return;
       var code = indicator.inputs && indicator.inputs.code || '';
@@ -6956,7 +6974,9 @@
             symbol: self.options.symbol || self.document.symbol || '',
             mintick: self.options.mintick,
             description: self.options.symbolInfo && (self.options.symbolInfo.name_en || self.options.symbolInfo.description) || '',
-      backtestLowerTimeframeBars: clone(self.options.backtestLowerTimeframeBars || null),
+            backtestLowerTimeframeBars: clone(backtestExecutionData.bars || null),
+            backtestLowerTimeframe: backtestExecutionData.timeframe,
+            backtestDailyEodMagnifier: backtestExecutionData.dailyEodMagnifier,
             backtest: clone(indicator.inputs && indicator.inputs.backtest || null)
           }
         });
@@ -7047,13 +7067,35 @@
     });
   };
 
+  Chart.prototype.getPineBacktestExecutionData = function () {
+    var explicitBars = Array.isArray(this.options.backtestLowerTimeframeBars) && this.options.backtestLowerTimeframeBars.length;
+    if (explicitBars) {
+      return {
+        bars: this.options.backtestLowerTimeframeBars,
+        timeframe: String(this.options.backtestLowerTimeframe || ''),
+        dailyEodMagnifier: false
+      };
+    }
+    if (usesDailyEodMagnifier(this.document.settings.period) && this.sourceBars.length) {
+      return {
+        bars: this.sourceBars,
+        timeframe: '1D',
+        dailyEodMagnifier: true
+      };
+    }
+    return { bars: null, timeframe: null, dailyEodMagnifier: false };
+  };
+
   Chart.prototype.compute = function () {
     this.pineComputeRevision += 1;
+    var backtestExecutionData = this.getPineBacktestExecutionData();
     this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars, this.document.interval, {
       symbol: this.options.symbol || this.document.symbol || '',
       description: this.options.symbolInfo && (this.options.symbolInfo.name_en || this.options.symbolInfo.description) || '',
       mintick: this.options.mintick,
-      backtestLowerTimeframeBars: this.options.backtestLowerTimeframeBars || null,
+      backtestLowerTimeframeBars: backtestExecutionData.bars,
+      backtestLowerTimeframe: backtestExecutionData.timeframe,
+      backtestDailyEodMagnifier: backtestExecutionData.dailyEodMagnifier,
       requestData: this.options.requestData || {}
     });
     this.updateStrategyTester();
@@ -7301,10 +7343,12 @@
     var assumptions = result && result.assumptions || {};
     var quality = result && result.dataQuality || {};
     var limits = result && result.limits || {};
+    var coverage = result && result.config && result.config.lowerTimeframeCoverage || {};
     var ambiguityCount = Array.isArray(result && result.sameBarAmbiguities) ? result.sameBarAmbiguities.length : 0;
     var qualitySummary = Number.isFinite(Number(quality.inputBars)) ? 'Data quality: ' + String(quality.validBars || 0) + '/' + String(quality.inputBars || 0) + ' valid bars, ' + String(quality.largeCalendarGaps && quality.largeCalendarGaps.length || 0) + ' large calendar gap(s), ' + String(quality.truncatedBars || 0) + ' truncated bar(s), ' + String(quality.priceBasis || 'unspecified') + ' prices, ' + String(quality.timezone || 'UTC') + '.' : '';
     var limitsSummary = Number.isFinite(Number(limits.maxOrders)) ? 'Broker limits: ' + String(limits.submittedOrders || 0) + '/' + String(limits.maxOrders) + ' orders, ' + String(limits.executions || 0) + '/' + String(limits.maxExecutions || 0) + ' executions, ' + String(limits.closedTrades || 0) + '/' + String(limits.maxTrades || 0) + ' closed trades.' : '';
-    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small><small>Ambiguous daily bars: ' + escapeHtml(String(ambiguityCount)) + '.</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + (limitsSummary ? '<small>' + escapeHtml(limitsSummary) + '</small>' : '') + '</section>';
+    var magnifierSummary = assumptions.dailyEodMagnifier && Number.isFinite(Number(coverage.chartBars)) ? 'Daily EOD magnifier: ' + String(coverage.coveredChartBars || 0) + '/' + String(coverage.chartBars || 0) + ' chart bars covered; ' + String(coverage.uncoveredChartBars || 0) + ' used chart OHLC fallback.' : '';
+    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small>' + (magnifierSummary ? '<small>' + escapeHtml(magnifierSummary) + '</small>' : '') + '<small>Ambiguous daily bars: ' + escapeHtml(String(ambiguityCount)) + '.</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + (limitsSummary ? '<small>' + escapeHtml(limitsSummary) + '</small>' : '') + '</section>';
   };
 
   Chart.prototype.strategyCurveHtml = function (label, points, colorClass, zeroBaseline) {
@@ -7503,7 +7547,7 @@
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="processOrdersOnClose"' + (config.processOrdersOnClose ? ' checked' : '') + '> Process orders on close</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnOrderFills"' + (config.calcOnOrderFills ? ' checked' : '') + '> Recalculate after order fills</label>' +
         '<label class="sce-strategy-check"><input type="checkbox" data-sce-backtest-field="calcOnEveryTick"' + (config.calcOnEveryTick ? ' checked' : '') + '> Recalculate on every tick</label>' +
-        '<p class="sce-strategy-property-note">Historical fills use standard EOD OHLC bars. When a daily candle touches both a stop and target, the first level on the inferred open-nearest-extreme path fills first. Broker limits protect the browser from unbounded order, execution, and trade output. Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
+        '<p class="sce-strategy-property-note">Historical fills use standard EOD OHLC bars. On weekly, monthly, quarterly, and yearly charts, the engine automatically uses the loaded daily EOD bars to refine fill ordering when coverage is available. When a daily candle touches both a stop and target, the first level on the inferred open-nearest-extreme path fills first. Broker limits protect the browser from unbounded order, execution, and trade output. Market orders fill at the next bar open unless Process orders on close is enabled. Engine ' + escapeHtml(result.engineVersion || 'unknown') + ', ' + escapeHtml(config.symbol || this.document.symbol || '') + ' ' + escapeHtml(config.timeframe || this.document.settings.period || '') + ', ' + escapeHtml(dateFrom || 'first bar') + ' to ' + escapeHtml(dateTo || 'last bar') + '.</p>' +
         '</div>';
     } else {
       var diagnostics = result.diagnostics || [];
