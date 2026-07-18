@@ -11,10 +11,11 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.2.1';
+  var VERSION = '0.3.0';
   var INTRABAR_PATH_POLICY = 'open-nearest-extreme';
 
   function number(value, fallback) {
+    if (value == null || value === '') return fallback;
     var result = Number(value);
     return Number.isFinite(result) ? result : fallback;
   }
@@ -32,17 +33,28 @@
 
   function normalizeBars(bars) {
     return (Array.isArray(bars) ? bars : []).map(function (bar, index) {
+      var adjustedClose = number(bar && (bar.adjustedClose != null ? bar.adjustedClose : bar.adjClose != null ? bar.adjClose : bar.adj_close), NaN);
+      var splitFactor = number(bar && (bar.splitFactor != null ? bar.splitFactor : bar.split_factor != null ? bar.split_factor : bar.split), NaN);
+      var dividend = number(bar && (bar.dividend != null ? bar.dividend : bar.dividends != null ? bar.dividends : bar.cashDividend), NaN);
+      var priceBasis = String(bar && (bar.priceBasis || bar.price_basis || '') || '').toLowerCase();
       return {
         sourceIndex: index,
-        time: number(bar && bar.time, index),
+        time: number(bar && bar.time, NaN),
         open: number(bar && bar.open, NaN),
         high: number(bar && bar.high, NaN),
         low: number(bar && bar.low, NaN),
         close: number(bar && bar.close, NaN),
-        volume: number(bar && bar.volume, 0)
+        volume: number(bar && bar.volume, 0),
+        adjustedClose: adjustedClose,
+        adjusted: bar && (bar.adjusted === true || bar.isAdjusted === true || priceBasis === 'adjusted' || Number.isFinite(adjustedClose)),
+        priceBasis: priceBasis || (bar && bar.adjusted === true ? 'adjusted' : ''),
+        splitFactor: splitFactor,
+        dividend: dividend,
+        timezone: String(bar && (bar.timezone || bar.tz || '') || '')
       };
     }).filter(function (bar) {
-      return Number.isFinite(bar.open) && Number.isFinite(bar.high) && Number.isFinite(bar.low) && Number.isFinite(bar.close);
+      return Number.isFinite(bar.time) && Number.isFinite(bar.open) && Number.isFinite(bar.high) && Number.isFinite(bar.low) && Number.isFinite(bar.close) &&
+        bar.high >= Math.max(bar.open, bar.close) && bar.low <= Math.min(bar.open, bar.close);
     }).sort(function (left, right) {
       return left.time - right.time || left.sourceIndex - right.sourceIndex;
     }).map(function (bar, index) {
@@ -91,6 +103,7 @@
       warmupBars: Math.max(0, Math.floor(number(input.warmupBars != null ? input.warmupBars : input.warmup_bars, 0))),
       symbol: String(input.symbol || ''),
       timeframe: String(input.timeframe || '1D'),
+      timezone: String(input.timezone || 'UTC'),
       barMagnifier: input.barMagnifier === true || input.useBarMagnifier === true || input.use_bar_magnifier === true,
       lowerTimeframe: String(input.lowerTimeframe || input.lower_timeframe || '')
     };
@@ -132,22 +145,84 @@
     var diagnostics = [];
     var equityCurve = [];
     var drawdownCurve = [];
+    var buyAndHoldCurve = [];
     var stateCurve = [];
     var rawBars = Array.isArray(barsInput) ? barsInput : [];
+    var dataQuality = {
+      inputBars: rawBars.length,
+      validBars: bars.length,
+      invalidBars: 0,
+      invalidGeometry: 0,
+      duplicateTimestamps: 0,
+      outOfOrder: 0,
+      largeCalendarGaps: [],
+      adjustedBars: 0,
+      unadjustedBars: 0,
+      splitEvents: 0,
+      dividendEvents: 0,
+      priceBasis: 'unspecified',
+      timezone: settings.timezone || 'UTC'
+    };
     var previousTime = -Infinity;
     var seenTimes = Object.create(null);
+    var observedTimezones = Object.create(null);
     rawBars.forEach(function (bar, index) {
       var time = number(bar && bar.time, NaN);
-      var valid = Number.isFinite(time) && Number.isFinite(number(bar && bar.open, NaN)) && Number.isFinite(number(bar && bar.high, NaN)) && Number.isFinite(number(bar && bar.low, NaN)) && Number.isFinite(number(bar && bar.close, NaN));
-      if (!valid) {
+      var open = number(bar && bar.open, NaN);
+      var high = number(bar && bar.high, NaN);
+      var low = number(bar && bar.low, NaN);
+      var close = number(bar && bar.close, NaN);
+      var fieldsValid = Number.isFinite(time) && Number.isFinite(open) && Number.isFinite(high) && Number.isFinite(low) && Number.isFinite(close);
+      var geometryValid = fieldsValid && high >= Math.max(open, close) && low <= Math.min(open, close);
+      var adjustedClose = number(bar && (bar.adjustedClose != null ? bar.adjustedClose : bar.adjClose != null ? bar.adjClose : bar.adj_close), NaN);
+      var adjusted = bar && (bar.adjusted === true || bar.isAdjusted === true || String(bar.priceBasis || bar.price_basis || '').toLowerCase() === 'adjusted' || Number.isFinite(adjustedClose));
+      var splitFactor = number(bar && (bar.splitFactor != null ? bar.splitFactor : bar.split_factor != null ? bar.split_factor : bar.split), NaN);
+      var dividend = number(bar && (bar.dividend != null ? bar.dividend : bar.dividends != null ? bar.dividends : bar.cashDividend), NaN);
+      var barTimezone = String(bar && (bar.timezone || bar.tz || '') || '').trim();
+      if (barTimezone) observedTimezones[barTimezone] = true;
+      if (adjusted) dataQuality.adjustedBars += 1;
+      else if (fieldsValid) dataQuality.unadjustedBars += 1;
+      if (Number.isFinite(splitFactor) && splitFactor !== 1) dataQuality.splitEvents += 1;
+      if (Number.isFinite(dividend) && dividend !== 0) dataQuality.dividendEvents += 1;
+      if (!fieldsValid) {
         diagnostics.push({ type: 'data', message: 'Bar ' + index + ' was ignored because it is missing a valid OHLC field.', orderId: null, barIndex: index });
+        dataQuality.invalidBars += 1;
         return;
       }
-      if (time < previousTime) diagnostics.push({ type: 'data-order', message: 'Input bars were not chronological; the broker sorted them by timestamp.', orderId: null, barIndex: index });
-      if (seenTimes[String(time)]) diagnostics.push({ type: 'duplicate-time', message: 'Duplicate bar timestamp detected; source order was preserved for equal timestamps.', orderId: null, barIndex: index });
+      if (!geometryValid) {
+        diagnostics.push({ type: 'data-geometry', message: 'Bar ' + index + ' was ignored because high/low do not contain the open and close.', orderId: null, barIndex: index });
+        dataQuality.invalidBars += 1;
+        dataQuality.invalidGeometry += 1;
+        return;
+      }
+      if (time < previousTime) {
+        dataQuality.outOfOrder += 1;
+        diagnostics.push({ type: 'data-order', message: 'Input bars were not chronological; the broker sorted them by timestamp.', orderId: null, barIndex: index });
+      }
+      if (seenTimes[String(time)]) {
+        dataQuality.duplicateTimestamps += 1;
+        diagnostics.push({ type: 'duplicate-time', message: 'Duplicate bar timestamp detected; source order was preserved for equal timestamps.', orderId: null, barIndex: index });
+      }
       seenTimes[String(time)] = true;
       previousTime = time;
     });
+    var timezoneNames = Object.keys(observedTimezones);
+    if (timezoneNames.length === 1) dataQuality.timezone = timezoneNames[0];
+    else if (timezoneNames.length > 1) dataQuality.timezone = 'mixed (' + timezoneNames.join(', ') + ')';
+    if (dataQuality.adjustedBars && dataQuality.unadjustedBars) {
+      dataQuality.priceBasis = 'mixed';
+      diagnostics.push({ type: 'data-basis', message: 'The input mixes adjusted and unadjusted bars. Verify that the OHLC series uses one price basis before comparing returns.', orderId: null, barIndex: -1 });
+    } else if (dataQuality.adjustedBars) dataQuality.priceBasis = 'adjusted';
+    else if (dataQuality.unadjustedBars) dataQuality.priceBasis = 'unadjusted';
+    for (var gapIndex = 1; gapIndex < bars.length; gapIndex += 1) {
+      var gapSeconds = bars[gapIndex].time - bars[gapIndex - 1].time;
+      if (!(gapSeconds > 0)) continue;
+      var previousDelta = gapIndex > 1 ? bars[gapIndex - 1].time - bars[gapIndex - 2].time : gapSeconds;
+      if (previousDelta > 0 && gapSeconds > previousDelta * 3) {
+        dataQuality.largeCalendarGaps.push({ from: bars[gapIndex - 1].time, to: bars[gapIndex].time, seconds: gapSeconds });
+      }
+    }
+    if (dataQuality.largeCalendarGaps.length) diagnostics.push({ type: 'data-gap', message: dataQuality.largeCalendarGaps.length + ' calendar gap(s) exceed three times the preceding bar interval; no synthetic bars were inserted.', orderId: null, barIndex: -1 });
     if (settings.barMagnifier && lowerBarsInput.length !== lowerBars.length) {
       diagnostics.push({ type: 'bar-magnifier-data', message: 'Some lower-timeframe bars were ignored because they were missing a valid OHLC field.', orderId: null, barIndex: -1 });
     }
@@ -483,11 +558,14 @@
         return NaN;
       }
       if (order.type === 'stop_limit') {
+        var wasActivated = !!order.activated;
+        var triggeredAtOpen = (direction > 0 && bar.open >= stop) || (direction < 0 && bar.open <= stop);
         if (!order.activated) {
           if (direction > 0 && bar.high >= stop) order.activated = true;
           if (direction < 0 && bar.low <= stop) order.activated = true;
+          if (order.activated) order.activatedBarIndex = bar.index;
         }
-        if (order.activated && Number.isFinite(limit)) {
+        if (order.activated && Number.isFinite(limit) && (wasActivated || triggeredAtOpen)) {
           if (direction > 0 && bar.low <= limit) return bar.open <= limit ? bar.open : limit;
           if (direction < 0 && bar.high >= limit) return bar.open >= limit ? bar.open : limit;
         }
@@ -652,11 +730,14 @@
       executions.push({
         orderId: order.displayId || order.id || order.type,
         type: order.type,
+        role: isCloseKind ? 'exit' : 'entry',
         direction: direction > 0 ? 'long' : 'short',
         quantity: quantity,
         price: price,
         requestedPrice: rawPrice,
         commission: commissionValue,
+        fromEntry: order.fromEntry || '',
+        comment: order.comment || '',
         barIndex: index,
         time: time,
         executionBarIndex: executionBar && executionBar.index != null ? executionBar.index : null,
@@ -896,6 +977,8 @@
       checkRisk(index);
       equityCurve.push({ time: visibleBar(index).time, value: state.equity, barIndex: index });
       drawdownCurve.push({ time: visibleBar(index).time, value: state.peakEquity - state.equity, barIndex: index });
+      var firstClose = bars.length && Number(bars[0].close);
+      buyAndHoldCurve.push({ time: visibleBar(index).time, value: Number.isFinite(firstClose) && firstClose !== 0 ? settings.initialCapital * visibleBar(index).close / firstClose : settings.initialCapital, barIndex: index });
       var current = snapshot();
       stateCurve.push({
         time: visibleBar(index).time,
@@ -1042,6 +1125,7 @@
           gapFill: 'If a price order is crossed between the previous close and the current open, it fills at the current open rather than at the requested level.',
           lowerTimeframeOverride: 'Host-supplied lower-timeframe bars override the inferred path for covered chart bars.'
         },
+        dataQuality: dataQuality,
         executions: executions.slice(),
         trades: closedTrades.slice(),
         openTrades: openTrades.map(function (trade) {
@@ -1063,6 +1147,7 @@
         },
         equityCurve: equityCurve.slice(),
         drawdownCurve: drawdownCurve.slice(),
+        buyAndHoldCurve: buyAndHoldCurve.slice(),
         stateCurve: stateCurve.slice(),
         metrics: metrics(),
         diagnostics: diagnostics.slice(),

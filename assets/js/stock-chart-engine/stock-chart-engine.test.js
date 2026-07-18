@@ -379,6 +379,8 @@ assert.ok(backtestPreview.strategyBacktest.executions.length >= 2);
 assert.strictEqual(backtestPreview.strategyBacktest.trades.length, 1);
 assert.ok(backtestPreview.strategyBacktest.metrics.commission > 0);
 assert.ok(backtestPreview.strategyBacktest.metrics.endingEquity < 1000);
+assert.strictEqual(backtestPreview.strategyBacktest.buyAndHoldCurve.length, backtestBars.length);
+assert.strictEqual(backtestPreview.strategyBacktest.buyAndHoldCurve[0].value, 1000);
 assert.ok(Array.isArray(backtestPreview.strategyBacktest.metrics.monthlyReturns));
 assert.ok(Array.isArray(backtestPreview.strategyBacktest.metrics.yearlyReturns));
 assert.ok(backtestPreview.outputs.plot1 == null || Array.isArray(backtestPreview.outputs.plot1));
@@ -485,6 +487,84 @@ assert.strictEqual(targetFirstBracket.trades[0].exitPrice, 110);
 const stopFirstBracket = runSameBarBracket({ time: 3, open: 97, high: 110, low: 90, close: 95, volume: 1 });
 assert.strictEqual(stopFirstBracket.trades[0].exitId, 'Stop');
 assert.strictEqual(stopFirstBracket.trades[0].exitPrice, 90);
+const qualitySession = PineBacktestEngine.createSession({ initialCapital: 1000 }, [
+  { time: 1, open: 100, high: 102, low: 99, close: 101, adjusted: true, splitFactor: 2 },
+  { time: 2, open: 101, high: 103, low: 100, close: 102, dividend: 1 },
+  { time: 3, open: 100, high: 98, low: 99, close: 99 },
+  { time: 10, open: 102, high: 104, low: 101, close: 103 },
+  { time: 11, open: 103, high: 105, low: 102, close: 104 }
+]);
+const qualityResult = qualitySession.result();
+assert.strictEqual(qualityResult.dataQuality.invalidGeometry, 1);
+assert.strictEqual(qualityResult.dataQuality.priceBasis, 'mixed');
+assert.strictEqual(qualityResult.dataQuality.splitEvents, 1);
+assert.strictEqual(qualityResult.dataQuality.dividendEvents, 1);
+assert.ok(qualityResult.dataQuality.largeCalendarGaps.length >= 1);
+assert.ok(qualityResult.diagnostics.some((item) => item.type === 'data-geometry'));
+assert.ok(qualityResult.diagnostics.some((item) => item.type === 'data-gap'));
+const stopLimitSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100 },
+  { time: 2, open: 100, high: 110, low: 99, close: 108 },
+  { time: 3, open: 108, high: 109, low: 100, close: 102 }
+]);
+stopLimitSession.beginBar(0);
+stopLimitSession.submit([{ type: 'order', id: 'StopLimit', direction: 1, stop: 105, limit: 103, quantity: 1 }], 0);
+stopLimitSession.endBar(0);
+stopLimitSession.beginBar(1);
+stopLimitSession.endBar(1);
+assert.strictEqual(stopLimitSession.executions.length, 0);
+stopLimitSession.beginBar(2);
+stopLimitSession.endBar(2);
+assert.strictEqual(stopLimitSession.executions[0].type, 'stop_limit');
+assert.strictEqual(stopLimitSession.executions[0].price, 103);
+const partialExitSession = PineBacktestEngine.createSession({ initialCapital: 1000 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100 },
+  { time: 2, open: 100, high: 106, low: 99, close: 105 },
+  { time: 3, open: 105, high: 106, low: 104, close: 105 }
+]);
+partialExitSession.beginBar(0);
+partialExitSession.submit([{ type: 'entry', id: 'PartialLong', direction: 1, quantity: 4 }], 0);
+partialExitSession.endBar(0);
+partialExitSession.beginBar(1);
+partialExitSession.submit([{ type: 'exit', id: 'PartialTarget', fromEntry: 'PartialLong', limit: 105, qty_percent: 50 }], 1);
+partialExitSession.endBar(1);
+partialExitSession.beginBar(2);
+partialExitSession.endBar(2);
+const partialExitResult = partialExitSession.result();
+assert.strictEqual(partialExitResult.trades[0].quantity, 2);
+assert.strictEqual(partialExitResult.openTrades[0].quantity, 2);
+const pyramidingSession = PineBacktestEngine.createSession({ initialCapital: 1000, pyramiding: 1 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100 },
+  { time: 2, open: 100, high: 101, low: 99, close: 100 },
+  { time: 3, open: 100, high: 101, low: 99, close: 100 }
+]);
+pyramidingSession.beginBar(0);
+pyramidingSession.submit([{ type: 'entry', id: 'Pyramid1', direction: 1 },], 0);
+pyramidingSession.endBar(0);
+pyramidingSession.beginBar(1);
+pyramidingSession.submit([{ type: 'entry', id: 'Pyramid2', direction: 1 }, { type: 'entry', id: 'Pyramid3', direction: 1 }], 1);
+pyramidingSession.endBar(1);
+pyramidingSession.beginBar(2);
+pyramidingSession.endBar(2);
+const pyramidingResult = pyramidingSession.result();
+assert.strictEqual(pyramidingResult.executions.length, 2);
+assert.ok(pyramidingResult.diagnostics.some((item) => item.type === 'pyramiding'));
+const ocaCancelSession = PineBacktestEngine.createSession({ initialCapital: 1000 }, [
+  { time: 1, open: 100, high: 101, low: 99, close: 100 },
+  { time: 2, open: 100, high: 106, low: 99, close: 105 },
+  { time: 3, open: 105, high: 106, low: 104, close: 105 }
+]);
+ocaCancelSession.beginBar(0);
+ocaCancelSession.submit([{ type: 'entry', id: 'OcaLong', direction: 1 }], 0);
+ocaCancelSession.endBar(0);
+ocaCancelSession.beginBar(1);
+ocaCancelSession.submit([{ type: 'exit', id: 'OcaTarget', fromEntry: 'OcaLong', limit: 105, qty_percent: 100, oca_name: 'OcaBracket', oca_type: 'cancel' }, { type: 'exit', id: 'OcaStop', fromEntry: 'OcaLong', stop: 90, qty_percent: 100, oca_name: 'OcaBracket', oca_type: 'cancel' }], 1);
+ocaCancelSession.endBar(1);
+ocaCancelSession.beginBar(2);
+ocaCancelSession.endBar(2);
+const ocaCancelResult = ocaCancelSession.result();
+assert.strictEqual(ocaCancelResult.trades.length, 1);
+assert.strictEqual(ocaCancelResult.pendingOrders.length, 0);
 const trailingSession = PineBacktestEngine.createSession({ initialCapital: 1000, defaultQtyValue: 1 }, [
   { time: 1, open: 100, high: 101, low: 99, close: 100 },
   { time: 2, open: 100, high: 102, low: 99, close: 101 },
@@ -603,6 +683,18 @@ assert.strictEqual(chart.strategyTesterPopup.hasAttribute('hidden'), false);
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Strategy Tester'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('EOD fill policy'));
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Completed'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('data-sce-strategy-export="csv"'));
+assert.ok(chart.strategyTesterPopup.innerHTML.includes('Buy &amp; hold'));
+const strategyReportJson = chart.downloadStrategyReport('json');
+assert.ok(strategyReportJson.includes('stock-chart-engine-strategy-report'));
+assert.ok(strategyReportJson.includes('"metrics"'));
+assert.ok(strategyReportJson.includes('"dataQuality"'));
+const strategyReportCsv = chart.downloadStrategyReport('csv');
+assert.ok(strategyReportCsv.includes('Trade #'));
+chart.strategyTesterState.view = 'trades';
+chart.strategyTesterState.selectedTrade = 0;
+chart.renderStrategyTester();
+if (chart.strategyTesterState.result.trades.length) assert.ok(chart.strategyTesterPopup.innerHTML.includes('Trade #'));
 chart.strategyTesterState.view = 'diagnostics';
 chart.renderStrategyTester();
 assert.ok(chart.strategyTesterPopup.innerHTML.includes('Total events'));
@@ -756,6 +848,18 @@ plot(request.security("SPY", "W", close))`,
 });
 assert.strictEqual(workerSecurityPreview.ok, true);
 assert.ok(workerSecurityPreview.result.outputs.plot1.length > 0);
+const workerProgressMessages = [];
+global.self = { postMessage(message) { workerProgressMessages.push(message); } };
+PineScriptRuntime.runInWorker({
+  requestId: 'progress-test',
+  source: `strategy("Progress test")
+if close > close[1]
+    strategy.entry("Long", strategy.long)`,
+  bars: backtestBars,
+  options: { backtest: { initialCapital: 1000 } }
+});
+delete global.self;
+assert.ok(workerProgressMessages.some((message) => message.type === 'progress' && message.requestId === 'progress-test'));
 assert.ok(PineScriptRuntime.limits.maxOperations >= 100000);
 assert.ok(PineScriptRuntime.limits.compileCacheSize >= 16);
 const blockFunctionPreview = PineScriptRuntime.run(`indicator("Block function")

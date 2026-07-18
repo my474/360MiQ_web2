@@ -1824,6 +1824,7 @@
   function run(compiledOrSource, bars, options) {
     options = options || {};
     bars = Array.isArray(bars) ? bars : [];
+    var onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
     var compiled = typeof compiledOrSource === 'string' ? compile(compiledOrSource) : compiledOrSource;
     var isStrategyScript = (compiled.statements || []).some(function (statement) {
       return statement.type === 'declaration' && statement.expression && statement.expression.callee && statement.expression.callee.name === 'strategy';
@@ -2842,6 +2843,9 @@
           fillPasses += 1;
         }
         strategyStateHistory[backtestIndex] = backtestSession.endBar(backtestIndex);
+        if (onProgress && (backtestIndex === 0 || backtestIndex === bars.length - 1 || backtestIndex % Math.max(1, Math.floor(bars.length / 20)) === 0)) {
+          onProgress({ stage: 'backtest', progress: (backtestIndex + 1) / Math.max(1, bars.length), barIndex: backtestIndex, totalBars: bars.length });
+        }
       }
     } else {
       executeStatements(compiled.statements, env, 0);
@@ -2930,7 +2934,21 @@
 
   function runInWorker(message) {
     try {
-      var result = run(message.source, message.bars, message.options || {});
+      var workerOptions = {};
+      Object.keys(message.options || {}).forEach(function (key) { workerOptions[key] = message.options[key]; });
+      if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
+        workerOptions.onProgress = function (detail) {
+          self.postMessage({
+            type: 'progress',
+            requestId: message.requestId || null,
+            stage: detail.stage,
+            progress: detail.progress,
+            barIndex: detail.barIndex,
+            totalBars: detail.totalBars
+          });
+        };
+      }
+      var result = run(message.source, message.bars, workerOptions);
       return { ok: true, result: result };
     } catch (error) {
       return { ok: false, error: { message: error.toString(), line: error.line, column: error.column } };

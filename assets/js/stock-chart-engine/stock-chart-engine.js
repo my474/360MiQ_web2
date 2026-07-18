@@ -669,17 +669,31 @@
         high: toNumber(bar[2], 0),
         low: toNumber(bar[3], 0),
         close: toNumber(bar[4], 0),
-        volume: toNumber(bar[5], 0)
+        volume: toNumber(bar[5], 0),
+        adjustedClose: NaN,
+        adjusted: false,
+        priceBasis: '',
+        splitFactor: NaN,
+        dividend: NaN,
+        timezone: ''
       };
     }
 
+    var adjustedClose = toNumber(bar && (bar.adjustedClose != null ? bar.adjustedClose : bar.adjClose != null ? bar.adjClose : bar.adj_close), NaN);
+    var priceBasis = String(bar && (bar.priceBasis || bar.price_basis || '') || '').toLowerCase();
     return {
       time: normalizeTime(bar.time || bar.t || bar.date),
       open: toNumber(bar.open || bar.o, 0),
       high: toNumber(bar.high || bar.h, 0),
       low: toNumber(bar.low || bar.l, 0),
       close: toNumber(bar.close || bar.c, 0),
-      volume: toNumber(bar.volume || bar.v, 0)
+      volume: toNumber(bar.volume || bar.v, 0),
+      adjustedClose: adjustedClose,
+      adjusted: bar && (bar.adjusted === true || bar.isAdjusted === true || priceBasis === 'adjusted' || Number.isFinite(adjustedClose)),
+      priceBasis: priceBasis || (bar && bar.adjusted === true ? 'adjusted' : ''),
+      splitFactor: toNumber(bar && (bar.splitFactor != null ? bar.splitFactor : bar.split_factor != null ? bar.split_factor : bar.split), NaN),
+      dividend: toNumber(bar && (bar.dividend != null ? bar.dividend : bar.dividends != null ? bar.dividends : bar.cashDividend), NaN),
+      timezone: String(bar && (bar.timezone || bar.tz || '') || '')
     };
   }
 
@@ -797,7 +811,13 @@
           high: bar.high,
           low: bar.low,
           close: bar.close,
-          volume: bar.volume
+          volume: bar.volume,
+          adjustedClose: Number.isFinite(bar.adjustedClose) ? bar.adjustedClose : NaN,
+          adjusted: !!bar.adjusted,
+          priceBasis: bar.priceBasis || '',
+          splitFactor: Number.isFinite(bar.splitFactor) ? bar.splitFactor : NaN,
+          dividend: Number.isFinite(bar.dividend) ? bar.dividend : NaN,
+          timezone: bar.timezone || ''
         };
         buckets.push(current);
         return;
@@ -806,6 +826,11 @@
       current.low = Math.min(current.low, bar.low);
       current.close = bar.close;
       current.volume += bar.volume;
+      current.adjusted = current.adjusted || !!bar.adjusted;
+      if (bar.priceBasis && current.priceBasis && current.priceBasis !== bar.priceBasis) current.priceBasis = 'mixed';
+      else if (bar.priceBasis) current.priceBasis = bar.priceBasis;
+      if (Number.isFinite(bar.splitFactor) && bar.splitFactor !== 1) current.splitFactor = bar.splitFactor;
+      if (Number.isFinite(bar.dividend)) current.dividend = (Number.isFinite(current.dividend) ? current.dividend : 0) + bar.dividend;
     });
     return buckets;
   }
@@ -2299,13 +2324,14 @@
     this.pineEditorHistory = null;
     this.pineWorker = null;
     this.pineWorkerRequests = {};
+    this.pineWorkerProgress = {};
     this.pineWorkerSequence = 0;
     this.pineComputeRevision = 0;
     this.pineSecurityLoads = {};
     this.pineSecurityErrors = {};
     this.pineWorkerDisabled = false;
     this.pineWorkerError = null;
-    this.strategyTesterState = { indicatorId: null, result: null, view: 'overview', visible: false };
+    this.strategyTesterState = { indicatorId: null, result: null, view: 'overview', visible: false, selectedTrade: null };
     this.pineWorkerMessageListener = this.handlePineWorkerMessage.bind(this);
     this.pineWorkerErrorListener = this.handlePineWorkerError.bind(this);
     this.pineWindowPointerMoveListener = this.handlePineWindowPointerMove.bind(this);
@@ -2532,6 +2558,12 @@
       if (action === 'theme') self.toggleTheme();
     });
     this.strategyTesterPopup.addEventListener('click', function (event) {
+      var exportButton = closestAttribute(event.target, 'data-sce-strategy-export');
+      if (exportButton) {
+        event.preventDefault();
+        self.downloadStrategyReport(exportButton.getAttribute('data-sce-strategy-export'));
+        return;
+      }
       var tab = closestAttribute(event.target, 'data-sce-strategy-tab');
       if (tab) {
         event.preventDefault();
@@ -2548,7 +2580,9 @@
       var trade = closestAttribute(event.target, 'data-sce-strategy-trade');
       if (trade) {
         event.preventDefault();
-        self.focusStrategyTrade(Number(trade.getAttribute('data-sce-strategy-trade')));
+        self.strategyTesterState.selectedTrade = Number(trade.getAttribute('data-sce-strategy-trade'));
+        self.focusStrategyTrade(self.strategyTesterState.selectedTrade);
+        self.renderStrategyTester();
       }
     });
     this.strategyTesterPopup.addEventListener('change', function (event) {
@@ -2749,6 +2783,7 @@
       this.pineWorker = null;
     }
     this.pineWorkerRequests = {};
+    this.pineWorkerProgress = {};
     clearTimeout(this.autosaveTimer);
     this.container.innerHTML = '';
   };
@@ -6874,7 +6909,7 @@
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.5';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260718.6';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -6899,11 +6934,14 @@
         requestId: requestId,
         revision: revision,
         code: code,
+        progress: 0,
+        stage: 'queued',
         inputKey: JSON.stringify({
           pineValues: indicator.inputs && indicator.inputs.pineValues || {},
           backtest: indicator.inputs && indicator.inputs.backtest || {}
         })
       };
+      self.pineWorkerProgress[indicator.id] = { progress: 0, stage: 'Queued' };
       try {
         worker.postMessage({
           requestId: requestId,
@@ -6923,6 +6961,7 @@
         });
       } catch (error) {
         delete self.pineWorkerRequests[indicator.id];
+        delete self.pineWorkerProgress[indicator.id];
       }
     });
   };
@@ -6937,17 +6976,29 @@
       if (candidate && candidate.requestId === message.requestId) {
         request = candidate;
         indicator = self.document.indicators.filter(function (item) { return item.id === indicatorId; })[0] || null;
-        delete self.pineWorkerRequests[indicatorId];
+        if (message.type !== 'progress') delete self.pineWorkerRequests[indicatorId];
         return true;
       }
       return false;
     });
     if (!request || this.destroyed || request.revision !== this.pineComputeRevision || !indicator) return;
+    if (message.type === 'progress') {
+      var progress = clamp(Number(message.progress) || 0, 0, 1);
+      request.progress = progress;
+      request.stage = message.stage || 'backtest';
+      this.pineWorkerProgress[indicator.id] = { progress: progress, stage: request.stage, barIndex: message.barIndex, totalBars: message.totalBars };
+      this.renderStrategyTester();
+      return;
+    }
+    delete this.pineWorkerProgress[indicator.id];
     if (request.code !== (indicator.inputs && indicator.inputs.code || '') || request.inputKey !== JSON.stringify({
       pineValues: indicator.inputs && indicator.inputs.pineValues || {},
       backtest: indicator.inputs && indicator.inputs.backtest || {}
     })) return;
-    if (!message.ok || !message.result) return;
+    if (!message.ok || !message.result) {
+      this.updateStrategyTester();
+      return;
+    }
     var result = pineIndicatorResultFromRuntime(indicator, message.result);
     result.computeMode = 'worker';
     this.indicatorResults[indicator.id] = result;
@@ -6964,6 +7015,7 @@
     this.pineWorkerError = event && event.message ? event.message : 'Pine Script worker failed.';
     this.pineWorkerDisabled = true;
     this.pineWorkerRequests = {};
+    this.pineWorkerProgress = {};
     if (this.pineWorker) {
       if (typeof this.pineWorker.terminate === 'function') this.pineWorker.terminate();
       this.pineWorker = null;
@@ -7204,11 +7256,13 @@
     if (!indicator) {
       this.strategyTesterState.indicatorId = null;
       this.strategyTesterState.result = null;
+      this.strategyTesterState.selectedTrade = null;
       this.closeStrategyTester();
       return;
     }
     this.strategyTesterState.indicatorId = indicator.id;
     this.strategyTesterState.result = this.indicatorResults[indicator.id].strategyBacktest;
+    if (!this.strategyTesterState.result.trades || !this.strategyTesterState.result.trades[this.strategyTesterState.selectedTrade]) this.strategyTesterState.selectedTrade = null;
     if (this.strategyTesterState.visible) this.renderStrategyTester();
   };
 
@@ -7236,14 +7290,16 @@
 
   Chart.prototype.strategyDiagnosticSeverity = function (item) {
     var type = String(item && item.type || '').toLowerCase();
-    if (['data', 'data-order', 'duplicate-time', 'bar-magnifier-data', 'bar-magnifier-fallback', 'execution-mode', 'ledger-integrity'].indexOf(type) !== -1) return 'warning';
-    if (['risk', 'margin', 'invalid-order', 'invalid-price', 'invalid-quantity', 'date-range', 'limit', 'pyramiding'].indexOf(type) !== -1) return 'event';
+    if (['data', 'data-geometry', 'data-order', 'data-basis', 'data-gap', 'duplicate-time', 'bar-magnifier-data', 'bar-magnifier-fallback', 'execution-mode', 'ledger-integrity'].indexOf(type) !== -1) return 'warning';
+    if (['risk', 'risk-halt', 'margin', 'invalid-order', 'invalid-price', 'invalid-quantity', 'date-range', 'limit', 'pyramiding'].indexOf(type) !== -1) return 'event';
     return 'info';
   };
 
   Chart.prototype.strategyAssumptionsHtml = function (result) {
     var assumptions = result && result.assumptions || {};
-    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small></section>';
+    var quality = result && result.dataQuality || {};
+    var qualitySummary = Number.isFinite(Number(quality.inputBars)) ? 'Data quality: ' + String(quality.validBars || 0) + '/' + String(quality.inputBars || 0) + ' valid bars, ' + String(quality.largeCalendarGaps && quality.largeCalendarGaps.length || 0) + ' large calendar gap(s), ' + String(quality.priceBasis || 'unspecified') + ' prices, ' + String(quality.timezone || 'UTC') + '.' : '';
+    return '<section class="sce-strategy-assumptions"><strong>EOD fill policy</strong><p>' + escapeHtml(assumptions.intrabarPathDescription || 'Historical fills use the chart OHLC bar and a deterministic inferred intrabar path.') + '</p><p>' + escapeHtml(assumptions.sameBarStopTarget || 'When both a stop and target are touched, the first level reached by the inferred path wins.') + '</p><small>' + escapeHtml(assumptions.gapFill || '') + '</small>' + (qualitySummary ? '<small>' + escapeHtml(qualitySummary) + '</small>' : '') + '</section>';
   };
 
   Chart.prototype.strategyCurveHtml = function (label, points, colorClass, zeroBaseline) {
@@ -7274,6 +7330,73 @@
     if (!Number.isFinite(value)) return '';
     var date = new Date((value > 100000000000 ? value : value * 1000));
     return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : String(time);
+  };
+
+  Chart.prototype.downloadStrategyReport = function (format) {
+    var result = this.strategyTesterState && this.strategyTesterState.result;
+    if (!result || typeof document === 'undefined' || !document.createElement) return '';
+    var symbol = String(this.document && this.document.symbol || 'strategy').trim() || 'strategy';
+    var timeframe = String(result.config && result.config.timeframe || this.document && this.document.interval || '1D');
+    var report = {
+      type: 'stock-chart-engine-strategy-report',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      symbol: symbol,
+      timeframe: timeframe,
+      assumptions: result.assumptions || {},
+      dataQuality: result.dataQuality || {},
+      config: result.config || {},
+      metrics: result.metrics || {},
+      risk: result.risk || {},
+      trades: result.trades || [],
+      openTrades: result.openTrades || [],
+      pendingOrders: result.pendingOrders || [],
+      executions: result.executions || [],
+      diagnostics: result.diagnostics || []
+    };
+    var normalizedFormat = String(format || 'json').toLowerCase() === 'csv' ? 'csv' : 'json';
+    var text = '';
+    if (normalizedFormat === 'json') {
+      text = JSON.stringify(report, null, 2);
+    } else {
+      var csvEscape = function (value) {
+        var stringValue = value == null ? '' : String(value);
+        return /[",\r\n]/.test(stringValue) ? '"' + stringValue.replace(/"/g, '""') + '"' : stringValue;
+      };
+      var lines = [['Report', 'Strategy Tester'], ['Symbol', symbol], ['Timeframe', timeframe], ['Exported at', report.exportedAt], [], ['Metric', 'Value']];
+      Object.keys(report.metrics).forEach(function (key) { lines.push([key, report.metrics[key]]); });
+      lines.push([], ['Trade #', 'Entry date', 'Exit date', 'Side', 'Quantity', 'Entry price', 'Exit price', 'Net profit', 'Profit %', 'Bars held', 'Entry ID', 'Exit ID', 'Exit reason']);
+      report.trades.forEach(function (trade) {
+        lines.push([trade.number, this.strategyDateLabel(trade.entryTime), this.strategyDateLabel(trade.exitTime), trade.direction, trade.quantity, trade.entryPrice, trade.exitPrice, trade.netProfit, trade.profitPercent, trade.barsHeld, trade.entryId, trade.exitId, trade.exitReason]);
+      }, this);
+      lines.push([], ['Execution', 'Role', 'Date', 'Side', 'Quantity', 'Requested price', 'Fill price', 'Commission', 'Order ID', 'Reason']);
+      report.executions.forEach(function (execution) {
+        lines.push([execution.type, execution.role, this.strategyDateLabel(execution.time), execution.direction, execution.quantity, execution.requestedPrice, execution.price, execution.commission, execution.orderId, execution.reason]);
+      }, this);
+      text = lines.map(function (row) { return row.map(csvEscape).join(','); }).join('\r\n');
+    }
+    var link = document.createElement('a');
+    var objectUrl = null;
+    var mime = normalizedFormat === 'csv' ? 'text/csv;charset=utf-8' : 'application/json';
+    if (typeof Blob !== 'undefined') {
+      var urlApi = typeof URL !== 'undefined' ? URL : (typeof window !== 'undefined' ? window.URL : null);
+      if (urlApi && urlApi.createObjectURL) {
+        objectUrl = urlApi.createObjectURL(new Blob([text], { type: mime }));
+        link.href = objectUrl;
+      }
+    }
+    if (!link.href) link.href = 'data:' + mime + ',' + encodeURIComponent(text);
+    link.download = symbol.replace(/[^a-z0-9._-]+/gi, '_') + '-' + timeframe.replace(/[^a-z0-9._-]+/gi, '_') + '-strategy-report.' + normalizedFormat;
+    if (document.body && document.body.appendChild) document.body.appendChild(link);
+    if (link.click) link.click();
+    if (link.parentNode && link.parentNode.removeChild) link.parentNode.removeChild(link);
+    if (objectUrl) {
+      setTimeout(function () {
+        var revokeApi = typeof URL !== 'undefined' ? URL : (typeof window !== 'undefined' ? window.URL : null);
+        if (revokeApi && revokeApi.revokeObjectURL) revokeApi.revokeObjectURL(objectUrl);
+      }, 0);
+    }
+    return text;
   };
 
   Chart.prototype.renderStrategyTester = function () {
@@ -7310,6 +7433,7 @@
         '<div class="sce-strategy-run-status ' + overviewStatusClass + '"><strong>' + escapeHtml(overviewStatus) + '</strong><span>' + escapeHtml((result.equityCurve || []).length + ' EOD bars • ' + overviewDiagnostics.length + ' diagnostic event' + (overviewDiagnostics.length === 1 ? '' : 's')) + '</span></div>' +
         '<div class="sce-strategy-curves">' +
         this.strategyCurveHtml('Equity', result.equityCurve, 'is-equity', false) +
+        this.strategyCurveHtml('Buy & hold', result.buyAndHoldCurve, 'is-buy-and-hold', false) +
         this.strategyCurveHtml('Drawdown', result.drawdownCurve, 'is-drawdown', true) +
         '</div>' +
         this.strategyAssumptionsHtml(result);
@@ -7347,7 +7471,9 @@
       var trades = result.trades || [];
       content = trades.length ? '<div class="sce-strategy-trades-table"><div class="sce-strategy-trade-row is-header"><span>#</span><span>Entry</span><span>Exit</span><span>Side</span><span>Qty</span><span>P&amp;L</span></div>' + trades.map(function (trade, index) {
         return '<button type="button" class="sce-strategy-trade-row" data-sce-strategy-trade="' + index + '"><span>' + escapeHtml(String(trade.number || index + 1)) + '</span><span>' + escapeHtml(this.strategyDateLabel(trade.entryTime)) + '</span><span>' + escapeHtml(this.strategyDateLabel(trade.exitTime)) + '</span><span>' + escapeHtml(trade.direction) + '</span><span>' + escapeHtml(formatNumber(trade.quantity)) + '</span><strong class="' + (trade.netProfit >= 0 ? 'is-positive' : 'is-negative') + '">' + escapeHtml(formatNumber(trade.netProfit)) + '</strong></button>';
-      }, this).join('') + '</div>' : '<p class="sce-strategy-empty">No closed trades in the selected range.</p>';
+      }, this).join('') + '</div>' + (Number.isFinite(Number(state.selectedTrade)) && trades[Number(state.selectedTrade)] ? (function (trade, chart) {
+        return '<section class="sce-strategy-trade-detail"><h3>Trade #' + escapeHtml(String(trade.number || Number(state.selectedTrade) + 1)) + '</h3><div><span>Entry</span><strong>' + escapeHtml(chart.strategyDateLabel(trade.entryTime) + ' at ' + formatNumber(trade.entryPrice)) + '</strong></div><div><span>Exit</span><strong>' + escapeHtml(chart.strategyDateLabel(trade.exitTime) + ' at ' + formatNumber(trade.exitPrice)) + '</strong></div><div><span>Position</span><strong>' + escapeHtml(trade.direction + ' / ' + formatNumber(trade.quantity) + ' / ' + String(trade.barsHeld) + ' bars') + '</strong></div><div><span>Profit</span><strong class="' + (trade.netProfit >= 0 ? 'is-positive' : 'is-negative') + '">' + escapeHtml(formatNumber(trade.netProfit) + ' (' + formatNumber(trade.profitPercent) + '%)') + '</strong></div><div><span>Order IDs</span><strong>' + escapeHtml(String(trade.entryId || '') + ' / ' + String(trade.exitId || '')) + '</strong></div><div><span>Exit reason</span><strong>' + escapeHtml(String(trade.exitReason || '')) + '</strong></div>' + (trade.entryComment || trade.exitComment ? '<p>' + escapeHtml(String(trade.entryComment || trade.exitComment)) + '</p>' : '') + '</section>';
+      }(trades[Number(state.selectedTrade)], this)) : '<p class="sce-strategy-empty">Select a trade to inspect its fills and identifiers.</p>') : '<p class="sce-strategy-empty">No closed trades in the selected range.</p>';
     } else if (view === 'properties') {
       var config = merge({}, indicator.inputs && indicator.inputs.backtest || {}, result.config || {});
       var dateFrom = config.dateFrom == null ? '' : this.strategyDateLabel(config.dateFrom);
@@ -7401,7 +7527,9 @@
         this.strategyAssumptionsHtml(result) +
         '</div>';
     }
-    popup.innerHTML = '<div class="sce-strategy-tester-header"><strong>Strategy Tester</strong><span>' + escapeHtml(indicator.inputs && indicator.inputs.title || 'Pine strategy') + '</span><button type="button" data-sce-strategy-close title="Close Strategy Tester" aria-label="Close Strategy Tester">' + paneControlIconSvg('close') + '</button></div>' +
+    var workerProgress = this.pineWorkerProgress[indicator.id];
+    var progressHtml = workerProgress ? '<small class="sce-strategy-progress">' + escapeHtml(String(workerProgress.stage || 'Computing')) + ' ' + escapeHtml(formatNumber(Number(workerProgress.progress || 0) * 100)) + '%</small>' : '';
+    popup.innerHTML = '<div class="sce-strategy-tester-header"><strong>Strategy Tester</strong><span>' + escapeHtml(indicator.inputs && indicator.inputs.title || 'Pine strategy') + progressHtml + '</span><div class="sce-strategy-header-actions"><button type="button" data-sce-strategy-export="csv" title="Export trades and performance as CSV">CSV</button><button type="button" data-sce-strategy-export="json" title="Export trades and performance as JSON">JSON</button><button type="button" data-sce-strategy-close title="Close Strategy Tester" aria-label="Close Strategy Tester">' + paneControlIconSvg('close') + '</button></div></div>' +
       '<nav class="sce-strategy-tabs" role="tablist">' + tabs.map(function (tab) { return '<button type="button" data-sce-strategy-tab="' + tab[0] + '" class="' + (view === tab[0] ? 'is-active' : '') + '" role="tab" aria-selected="' + (view === tab[0] ? 'true' : 'false') + '">' + escapeHtml(tab[1]) + '</button>'; }).join('') + '</nav>' +
       '<div class="sce-strategy-tester-content">' + content + '</div>';
     popup.removeAttribute('hidden');
@@ -7461,9 +7589,13 @@
     if (!this.strategyTooltip || !execution || !pointer) return;
     var direction = execution.direction === 'long' ? 'Long' : 'Short';
     var status = execution.status === 'pending' ? 'Pending ' : '';
-    this.strategyTooltip.innerHTML = '<strong>' + escapeHtml(status + direction + ' ' + execution.type) + '</strong>' +
+    var role = execution.role ? String(execution.role).replace(/^./, function (letter) { return letter.toUpperCase(); }) : '';
+    var requested = Number.isFinite(Number(execution.requestedPrice)) ? '<span>Requested ' + escapeHtml(formatNumber(execution.requestedPrice)) + '</span>' : '';
+    var commission = Number.isFinite(Number(execution.commission)) ? ' / fee ' + escapeHtml(formatNumber(execution.commission)) : '';
+    var comment = execution.comment ? '<span>' + escapeHtml(execution.comment) + '</span>' : '';
+    this.strategyTooltip.innerHTML = '<strong>' + escapeHtml(status + (role ? role + ' ' : '') + direction + ' ' + execution.type) + '</strong>' +
       '<span>' + escapeHtml(String(execution.orderId || '')) + '</span>' +
-      '<span>Qty ' + escapeHtml(formatNumber(execution.quantity)) + ' at ' + escapeHtml(formatNumber(execution.price)) + '</span>' +
+      '<span>Qty ' + escapeHtml(formatNumber(execution.quantity)) + ' at ' + escapeHtml(formatNumber(execution.price)) + commission + '</span>' + requested + comment +
       '<span>' + escapeHtml(this.strategyDateLabel(execution.time)) + (execution.reason ? ' · ' + escapeHtml(execution.reason) : '') + '</span>';
     this.strategyTooltip.style.left = Math.max(4, pointer.x + 12) + 'px';
     this.strategyTooltip.style.top = Math.max(4, pointer.y - 12) + 'px';
@@ -9175,16 +9307,24 @@
       var y = self.yForValue(execution.price, rect, range);
       if (y == null || x < rect.x - 10 || x > rect.x + rect.width + 10) return;
       var isLong = execution.direction === 'long';
+      var isExit = execution.role === 'exit' || execution.type === 'close' || execution.type === 'close_all';
       var color = isLong ? theme.up : theme.down;
-      var markerY = y + (isLong ? -8 : 8);
+      var markerY = y + (isExit ? (isLong ? 9 : -9) : (isLong ? -8 : 8));
       ctx.globalAlpha = 0.88;
-      ctx.fillStyle = color;
-      ctx.strokeStyle = theme.paneBackground;
+      ctx.fillStyle = isExit ? theme.paneBackground : color;
+      ctx.strokeStyle = color;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x, markerY + (isLong ? -5 : 5));
-      ctx.lineTo(x - 5, markerY + (isLong ? 4 : -4));
-      ctx.lineTo(x + 5, markerY + (isLong ? 4 : -4));
+      if (isExit) {
+        ctx.moveTo(x, markerY - 6);
+        ctx.lineTo(x + 6, markerY);
+        ctx.lineTo(x, markerY + 6);
+        ctx.lineTo(x - 6, markerY);
+      } else {
+        ctx.moveTo(x, markerY + (isLong ? -5 : 5));
+        ctx.lineTo(x - 5, markerY + (isLong ? 4 : -4));
+        ctx.lineTo(x + 5, markerY + (isLong ? 4 : -4));
+      }
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
