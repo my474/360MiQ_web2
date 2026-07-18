@@ -12608,7 +12608,9 @@
     return { name: name, type: 'Keyword', category: 'keyword', signature: detail[0], description: detail[1], status: 'Supported' };
   })).concat(Object.keys(PINE_EDITOR_BUILT_IN_VARIABLES).map(function (name) {
     return { name: name, type: 'Built-in variable', category: 'built-in-variable', signature: name, description: PINE_EDITOR_BUILT_IN_DETAILS[name] || 'Built-in Pine series variable.', status: 'Supported' };
-  })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
+  })).concat(Object.keys(PINE_EDITOR_CONSTANTS).filter(function (name) {
+    return ['true', 'false', 'na'].indexOf(name) === -1;
+  }).map(function (name) {
     return { name: name, type: 'Constant', category: 'constant', signature: name, description: PINE_EDITOR_CONSTANT_DETAILS[name] || 'Built-in Pine constant or enum value.', status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
     var constant = pineIsConstantName(entry[0]);

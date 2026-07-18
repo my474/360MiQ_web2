@@ -8,6 +8,10 @@ assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => ite
 assert.strictEqual(pineAuditGeneric.length, 0);
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => item.status === 'Supported'));
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => ['Function', 'Built-in variable', 'Constant', 'Syntax', 'Keyword'].includes(item.type)));
+assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => ['true', 'false', 'na'].includes(item.name)).length, 0);
+assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'true'));
+assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'false'));
+assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'na'));
 const lineSetX1Documentation = StockChartEngine.pineScriptDocumentation.find((item) => item.name === 'line.set_x1');
 assert.strictEqual(lineSetX1Documentation.signature, 'line.set_x1(id, x)');
 assert.ok(lineSetX1Documentation.description.includes('first point x-coordinate'));
