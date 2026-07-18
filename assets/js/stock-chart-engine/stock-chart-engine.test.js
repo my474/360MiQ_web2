@@ -10,6 +10,13 @@ assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => item.status =
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => ['Function', 'Built-in variable', 'Constant', 'Syntax', 'Keyword'].includes(item.type)));
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => item.example && item.example.trim().length > 0));
 assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => !/\.\.\./.test(item.example)));
+assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => item.name === 'for / while').length, 0);
+const forDocumentation = StockChartEngine.pineScriptDocumentation.filter((item) => item.name === 'for');
+const whileDocumentation = StockChartEngine.pineScriptDocumentation.filter((item) => item.name === 'while');
+assert.strictEqual(forDocumentation.length, 1);
+assert.strictEqual(whileDocumentation.length, 1);
+assert.ok(forDocumentation[0].example.includes('for i = 0 to 10'));
+assert.ok(whileDocumentation[0].example.includes('while i < 10'));
 assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => ['true', 'false', 'na'].includes(item.name)).length, 0);
 assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'true'));
 assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'false'));
@@ -1084,8 +1091,8 @@ const groupedPineDocumentationEntries = [
   { category: 'keyword', query: 'and / or / not', token: 'not' },
   { category: 'keyword', query: 'if / else', token: 'if' },
   { category: 'keyword', query: 'if / else', token: 'else' },
-  { category: 'keyword', query: 'for / while', token: 'for' },
-  { category: 'keyword', query: 'for / while', token: 'while' },
+  { category: 'keyword', query: 'for', token: 'for' },
+  { category: 'keyword', query: 'while', token: 'while' },
   { category: 'keyword', query: 'var / const', token: 'var' },
   { category: 'keyword', query: 'var / const', token: 'const' },
   { category: 'built-in-variable', query: 'open / high / low / close / volume', token: 'open' },
@@ -1103,8 +1110,9 @@ groupedPineDocumentationEntries.forEach(function (entry) {
   pineDocsSearch.value = entry.query;
   pineDocsFilter.value = entry.category;
   chart.renderPineDocumentation(entry.query, entry.category);
-  const tokenPattern = new RegExp('data-sce-pine-doc-insert="(\\d+)" data-sce-pine-doc-insert-text="' + entry.token.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&') + '"');
-  const tokenMatch = pineDocsDetail.innerHTML.match(tokenPattern);
+  const escapedToken = entry.token.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&');
+  const tokenPattern = new RegExp('data-sce-pine-doc-insert="(\\d+)" data-sce-pine-doc-insert-text="' + escapedToken + '"');
+  const tokenMatch = pineDocsDetail.innerHTML.match(tokenPattern) || pineDocsDetail.innerHTML.match(new RegExp('data-sce-pine-doc-insert="(\\d+)"[^>]*>' + escapedToken + '<\\/button>'));
   assert.ok(tokenMatch, 'Expected grouped documentation token: ' + entry.token);
   pineSignatureField.value = '';
   pineSignatureField.selectionStart = 0;
