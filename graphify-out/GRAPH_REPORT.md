@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-07-17)
+# Graph Report - .  (2026-07-18)
 
 ## Corpus Check
-- 118 files
+- 121 files
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1003 nodes ? 1733 edges ? 118 communities detected
+- 1351 nodes ? 2078 edges ? 121 communities detected
 - Extraction: 100% EXTRACTED ? 0% INFERRED ? 0% AMBIGUOUS
 - Token cost: 0 input ? 0 output
 
@@ -93,7 +93,8 @@
 
 ## Source Scope
 - WordPress under `blog/` is excluded per `.codexignore` and `GRAPHIFY.md`.
-- Cache files: 131
+- Cache files: 134
+- Current non-WordPress PHP/JS/TS source files: 121
 
 ## Source Files
 - LLM_SQLiteCreateTable.php
@@ -153,6 +154,9 @@
 - assets\js\seasonality.js
 - assets\js\sectorPerformance.js
 - assets\js\smart-forms.min.js
+- assets\js\stock-chart-engine\pine-backtest-engine.js
+- assets\js\stock-chart-engine\pine-script-runtime.js
+- assets\js\stock-chart-engine\pine-script-worker.js
 - assets\js\stock-chart-engine\stock-chart-engine.js
 - assets\js\stock-chart-engine\stock-chart-engine.test.js
 - assets\js\stockCompare.js
