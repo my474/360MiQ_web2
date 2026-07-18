@@ -35,6 +35,14 @@ Search the `Pine Script reference` panel with a function name, parameter, namesp
 - The complete documented strategy order and trade API for the supported historical emulator: `strategy.entry()`, `strategy.order()`, `strategy.exit()`, `strategy.close()`, `strategy.close_all()`, `strategy.cancel()`, `strategy.cancel_all()`, all six `strategy.risk.*()` rules, `strategy.convert_to_account()`, `strategy.convert_to_symbol()`, `strategy.default_entry_qty()`, and the `strategy.opentrades.*()` and `strategy.closedtrades.*()` accessors.
 - Strategy performance variables include equity, net/gross/open profit and percentages, drawdown/run-up, position and margin state, trade counts, average trade statistics, maximum contracts held, account currency, and `strategy.opentrades.capital_held`. The Strategy Tester exposes fills, pending orders, trade comments, commissions, equity, costs, drawdown, monthly/yearly returns, risk halts, diagnostics, and editable properties. `strategy()` declaration properties are used by default; editing a Strategy Tester property intentionally overrides that declaration for the saved chart layout.
 
+### TradingView indicator mapping
+
+TradingView has two related but different surfaces: its built-in chart indicator catalog and the Pine language reference. The official chart catalog includes the families represented by this engine, including Chaikin Money Flow, Donchian Channels, Fisher Transform, Ichimoku Cloud, Know Sure Thing, Parabolic SAR, Stochastic RSI, Ultimate Oscillator, VWAP, Vortex, VWMA, and Williams %R. See the [official built-in indicator catalog](https://www.tradingview.com/support/folders/43000587405-built-in-indicators/).
+
+The Pine reference does not expose one dedicated function for every chart-menu indicator. It does expose direct series/functions such as `ta.obv`, `ta.accdist`, `ta.vwap`, `ta.sar`, and `ta.tsi`; the official reference is authoritative for the exact version and overloads. This engine therefore marks the one-to-one Pine APIs as direct or built-in and marks chart-menu formulas without a one-to-one Pine call as compatibility helpers. The helper names are intentionally documented in the local reference and autocomplete so a chart indicator can be reproduced in a browser script, but they are not presented as official TradingView built-in names. See the [official Pine Script reference](https://www.tradingview.com/pine-script-reference/v6/).
+
+Relative Strength is a recipe rather than an official `ta.relative_strength` built-in: the editor uses `input.symbol()` plus `request.security()` to align a benchmark series and calculate the ratio. `PINE_SCRIPT` is the host's custom-script indicator, not a TradingView built-in chart indicator.
+
 ## Example
 
 ```pine

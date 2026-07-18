@@ -33,6 +33,24 @@ const strategyEntryDocumentation = StockChartEngine.pineScriptDocumentation.find
 assert.ok(strategyEntryDocumentation.example.includes('strategy.entry("Long", strategy.long)'));
 assert.deepStrictEqual(Object.keys(StockChartEngine.Indicators).sort(), Object.keys(StockChartEngine.pineIndicatorParity).sort());
 assert.ok(Object.values(StockChartEngine.pineIndicatorParity).every((item) => item && item.api && item.mode && Array.isArray(item.outputs)));
+const parityApis = new Set();
+Object.values(StockChartEngine.pineIndicatorParity).forEach((item) => {
+  if (item.api === 'indicator/strategy') {
+    parityApis.add('indicator');
+    parityApis.add('strategy');
+  } else {
+    parityApis.add(item.api);
+  }
+});
+parityApis.forEach((apiName) => {
+  const documentation = StockChartEngine.pineScriptDocumentation.find((item) => item.name === apiName);
+  assert.ok(documentation, `Missing Pine help for native indicator API ${apiName}`);
+  assert.strictEqual(documentation.status, 'Supported');
+  assert.ok(documentation.signature && documentation.signature.trim().length > 0);
+  assert.ok(documentation.description && documentation.description.trim().length > 0);
+  assert.ok(documentation.example && documentation.example.trim().length > 0);
+  assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === apiName), `Missing Pine autocomplete for ${apiName}`);
+});
 
 class FakeClassList {
   constructor(element) {
