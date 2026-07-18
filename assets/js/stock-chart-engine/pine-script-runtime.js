@@ -2045,6 +2045,8 @@
     var securityRequestKeys = Object.create(null);
     var securitySeriesCache = Object.create(null);
     var securityData = options.security || {};
+    var requestData = options.requestData || {};
+    var requestWarnings = Object.create(null);
     var strategyOrders = [];
     var backtestSession = null;
     var backtestBarOrders = [];
@@ -2138,9 +2140,79 @@
       return securitySeriesCache[key];
     }
 
+    function requestDataCandidate(kind, args) {
+      var symbol = args && args[0] != null ? String(valueAt(args[0], 0) || '').trim().toUpperCase() : '';
+      var metric = args && args[1] != null ? String(valueAt(args[1], 0) || '').trim() : '';
+      var container = requestData && requestData[kind] != null ? requestData[kind] : requestData;
+      if (container == null) return null;
+      if (Array.isArray(container)) return container;
+      var keys = [symbol + '|' + metric, symbol + ':' + metric, symbol, metric, 'default'];
+      var nested = container.symbols || container.series || container.data || container;
+      for (var keyIndex = 0; keyIndex < keys.length; keyIndex += 1) {
+        if (keys[keyIndex] && Object.prototype.hasOwnProperty.call(nested, keys[keyIndex])) return nested[keys[keyIndex]];
+      }
+      return null;
+    }
+    function requestDataRows(payload) {
+      if (payload && !Array.isArray(payload) && Array.isArray(payload.data)) return payload.data;
+      if (payload && !Array.isArray(payload) && Array.isArray(payload.values)) {
+        var times = Array.isArray(payload.times) ? payload.times : [];
+        return payload.values.map(function (value, index) { return { time: times[index], value: value }; });
+      }
+      return Array.isArray(payload) ? payload : null;
+    }
+    function requestRowValue(row) {
+      if (row == null || typeof row !== 'object') return row;
+      if (row.value != null) return row.value;
+      if (row.close != null) return row.close;
+      if (row.amount != null) return row.amount;
+      if (row.eps != null) return row.eps;
+      if (row.value1 != null) return row.value1;
+      return NaN;
+    }
+    function requestRowTime(row) {
+      if (row == null || typeof row !== 'object') return NaN;
+      var time = Number(row.time != null ? row.time : row.timestamp != null ? row.timestamp : row.date);
+      if (!Number.isFinite(time)) return NaN;
+      return Math.abs(time) < 100000000000 ? time * 1000 : time;
+    }
+    function requestSeries(kind, args) {
+      var payload = requestDataCandidate(kind, args);
+      var rows = requestDataRows(payload);
+      if (payload != null && !rows && (typeof payload === 'number' || typeof payload === 'string')) return Number(payload);
+      if (!rows) {
+        if (!requestWarnings[kind]) {
+          requestWarnings[kind] = true;
+          warnings.push('request.' + kind + ' has no matching requestData series; returned na.');
+        }
+        return new PineSeries(function () { return NaN; }, 'request.' + kind);
+      }
+      var direct = rows.length === bars.length && rows.every(function (row) { return typeof row !== 'object' || row.time == null; });
+      var points = direct ? rows.map(requestRowValue) : rows.map(function (row, index) { return { time: requestRowTime(row), value: requestRowValue(row), index: index }; }).filter(function (row) { return Number.isFinite(row.time); }).sort(function (a, b) { return a.time - b.time; });
+      var gaps = args && args.named && (args.named.gaps === 'gaps_on' || args.named.gaps === 'on');
+      return new PineSeries(function (index) {
+        if (direct) return points[index];
+        var barTime = securityTime(bars[index], index);
+        var selected = null;
+        for (var pointIndex = 0; pointIndex < points.length; pointIndex += 1) {
+          if (points[pointIndex].time > barTime) break;
+          selected = points[pointIndex];
+        }
+        if (!selected) return NaN;
+        if (gaps && selected.time < barTime) return NaN;
+        return selected.value;
+      }, 'request.' + kind);
+    }
+
     env.request = {
-      security: function () { return NaN; }, security_lower_tf: function () { return []; }, currency_rate: function () { return NaN; }, dividends: function () { return NaN; },
-      earnings: function () { return NaN; }, financial: function () { return NaN; }, quandl: function () { return NaN; }, seed: function () { return NaN; }, splits: function () { return NaN; }
+      security: function () { return NaN; }, security_lower_tf: function () { return []; },
+      currency_rate: function (args) { return requestSeries('currency_rate', args); },
+      dividends: function (args) { return requestSeries('dividends', args); },
+      earnings: function (args) { return requestSeries('earnings', args); },
+      financial: function (args) { return requestSeries('financial', args); },
+      quandl: function (args) { return requestSeries('quandl', args); },
+      seed: function (args) { return requestSeries('seed', args); },
+      splits: function (args) { return requestSeries('splits', args); }
     };
     function strategyStateSeries(key, fallback) {
       return new PineSeries(function (index) {
@@ -2480,6 +2552,10 @@
       if (value == null) return fallback;
       return valueAt(value, Math.max(0, bars.length - 1));
     }
+    function drawingArgumentValue(args, name, position, fallback) {
+      if (args.named && args.named[name] != null) return args.named[name];
+      return args[position] == null ? fallback : args[position];
+    }
     function labelNewFunction(args) {
       pineDrawings.push({
         type: 'label',
@@ -2500,6 +2576,8 @@
         y1: asNumber(drawingArgument(args, 'y1', 1, 0, NaN)),
         x2: asNumber(drawingArgument(args, 'x2', 2, 0, bars.length - 1)),
         y2: asNumber(drawingArgument(args, 'y2', 3, 0, NaN)),
+        xloc: drawingArgument(args, 'xloc', 4, 0, 'bar_index'),
+        extend: drawingArgument(args, 'extend', 5, 0, 'none'),
         color: drawingArgument(args, 'color', 6, 0, '#2563eb'),
         width: Math.max(1, Math.min(8, Math.floor(asNumber(drawingArgument(args, 'width', 8, 0, 2))) || 2)),
         style: drawingArgument(args, 'style', 7, 0, 'solid')
@@ -2548,12 +2626,22 @@
     function copyDrawing(args) { var original = args[0]; var copy = original && typeof original === 'object' ? mergeObject(original) : original; if (copy && typeof copy === 'object') pineDrawings.push(copy); return copy; }
     function mergeObject(value) { var copy = {}; Object.keys(value || {}).forEach(function (key) { copy[key] = value[key]; }); return copy; }
     function objectGetter(property) { return function (args) { return args[0] && args[0][property]; }; }
-    function objectSetter(property) { return function (args) { if (args[0] && typeof args[0] === 'object') args[0][property] = args[1]; return args[0]; }; }
+    function objectSetter(property) { return function (args) { if (args[0] && typeof args[0] === 'object') args[0][property] = valueAt(args[1], Math.max(0, bars.length - 1)); return args[0]; }; }
     env.label = { new: labelNewFunction, delete: removeDrawing, copy: copyDrawing, get_x: objectGetter('x'), get_y: objectGetter('y'), get_text: objectGetter('text'), set_x: objectSetter('x'), set_y: objectSetter('y'), set_xy: function (args) { if (args[0]) { args[0].x = args[1]; args[0].y = args[2]; } return args[0]; }, set_text: objectSetter('text'), set_textcolor: objectSetter('textColor'), set_color: objectSetter('color'), set_style: objectSetter('style'), set_size: objectSetter('size'), set_textalign: objectSetter('textAlign'), set_tooltip: objectSetter('tooltip') };
-    env.line = { new: lineNewFunction, delete: removeDrawing, copy: copyDrawing, get_x1: objectGetter('x1'), get_x2: objectGetter('x2'), get_y1: objectGetter('y1'), get_y2: objectGetter('y2'), get_price: function (args) { var line = args[0]; var x = asNumber(args[1]); if (!line || line.x1 === line.x2) return line ? line.y1 : NaN; return line.y1 + (line.y2 - line.y1) * (x - line.x1) / (line.x2 - line.x1); }, set_x1: objectSetter('x1'), set_x2: objectSetter('x2'), set_y1: objectSetter('y1'), set_y2: objectSetter('y2'), set_xy1: function (args) { if (args[0]) { args[0].x1 = args[1]; args[0].y1 = args[2]; } return args[0]; }, set_xy2: function (args) { if (args[0]) { args[0].x2 = args[1]; args[0].y2 = args[2]; } return args[0]; }, set_color: objectSetter('color'), set_style: objectSetter('style'), set_width: objectSetter('width'), set_extend: objectSetter('extend'), get_xloc: objectGetter('xloc'), get_extend: objectGetter('extend') };
+    function setLinePoint(args, first) {
+      var line = args[0];
+      var point = args[1] || {};
+      if (!line || typeof line !== 'object') return line;
+      var prefix = first ? '1' : '2';
+      var x = point.index != null ? point.index : point.time;
+      if (x != null) line['x' + prefix] = valueAt(x, Math.max(0, bars.length - 1));
+      if (point.price != null) line['y' + prefix] = valueAt(point.price, Math.max(0, bars.length - 1));
+      return line;
+    }
+    env.line = { new: lineNewFunction, delete: removeDrawing, copy: copyDrawing, get_x1: objectGetter('x1'), get_x2: objectGetter('x2'), get_y1: objectGetter('y1'), get_y2: objectGetter('y2'), get_price: function (args) { var line = args[0]; var x = asNumber(valueAt(args[1], Math.max(0, bars.length - 1))); if (!line || line.x1 === line.x2) return line ? line.y1 : NaN; return line.y1 + (line.y2 - line.y1) * (x - line.x1) / (line.x2 - line.x1); }, set_x1: objectSetter('x1'), set_x2: objectSetter('x2'), set_y1: objectSetter('y1'), set_y2: objectSetter('y2'), set_xy1: function (args) { if (args[0]) { args[0].x1 = valueAt(args[1], Math.max(0, bars.length - 1)); args[0].y1 = valueAt(args[2], Math.max(0, bars.length - 1)); } return args[0]; }, set_xy2: function (args) { if (args[0]) { args[0].x2 = valueAt(args[1], Math.max(0, bars.length - 1)); args[0].y2 = valueAt(args[2], Math.max(0, bars.length - 1)); } return args[0]; }, set_first_point: function (args) { return setLinePoint(args, true); }, set_second_point: function (args) { return setLinePoint(args, false); }, set_xloc: function (args) { if (args[0]) { args[0].x1 = valueAt(args[1], Math.max(0, bars.length - 1)); args[0].x2 = valueAt(args[2], Math.max(0, bars.length - 1)); args[0].xloc = args[3]; } return args[0]; }, set_color: objectSetter('color'), set_style: objectSetter('style'), set_width: objectSetter('width'), set_extend: objectSetter('extend'), get_xloc: objectGetter('xloc'), get_extend: objectGetter('extend') };
     env.box = { new: boxNewFunction, delete: removeDrawing, copy: copyDrawing, get_left: objectGetter('left'), get_top: objectGetter('top'), get_right: objectGetter('right'), get_bottom: objectGetter('bottom'), set_left: objectSetter('left'), set_top: objectSetter('top'), set_right: objectSetter('right'), set_bottom: objectSetter('bottom'), set_bgcolor: objectSetter('background'), set_border_color: objectSetter('borderColor'), set_border_style: objectSetter('borderStyle'), set_border_width: objectSetter('borderWidth'), set_text: objectSetter('text'), set_text_color: objectSetter('textColor'), set_text_size: objectSetter('textSize'), set_text_halign: objectSetter('textHalign'), set_text_valign: objectSetter('textValign') };
-    env.linefill = { new: function (args) { var fill = { type: 'linefill', line1: args[0], line2: args[1], color: args[2] || '#2563eb' }; pineDrawings.push(fill); return fill; }, delete: removeDrawing, get_line1: objectGetter('line1'), get_line2: objectGetter('line2') };
-    env.polyline = { new: function (args) { var polyline = { type: 'polyline', points: args[0] || [], color: args.named && args.named.line_color || args[1] || '#2563eb', width: args.named && args.named.line_width || 2 }; pineDrawings.push(polyline); return polyline; }, delete: removeDrawing, copy: copyDrawing };
+    env.linefill = { new: function (args) { var fill = { type: 'linefill', line1: args[0], line2: args[1], color: args[2] || '#2563eb' }; pineDrawings.push(fill); return fill; }, delete: removeDrawing, get_line1: objectGetter('line1'), get_line2: objectGetter('line2'), set_color: objectSetter('color') };
+    env.polyline = { new: function (args) { var polyline = { type: 'polyline', points: args[0] || [], curved: !!(args.named && args.named.curved != null ? args.named.curved : args[1]), closed: !!(args.named && args.named.closed != null ? args.named.closed : args[2]), xloc: args.named && args.named.xloc || args[3] || 'bar_index', color: args.named && args.named.line_color || args[4] || '#2563eb', fillColor: args.named && args.named.fill_color || args[5] || null, style: args.named && args.named.line_style || args[6] || 'solid', width: args.named && args.named.line_width || args[7] || 2 }; pineDrawings.push(polyline); return polyline; }, delete: removeDrawing, copy: copyDrawing };
     function tableCell(table, column, row) {
       if (!table || !table.cells) return null;
       var key = String(column) + ':' + String(row);
@@ -2562,7 +2650,7 @@
     }
     env.table = {
       new: function (args) {
-        var table = { type: 'table', position: args[0], columns: Math.max(1, Number(args[1]) || 1), rows: Math.max(1, Number(args[2]) || 1), cells: {} };
+        var table = { type: 'table', position: args[0], columns: Math.max(1, Number(args[1]) || 1), rows: Math.max(1, Number(args[2]) || 1), bgcolor: drawingArgumentValue(args, 'bgcolor', 3, null), frameColor: drawingArgumentValue(args, 'frame_color', 4, null), frameWidth: Number(drawingArgumentValue(args, 'frame_width', 5, 1)) || 1, borderColor: drawingArgumentValue(args, 'border_color', 6, null), borderWidth: Number(drawingArgumentValue(args, 'border_width', 7, 1)) || 1, cells: {} };
         pineDrawings.push(table);
         return table;
       },
@@ -2570,8 +2658,15 @@
         var cell = tableCell(args[0], args[1], args[2]);
         if (cell) {
           cell.text = args[3];
-          cell.bgcolor = args[4];
-          cell.textColor = args[5];
+          cell.width = drawingArgumentValue(args, 'width', 4, null);
+          cell.height = drawingArgumentValue(args, 'height', 5, null);
+          cell.textColor = drawingArgumentValue(args, 'text_color', 6, null);
+          cell.textHalign = drawingArgumentValue(args, 'text_halign', 7, null);
+          cell.textValign = drawingArgumentValue(args, 'text_valign', 8, null);
+          cell.textSize = drawingArgumentValue(args, 'text_size', 9, null);
+          cell.bgcolor = drawingArgumentValue(args, 'bgcolor', 10, null);
+          cell.tooltip = drawingArgumentValue(args, 'tooltip', 11, null);
+          cell.textFontFamily = drawingArgumentValue(args, 'text_font_family', 12, null);
         }
         return args[0];
       },
@@ -2579,13 +2674,21 @@
       cell_set_bgcolor: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.bgcolor = args[3]; return args[0]; },
       cell_set_text_color: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.textColor = args[3]; return args[0]; },
       cell_set_text_size: function (args) { var cell = tableCell(args[0], args[1], args[2]); if (cell) cell.textSize = args[3]; return args[0]; },
-      clear: function (args) { if (args[0]) args[0].cells = {}; return args[0]; },
+      clear: function (args) {
+        if (!args[0]) return args[0];
+        if (args[1] == null || args[2] == null || args[3] == null || args[4] == null) { args[0].cells = {}; return args[0]; }
+        var startColumn = Math.max(0, Math.floor(asNumber(args[1])) || 0); var startRow = Math.max(0, Math.floor(asNumber(args[2])) || 0);
+        var endColumn = Math.max(startColumn, Math.floor(asNumber(args[3])) || startColumn); var endRow = Math.max(startRow, Math.floor(asNumber(args[4])) || startRow);
+        for (var column = startColumn; column <= endColumn; column += 1) for (var row = startRow; row <= endRow; row += 1) delete args[0].cells[String(column) + ':' + String(row)];
+        return args[0];
+      },
       delete: removeDrawing,
       get_position: objectGetter('position'),
       set_position: objectSetter('position')
     };
     env.shape = { circle: 'circle', square: 'square', diamond: 'diamond', triangleup: 'triangleup', triangledown: 'triangledown', cross: 'cross', xcross: 'xcross' };
     env.location = { abovebar: 'abovebar', belowbar: 'belowbar', top: 'top', bottom: 'bottom', absolute: 'absolute' };
+    env.position = { top_left: 'top_left', top_center: 'top_center', top_right: 'top_right', middle_left: 'middle_left', middle_center: 'middle_center', middle_right: 'middle_right', bottom_left: 'bottom_left', bottom_center: 'bottom_center', bottom_right: 'bottom_right' };
     env.size = { tiny: 'tiny', small: 'small', normal: 'normal', large: 'large', huge: 'huge' };
     env.label.style_label_down = 'label_down';
     env.label.style_label_up = 'label_up';
@@ -2593,6 +2696,9 @@
     env.line.style_solid = 'solid';
     env.line.style_dashed = 'dash';
     env.line.style_dotted = 'dot';
+    env.line.style_arrow_left = 'arrow_left';
+    env.line.style_arrow_right = 'arrow_right';
+    env.line.style_arrow_both = 'arrow_both';
     env.box.style_solid = 'solid';
     env.box.style_dashed = 'dash';
     env.box.style_dotted = 'dot';
@@ -2604,7 +2710,22 @@
     env.scale = { left: 'left', right: 'right', none: 'none' };
     env.text = { align_left: 'left', align_center: 'center', align_right: 'right' };
     env.alert = Object.assign(env.alert, { freq_once_per_bar: 'once_per_bar', freq_once_per_bar_close: 'once_per_bar_close', freq_all: 'all' });
-    env.chart = { is_standard: true, is_heikinashi: false, is_renko: false, is_kagi: false, is_linebreak: false, is_pointfigure: false, is_pnf: false };
+    env.chart = { is_standard: true, is_heikinashi: false, is_renko: false, is_kagi: false, is_linebreak: false, is_pointfigure: false, is_pnf: false, point: {
+      from_index: function (args) { return { index: asNumber(valueAt(args[0], Math.max(0, bars.length - 1))), price: asNumber(valueAt(args[1], Math.max(0, bars.length - 1))) }; },
+      from_time: function (args) { return { time: asNumber(valueAt(args[0], Math.max(0, bars.length - 1))), price: asNumber(valueAt(args[1], Math.max(0, bars.length - 1))) }; },
+      now: function (args) { return { index: bars.length - 1, time: bars.length ? pineTimestamp(securityTime(bars[bars.length - 1], bars.length - 1)) : NaN, price: asNumber(valueAt(args[0], Math.max(0, bars.length - 1))) }; }
+    } };
+    function defineDrawingCollection(namespace, type) {
+      Object.defineProperty(namespace, 'all', { enumerable: true, configurable: false, get: function () {
+        return pineDrawings.filter(function (drawing) { return drawing.type === type; });
+      } });
+    }
+    defineDrawingCollection(env.line, 'line');
+    defineDrawingCollection(env.label, 'label');
+    defineDrawingCollection(env.box, 'box');
+    defineDrawingCollection(env.linefill, 'linefill');
+    defineDrawingCollection(env.polyline, 'polyline');
+    defineDrawingCollection(env.table, 'table');
     env.runtime = { version: VERSION, max_bars_back: bars.length, error_message: '' };
     env.session = { extended: 'extended', regular: 'regular' };
     env.log = { info: function () { return true; }, warning: function () { return true; }, error: function () { return true; } };

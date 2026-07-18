@@ -12,12 +12,12 @@ The result is versioned with the broker engine and keeps the full trade ledger i
 
 The editor catalog mirrors the executable runtime for the supported API surface and also lists a small set of language constructs that need a larger parser or platform integration:
 
-- Functions: declarations, plots, alerts, inputs, technical analysis, math, strings, requests, arrays, matrices, maps, colors, time, tickers, strategies, lines, labels, boxes, polylines, tables, and line fills. Entries tagged `Reference` are visible for guidance but are not claimed as executable.
+- Functions: declarations, plots, alerts, inputs, technical analysis, math, strings, requests, arrays, matrices, maps, colors, time, tickers, strategies, lines, labels, boxes, polylines, tables, and line fills. Every cataloged API entry is marked supported and has a concrete signature, description, and parameter help.
 - Built-ins: OHLCV and derived price series, time and bar indexes, symbol information, timeframe information, bar states, strategy values, and named colors.
 - Namespaces: `ta`, `math`, `input`, `request`, `color`, `str`, `array`, `matrix`, `map`, `strategy`, `syminfo`, `barstate`, `timeframe`, `chart`, `line`, `linefill`, `label`, `box`, `polyline`, `table`, `ticker`, `runtime`, `log`, `display`, `format`, `font`, `location`, `size`, `shape`, `text`, `xloc`, `yloc`, `alert`, `session`, and `scale`.
 - Language syntax: version directives, comments, indentation, assignments, tuple declarations, history references, type qualifiers, user-defined types, enums, methods, conditionals, loops, `switch`, `for ... in`, and user-defined functions.
 
-Search the `Pine Script reference` panel with a function name, parameter, namespace, keyword, or description. Select a category to browse a manageable list instead of loading every topic at once. Click a function or exact reserved-word name in the detail header to insert it at the editor cursor. The capability registry distinguishes executable entries from `Reference` entries; it is intentionally conservative for external data requests, currency conversion, and object APIs that do not yet render with TradingView-equivalent behavior.
+Search the `Pine Script reference` panel with a function name, parameter, namespace, keyword, or description. Select a category to browse a manageable list instead of loading every topic at once. Click a function or exact reserved-word name in the detail header to insert it at the editor cursor. External request functions use host-supplied `requestData` series and return `na` with a diagnostic when the requested dataset is unavailable.
 
 ## Supported in the client runtime
 
@@ -26,7 +26,7 @@ Search the `Pine Script reference` panel with a function name, parameter, namesp
 - Assignments, `var` declarations, tuples, arithmetic, comparisons, boolean operators, ternaries, and user functions (`name(args) => expression` or an indented multi-statement body).
 - `if`/`else`, bounded `for ... to ...` and `for ... in ...` loops, `switch`, typed declarations, `return`, and `break`.
 - `plot()`, `plotarrow()`, `plotcandle()`, `plotbar()`, `barcolor()`, `hline()`, `plotshape()`, `plotchar()`, `bgcolor()`, `fill()`, `alert()`, and `alertcondition()`.
-- `label`, `line`, and `box` objects, including common getters, setters, copies, and deletes. `linefill`, `polyline`, and `table` names remain in the reference catalog until their chart rendering is complete.
+- `label`, `line`, `box`, `linefill`, `polyline`, and `table` objects, including getters, setters, copies, deletes, dynamic `.all` collections, and chart rendering. `chart.point` constructors provide points for line and polyline APIs.
 - `request.security()` and `request.security_lower_tf()` with timestamp alignment. Other request APIs return configured external data when supplied, otherwise `na` without crashing the chart.
 - `input.int()`, `input.float()`, `input.bool()`, `input.string()`, `input.source()`, `input.color()`, `input.time()`, `input.symbol()`, `input.session()`, `input.enum()`, and `input.text_area()`.
 - The rolling `ta.*` family in the reference catalog, including moving averages, oscillators, volatility, pivots, channels, correlations, percentiles, and tuple-returning functions such as `ta.bb()`, `ta.dmi()`, `ta.aroon()`, and `ta.supertrend()`.
@@ -46,6 +46,16 @@ plot(ta.sma(rsiValue, 5), title="RSI SMA", color=color.blue)
 hline(70, title="Overbought")
 hline(30, title="Oversold")
 ```
+
+Drawing objects are mutable values. For example, `line.set_x1()` changes the first point of an existing line; its `x` argument is interpreted as a bar index or timestamp according to the line's `xloc`:
+
+```pine
+var trend = line.new(bar_index - 1, low[1], bar_index, high)
+line.set_x1(trend, bar_index - 20)
+line.set_xy2(trend, bar_index, high)
+```
+
+The reference panel shows the exact signature, parameter descriptions, and an insertion-ready example for every cataloged function. Function names in autocomplete insert the callable name at the editor cursor, while constants and reserved words insert their exact token.
 
 Open the `Pine Script` button in the chart toolbar to create or edit a script. Existing Pine indicators can also be edited by clicking their legend. The editor provides Pine-aware syntax highlighting, line numbers, autocomplete with `Ctrl+Space` (or `Cmd+I`), context-sensitive signature help inside calls such as `plot(`, and a `?` reference button with searchable functions, parameters, built-ins, namespaces, keywords, and syntax examples. It also provides custom undo/redo, `Ctrl/Cmd+F` find, `Ctrl/Cmd+H` find and replace, `F1` or `Ctrl/Cmd+Shift+P` commands, word wrap with `Alt/Option+Z`, indentation with `Tab`, and font-size commands. `Recent` lists the last eight scripts stored in this browser for quick loading; loading one updates the editor without running it until you press `Run`. `Ctrl/Cmd+Enter` runs the editor and `Escape` closes it.
 

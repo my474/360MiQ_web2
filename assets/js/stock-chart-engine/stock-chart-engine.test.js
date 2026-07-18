@@ -3,6 +3,17 @@ const StockChartEngine = require('./stock-chart-engine.js');
 const PineScriptRuntime = require('./pine-script-runtime.js');
 const PineBacktestEngine = require('./pine-backtest-engine.js');
 PineScriptRuntime.setBacktestEngine(PineBacktestEngine);
+const pineAuditGeneric = StockChartEngine.pineScriptDocumentation.filter((item) => !item.description || !item.signature || /Parameter documented|Visual and object API|Reserved Pine language word|Built-in Pine series variable\.|Built-in Pine constant or enum value\.|Pine language keyword used by the browser runtime\.|Argument accepted by |\(\.\.\.\)/.test(`${item.description || ''} ${item.signature || ''}`));
+assert.strictEqual(StockChartEngine.pineScriptDocumentation.filter((item) => item.status === 'Reference').length, 0);
+assert.strictEqual(pineAuditGeneric.length, 0);
+assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => item.status === 'Supported'));
+assert.ok(StockChartEngine.pineScriptDocumentation.every((item) => ['Function', 'Built-in variable', 'Constant', 'Syntax', 'Keyword'].includes(item.type)));
+const lineSetX1Documentation = StockChartEngine.pineScriptDocumentation.find((item) => item.name === 'line.set_x1');
+assert.strictEqual(lineSetX1Documentation.signature, 'line.set_x1(id, x)');
+assert.ok(lineSetX1Documentation.description.includes('first point x-coordinate'));
+assert.ok(lineSetX1Documentation.example.includes('line.set_x1(trend, bar_index - 20)'));
+assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'line.set_x1'));
+assert.ok(StockChartEngine.pineScriptCompletions.some((item) => item.value === 'line.all'));
 
 class FakeClassList {
   constructor(element) {
@@ -763,10 +774,12 @@ lower = plot(ta.sma(close, 3), title="Lower")
 fill(upper, lower, color=color.new(color.blue, 80))
 plotshape(close > open, style=shape.triangleup, location=location.belowbar, color=color.green, title="Up")
 plotchar(close < open, char="x", location=location.abovebar, color=color.red, title="Down")
+plotarrow(close - open, colorup=color.green, colordown=color.red, title="Direction")
 bgcolor(close > open ? color.new(color.green, 90) : na)
 alertcondition(close > open, title="Up bar", message="Up bar")`, data);
 assert.ok(advancedOutputPreview.render.some((item) => item.type === 'fill'));
 assert.ok(advancedOutputPreview.render.some((item) => item.type === 'shape'));
+assert.ok(advancedOutputPreview.render.some((item) => item.type === 'shape' && item.style === 'arrow'));
 assert.ok(advancedOutputPreview.render.some((item) => item.type === 'char'));
 assert.ok(advancedOutputPreview.render.some((item) => item.type === 'background'));
 assert.strictEqual(advancedOutputPreview.alertConditions[0].title, 'Up bar');
@@ -776,6 +789,30 @@ line.new(bar_index - 3, low, bar_index, high, color=color.red, width=2, style=li
 box.new(bar_index - 5, high, bar_index, low, bgcolor=color.new(color.blue, 90))`, data);
 assert.strictEqual(drawingOutputPreview.drawings.length, 3);
 assert.deepStrictEqual(drawingOutputPreview.drawings.map((drawing) => drawing.type), ['label', 'line', 'box']);
+const objectApiPreview = PineScriptRuntime.run(`indicator("Object API")
+line1 = line.new(0, low, bar_index, high, xloc.bar_index, extend.right)
+line2 = line.new(0, high, bar_index, low)
+line.set_x1(line1, 1)
+line.set_x2(line1, bar_index)
+line.set_y1(line1, low)
+line.set_y2(line1, high)
+line.set_first_point(line1, chart.point.from_index(2, low))
+line.set_second_point(line1, chart.point.now(high))
+line.set_xloc(line1, 2, bar_index, xloc.bar_index)
+fillId = linefill.new(line1, line2, color.new(color.blue, 80))
+linefill.set_color(fillId, color.new(color.green, 80))
+points = array.from(chart.point.from_index(0, low), chart.point.from_index(bar_index, high))
+poly = polyline.new(points, false, false, xloc.bar_index, color.red, na, line.style_solid, 2, false)
+tableId = table.new(position.top_right, 2, 1, color.black, color.white, 1, color.gray, 1)
+table.cell(tableId, 0, 0, "Line", text_color=color.white, bgcolor=color.blue)
+table.cell_set_text(tableId, 1, 0, "Ready")
+table.clear(tableId, 0, 0, 0, 0)`, data);
+assert.deepStrictEqual(objectApiPreview.drawings.map((drawing) => drawing.type), ['line', 'line', 'linefill', 'polyline', 'table']);
+assert.strictEqual(objectApiPreview.drawings[0].x1, 2);
+assert.strictEqual(objectApiPreview.drawings[0].x2, data.length - 1);
+assert.strictEqual(objectApiPreview.drawings[2].color, 'rgba(22, 163, 74, 0.19999999999999996)');
+assert.strictEqual(objectApiPreview.drawings[4].cells['0:0'], undefined);
+assert.strictEqual(objectApiPreview.drawings[4].cells['1:0'].text, 'Ready');
 const expandedRuntimePreview = PineScriptRuntime.run(`strategy("Expanded runtime")
 int length = input.int(5)
 plot(ta.hma(close, length), title="HMA")
@@ -1074,7 +1111,7 @@ assert.strictEqual(pineDocsList.innerHTML.includes('Supported'), false);
 pineDocsSearch.value = 'request.currency_rate';
 pineDocsFilter.value = 'function';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
-assert.ok(pineDocsList.innerHTML.includes('Reference'));
+assert.strictEqual(pineDocsList.innerHTML.includes('Reference'), false);
 pineDocsSearch.value = 'ta.ema';
 chart.renderPineDocumentation(pineDocsSearch.value, pineDocsFilter.value);
 assert.strictEqual(pineDocsList.innerHTML.includes('Reference'), false);

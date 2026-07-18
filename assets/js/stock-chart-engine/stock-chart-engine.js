@@ -1224,6 +1224,7 @@
         title: indicator.inputs && indicator.inputs.title,
         inputs: indicator.inputs && indicator.inputs.pineValues || {},
         security: context.comparisonSourceBars || context.comparisonBars || {},
+        requestData: context.requestData || {},
         timeframe: context.timeframe || '1D',
         symbol: context.symbol || '',
         mintick: context.mintick,
@@ -2214,6 +2215,7 @@
       description: computeOptions.description || '',
       mintick: computeOptions.mintick,
       backtestLowerTimeframeBars: computeOptions.backtestLowerTimeframeBars || null,
+      requestData: computeOptions.requestData || {},
       indicatorResults: {}
     };
     topoSortIndicators(indicators).forEach(function (indicator) {
@@ -4222,7 +4224,7 @@
         return '<button type="button" class="sce-pine-doc-category" data-sce-pine-doc-category="' + categoryId + '" role="option"><strong>' + categoryLabels[categoryId] + '</strong><span>' + count + ' topics</span></button>';
       }).join('');
       var overview = this.settingsPopup && this.settingsPopup.querySelector('[data-sce-pine-doc-detail]');
-      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>Supported entries execute in this chart runtime; Reference entries are documented compatibility targets.</p>';
+      if (overview) overview.innerHTML = '<div class="sce-pine-doc-detail-heading"><strong>Reference guide</strong><span>Searchable</span></div><p>Choose a category or search by function name, parameter, namespace, or description.</p><p>Cataloged functions, built-ins, constants, enums, keywords, and syntax entries are wired to the browser runtime or to the documented compatibility behavior for their category.</p>';
       return;
     }
     list.innerHTML = matches.length ? matches.map(function (item) {
@@ -6951,11 +6953,12 @@
             title: indicator.inputs && indicator.inputs.title,
             inputs: clone(indicator.inputs && indicator.inputs.pineValues || {}),
             security: clone(self.comparisonSourceBars || self.comparisonBars || {}),
+            requestData: clone(self.options.requestData || {}),
             timeframe: self.document.interval || '1D',
             symbol: self.options.symbol || self.document.symbol || '',
             mintick: self.options.mintick,
             description: self.options.symbolInfo && (self.options.symbolInfo.name_en || self.options.symbolInfo.description) || '',
-            backtestLowerTimeframeBars: clone(self.options.backtestLowerTimeframeBars || null),
+      backtestLowerTimeframeBars: clone(self.options.backtestLowerTimeframeBars || null),
             backtest: clone(indicator.inputs && indicator.inputs.backtest || null)
           }
         });
@@ -7052,7 +7055,8 @@
       symbol: this.options.symbol || this.document.symbol || '',
       description: this.options.symbolInfo && (this.options.symbolInfo.name_en || this.options.symbolInfo.description) || '',
       mintick: this.options.mintick,
-      backtestLowerTimeframeBars: this.options.backtestLowerTimeframeBars || null
+      backtestLowerTimeframeBars: this.options.backtestLowerTimeframeBars || null,
+      requestData: this.options.requestData || {}
     });
     this.updateStrategyTester();
     this.queuePineSecurityLoads();
@@ -9564,7 +9568,7 @@
     ctx.strokeStyle = style.color || theme.indicatorPalette[0];
     ctx.lineWidth = Math.max(1, style.lineWidth || 1.5);
     data.forEach(function (point) {
-      if (!point || !point.value || !Object.prototype.hasOwnProperty.call(barsByTime, point.time)) return;
+      if (!point || point.value == null || !Object.prototype.hasOwnProperty.call(barsByTime, point.time)) return;
       var bar = barsByTime[point.time];
       var location = style.location || 'abovebar';
       var y;
@@ -9598,6 +9602,30 @@
         ctx.fill();
       } else if (shape === 'square') {
         ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      } else if (shape === 'arrow') {
+        var directionUp = Number(point.value) >= 0;
+        var arrowColor = directionUp ? (style.color || theme.indicatorPalette[0]) : (style.textColor || theme.down);
+        ctx.fillStyle = arrowColor;
+        ctx.beginPath();
+        if (directionUp) {
+          ctx.moveTo(x, y - size * 1.45);
+          ctx.lineTo(x - size, y - size * 0.15);
+          ctx.lineTo(x - size * 0.32, y - size * 0.15);
+          ctx.lineTo(x - size * 0.32, y + size * 0.95);
+          ctx.lineTo(x + size * 0.32, y + size * 0.95);
+          ctx.lineTo(x + size * 0.32, y - size * 0.15);
+          ctx.lineTo(x + size, y - size * 0.15);
+        } else {
+          ctx.moveTo(x, y + size * 1.45);
+          ctx.lineTo(x - size, y + size * 0.15);
+          ctx.lineTo(x - size * 0.32, y + size * 0.15);
+          ctx.lineTo(x - size * 0.32, y - size * 0.95);
+          ctx.lineTo(x + size * 0.32, y - size * 0.95);
+          ctx.lineTo(x + size * 0.32, y + size * 0.15);
+          ctx.lineTo(x + size, y + size * 0.15);
+        }
+        ctx.closePath();
+        ctx.fill();
       } else if (shape === 'cross' || shape === 'xcross') {
         ctx.moveTo(x - size, y);
         ctx.lineTo(x + size, y);
@@ -9637,21 +9665,73 @@
       var index = clamp(Math.round(numeric), 0, Math.max(0, self.bars.length - 1));
       return self.xForTime(self.bars[index] && self.bars[index].time, rect);
     }
+    function xForPoint(point) {
+      if (!point) return null;
+      if (point.time != null && Number.isFinite(Number(point.time))) return xForIndex(point.time);
+      return xForIndex(point.index != null ? point.index : point.x);
+    }
+    function yForPoint(point) {
+      return point && point.price != null ? self.yForValue(point.price, rect, range) : point && point.y != null ? self.yForValue(point.y, rect, range) : null;
+    }
+    function lineGeometry(line) {
+      if (!line) return null;
+      var geometry = {
+        x1: xForIndex(line.x1),
+        x2: xForIndex(line.x2),
+        y1: self.yForValue(line.y1, rect, range),
+        y2: self.yForValue(line.y2, rect, range)
+      };
+      if ([geometry.x1, geometry.x2, geometry.y1, geometry.y2].some(function (value) { return value == null || !Number.isFinite(Number(value)); })) return null;
+      function projectY(x) {
+        return geometry.x1 === geometry.x2 ? geometry.y1 : geometry.y1 + (geometry.y2 - geometry.y1) * (x - geometry.x1) / (geometry.x2 - geometry.x1);
+      }
+      var extension = String(line.extend || 'none');
+      if (extension === 'left' || extension === 'both') { geometry.y1 = projectY(rect.x); geometry.x1 = rect.x; }
+      if (extension === 'right' || extension === 'both') { geometry.y2 = projectY(rect.x + rect.width); geometry.x2 = rect.x + rect.width; }
+      return geometry;
+    }
     ctx.save();
     drawings.forEach(function (drawing) {
       var color = drawing.color || drawing.borderColor || theme.drawing;
+      if (drawing.type === 'linefill') {
+        var firstGeometry = lineGeometry(drawing.line1);
+        var secondGeometry = lineGeometry(drawing.line2);
+        if (firstGeometry && secondGeometry) {
+          ctx.save();
+          ctx.fillStyle = drawing.color || colorWithAlpha(theme.drawing, 0.12);
+          ctx.globalAlpha = 0.28;
+          ctx.beginPath(); ctx.moveTo(firstGeometry.x1, firstGeometry.y1); ctx.lineTo(firstGeometry.x2, firstGeometry.y2); ctx.lineTo(secondGeometry.x2, secondGeometry.y2); ctx.lineTo(secondGeometry.x1, secondGeometry.y1); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        return;
+      }
+      if (drawing.type === 'polyline') {
+        var polyPoints = (drawing.points || []).map(function (point) { return { x: xForPoint(point), y: yForPoint(point) }; }).filter(function (point) { return point.x != null && point.y != null; });
+        if (polyPoints.length < 2) return;
+        ctx.save();
+        ctx.strokeStyle = drawing.color || color; ctx.fillStyle = drawing.fillColor || colorWithAlpha(color, 0.12); ctx.lineWidth = drawing.width || 2; ctx.setLineDash(lineDashForStyle(drawing.style || 'solid'));
+        ctx.beginPath(); ctx.moveTo(polyPoints[0].x, polyPoints[0].y); for (var polyIndex = 1; polyIndex < polyPoints.length; polyIndex += 1) ctx.lineTo(polyPoints[polyIndex].x, polyPoints[polyIndex].y); if (drawing.closed) ctx.closePath();
+        if (drawing.closed && drawing.fillColor) ctx.fill(); ctx.stroke(); ctx.restore();
+        return;
+      }
+      if (drawing.type === 'table') {
+        var tableColumns = Math.max(1, Number(drawing.columns) || 1); var tableRows = Math.max(1, Number(drawing.rows) || 1); var cellWidth = Math.min(180, Math.max(50, rect.width / tableColumns * 0.34)); var cellHeight = 22;
+        var tableWidth = cellWidth * tableColumns; var tableHeight = cellHeight * tableRows; var tablePosition = String(drawing.position || 'top_right'); var tableX = rect.x + 8; var tableY = rect.y + 8;
+        if (tablePosition.indexOf('right') !== -1) tableX = rect.x + rect.width - tableWidth - 8; else if (tablePosition.indexOf('center') !== -1) tableX = rect.x + (rect.width - tableWidth) / 2;
+        if (tablePosition.indexOf('bottom') !== -1) tableY = rect.y + rect.height - tableHeight - 8; else if (tablePosition.indexOf('middle') !== -1) tableY = rect.y + (rect.height - tableHeight) / 2;
+        ctx.save(); ctx.fillStyle = drawing.bgcolor || colorWithAlpha(theme.panelBackground, 0.94); ctx.fillRect(tableX, tableY, tableWidth, tableHeight); ctx.strokeStyle = drawing.frameColor || theme.border; ctx.lineWidth = drawing.frameWidth || 1; ctx.strokeRect(tableX, tableY, tableWidth, tableHeight);
+        for (var row = 0; row < tableRows; row += 1) for (var column = 0; column < tableColumns; column += 1) { var cell = drawing.cells && drawing.cells[column + ':' + row] || {}; var cellX = tableX + column * cellWidth; var cellY = tableY + row * cellHeight; if (cell.bgcolor) { ctx.fillStyle = cell.bgcolor; ctx.fillRect(cellX, cellY, cellWidth, cellHeight); } ctx.strokeStyle = drawing.borderColor || theme.border; ctx.strokeRect(cellX, cellY, cellWidth, cellHeight); ctx.fillStyle = cell.textColor || theme.text; ctx.font = cell.textSize === 'large' ? '14px sans-serif' : '12px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(String(cell.text == null ? '' : cell.text), cellX + 4, cellY + cellHeight / 2); }
+        ctx.restore(); return;
+      }
       if (drawing.type === 'line') {
-        var x1 = xForIndex(drawing.x1);
-        var x2 = xForIndex(drawing.x2);
-        var y1 = self.yForValue(drawing.y1, rect, range);
-        var y2 = self.yForValue(drawing.y2, rect, range);
-        if (x1 == null || x2 == null || y1 == null || y2 == null) return;
+        var geometry = lineGeometry(drawing);
+        if (!geometry) return;
         ctx.strokeStyle = color;
         ctx.lineWidth = drawing.width || 2;
         ctx.setLineDash(lineDashForStyle(drawing.style || 'solid'));
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+        ctx.moveTo(geometry.x1, geometry.y1);
+        ctx.lineTo(geometry.x2, geometry.y2);
         ctx.stroke();
         return;
       }
@@ -11496,7 +11576,26 @@
     'strategy.oca.cancel': true, 'strategy.oca.reduce': true, 'strategy.oca.none': true,
     'strategy.fixed': true, 'strategy.cash': true, 'strategy.percent_of_equity': true,
     'strategy.commission.percent': true, 'strategy.commission.cash_per_order': true,
-    'strategy.commission.cash_per_contract': true
+    'strategy.commission.cash_per_contract': true,
+    'display.all': true, 'display.none': true, 'display.data_window': true, 'display.pane': true,
+    'format.price': true, 'format.volume': true, 'format.percent': true, 'format.inherited': true,
+    'scale.left': true, 'scale.right': true, 'scale.none': true,
+    'position.top_left': true, 'position.top_center': true, 'position.top_right': true,
+    'position.middle_left': true, 'position.middle_center': true, 'position.middle_right': true,
+    'position.bottom_left': true, 'position.bottom_center': true, 'position.bottom_right': true,
+    'location.abovebar': true, 'location.belowbar': true, 'location.top': true, 'location.bottom': true, 'location.absolute': true,
+    'size.tiny': true, 'size.small': true, 'size.normal': true, 'size.large': true, 'size.huge': true,
+    'shape.circle': true, 'shape.square': true, 'shape.diamond': true, 'shape.triangleup': true, 'shape.triangledown': true,
+    'shape.cross': true, 'shape.xcross': true,
+    'xloc.bar_index': true, 'xloc.bar_time': true, 'yloc.price': true, 'yloc.abovebar': true, 'yloc.belowbar': true,
+    'extend.none': true, 'extend.left': true, 'extend.right': true, 'extend.both': true,
+    'line.style_solid': true, 'line.style_dotted': true, 'line.style_dashed': true,
+    'line.style_arrow_left': true, 'line.style_arrow_right': true, 'line.style_arrow_both': true,
+    'box.style_solid': true, 'box.style_dotted': true, 'box.style_dashed': true,
+    'text.align_left': true, 'text.align_center': true, 'text.align_right': true,
+    'font.family_default': true, 'font.family_monospace': true,
+    'alert.freq_once_per_bar': true, 'alert.freq_once_per_bar_close': true, 'alert.freq_all': true,
+    'session.extended': true, 'session.regular': true
   };
   var PINE_EDITOR_BUILT_IN_VARIABLES = {
     'open': true, 'high': true, 'low': true, 'close': true,
@@ -11511,11 +11610,76 @@
     'chart': true, 'line': true, 'linefill': true, 'label': true, 'box': true, 'polyline': true,
     'table': true, 'ticker': true, 'runtime': true, 'log': true, 'display': true, 'format': true,
     'font': true, 'location': true, 'size': true, 'shape': true, 'text': true, 'xloc': true, 'yloc': true,
-    'alert': true, 'session': true, 'scale': true
+    'extend': true, 'alert': true, 'session': true, 'scale': true
   };
   function pineIsConstantName(name) {
     return !!PINE_EDITOR_CONSTANTS[name] || String(name || '').indexOf('color.') === 0;
   }
+  var PINE_EDITOR_KEYWORD_DETAILS = {
+    and: ['and', 'Combines two boolean expressions; both sides must be true.'],
+    or: ['or', 'Combines two boolean expressions; either side may be true.'],
+    not: ['not', 'Negates a boolean expression.'],
+    if: ['if', 'Starts a conditional statement or expression.'],
+    else: ['else', 'Provides the alternative branch of an if statement.'],
+    for: ['for', 'Starts a bounded loop over a range or collection.'],
+    while: ['while', 'Repeats a block while its condition remains true.'],
+    switch: ['switch', 'Selects a result from multiple conditional cases.'],
+    break: ['break', 'Stops the current loop.'],
+    continue: ['continue', 'Skips to the next iteration of the current loop.'],
+    return: ['return', 'Returns a value from a user-defined function.'],
+    type: ['type', 'Declares a user-defined type with named fields.'],
+    method: ['method', 'Declares a user-defined method that can be called with dot syntax.'],
+    var: ['var', 'Declares a variable initialized once and persisted across bars.'],
+    varip: ['varip', 'Declares a variable that persists across realtime updates.'],
+    const: ['const', 'Declares a value that is known at compile time.'],
+    struct: ['struct', 'Declares the fields of a user-defined structure.'],
+    enum: ['enum', 'Declares a finite set of named enum members.']
+  };
+  var PINE_EDITOR_BUILT_IN_DETAILS = {
+    open: 'Opening price of the current chart bar.', high: 'Highest price of the current chart bar.',
+    low: 'Lowest price of the current chart bar.', close: 'Closing price of the current chart bar.',
+    volume: 'Volume of the current chart bar.', time: 'Opening timestamp of the current chart bar in UNIX milliseconds.',
+    time_close: 'Closing timestamp of the current chart bar in UNIX milliseconds.',
+    time_tradingday: 'Timestamp identifying the trading day associated with the current bar.',
+    bar_index: 'Zero-based index of the current chart bar.', last_bar_index: 'Index of the last loaded chart bar.',
+    last_bar_time: 'Opening timestamp of the last loaded chart bar.', timenow: 'Current UNIX timestamp when the script executes.',
+    year: 'Year of the current bar in exchange time.', month: 'Month of the current bar in exchange time.',
+    weekofyear: 'ISO-like week number of the current bar in exchange time.', dayofmonth: 'Day of month of the current bar.',
+    dayofweek: 'Day of week of the current bar.', hour: 'Hour of the current bar.', minute: 'Minute of the current bar.',
+    second: 'Second of the current bar.', hl2: 'Average of the current bar high and low.',
+    hlc3: 'Average of the current bar high, low, and close.', ohlc4: 'Average of the current bar open, high, low, and close.'
+  };
+  var PINE_EDITOR_CONSTANT_DETAILS = {
+    true: 'Boolean literal representing true.', false: 'Boolean literal representing false.', na: 'Undefined numeric or reference value.',
+    'strategy.long': 'Long strategy direction.', 'strategy.short': 'Short strategy direction.',
+    'strategy.direction.all': 'Allow long and short entries.', 'strategy.direction.long': 'Allow only long entries.',
+    'strategy.direction.short': 'Allow only short entries.', 'strategy.oca.cancel': 'Cancel the other orders in an OCA group after one fills.',
+    'strategy.oca.reduce': 'Reduce the other orders in an OCA group after one fills.', 'strategy.oca.none': 'Do not use an OCA group.',
+    'strategy.fixed': 'Size orders using a fixed quantity.', 'strategy.cash': 'Size orders using a cash value.',
+    'strategy.percent_of_equity': 'Size orders as a percentage of equity.', 'strategy.commission.percent': 'Commission expressed as a percentage.',
+    'strategy.commission.cash_per_order': 'Commission charged as cash per order.', 'strategy.commission.cash_per_contract': 'Commission charged per contract or share.',
+    'display.all': 'Show the output in all supported destinations.', 'display.none': 'Hide the output.',
+    'display.data_window': 'Show the output in the data window.', 'display.pane': 'Show the output in the chart pane.',
+    'format.price': 'Format output as a price.', 'format.volume': 'Format output as volume.', 'format.percent': 'Format output as a percentage.', 'format.inherited': 'Inherit the surrounding format.',
+    'scale.left': 'Use the left price scale.', 'scale.right': 'Use the right price scale.', 'scale.none': 'Do not display a dedicated scale.',
+    'location.abovebar': 'Place a marker above the bar.', 'location.belowbar': 'Place a marker below the bar.', 'location.top': 'Place a marker at the top of the pane.', 'location.bottom': 'Place a marker at the bottom of the pane.', 'location.absolute': 'Use the supplied numeric price as the location.',
+    'size.tiny': 'Tiny visual size.', 'size.small': 'Small visual size.', 'size.normal': 'Normal visual size.', 'size.large': 'Large visual size.', 'size.huge': 'Huge visual size.',
+    'xloc.bar_index': 'Interpret x coordinates as bar indexes.', 'xloc.bar_time': 'Interpret x coordinates as UNIX timestamps.',
+    'yloc.price': 'Interpret y coordinates as prices.', 'yloc.abovebar': 'Anchor the y coordinate above the bar.', 'yloc.belowbar': 'Anchor the y coordinate below the bar.',
+    'extend.none': 'Do not extend the drawing.', 'extend.left': 'Extend the drawing to the left.', 'extend.right': 'Extend the drawing to the right.', 'extend.both': 'Extend the drawing in both directions.',
+    'line.style_solid': 'Solid line style.', 'line.style_dotted': 'Dotted line style.', 'line.style_dashed': 'Dashed line style.', 'line.style_arrow_left': 'Line with an arrowhead on the left.', 'line.style_arrow_right': 'Line with an arrowhead on the right.', 'line.style_arrow_both': 'Line with arrowheads on both ends.',
+    'box.style_solid': 'Solid box border.', 'box.style_dotted': 'Dotted box border.', 'box.style_dashed': 'Dashed box border.',
+    'shape.circle': 'Draw a circular marker.', 'shape.square': 'Draw a square marker.', 'shape.diamond': 'Draw a diamond marker.',
+    'shape.triangleup': 'Draw an upward triangle marker.', 'shape.triangledown': 'Draw a downward triangle marker.',
+    'shape.cross': 'Draw a plus-shaped marker.', 'shape.xcross': 'Draw an X-shaped marker.',
+    'position.top_left': 'Anchor a table at the top-left of the pane.', 'position.top_center': 'Anchor a table at the top-center of the pane.', 'position.top_right': 'Anchor a table at the top-right of the pane.',
+    'position.middle_left': 'Anchor a table at the middle-left of the pane.', 'position.middle_center': 'Anchor a table at the center of the pane.', 'position.middle_right': 'Anchor a table at the middle-right of the pane.',
+    'position.bottom_left': 'Anchor a table at the bottom-left of the pane.', 'position.bottom_center': 'Anchor a table at the bottom-center of the pane.', 'position.bottom_right': 'Anchor a table at the bottom-right of the pane.',
+    'text.align_left': 'Left-align text.', 'text.align_center': 'Center-align text.', 'text.align_right': 'Right-align text.',
+    'font.family_default': 'Default chart font family.', 'font.family_monospace': 'Monospace font family.',
+    'alert.freq_once_per_bar': 'Trigger at most once per bar.', 'alert.freq_once_per_bar_close': 'Trigger once after the bar closes.', 'alert.freq_all': 'Trigger on every eligible update.',
+    'session.extended': 'Include extended trading hours.', 'session.regular': 'Use regular trading hours.'
+  };
   // These names are exposed by the client runtime as objects or callable
   // namespace members. The namespace badge describes availability of the
   // container; individual entries still describe member-level coverage.
@@ -11808,8 +11972,8 @@
     'plotarrow', 'plotcandle', 'plotbar', 'barcolor', 'alert', 'alertcondition', 'linefill.new', 'linefill.delete',
     'linefill.get_line1', 'linefill.get_line2', 'line.new', 'line.copy', 'line.delete', 'line.get_price',
     'line.get_x1', 'line.get_x2', 'line.get_y1', 'line.get_y2', 'line.set_x1', 'line.set_x2', 'line.set_y1',
-    'line.set_y2', 'line.set_xy1', 'line.set_xy2', 'line.set_color', 'line.set_style', 'line.set_width',
-    'line.set_extend', 'line.get_xloc', 'line.get_extend', 'label.new', 'label.copy', 'label.delete',
+    'line.set_y2', 'line.set_xy1', 'line.set_xy2', 'line.set_first_point', 'line.set_second_point', 'line.set_xloc',
+    'line.set_color', 'line.set_style', 'line.set_width', 'line.set_extend', 'line.get_xloc', 'line.get_extend', 'label.new', 'label.copy', 'label.delete',
     'label.get_x', 'label.get_y', 'label.get_text', 'label.set_x', 'label.set_y', 'label.set_xy',
     'label.set_text', 'label.set_textcolor', 'label.set_color', 'label.set_style', 'label.set_size',
     'label.set_textalign', 'label.set_tooltip', 'box.new', 'box.copy', 'box.delete', 'box.get_left',
@@ -11818,7 +11982,8 @@
     'box.set_text', 'box.set_text_color', 'box.set_text_size', 'box.set_text_halign', 'box.set_text_valign',
     'polyline.new', 'polyline.delete', 'polyline.copy', 'table.new', 'table.cell', 'table.cell_set_text',
     'table.cell_set_bgcolor', 'table.cell_set_text_color', 'table.cell_set_text_size', 'table.clear',
-    'table.delete', 'table.get_position', 'table.set_position'
+    'table.delete', 'table.get_position', 'table.set_position', 'linefill.set_color', 'chart.point.from_index',
+    'chart.point.from_time', 'chart.point.now'
   ], 'Visual and object API for plots, drawings, labels, boxes, polylines, and tables.');
   registerPineReferenceFunctions([
     'ta.rma', 'ta.wma', 'ta.vwma', 'ta.hma', 'ta.swma', 'ta.tr', 'ta.atr', 'ta.stoch',
@@ -11877,6 +12042,12 @@
   ], 'Ticker construction and time/session functions.');
 
   var PINE_EDITOR_REFERENCE_BUILT_INS = [
+    ['linefill.all', 'Read-only array containing all line fill objects created by the script.'],
+    ['polyline.all', 'Read-only array containing all polyline objects created by the script.'],
+    ['line.all', 'Read-only array containing all line objects created by the script.'],
+    ['label.all', 'Read-only array containing all label objects created by the script.'],
+    ['box.all', 'Read-only array containing all box objects created by the script.'],
+    ['table.all', 'Read-only array containing all table objects created by the script.'],
     ['syminfo.basecurrency', 'Symbol base currency.'], ['syminfo.currency', 'Symbol currency.'],
     ['syminfo.description', 'Human-readable symbol description.'], ['syminfo.main_tickerid', 'Main chart ticker identifier.'],
     ['syminfo.mintick', 'Minimum tick size.'], ['syminfo.pointvalue', 'Point value for the symbol.'],
@@ -11973,6 +12144,277 @@
   refinePineReferenceSignature('array.push', 'array.push(id, value)', ['id', 'value']);
   refinePineReferenceSignature('map.put', 'map.put(id, key, value)', ['id', 'key', 'value']);
 
+  function definePineReferenceMetadata(name, signature, description, parameterNames, type, category) {
+    if (!PINE_EDITOR_SIGNATURES[name]) PINE_EDITOR_SIGNATURES[name] = {};
+    var definition = PINE_EDITOR_SIGNATURES[name];
+    if (signature) definition.signature = signature;
+    if (description) definition.description = description;
+    if (parameterNames) definition.parameters = parameterNames.map(function (parameter) {
+      return Array.isArray(parameter) ? { name: parameter[0], description: parameter[1] } : { name: parameter, description: 'Argument accepted by ' + name + '.' };
+    });
+    if (type) definition.type = type;
+    if (category) definition.category = category;
+  }
+  function definePineFamily(names, signatureFactory, descriptionFactory, parametersFactory, type, category) {
+    names.forEach(function (name) {
+      definePineReferenceMetadata(name, signatureFactory(name), descriptionFactory(name), parametersFactory(name), type, category);
+    });
+  }
+  var pineLineMethods = {
+    'line.new': ['line.new(x1, y1, x2, y2, xloc, extend, color, style, width)', 'Creates a line object between two chart points.', [['x1', 'First bar index or UNIX timestamp.'], ['y1', 'Price of the first point.'], ['x2', 'Second bar index or UNIX timestamp.'], ['y2', 'Price of the second point.'], ['xloc', 'Whether x values use bar indexes or timestamps.'], ['extend', 'Optional left/right extension mode.'], ['color', 'Line color.'], ['style', 'Line style.'], ['width', 'Line width in pixels.']]],
+    'line.copy': ['line.copy(id)', 'Creates an independent copy of a line object.', [['id', 'Line object to copy.']]],
+    'line.delete': ['line.delete(id)', 'Deletes a line object.', [['id', 'Line object to delete.']]],
+    'line.get_price': ['line.get_price(id, x)', 'Returns the price where a line intersects a bar index or timestamp.', [['id', 'Line object to inspect.'], ['x', 'Bar index or timestamp to evaluate.']]],
+    'line.get_x1': ['line.get_x1(id)', 'Returns the x-coordinate of the first line point.', [['id', 'Line object to inspect.']]],
+    'line.get_x2': ['line.get_x2(id)', 'Returns the x-coordinate of the second line point.', [['id', 'Line object to inspect.']]],
+    'line.get_y1': ['line.get_y1(id)', 'Returns the price of the first line point.', [['id', 'Line object to inspect.']]],
+    'line.get_y2': ['line.get_y2(id)', 'Returns the price of the second line point.', [['id', 'Line object to inspect.']]],
+    'line.set_x1': ['line.set_x1(id, x)', 'Sets the first point x-coordinate. The value is a bar index or timestamp according to the line xloc.', [['id', 'Line object to modify.'], ['x', 'New bar index or UNIX timestamp.']]],
+    'line.set_x2': ['line.set_x2(id, x)', 'Sets the second point x-coordinate. The value is a bar index or timestamp according to the line xloc.', [['id', 'Line object to modify.'], ['x', 'New bar index or UNIX timestamp.']]],
+    'line.set_y1': ['line.set_y1(id, y)', 'Sets the first point price.', [['id', 'Line object to modify.'], ['y', 'New price.']]],
+    'line.set_y2': ['line.set_y2(id, y)', 'Sets the second point price.', [['id', 'Line object to modify.'], ['y', 'New price.']]],
+    'line.set_xy1': ['line.set_xy1(id, x, y)', 'Sets both coordinates of the first line point.', [['id', 'Line object to modify.'], ['x', 'New bar index or timestamp.'], ['y', 'New price.']]],
+    'line.set_xy2': ['line.set_xy2(id, x, y)', 'Sets both coordinates of the second line point.', [['id', 'Line object to modify.'], ['x', 'New bar index or timestamp.'], ['y', 'New price.']]],
+    'line.set_first_point': ['line.set_first_point(id, point)', 'Sets the first line point from a chart.point object.', [['id', 'Line object to modify.'], ['point', 'Chart point containing index/time and price.']]],
+    'line.set_second_point': ['line.set_second_point(id, point)', 'Sets the second line point from a chart.point object.', [['id', 'Line object to modify.'], ['point', 'Chart point containing index/time and price.']]],
+    'line.set_xloc': ['line.set_xloc(id, x1, x2, xloc)', 'Changes the x-coordinate mode and updates both line x values.', [['id', 'Line object to modify.'], ['x1', 'New first bar index or timestamp.'], ['x2', 'New second bar index or timestamp.'], ['xloc', 'New bar-index or bar-time coordinate mode.']]],
+    'line.set_color': ['line.set_color(id, color)', 'Changes a line color.', [['id', 'Line object to modify.'], ['color', 'New line color.']]],
+    'line.set_style': ['line.set_style(id, style)', 'Changes a line style.', [['id', 'Line object to modify.'], ['style', 'New line style.']]],
+    'line.set_width': ['line.set_width(id, width)', 'Changes a line width.', [['id', 'Line object to modify.'], ['width', 'New width in pixels.']]],
+    'line.set_extend': ['line.set_extend(id, extend)', 'Changes how a line extends beyond its endpoints.', [['id', 'Line object to modify.'], ['extend', 'New extension mode.']]],
+    'line.get_xloc': ['line.get_xloc(id)', 'Returns the coordinate mode used by a line.', [['id', 'Line object to inspect.']]],
+    'line.get_extend': ['line.get_extend(id)', 'Returns the extension mode used by a line.', [['id', 'Line object to inspect.']]]
+  };
+  Object.keys(pineLineMethods).forEach(function (name) {
+    definePineReferenceMetadata(name, pineLineMethods[name][0], pineLineMethods[name][1], pineLineMethods[name][2], 'Function', 'function');
+  });
+  PINE_EDITOR_SIGNATURES['line.set_x1'].example = 'var trend = line.new(bar_index - 1, low[1], bar_index, high)\nline.set_x1(trend, bar_index - 20)';
+  PINE_EDITOR_SIGNATURES['line.set_x2'].example = 'line.set_x2(trend, bar_index)';
+  PINE_EDITOR_SIGNATURES['line.set_xy1'].example = 'line.set_xy1(trend, bar_index - 20, low[20])';
+  PINE_EDITOR_SIGNATURES['line.set_xy2'].example = 'line.set_xy2(trend, bar_index, high)';
+  definePineReferenceMetadata('linefill.new', 'linefill.new(line1, line2, color)', 'Creates a fill that follows the common region between two line objects.', [['line1', 'First line object.'], ['line2', 'Second line object.'], ['color', 'Fill color.']], 'Function', 'function');
+  definePineReferenceMetadata('linefill.delete', 'linefill.delete(id)', 'Deletes a line fill object.', [['id', 'Line fill object to delete.']], 'Function', 'function');
+  definePineReferenceMetadata('linefill.get_line1', 'linefill.get_line1(id)', 'Returns the first line referenced by a line fill.', [['id', 'Line fill object to inspect.']], 'Function', 'function');
+  definePineReferenceMetadata('linefill.get_line2', 'linefill.get_line2(id)', 'Returns the second line referenced by a line fill.', [['id', 'Line fill object to inspect.']], 'Function', 'function');
+  definePineReferenceMetadata('linefill.set_color', 'linefill.set_color(id, color)', 'Changes the color of a line fill.', [['id', 'Line fill object to modify.'], ['color', 'New fill color.']], 'Function', 'function');
+
+  var pineVisualMethods = {
+    'label.new': ['label.new(x, y, text, xloc, yloc, color, style, textcolor, size, textalign, tooltip)', 'Creates a text label anchored to a bar and price.', [['x', 'Bar index or timestamp.'], ['y', 'Price or relative y location.'], ['text', 'Label text.'], ['xloc', 'X coordinate mode.'], ['yloc', 'Y coordinate mode.'], ['color', 'Label background color.'], ['style', 'Label shape style.'], ['textcolor', 'Text color.'], ['size', 'Text size.'], ['textalign', 'Text alignment.'], ['tooltip', 'Hover tooltip text.']]],
+    'label.copy': ['label.copy(id)', 'Creates an independent copy of a label.', [['id', 'Label object to copy.']]],
+    'label.delete': ['label.delete(id)', 'Deletes a label object.', [['id', 'Label object to delete.']]],
+    'label.get_x': ['label.get_x(id)', 'Returns a label x-coordinate.', [['id', 'Label object to inspect.']]],
+    'label.get_y': ['label.get_y(id)', 'Returns a label price or y-coordinate.', [['id', 'Label object to inspect.']]],
+    'label.get_text': ['label.get_text(id)', 'Returns label text.', [['id', 'Label object to inspect.']]],
+    'label.set_x': ['label.set_x(id, x)', 'Changes a label x-coordinate.', [['id', 'Label object to modify.'], ['x', 'New bar index or timestamp.']]],
+    'label.set_y': ['label.set_y(id, y)', 'Changes a label y-coordinate.', [['id', 'Label object to modify.'], ['y', 'New price or relative y value.']]],
+    'label.set_xy': ['label.set_xy(id, x, y)', 'Changes both label coordinates.', [['id', 'Label object to modify.'], ['x', 'New bar index or timestamp.'], ['y', 'New price or relative y value.']]],
+    'label.set_text': ['label.set_text(id, text)', 'Changes label text.', [['id', 'Label object to modify.'], ['text', 'New label text.']]],
+    'label.set_textcolor': ['label.set_textcolor(id, color)', 'Changes label text color.', [['id', 'Label object to modify.'], ['color', 'New text color.']]],
+    'label.set_color': ['label.set_color(id, color)', 'Changes label background color.', [['id', 'Label object to modify.'], ['color', 'New background color.']]],
+    'label.set_style': ['label.set_style(id, style)', 'Changes label shape style.', [['id', 'Label object to modify.'], ['style', 'New label style.']]],
+    'label.set_size': ['label.set_size(id, size)', 'Changes label text size.', [['id', 'Label object to modify.'], ['size', 'New label size.']]],
+    'label.set_textalign': ['label.set_textalign(id, textalign)', 'Changes label text alignment.', [['id', 'Label object to modify.'], ['textalign', 'New text alignment.']]],
+    'label.set_tooltip': ['label.set_tooltip(id, tooltip)', 'Changes the label hover tooltip.', [['id', 'Label object to modify.'], ['tooltip', 'New tooltip text.']]],
+    'box.new': ['box.new(left, top, right, bottom, border_color, border_width, border_style, bgcolor, text, text_color, text_size, text_halign, text_valign, xloc)', 'Creates a rectangular box between two chart coordinates.', [['left', 'Left bar index or timestamp.'], ['top', 'Top price.'], ['right', 'Right bar index or timestamp.'], ['bottom', 'Bottom price.'], ['border_color', 'Border color.'], ['border_width', 'Border width.'], ['border_style', 'Border style.'], ['bgcolor', 'Background fill color.'], ['text', 'Box text.'], ['text_color', 'Text color.'], ['text_size', 'Text size.'], ['text_halign', 'Horizontal text alignment.'], ['text_valign', 'Vertical text alignment.'], ['xloc', 'X coordinate mode.']]],
+    'box.copy': ['box.copy(id)', 'Creates an independent copy of a box.', [['id', 'Box object to copy.']]],
+    'box.delete': ['box.delete(id)', 'Deletes a box object.', [['id', 'Box object to delete.']]],
+    'box.get_left': ['box.get_left(id)', 'Returns the left x-coordinate of a box.', [['id', 'Box object to inspect.']]],
+    'box.get_top': ['box.get_top(id)', 'Returns the top price of a box.', [['id', 'Box object to inspect.']]],
+    'box.get_right': ['box.get_right(id)', 'Returns the right x-coordinate of a box.', [['id', 'Box object to inspect.']]],
+    'box.get_bottom': ['box.get_bottom(id)', 'Returns the bottom price of a box.', [['id', 'Box object to inspect.']]],
+    'box.set_left': ['box.set_left(id, left)', 'Changes the left x-coordinate of a box.', [['id', 'Box object to modify.'], ['left', 'New bar index or timestamp.']]],
+    'box.set_top': ['box.set_top(id, top)', 'Changes the top price of a box.', [['id', 'Box object to modify.'], ['top', 'New top price.']]],
+    'box.set_right': ['box.set_right(id, right)', 'Changes the right x-coordinate of a box.', [['id', 'Box object to modify.'], ['right', 'New bar index or timestamp.']]],
+    'box.set_bottom': ['box.set_bottom(id, bottom)', 'Changes the bottom price of a box.', [['id', 'Box object to modify.'], ['bottom', 'New bottom price.']]],
+    'box.set_bgcolor': ['box.set_bgcolor(id, bgcolor)', 'Changes a box background color.', [['id', 'Box object to modify.'], ['bgcolor', 'New background color.']]],
+    'box.set_border_color': ['box.set_border_color(id, color)', 'Changes a box border color.', [['id', 'Box object to modify.'], ['color', 'New border color.']]],
+    'box.set_border_style': ['box.set_border_style(id, style)', 'Changes a box border style.', [['id', 'Box object to modify.'], ['style', 'New border style.']]],
+    'box.set_border_width': ['box.set_border_width(id, width)', 'Changes a box border width.', [['id', 'Box object to modify.'], ['width', 'New border width.']]],
+    'box.set_text': ['box.set_text(id, text)', 'Changes box text.', [['id', 'Box object to modify.'], ['text', 'New box text.']]],
+    'box.set_text_color': ['box.set_text_color(id, color)', 'Changes box text color.', [['id', 'Box object to modify.'], ['color', 'New text color.']]],
+    'box.set_text_size': ['box.set_text_size(id, size)', 'Changes box text size.', [['id', 'Box object to modify.'], ['size', 'New text size.']]],
+    'box.set_text_halign': ['box.set_text_halign(id, align)', 'Changes box horizontal text alignment.', [['id', 'Box object to modify.'], ['align', 'Text alignment.']]],
+    'box.set_text_valign': ['box.set_text_valign(id, align)', 'Changes box vertical text alignment.', [['id', 'Box object to modify.'], ['align', 'Vertical alignment.']]]
+  };
+  Object.keys(pineVisualMethods).forEach(function (name) {
+    definePineReferenceMetadata(name, pineVisualMethods[name][0], pineVisualMethods[name][1], pineVisualMethods[name][2], 'Function', 'function');
+  });
+  definePineReferenceMetadata('plotarrow', 'plotarrow(series, title, colorup, colordown, offset, minheight, maxheight, editable, show_last, display)', 'Draws up or down arrows whose direction and size come from a numeric series.', [
+    ['series', 'Numeric series. Positive values point up and negative values point down.'], ['title', 'Title shown in the Data Window and settings.'], ['colorup', 'Color used for positive arrows.'], ['colordown', 'Color used for negative arrows.'], ['offset', 'Horizontal bar offset.'], ['minheight', 'Minimum arrow height in pixels.'], ['maxheight', 'Maximum arrow height in pixels.'], ['editable', 'Whether the plot can be edited in settings.'], ['show_last', 'Limit the plot to the most recent bars.'], ['display', 'Display target for the plot.']
+  ], 'Function', 'function');
+  definePineReferenceMetadata('plotcandle', 'plotcandle(open, high, low, close, title, color, wickcolor, editable, show_last, bordercolor, display)', 'Draws custom OHLC candles from four series. The runtime preserves the supplied body, wick, and border colors.', [
+    ['open', 'Opening-price series.'], ['high', 'High-price series.'], ['low', 'Low-price series.'], ['close', 'Closing-price series.'], ['title', 'Title shown in the Data Window and settings.'], ['color', 'Candle body color.'], ['wickcolor', 'Wick color.'], ['editable', 'Whether the plot can be edited in settings.'], ['show_last', 'Limit the plot to the most recent bars.'], ['bordercolor', 'Candle border color.'], ['display', 'Display target for the plot.']
+  ], 'Function', 'function');
+  definePineReferenceMetadata('plotbar', 'plotbar(open, high, low, close, title, color, editable, show_last, display)', 'Draws custom OHLC bars from four series.', [
+    ['open', 'Opening-price series.'], ['high', 'High-price series.'], ['low', 'Low-price series.'], ['close', 'Closing-price series.'], ['title', 'Title shown in the Data Window and settings.'], ['color', 'Bar color.'], ['editable', 'Whether the plot can be edited in settings.'], ['show_last', 'Limit the plot to the most recent bars.'], ['display', 'Display target for the plot.']
+  ], 'Function', 'function');
+  definePineReferenceMetadata('barcolor', 'barcolor(color, offset, editable, show_last, title, display)', 'Overrides the colors of the chart symbol bars or candles for the selected bars.', [
+    ['color', 'Color series to apply to the chart bars. na leaves a bar unchanged.'], ['offset', 'Horizontal bar offset.'], ['editable', 'Whether the plot can be edited in settings.'], ['show_last', 'Limit the coloring to the most recent bars.'], ['title', 'Title shown in the Data Window and settings.'], ['display', 'Display target for the plot.']
+  ], 'Function', 'function');
+  definePineReferenceMetadata('alert', 'alert(message, freq)', 'Creates an alert event when the evaluated script condition calls it. Browser execution records the event for the historical run; it does not contact a broker or notification service.', [
+    ['message', 'Message recorded with the alert event.'], ['freq', 'Alert frequency, such as alert.freq_once_per_bar, alert.freq_once_per_bar_close, or alert.freq_all.']
+  ], 'Function', 'function');
+  definePineReferenceMetadata('chart.point.from_index', 'chart.point.from_index(index, price)', 'Creates a chart point from a zero-based bar index and price.', [['index', 'Bar index.'], ['price', 'Price value.']], 'Function', 'function');
+  definePineReferenceMetadata('chart.point.from_time', 'chart.point.from_time(time, price)', 'Creates a chart point from a UNIX timestamp and price.', [['time', 'UNIX timestamp in milliseconds.'], ['price', 'Price value.']], 'Function', 'function');
+  definePineReferenceMetadata('chart.point.now', 'chart.point.now(price)', 'Creates a chart point at the current bar and price.', [['price', 'Price value.']], 'Function', 'function');
+  definePineReferenceMetadata('polyline.new', 'polyline.new(points, curved, closed, xloc, line_color, fill_color, line_style, line_width, force_overlay)', 'Creates a polyline by connecting chart points in order, optionally closing or filling the shape.', [['points', 'Array of chart.point objects.'], ['curved', 'Whether to curve the connecting segments.'], ['closed', 'Whether to connect the last point back to the first.'], ['xloc', 'Whether point x values use indexes or timestamps.'], ['line_color', 'Polyline line color.'], ['fill_color', 'Fill color for a closed polyline.'], ['line_style', 'Polyline line style.'], ['line_width', 'Polyline width.'], ['force_overlay', 'Whether to draw over the main price pane.']], 'Function', 'function');
+  definePineReferenceMetadata('polyline.delete', 'polyline.delete(id)', 'Deletes a polyline object.', [['id', 'Polyline object to delete.']], 'Function', 'function');
+  definePineReferenceMetadata('polyline.copy', 'polyline.copy(id)', 'Creates an independent copy of a polyline.', [['id', 'Polyline object to copy.']], 'Function', 'function');
+  definePineReferenceMetadata('table.new', 'table.new(position, columns, rows, bgcolor, frame_color, frame_width, border_color, border_width)', 'Creates a floating table in a fixed pane position.', [['position', 'Table anchor position.'], ['columns', 'Number of columns.'], ['rows', 'Number of rows.'], ['bgcolor', 'Table background color.'], ['frame_color', 'Outer frame color.'], ['frame_width', 'Outer frame width.'], ['border_color', 'Cell border color.'], ['border_width', 'Cell border width.']], 'Function', 'function');
+  definePineReferenceMetadata('table.cell', 'table.cell(table_id, column, row, text, width, height, text_color, text_halign, text_valign, text_size, bgcolor, tooltip, text_font_family)', 'Creates or replaces a table cell.', [['table_id', 'Table object.'], ['column', 'Zero-based column index.'], ['row', 'Zero-based row index.'], ['text', 'Cell text.'], ['width', 'Cell width percentage.'], ['height', 'Cell height percentage.'], ['text_color', 'Text color.'], ['text_halign', 'Horizontal text alignment.'], ['text_valign', 'Vertical text alignment.'], ['text_size', 'Text size.'], ['bgcolor', 'Cell background color.'], ['tooltip', 'Cell hover tooltip.'], ['text_font_family', 'Cell font family.']], 'Function', 'function');
+  definePineReferenceMetadata('table.cell_set_text', 'table.cell_set_text(table_id, column, row, text)', 'Changes the text in a table cell.', [['table_id', 'Table object.'], ['column', 'Zero-based column index.'], ['row', 'Zero-based row index.'], ['text', 'New cell text.']], 'Function', 'function');
+  definePineReferenceMetadata('table.cell_set_bgcolor', 'table.cell_set_bgcolor(table_id, column, row, bgcolor)', 'Changes a table cell background color.', [['table_id', 'Table object.'], ['column', 'Zero-based column index.'], ['row', 'Zero-based row index.'], ['bgcolor', 'New background color.']], 'Function', 'function');
+  definePineReferenceMetadata('table.cell_set_text_color', 'table.cell_set_text_color(table_id, column, row, text_color)', 'Changes a table cell text color.', [['table_id', 'Table object.'], ['column', 'Zero-based column index.'], ['row', 'Zero-based row index.'], ['text_color', 'New text color.']], 'Function', 'function');
+  definePineReferenceMetadata('table.cell_set_text_size', 'table.cell_set_text_size(table_id, column, row, text_size)', 'Changes a table cell text size.', [['table_id', 'Table object.'], ['column', 'Zero-based column index.'], ['row', 'Zero-based row index.'], ['text_size', 'New text size.']], 'Function', 'function');
+  definePineReferenceMetadata('table.clear', 'table.clear(table_id, start_column, start_row, end_column, end_row)', 'Clears a range of table cells.', [['table_id', 'Table object.'], ['start_column', 'First column to clear.'], ['start_row', 'First row to clear.'], ['end_column', 'Last column to clear.'], ['end_row', 'Last row to clear.']], 'Function', 'function');
+  definePineReferenceMetadata('table.delete', 'table.delete(table_id)', 'Deletes a table object.', [['table_id', 'Table object to delete.']], 'Function', 'function');
+  definePineReferenceMetadata('table.get_position', 'table.get_position(table_id)', 'Returns a table anchor position.', [['table_id', 'Table object to inspect.']], 'Function', 'function');
+  definePineReferenceMetadata('table.set_position', 'table.set_position(table_id, position)', 'Changes a table anchor position.', [['table_id', 'Table object to modify.'], ['position', 'New table anchor position.']], 'Function', 'function');
+
+  var pineTechnicalDetails = {
+    'ta.rma': ['ta.rma(source, length)', 'Returns a running moving average using Wilder smoothing.', ['source', 'length']],
+    'ta.wma': ['ta.wma(source, length)', 'Returns a weighted moving average.', ['source', 'length']],
+    'ta.vwma': ['ta.vwma(source, length)', 'Returns a volume-weighted moving average.', ['source', 'length']],
+    'ta.hma': ['ta.hma(source, length)', 'Returns a Hull moving average.', ['source', 'length']],
+    'ta.swma': ['ta.swma(source)', 'Returns the four-bar symmetrically weighted moving average.', ['source']],
+    'ta.tr': ['ta.tr(handle_na)', 'Returns true range using the current and previous close.', ['handle_na']],
+    'ta.cci': ['ta.cci(source, length)', 'Returns the Commodity Channel Index.', ['source', 'length']],
+    'ta.mfi': ['ta.mfi(series, length)', 'Returns the Money Flow Index.', ['series', 'length']],
+    'ta.mom': ['ta.mom(source, length)', 'Returns momentum as the difference from a prior bar.', ['source', 'length']],
+    'ta.roc': ['ta.roc(source, length)', 'Returns percentage rate of change.', ['source', 'length']],
+    'ta.cmo': ['ta.cmo(source, length)', 'Returns the Chande Momentum Oscillator.', ['source', 'length']],
+    'ta.tsi': ['ta.tsi(source, short_length, long_length)', 'Returns the True Strength Index.', ['source', 'short_length', 'long_length']],
+    'ta.wpr': ['ta.wpr(length)', 'Returns Williams Percent Range.', ['length']],
+    'ta.ppo': ['ta.ppo(source, fast_length, slow_length)', 'Returns the Percentage Price Oscillator.', ['source', 'fast_length', 'slow_length']],
+    'ta.kc': ['ta.kc(series, length, mult)', 'Returns Keltner Channel basis, upper, and lower series.', ['series', 'length', 'mult']],
+    'ta.kcw': ['ta.kcw(series, length, mult)', 'Returns Keltner Channel width.', ['series', 'length', 'mult']],
+    'ta.bbw': ['ta.bbw(series, length, mult)', 'Returns Bollinger Band width.', ['series', 'length', 'mult']],
+    'ta.vhf': ['ta.vhf(source, length)', 'Returns the Vertical Horizontal Filter.', ['source', 'length']],
+    'ta.vi': ['ta.vi(length)', 'Returns positive and negative Vortex Indicator series.', ['length']],
+    'ta.trix': ['ta.trix(source, length)', 'Returns the triple-smoothed rate of change.', ['source', 'length']],
+    'ta.aroon': ['ta.aroon(length)', 'Returns Aroon up and Aroon down series.', ['length']],
+    'ta.barssince': ['ta.barssince(condition)', 'Returns the number of bars since a condition was last true.', ['condition']],
+    'ta.change': ['ta.change(source, length)', 'Returns the change from a prior value.', ['source', 'length']],
+    'ta.correlation': ['ta.correlation(source1, source2, length)', 'Returns rolling correlation between two series.', ['source1', 'source2', 'length']],
+    'ta.covariance': ['ta.covariance(source1, source2, length)', 'Returns rolling covariance between two series.', ['source1', 'source2', 'length']],
+    'ta.dev': ['ta.dev(source, length)', 'Returns mean absolute deviation over a rolling window.', ['source', 'length']],
+    'ta.falling': ['ta.falling(source, length)', 'Returns true when a series is falling for the specified length.', ['source', 'length']],
+    'ta.rising': ['ta.rising(source, length)', 'Returns true when a series is rising for the specified length.', ['source', 'length']],
+    'ta.cross': ['ta.cross(source1, source2)', 'Returns true when two series cross in either direction.', ['source1', 'source2']],
+    'ta.crossover': ['ta.crossover(source1, source2)', 'Returns true when the first series crosses above the second.', ['source1', 'source2']],
+    'ta.crossunder': ['ta.crossunder(source1, source2)', 'Returns true when the first series crosses below the second.', ['source1', 'source2']],
+    'ta.valuewhen': ['ta.valuewhen(condition, source, occurrence)', 'Returns a source value from the bar where a condition occurred.', ['condition', 'source', 'occurrence']],
+    'ta.pivothigh': ['ta.pivothigh(source, leftbars, rightbars)', 'Returns a confirmed pivot high after right-side bars have elapsed.', ['source', 'leftbars', 'rightbars']],
+    'ta.pivotlow': ['ta.pivotlow(source, leftbars, rightbars)', 'Returns a confirmed pivot low after right-side bars have elapsed.', ['source', 'leftbars', 'rightbars']],
+    'ta.highestbars': ['ta.highestbars(source, length)', 'Returns the offset to the highest value in a rolling window.', ['source', 'length']],
+    'ta.lowestbars': ['ta.lowestbars(source, length)', 'Returns the offset to the lowest value in a rolling window.', ['source', 'length']],
+    'ta.linreg': ['ta.linreg(source, length, offset)', 'Returns the linear regression value.', ['source', 'length', 'offset']],
+    'ta.slope': ['ta.slope(source, length)', 'Returns the slope of a rolling linear regression.', ['source', 'length']],
+    'ta.variance': ['ta.variance(source, length)', 'Returns rolling population variance.', ['source', 'length']],
+    'ta.stdev': ['ta.stdev(source, length)', 'Returns rolling population standard deviation.', ['source', 'length']],
+    'ta.sum': ['ta.sum(source, length)', 'Returns a rolling sum.', ['source', 'length']],
+    'ta.median': ['ta.median(source, length)', 'Returns the rolling median.', ['source', 'length']],
+    'ta.mode': ['ta.mode(source, length)', 'Returns the most frequent value in a rolling window.', ['source', 'length']],
+    'ta.percentile_linear_interpolation': ['ta.percentile_linear_interpolation(source, length, percentage)', 'Returns a linearly interpolated rolling percentile.', ['source', 'length', 'percentage']],
+    'ta.percentile_nearest_rank': ['ta.percentile_nearest_rank(source, length, percentage)', 'Returns a nearest-rank rolling percentile.', ['source', 'length', 'percentage']],
+    'ta.range': ['ta.range(source, length)', 'Returns the highest-minus-lowest range.', ['source', 'length']],
+    'ta.ema2': ['ta.ema2(source, length)', 'Returns an EMA with a length that may vary by bar.', ['source', 'length']],
+    'ta.dema': ['ta.dema(source, length)', 'Returns a double exponential moving average.', ['source', 'length']],
+    'ta.tema': ['ta.tema(source, length)', 'Returns a triple exponential moving average.', ['source', 'length']],
+    'ta.trima': ['ta.trima(source, length)', 'Returns a triangular moving average.', ['source', 'length']],
+    'ta.frama': ['ta.frama(source, length)', 'Returns a fractal adaptive moving average.', ['source', 'length']],
+    'ta.atr': ['ta.atr(length)', 'Returns the Average True Range.', ['length']],
+    'ta.stoch': ['ta.stoch(source, peak, valley, period)', 'Returns the Stochastic Oscillator.', ['source', 'peak', 'valley', 'period']],
+    'ta.bb': ['ta.bb(series, length, mult)', 'Returns Bollinger basis, upper, and lower series.', ['series', 'length', 'mult']],
+    'ta.dmi': ['ta.dmi(diLength, adxSmoothing)', 'Returns +DI, -DI, and ADX series.', ['diLength', 'adxSmoothing']],
+    'ta.supertrend': ['ta.supertrend(factor, atrPeriod)', 'Returns SuperTrend value and direction series.', ['factor', 'atrPeriod']]
+  };
+  Object.keys(pineTechnicalDetails).forEach(function (name) {
+    var item = pineTechnicalDetails[name];
+    definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function');
+  });
+  var pineMathDetails = {
+    'math.abs': ['math.abs(number)', 'Returns the absolute value.', ['number']], 'math.acos': ['math.acos(number)', 'Returns the inverse cosine in radians.', ['number']],
+    'math.asin': ['math.asin(number)', 'Returns the inverse sine in radians.', ['number']], 'math.atan': ['math.atan(number)', 'Returns the inverse tangent in radians.', ['number']],
+    'math.avg': ['math.avg(number0, number1)', 'Returns the arithmetic average of two values.', ['number0', 'number1']], 'math.ceil': ['math.ceil(number)', 'Rounds up to the nearest integer.', ['number']],
+    'math.cos': ['math.cos(angle)', 'Returns the cosine of an angle in radians.', ['angle']], 'math.exp': ['math.exp(number)', 'Returns e raised to a number.', ['number']],
+    'math.floor': ['math.floor(number)', 'Rounds down to the nearest integer.', ['number']], 'math.log': ['math.log(number)', 'Returns the natural logarithm for positive values.', ['number']],
+    'math.log10': ['math.log10(number)', 'Returns the base-10 logarithm for positive values.', ['number']], 'math.max': ['math.max(number0, number1)', 'Returns the larger of two values.', ['number0', 'number1']],
+    'math.min': ['math.min(number0, number1)', 'Returns the smaller of two values.', ['number0', 'number1']], 'math.pow': ['math.pow(number, exponent)', 'Raises a number to an exponent.', ['number', 'exponent']],
+    'math.random': ['math.random(seed)', 'Returns a deterministic pseudo-random value for the supplied seed.', ['seed']], 'math.round': ['math.round(number, precision)', 'Rounds a number to the requested precision.', ['number', 'precision']],
+    'math.round_to_mintick': ['math.round_to_mintick(number)', 'Rounds a number to the chart symbol minimum tick.', ['number']], 'math.sign': ['math.sign(number)', 'Returns -1, 0, or 1 according to the sign.', ['number']],
+    'math.sin': ['math.sin(angle)', 'Returns the sine of an angle in radians.', ['angle']], 'math.sqrt': ['math.sqrt(number)', 'Returns the square root for non-negative values.', ['number']],
+    'math.sum': ['math.sum(number, length)', 'Returns a rolling sum of a series.', ['number', 'length']], 'math.tan': ['math.tan(angle)', 'Returns the tangent of an angle in radians.', ['angle']],
+    'math.todegrees': ['math.todegrees(radians)', 'Converts radians to degrees.', ['radians']], 'math.toradians': ['math.toradians(degrees)', 'Converts degrees to radians.', ['degrees']]
+  };
+  Object.keys(pineMathDetails).forEach(function (name) { var item = pineMathDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  ['math.e', 'math.pi', 'math.phi'].forEach(function (name) {
+    definePineReferenceMetadata(name, name, name === 'math.e' ? 'Euler\'s number.' : name === 'math.pi' ? 'The mathematical constant pi.' : 'The golden ratio.', [], 'Constant', 'constant');
+  });
+  var pineStringDetails = {
+    'str.contains': ['str.contains(source, str)', 'Returns whether a string contains a substring.', ['source', 'str']], 'str.endswith': ['str.endswith(source, str)', 'Returns whether a string ends with a substring.', ['source', 'str']],
+    'str.startswith': ['str.startswith(source, str)', 'Returns whether a string starts with a substring.', ['source', 'str']], 'str.length': ['str.length(source)', 'Returns the number of characters in a string.', ['source']],
+    'str.lower': ['str.lower(source)', 'Converts a string to lowercase.', ['source']], 'str.upper': ['str.upper(source)', 'Converts a string to uppercase.', ['source']],
+    'str.replace': ['str.replace(source, target, replacement)', 'Replaces the first matching substring.', ['source', 'target', 'replacement']], 'str.replace_all': ['str.replace_all(source, target, replacement)', 'Replaces every matching substring.', ['source', 'target', 'replacement']],
+    'str.substring': ['str.substring(source, begin, end)', 'Returns a substring between character positions.', ['source', 'begin', 'end']], 'str.split': ['str.split(source, separator)', 'Splits a string into an array of substrings.', ['source', 'separator']],
+    'str.format': ['str.format(format_string, arguments)', 'Formats values into a string using placeholders.', ['format_string', 'arguments']], 'str.format_time': ['str.format_time(time, format, timezone)', 'Formats a UNIX timestamp as text.', ['time', 'format', 'timezone']],
+    'str.tonumber': ['str.tonumber(source)', 'Converts numeric text to a number.', ['source']], 'str.tostring': ['str.tostring(value, format)', 'Converts a value to text.', ['value', 'format']],
+    'str.trim': ['str.trim(source)', 'Removes leading and trailing whitespace.', ['source']], 'str.pos': ['str.pos(source, str)', 'Returns the first position of a substring or -1.', ['source', 'str']],
+    'str.match': ['str.match(source, regex)', 'Returns the first regular-expression match.', ['source', 'regex']]
+  };
+  Object.keys(pineStringDetails).forEach(function (name) { var item = pineStringDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineRequestDetails = {
+    'request.security': ['request.security(symbol, timeframe, expression, gaps, lookahead, ignore_invalid_symbol, currency, calc_bars_count)', 'Evaluates an expression on another symbol or timeframe and aligns it to the chart bars.', ['symbol', 'timeframe', 'expression', 'gaps', 'lookahead', 'ignore_invalid_symbol', 'currency', 'calc_bars_count']],
+    'request.security_lower_tf': ['request.security_lower_tf(symbol, timeframe, expression, ignore_invalid_symbol, ignore_invalid_timeframe, calc_bars_count)', 'Returns an array of lower-timeframe values for each chart bar.', ['symbol', 'timeframe', 'expression', 'ignore_invalid_symbol', 'ignore_invalid_timeframe', 'calc_bars_count']],
+    'request.currency_rate': ['request.currency_rate(from, to)', 'Returns a supplied or configured daily currency conversion rate.', ['from', 'to']],
+    'request.dividends': ['request.dividends(symbol, field, gaps, lookahead, ignore_invalid_symbol, currency)', 'Returns dividend events supplied for a symbol.', ['symbol', 'field', 'gaps', 'lookahead', 'ignore_invalid_symbol', 'currency']],
+    'request.earnings': ['request.earnings(symbol, field, gaps, lookahead, ignore_invalid_symbol, currency)', 'Returns earnings events supplied for a symbol.', ['symbol', 'field', 'gaps', 'lookahead', 'ignore_invalid_symbol', 'currency']],
+    'request.financial': ['request.financial(symbol, financial_id, period, gaps, ignore_invalid_symbol, currency)', 'Returns financial metric values supplied for a symbol.', ['symbol', 'financial_id', 'period', 'gaps', 'ignore_invalid_symbol', 'currency']],
+    'request.quandl': ['request.quandl(ticker, gaps, index)', 'Returns a configured Quandl series for compatibility.', ['ticker', 'gaps', 'index']],
+    'request.seed': ['request.seed(source, symbol, expression, ignore_invalid_symbol)', 'Returns a configured seed series for compatibility.', ['source', 'symbol', 'expression', 'ignore_invalid_symbol']],
+    'request.splits': ['request.splits(symbol, field, gaps, lookahead, ignore_invalid_symbol)', 'Returns split events supplied for a symbol.', ['symbol', 'field', 'gaps', 'lookahead', 'ignore_invalid_symbol']]
+  };
+  Object.keys(pineRequestDetails).forEach(function (name) { var item = pineRequestDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineInputDetails = {
+    'input': ['input(defval, title, tooltip, inline, group, confirm, display, active)', 'Creates a compatible generic script input.', ['defval', 'title', 'tooltip', 'inline', 'group', 'confirm', 'display', 'active']],
+    'input.source': ['input.source(defval, title, tooltip, inline, group, display, active)', 'Creates an input for selecting an OHLCV or plotted source series.', ['defval', 'title', 'tooltip', 'inline', 'group', 'display', 'active']],
+    'input.time': ['input.time(defval, title, confirm, inline, group, tooltip, display, active)', 'Creates a timestamp input.', ['defval', 'title', 'confirm', 'inline', 'group', 'tooltip', 'display', 'active']],
+    'input.symbol': ['input.symbol(defval, title, tooltip, inline, group, display, active)', 'Creates a symbol input.', ['defval', 'title', 'tooltip', 'inline', 'group', 'display', 'active']],
+    'input.session': ['input.session(defval, title, tooltip, inline, group, display, active)', 'Creates a trading-session input.', ['defval', 'title', 'tooltip', 'inline', 'group', 'display', 'active']],
+    'input.enum': ['input.enum(defval, title, options, tooltip, inline, group, display, active)', 'Creates an enum selection input.', ['defval', 'title', 'options', 'tooltip', 'inline', 'group', 'display', 'active']],
+    'input.text_area': ['input.text_area(defval, title, tooltip, group, confirm, display, active)', 'Creates a multiline text input.', ['defval', 'title', 'tooltip', 'group', 'confirm', 'display', 'active']]
+  };
+  Object.keys(pineInputDetails).forEach(function (name) { var item = pineInputDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineCollectionDetails = {
+    'array.new': ['array.new<type>(size, initial_value)', 'Creates an array with a fixed initial size.', ['size', 'initial_value']], 'array.from': ['array.from(value)', 'Creates an array from one or more values.', ['value']],
+    'array.size': ['array.size(id)', 'Returns the number of elements in an array.', ['id']], 'array.get': ['array.get(id, index)', 'Returns an array element.', ['id', 'index']], 'array.set': ['array.set(id, index, value)', 'Replaces an array element.', ['id', 'index', 'value']],
+    'array.push': ['array.push(id, value)', 'Appends a value to an array.', ['id', 'value']], 'array.pop': ['array.pop(id)', 'Removes and returns the last array element.', ['id']], 'array.shift': ['array.shift(id)', 'Removes and returns the first array element.', ['id']],
+    'array.unshift': ['array.unshift(id, value)', 'Prepends a value to an array.', ['id', 'value']], 'array.insert': ['array.insert(id, index, value)', 'Inserts a value at an array index.', ['id', 'index', 'value']], 'array.remove': ['array.remove(id, index)', 'Removes and returns an array element.', ['id', 'index']],
+    'array.clear': ['array.clear(id)', 'Removes all values from an array.', ['id']], 'array.copy': ['array.copy(id)', 'Creates a shallow array copy.', ['id']], 'array.sort': ['array.sort(id, order)', 'Returns a sorted array copy.', ['id', 'order']], 'array.reverse': ['array.reverse(id)', 'Returns an array with reversed order.', ['id']],
+    'array.slice': ['array.slice(id, index_from, index_to)', 'Returns a slice of an array.', ['id', 'index_from', 'index_to']], 'array.concat': ['array.concat(id1, id2)', 'Concatenates two arrays.', ['id1', 'id2']], 'array.binary_search': ['array.binary_search(id, value)', 'Finds a value in a sorted array.', ['id', 'value']], 'array.binary_search_leftmost': ['array.binary_search_leftmost(id, value)', 'Finds the leftmost matching sorted-array index.', ['id', 'value']], 'array.binary_search_rightmost': ['array.binary_search_rightmost(id, value)', 'Finds the rightmost matching sorted-array index.', ['id', 'value']],
+    'array.range': ['array.range(size, from, step)', 'Creates an arithmetic range array.', ['size', 'from', 'step']], 'array.avg': ['array.avg(id)', 'Returns the average of numeric array values.', ['id']], 'array.covariance': ['array.covariance(id1, id2)', 'Returns covariance between two numeric arrays.', ['id1', 'id2']], 'array.max': ['array.max(id)', 'Returns the maximum numeric array value.', ['id']], 'array.min': ['array.min(id)', 'Returns the minimum numeric array value.', ['id']], 'array.median': ['array.median(id)', 'Returns the median numeric array value.', ['id']], 'array.mode': ['array.mode(id)', 'Returns the most frequent array value.', ['id']], 'array.percentile_linear_interpolation': ['array.percentile_linear_interpolation(id, percentage)', 'Returns an interpolated array percentile.', ['id', 'percentage']], 'array.percentile_nearest_rank': ['array.percentile_nearest_rank(id, percentage)', 'Returns a nearest-rank array percentile.', ['id', 'percentage']], 'array.stdev': ['array.stdev(id)', 'Returns array population standard deviation.', ['id']], 'array.standardize': ['array.standardize(id)', 'Returns standardized numeric array values.', ['id']], 'array.sum': ['array.sum(id)', 'Returns the numeric sum of array values.', ['id']], 'array.join': ['array.join(id, separator)', 'Joins array values into text.', ['id', 'separator']]
+  };
+  Object.keys(pineCollectionDetails).forEach(function (name) { var item = pineCollectionDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineMatrixDetails = {
+    'matrix.new': ['matrix.new<type>(rows, columns, initial_value)', 'Creates a matrix with the requested dimensions.', ['rows', 'columns', 'initial_value']], 'matrix.rows': ['matrix.rows(id)', 'Returns the number of matrix rows.', ['id']], 'matrix.columns': ['matrix.columns(id)', 'Returns the number of matrix columns.', ['id']],
+    'matrix.get': ['matrix.get(id, row, column)', 'Returns a matrix element.', ['id', 'row', 'column']], 'matrix.set': ['matrix.set(id, row, column, value)', 'Replaces a matrix element.', ['id', 'row', 'column', 'value']], 'matrix.add': ['matrix.add(id1, id2)', 'Adds two matrices element by element.', ['id1', 'id2']], 'matrix.sub': ['matrix.sub(id1, id2)', 'Subtracts two matrices element by element.', ['id1', 'id2']], 'matrix.mult': ['matrix.mult(id1, id2)', 'Multiplies matrices element by element in this runtime.', ['id1', 'id2']],
+    'matrix.transpose': ['matrix.transpose(id)', 'Returns a transposed matrix.', ['id']], 'matrix.det': ['matrix.det(id)', 'Returns the determinant of a square matrix.', ['id']], 'matrix.inv': ['matrix.inv(id)', 'Returns the inverse of a square matrix.', ['id']], 'matrix.pinv': ['matrix.pinv(id)', 'Returns the Moore-Penrose pseudoinverse.', ['id']], 'matrix.rank': ['matrix.rank(id)', 'Returns matrix rank.', ['id']], 'matrix.trace': ['matrix.trace(id)', 'Returns the trace of a square matrix.', ['id']], 'matrix.reshape': ['matrix.reshape(id, rows, columns)', 'Reshapes matrix values into new dimensions.', ['id', 'rows', 'columns']], 'matrix.fill': ['matrix.fill(id, value)', 'Fills every matrix element with a value.', ['id', 'value']], 'matrix.copy': ['matrix.copy(id)', 'Creates a matrix copy.', ['id']], 'matrix.sort': ['matrix.sort(id, order)', 'Returns sorted matrix rows.', ['id', 'order']], 'matrix.reverse': ['matrix.reverse(id)', 'Returns reversed matrix rows.', ['id']], 'matrix.sum': ['matrix.sum(id)', 'Returns the sum of matrix values.', ['id']], 'matrix.avg': ['matrix.avg(id)', 'Returns the average of matrix values.', ['id']], 'matrix.min': ['matrix.min(id)', 'Returns the minimum matrix value.', ['id']], 'matrix.max': ['matrix.max(id)', 'Returns the maximum matrix value.', ['id']], 'matrix.median': ['matrix.median(id)', 'Returns the median matrix value.', ['id']], 'matrix.mode': ['matrix.mode(id)', 'Returns the most frequent matrix value.', ['id']], 'matrix.pow': ['matrix.pow(id, exponent)', 'Raises each matrix element to an exponent.', ['id', 'exponent']]
+  };
+  Object.keys(pineMatrixDetails).forEach(function (name) { var item = pineMatrixDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineMapDetails = {
+    'map.new': ['map.new<key, value>()', 'Creates an empty key-value map.', []], 'map.size': ['map.size(id)', 'Returns the number of entries in a map.', ['id']], 'map.put': ['map.put(id, key, value)', 'Stores a value under a key.', ['id', 'key', 'value']], 'map.get': ['map.get(id, key)', 'Returns a value stored under a key.', ['id', 'key']], 'map.remove': ['map.remove(id, key)', 'Removes and returns a map value.', ['id', 'key']], 'map.clear': ['map.clear(id)', 'Removes every map entry.', ['id']], 'map.contains': ['map.contains(id, key)', 'Returns whether a map contains a key.', ['id', 'key']], 'map.keys': ['map.keys(id)', 'Returns an array of map keys.', ['id']], 'map.values': ['map.values(id)', 'Returns an array of map values.', ['id']], 'map.copy': ['map.copy(id)', 'Creates a map copy.', ['id']]
+  };
+  Object.keys(pineMapDetails).forEach(function (name) { var item = pineMapDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineColorDetails = {
+    'color.new': ['color.new(color, transp)', 'Returns a color with the requested transparency.', ['color', 'transp']], 'color.rgb': ['color.rgb(red, green, blue, transp)', 'Creates a color from RGB channels and transparency.', ['red', 'green', 'blue', 'transp']], 'color.from_gradient': ['color.from_gradient(value, bottom_value, top_value, bottom_color, top_color)', 'Interpolates a color between two endpoints.', ['value', 'bottom_value', 'top_value', 'bottom_color', 'top_color']], 'color.r': ['color.r(color)', 'Returns the red channel of a color.', ['color']], 'color.g': ['color.g(color)', 'Returns the green channel of a color.', ['color']], 'color.b': ['color.b(color)', 'Returns the blue channel of a color.', ['color']], 'color.t': ['color.t(color)', 'Returns the transparency of a color.', ['color']]
+  };
+  Object.keys(pineColorDetails).forEach(function (name) { var item = pineColorDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+  var pineTickerDetails = {
+    'ticker.new': ['ticker.new(prefix, ticker, session)', 'Builds a ticker identifier.', ['prefix', 'ticker', 'session']], 'ticker.modify': ['ticker.modify(symbol, session, adjustment, session)', 'Returns a ticker identifier with modified settings.', ['symbol', 'session', 'adjustment', 'session']], 'ticker.standard': ['ticker.standard(symbol)', 'Returns the standard ticker for a symbol.', ['symbol']], 'ticker.heikinashi': ['ticker.heikinashi(symbol)', 'Returns a Heikin Ashi ticker identifier.', ['symbol']], 'ticker.renko': ['ticker.renko(symbol, style, param)', 'Returns a Renko ticker identifier.', ['symbol', 'style', 'param']], 'ticker.kagi': ['ticker.kagi(symbol, param)', 'Returns a Kagi ticker identifier.', ['symbol', 'param']], 'ticker.linebreak': ['ticker.linebreak(symbol, number_of_lines)', 'Returns a Line Break ticker identifier.', ['symbol', 'number_of_lines']], 'ticker.pointfigure': ['ticker.pointfigure(symbol, source, style, parameters)', 'Returns a Point & Figure ticker identifier.', ['symbol', 'source', 'style', 'parameters']], 'ticker.inherit': ['ticker.inherit(symbol)', 'Returns a ticker inheriting the chart symbol settings.', ['symbol']],
+    'time': ['time(timeframe, session, timezone)', 'Returns a bar timestamp for a requested timeframe.', ['timeframe', 'session', 'timezone']], 'time_close': ['time_close(timeframe, session, timezone)', 'Returns a bar closing timestamp.', ['timeframe', 'session', 'timezone']], 'timestamp': ['timestamp(year, month, day, hour, minute, second)', 'Creates a UNIX timestamp.', ['year', 'month', 'day', 'hour', 'minute', 'second']], 'dayofmonth': ['dayofmonth(time)', 'Returns the day of month for a timestamp.', ['time']], 'dayofweek': ['dayofweek(time)', 'Returns the day of week for a timestamp.', ['time']], 'hour': ['hour(time)', 'Returns the hour for a timestamp.', ['time']], 'minute': ['minute(time)', 'Returns the minute for a timestamp.', ['time']], 'month': ['month(time)', 'Returns the month for a timestamp.', ['time']], 'second': ['second(time)', 'Returns the second for a timestamp.', ['time']], 'weekofyear': ['weekofyear(time)', 'Returns the week number for a timestamp.', ['time']], 'year': ['year(time)', 'Returns the year for a timestamp.', ['time']]
+  };
+  Object.keys(pineTickerDetails).forEach(function (name) { var item = pineTickerDetails[name]; definePineReferenceMetadata(name, item[0], item[1], item[2], 'Function', 'function'); });
+
   var strategyParam = {
     id: ['id', 'Unique order identifier used by later exit, close, or cancel calls.'],
     direction: ['direction', 'Order direction, usually strategy.long or strategy.short.'],
@@ -12059,13 +12501,6 @@
   definePineStrategySignature('strategy.default_entry_qty', 'strategy.default_entry_qty(fill_price)', 'Returns the default entry quantity calculated from the strategy order-size settings and a hypothetical fill price.', [['fill_price', 'Hypothetical fill price used for the quantity calculation.']]);
 
   setPineCapability(PINE_EDITOR_REFERENCE_FUNCTIONS, 'Supported', 'Executed by the browser runtime for the historical chart compatibility contract.');
-  setPineCapability([
-    'linefill.new', 'linefill.delete', 'linefill.get_line1', 'linefill.get_line2', 'polyline.new', 'polyline.delete',
-    'polyline.copy', 'table.new', 'table.cell', 'table.cell_set_text', 'table.cell_set_bgcolor',
-    'table.cell_set_text_color', 'table.cell_set_text_size', 'table.clear', 'table.delete', 'table.get_position',
-    'table.set_position', 'request.currency_rate', 'request.dividends', 'request.earnings', 'request.financial',
-    'request.quandl', 'request.seed', 'request.splits'
-  ], 'Reference', 'The name is documented, but this runtime does not yet provide TradingView-equivalent execution for it.');
   var PINE_EDITOR_COMPLETIONS = [
     { value: 'indicator', label: 'Declare an indicator' },
     { value: 'strategy', label: 'Declare a strategy' },
@@ -12116,15 +12551,21 @@
       PINE_EDITOR_COMPLETIONS.push({ value: name, label: 'Pine namespace' });
     }
   });
+  PINE_EDITOR_REFERENCE_BUILT_INS.forEach(function (entry) {
+    if (!PINE_EDITOR_COMPLETIONS.some(function (item) { return item.value === entry[0]; })) {
+      PINE_EDITOR_COMPLETIONS.push({ value: entry[0], label: entry[1] });
+    }
+  });
   var PINE_EDITOR_DOCUMENTATION = Object.keys(PINE_EDITOR_SIGNATURES).map(function (name) {
     var definition = PINE_EDITOR_SIGNATURES[name];
     return {
       name: name,
-      type: 'Function',
-      category: 'function',
+      type: definition.type || 'Function',
+      category: definition.category || 'function',
       signature: definition.signature,
       description: definition.description,
       parameters: definition.parameters,
+      example: definition.example || '',
       status: definition.status || 'Supported',
       supportNote: definition.supportNote || ''
     };
@@ -12163,11 +12604,12 @@
   ]).concat(Object.keys(PINE_EDITOR_KEYWORDS).filter(function (name) {
     return ['and', 'or', 'not', 'if', 'else', 'for', 'while', 'var', 'const'].indexOf(name) === -1;
   }).map(function (name) {
-    return { name: name, type: 'Keyword', category: 'keyword', signature: name, description: 'Reserved Pine language word.' };
+    var detail = PINE_EDITOR_KEYWORD_DETAILS[name] || [name, 'Pine language keyword used by the browser runtime.'];
+    return { name: name, type: 'Keyword', category: 'keyword', signature: detail[0], description: detail[1], status: 'Supported' };
   })).concat(Object.keys(PINE_EDITOR_BUILT_IN_VARIABLES).map(function (name) {
-    return { name: name, type: 'Built-in variable', category: 'built-in-variable', signature: name, description: 'Built-in Pine series variable.' };
+    return { name: name, type: 'Built-in variable', category: 'built-in-variable', signature: name, description: PINE_EDITOR_BUILT_IN_DETAILS[name] || 'Built-in Pine series variable.', status: 'Supported' };
   })).concat(Object.keys(PINE_EDITOR_CONSTANTS).map(function (name) {
-    return { name: name, type: 'Constant', category: 'constant', signature: name, description: 'Built-in Pine constant or literal.' };
+    return { name: name, type: 'Constant', category: 'constant', signature: name, description: PINE_EDITOR_CONSTANT_DETAILS[name] || 'Built-in Pine constant or enum value.', status: 'Supported' };
   })).concat(PINE_EDITOR_REFERENCE_BUILT_INS.map(function (entry) {
     var constant = pineIsConstantName(entry[0]);
     return { name: entry[0], type: constant ? 'Constant' : 'Built-in variable', category: constant ? 'constant' : 'built-in-variable', signature: entry[0], description: entry[1], status: 'Supported' };
@@ -12519,6 +12961,9 @@
     aggregateBars: aggregateBars,
     normalizeBars: normalizeBars,
     createDemoData: createDemoData,
+    pineScriptDocumentation: PINE_EDITOR_DOCUMENTATION_UNIQUE,
+    pineScriptCompletions: PINE_EDITOR_COMPLETIONS,
+    pineScriptCapabilities: PINE_EDITOR_CAPABILITIES,
     themes: {
       light: DEFAULT_LIGHT_THEME,
       dark: DEFAULT_DARK_THEME
