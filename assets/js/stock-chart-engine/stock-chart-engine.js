@@ -20,6 +20,11 @@
     '#dc2626', '#4f46e5', '#65a30d', '#ea580c', '#0f766e', '#9333ea',
     '#be123c', '#0369a1', '#ca8a04', '#16a34a', '#c2410c', '#7f1d1d'
   ];
+  var DEFAULT_DARK_SERIES_COLOR_ORDER = [
+    '#60a5fa', '#fbbf24', '#a78bfa', '#22d3ee', '#f472b6', '#34d399',
+    '#fb7185', '#818cf8', '#a3e635', '#fb923c', '#2dd4bf', '#c084fc',
+    '#fda4af', '#38bdf8', '#fde047', '#4ade80', '#fdba74', '#f87171'
+  ];
   var CHART_PERIODS = {
     daily: { id: 'daily', interval: '1D', label: 'Daily' },
     weekly: { id: 'weekly', interval: '1W', label: 'Weekly' },
@@ -3840,7 +3845,11 @@
   };
 
   Chart.prototype.nextSeriesColor = function () {
-    var order = this.document.settings.seriesColorOrder || DEFAULT_SERIES_COLOR_ORDER;
+    var configuredOrder = this.document.settings.seriesColorOrder || DEFAULT_SERIES_COLOR_ORDER;
+    var isDefaultOrder = configuredOrder.length === DEFAULT_SERIES_COLOR_ORDER.length && configuredOrder.every(function (color, index) {
+      return color === DEFAULT_SERIES_COLOR_ORDER[index];
+    });
+    var order = isDefaultOrder && this.document.theme === 'dark' ? DEFAULT_DARK_SERIES_COLOR_ORDER : configuredOrder;
     var index = this.document.settings.seriesColorIndex || 0;
     var color = order[index % order.length];
     this.document.settings.seriesColorIndex = index + 1;
@@ -3854,6 +3863,7 @@
       if (!style.color) style.color = self.nextSeriesColor();
       if (!style.lineWidth) style.lineWidth = 2;
       if (!style.lineStyle) style.lineStyle = 'solid';
+      if (style.opacity == null) style.opacity = 1;
       styles[outputName] = style;
     });
     return styles;
@@ -6571,6 +6581,12 @@
       moved: false,
       openSettingsOnTap: false
     };
+    var legendHit = this.hitTestLegend(this.pointer);
+    if (legendHit && legendHit.indicatorId) {
+      this.tapState.legendHit = legendHit;
+      this.draw();
+      return;
+    }
     if (this.hitTestPaneControl(this.pointer)) return;
     var strategyHit = this.hitTestStrategyExecution(this.pointer);
     if (strategyHit) {
@@ -6753,13 +6769,21 @@
   Chart.prototype.handleTouchEnd = function (event) {
     if (event.preventDefault) event.preventDefault();
     var wasPending = !!this.pendingDrawing;
-    var moved = this.tapState && this.tapState.moved;
+    var moved = !!(this.tapState && this.tapState.moved);
+    var legendTap = this.tapState && this.tapState.legendHit && !moved ? {
+      hit: this.tapState.legendHit,
+      pointer: this.pointerFromEvent(event)
+    } : null;
     var scaleTap = this.yScaleDragState && !moved ? {
       paneId: this.yScaleDragState.paneId,
       pointer: this.pointerFromEvent(event)
     } : null;
     if (wasPending && !moved) this.handleCanvasClick(event);
     this.handlePointerUp(event);
+    if (legendTap) {
+      this.openIndicatorSettingsPopup(legendTap.hit, legendTap.pointer);
+      return;
+    }
     if (!scaleTap) return;
     var now = Number(event && event.timeStamp);
     if (!Number.isFinite(now) || now <= 0) now = Date.now();

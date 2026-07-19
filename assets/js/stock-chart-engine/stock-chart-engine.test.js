@@ -2370,6 +2370,15 @@ assert.ok(chart.legendHitZones.some((zone) => zone.indicatorId === rsiId));
 const rsiLegendZone = chart.legendHitZones.find((zone) => zone.indicatorId === rsiId);
 chart.handlePointerMove({ clientX: rsiLegendZone.x + 4, clientY: rsiLegendZone.y + 4 });
 assert.strictEqual(chart.canvas.style.cursor, 'pointer');
+chart.closeIndicatorSettingsPopup();
+const touchLegendEvent = {
+  changedTouches: [{ clientX: rsiLegendZone.x + 4, clientY: rsiLegendZone.y + 4 }],
+  preventDefault() {}
+};
+chart.handleTouchStart(touchLegendEvent);
+chart.handleTouchEnd(touchLegendEvent);
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), false);
+chart.closeIndicatorSettingsPopup();
 const priceRectForLegendCursor = chart.getPaneRect('price');
 chart.handlePointerMove({ clientX: priceRectForLegendCursor.x + priceRectForLegendCursor.width / 2, clientY: priceRectForLegendCursor.y + priceRectForLegendCursor.height / 2 });
 assert.strictEqual(chart.canvas.style.cursor, 'crosshair');
@@ -2461,6 +2470,16 @@ assert.ok(paneLegendTexts.some((text) => text.indexOf('VOLUME ') === 0));
 assert.ok(!paneLegendTexts.includes('Price'));
 assert.ok(!paneLegendTexts.includes('Volume'));
 assert.ok(!paneLegendTexts.includes('Relative Strength Index'));
+chart.setSeriesColorOrder(['#2563eb', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#059669', '#dc2626', '#4f46e5', '#65a30d', '#ea580c', '#0f766e', '#9333ea', '#be123c', '#0369a1', '#ca8a04', '#16a34a', '#c2410c', '#7f1d1d']);
+chart.setTheme('dark');
+const darkSeriesColorOrder = ['#60a5fa', '#fbbf24', '#a78bfa', '#22d3ee', '#f472b6', '#34d399', '#fb7185', '#818cf8', '#a3e635', '#fb923c', '#2dd4bf', '#c084fc', '#fda4af', '#38bdf8', '#fde047', '#4ade80', '#fdba74', '#f87171'];
+const darkSeriesColorIndex = chart.document.settings.seriesColorIndex;
+const darkIndicatorId = chart.addIndicator('CCI', { placement: 'new' });
+const darkIndicator = chart.document.indicators.find((indicator) => indicator.id === darkIndicatorId);
+assert.strictEqual(darkIndicator.styles.value.opacity, 1);
+const darkIndicatorColor = darkIndicator.styles.value.color;
+assert.strictEqual(darkIndicatorColor, darkSeriesColorOrder[darkSeriesColorIndex % darkSeriesColorOrder.length]);
+chart.setTheme('light');
 const originalIndicatorLegendItemsForLayout = chart.indicatorLegendItems;
 const originalLegendTimeForLayout = chart.legendTimeForPane;
 const originalBarNearTimeForLayout = chart.barNearTime;
@@ -3275,6 +3294,10 @@ const darkChart = new StockChartEngine.Chart('#chart', {
   autosave: false
 });
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'dark');
+const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' });
+const initialDarkIndicator = darkChart.document.indicators.find((indicator) => indicator.id === initialDarkIndicatorId);
+assert.strictEqual(initialDarkIndicator.styles.value.color, '#60a5fa');
+assert.strictEqual(initialDarkIndicator.styles.value.opacity, 1);
 darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'light');
 darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
