@@ -2341,6 +2341,8 @@
     this.paneResizeState = null;
     this.panState = null;
     this.suppressNextClick = false;
+    this.paneResizeGlow = { key: null, opacity: 0, target: 0, from: 0, startedAt: 0, duration: 360 };
+    this.paneResizeGlowFrame = null;
     this.autosaveTimer = null;
     this.undoStack = [];
     this.redoStack = [];
@@ -2818,6 +2820,11 @@
     }
     this.pineRunGlowFrame = null;
     this.pineRunGlow = null;
+    if (this.paneResizeGlowFrame != null && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+      window.cancelAnimationFrame(this.paneResizeGlowFrame);
+    }
+    this.paneResizeGlowFrame = null;
+    this.paneResizeGlow = null;
     window.removeEventListener('resize', this.resizeListener);
     window.removeEventListener('scroll', this.drawingMenuPositionListener, true);
     document.documentElement.removeEventListener('themechange', this.themeListener);
@@ -8419,6 +8426,42 @@
     ctx.restore();
   };
 
+  Chart.prototype.schedulePaneResizeGlowFrame = function () {
+    var glow = this.paneResizeGlow;
+    if (!glow || this.destroyed || glow.opacity === glow.target || typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+    if (this.paneResizeGlowFrame != null) return;
+    this.paneResizeGlowFrame = window.requestAnimationFrame(function () {
+      this.paneResizeGlowFrame = null;
+      if (this.destroyed || !this.paneResizeGlow) return;
+      this.draw();
+      this.schedulePaneResizeGlowFrame();
+    }.bind(this));
+  };
+
+  Chart.prototype.updatePaneResizeGlow = function (activeKey) {
+    var glow = this.paneResizeGlow;
+    if (!glow) return { key: null, opacity: 0 };
+    var target = activeKey ? 1 : 0;
+    var now = Date.now();
+    if ((activeKey && glow.key !== activeKey) || glow.target !== target) {
+      glow.key = activeKey || glow.key;
+      glow.from = glow.opacity;
+      glow.target = target;
+      glow.startedAt = now;
+    }
+    var hasAnimationFrame = typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function';
+    if (!hasAnimationFrame) {
+      glow.opacity = glow.target;
+    } else if (glow.opacity !== glow.target) {
+      var progress = clamp((now - glow.startedAt) / Math.max(1, glow.duration), 0, 1);
+      var eased = progress * progress * (3 - 2 * progress);
+      glow.opacity = glow.from + (glow.target - glow.from) * eased;
+    }
+    if (glow.opacity === glow.target && glow.target === 0) glow.key = null;
+    this.schedulePaneResizeGlowFrame();
+    return { key: glow.key, opacity: glow.opacity };
+  };
+
   Chart.prototype.schedulePineRunGlowFrame = function () {
     if (!this.pineRunGlow || this.destroyed || typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
     if (this.pineRunGlowFrame != null) return;
@@ -8709,6 +8752,9 @@
   };
 
   Chart.prototype.drawPaneResizeHandles = function (theme) {
+    var activePair = this.hoverPaneResize || this.paneResizeState;
+    var activeKey = activePair ? activePair.upperPaneId + ':' + activePair.lowerPaneId : null;
+    var glow = this.updatePaneResizeGlow(activeKey);
     if (this.document.settings.maximizedPaneId || this.paneRects.length < 2) return;
     var ctx = this.ctx;
     ctx.save();
@@ -8726,21 +8772,25 @@
         upperHeight: upper.height,
         lowerHeight: lower.height
       });
-      var isActive = (this.hoverPaneResize && this.hoverPaneResize.upperPaneId === upper.paneId && this.hoverPaneResize.lowerPaneId === lower.paneId) || (this.paneResizeState && this.paneResizeState.upperPaneId === upper.paneId && this.paneResizeState.lowerPaneId === lower.paneId);
-      ctx.strokeStyle = isActive ? theme.drawing : theme.border;
-      ctx.lineWidth = isActive ? 2 : 1;
-      if (isActive) {
+      var handleKey = upper.paneId + ':' + lower.paneId;
+      var isActive = handleKey === activeKey;
+      var glowOpacity = glow.key === handleKey ? glow.opacity : 0;
+      var isGlowing = isActive || glowOpacity > 0;
+      ctx.strokeStyle = isGlowing ? theme.drawing : theme.border;
+      ctx.lineWidth = isGlowing ? 1 + glowOpacity : 1;
+      if (glowOpacity > 0) {
         ctx.shadowColor = theme.drawing;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 10 * glowOpacity;
       }
+      ctx.globalAlpha = isGlowing ? 0.65 + glowOpacity * 0.35 : 1;
       ctx.beginPath();
       ctx.moveTo(upper.x, Math.round(y) + 0.5);
       ctx.lineTo(upper.x + upper.width + upper.scaleWidth, Math.round(y) + 0.5);
       ctx.stroke();
       ctx.shadowBlur = 0;
-      ctx.fillStyle = isActive ? theme.drawing : theme.mutedText;
-      ctx.globalAlpha = isActive ? 0.95 : 0.55;
-      ctx.fillRect(upper.x + upper.width / 2 - 16, y - (isActive ? 1.5 : 1), 32, isActive ? 3 : 2);
+      ctx.fillStyle = isGlowing ? theme.drawing : theme.mutedText;
+      ctx.globalAlpha = isGlowing ? 0.65 + glowOpacity * 0.35 : 0.55;
+      ctx.fillRect(upper.x + upper.width / 2 - 16, y - (isGlowing ? 1.5 : 1), 32, isGlowing ? 2 + glowOpacity : 2);
     }
     ctx.restore();
   };

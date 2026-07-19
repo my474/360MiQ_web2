@@ -2558,6 +2558,12 @@ assert.deepStrictEqual(chart.hoverPaneResize, {
   upperPaneId: resizeZone.upperPaneId,
   lowerPaneId: resizeZone.lowerPaneId
 });
+assert.strictEqual(chart.paneResizeGlow.target, 1);
+assert.strictEqual(chart.paneResizeGlow.opacity, 1);
+chart.handlePointerMove({ clientX: 0, clientY: 0 });
+assert.strictEqual(chart.hoverPaneResize, null);
+assert.strictEqual(chart.paneResizeGlow.target, 0);
+assert.strictEqual(chart.paneResizeGlow.opacity, 0);
 const upperPaneBeforeResize = chart.document.panes.find((pane) => pane.id === resizeZone.upperPaneId).height;
 chart.handlePointerDown({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 5 });
 chart.handlePointerMove({ clientX: resizeZone.x + 10, clientY: resizeZone.y + 45 });
