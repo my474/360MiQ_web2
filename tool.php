@@ -873,10 +873,6 @@ select optgroup {
   user-select: none;
 }
 
-.stock-chart-discovery .showNote:focus-visible {
-  outline: none;
-}
-
 .stock-chart-discovery .noteWrapper {
   line-height: 1.5;
   margin-bottom: 2px;
@@ -1173,7 +1169,7 @@ select optgroup {
                                         <div id="toolStockChart"></div>
                                     </div>
                                     <section class="stock-chart-discovery" aria-labelledby="advanced-chart-content-heading">
-                                        <button class="showNote" type="button" aria-controls="advancedChartNote" aria-expanded="false">Show more</button>
+                                        <div class="showNote">Show more</div>
                                         <h3 id="advanced-chart-content-heading">Advanced Stock Chart</h3>
                                         <div class="chartNote">
                                             <div class="noteWrapper collapsed" id="advancedChartNote">
