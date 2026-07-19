@@ -858,7 +858,53 @@ select optgroup {
   display: grid;
   gap: 18px 32px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 18px;
+  margin-top: 4px;
+}
+
+.stock-chart-discovery .showNote {
+  background: transparent;
+  border: 0;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 8px 0 10px;
+  padding: 0;
+  user-select: none;
+}
+
+.stock-chart-discovery .showNote:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid rgba(0, 123, 255, 0.45);
+  outline-offset: 3px;
+}
+
+.stock-chart-discovery .noteWrapper {
+  line-height: 1.6;
+  margin-bottom: 2px;
+  max-height: 42px;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.5s ease;
+}
+
+.stock-chart-discovery .noteWrapper.collapsed::after {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff);
+  bottom: 0;
+  content: "";
+  height: 18px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.stock-chart-discovery .noteWrapper.expanded {
+  max-height: 500px;
+}
+
+.stock-chart-discovery .noteWrapper.expanded::after {
+  display: none;
 }
 
 [data-theme="dark"] .stock-chart-discovery {
@@ -869,6 +915,14 @@ select optgroup {
 [data-theme="dark"] .stock-chart-discovery h3,
 [data-theme="dark"] .stock-chart-discovery h4 {
   color: #f8fafc;
+}
+
+[data-theme="dark"] .stock-chart-discovery .showNote {
+  color: #6ea8ff;
+}
+
+[data-theme="dark"] .stock-chart-discovery .noteWrapper.collapsed::after {
+  background: linear-gradient(to bottom, rgba(17, 24, 39, 0), #111827);
 }
 
 .stock-chart-stage {
@@ -1123,14 +1177,19 @@ select optgroup {
                                     <section class="stock-chart-discovery" aria-labelledby="advanced-chart-content-heading">
                                         <h3 id="advanced-chart-content-heading">Advanced Stock Chart</h3>
                                         <p class="stock-chart-discovery-intro">Explore historical stock data with a responsive chart workspace for technical analysis, custom indicators, annotations, and browser-based Pine-compatible scripts.</p>
-                                        <div class="stock-chart-discovery-grid">
-                                            <div>
-                                                <h4>Chart analysis</h4>
-                                                <p>Use candlestick, bar, line, area, and baseline views across daily, weekly, monthly, quarterly, and yearly end-of-day timeframes. Add indicators to the price pane or separate panes, adjust their settings, and use interactive drawing tools and annotations.</p>
-                                            </div>
-                                            <div>
-                                                <h4>Pine Script beta</h4>
-                                                <p>Write and run supported Pine-compatible indicators in your browser, view the results on the chart, and use the built-in reference and autocomplete help. Historical strategy testing is available for supported end-of-day data; this workspace does not provide live or intraday execution.</p>
+                                        <div class="chartNote">
+                                            <button class="showNote" type="button" aria-controls="advancedChartNote" aria-expanded="false">Show more</button>
+                                            <div class="noteWrapper collapsed" id="advancedChartNote">
+                                                <div class="stock-chart-discovery-grid">
+                                                    <div>
+                                                        <h4>Chart analysis</h4>
+                                                        <p>Use candlestick, bar, line, area, and baseline views across daily, weekly, monthly, quarterly, and yearly end-of-day timeframes. Add indicators to the price pane or separate panes, adjust their settings, and use interactive drawing tools and annotations.</p>
+                                                    </div>
+                                                    <div>
+                                                        <h4>Pine Script beta</h4>
+                                                        <p>Write and run supported Pine-compatible indicators in your browser, view the results on the chart, and use the built-in reference and autocomplete help. Historical strategy testing is available for supported end-of-day data; this workspace does not provide live or intraday execution.</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </section>
@@ -1166,6 +1225,20 @@ window.__TOOL_PAGE_CONFIG = {
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
 <script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260718.41"></script>
 <script src="assets/js/pages/tool-stock-chart.js?v=20260717.1"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var note = document.getElementById('advancedChartNote');
+    var showMore = note ? note.previousElementSibling : null;
+    if (!showMore || !note) return;
+    showMore.addEventListener('click', function () {
+        var isCollapsed = note.classList.contains('collapsed');
+        note.classList.toggle('collapsed', !isCollapsed);
+        note.classList.toggle('expanded', isCollapsed);
+        showMore.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+        showMore.textContent = isCollapsed ? 'Show less' : 'Show more';
+    });
+});
+</script>
     
 <?php include "./footer.php" ?>
     <!--<script src="assets/js/jquery.min.js"></script>-->
