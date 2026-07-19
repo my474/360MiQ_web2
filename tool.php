@@ -1175,10 +1175,10 @@ select optgroup {
                                         <div id="toolStockChart"></div>
                                     </div>
                                     <section class="stock-chart-discovery" aria-labelledby="advanced-chart-content-heading">
+                                        <button class="showNote" type="button" aria-controls="advancedChartNote" aria-expanded="false">Show more</button>
                                         <h3 id="advanced-chart-content-heading">Advanced Stock Chart</h3>
                                         <p class="stock-chart-discovery-intro">Explore historical stock data with a responsive chart workspace for technical analysis, custom indicators, annotations, and browser-based Pine-compatible scripts.</p>
                                         <div class="chartNote">
-                                            <button class="showNote" type="button" aria-controls="advancedChartNote" aria-expanded="false">Show more</button>
                                             <div class="noteWrapper collapsed" id="advancedChartNote">
                                                 <div class="stock-chart-discovery-grid">
                                                     <div>
@@ -1228,7 +1228,7 @@ window.__TOOL_PAGE_CONFIG = {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var note = document.getElementById('advancedChartNote');
-    var showMore = note ? note.previousElementSibling : null;
+    var showMore = document.querySelector('.stock-chart-discovery .showNote');
     if (!showMore || !note) return;
     showMore.addEventListener('click', function () {
         var isCollapsed = note.classList.contains('collapsed');
