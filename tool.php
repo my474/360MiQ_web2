@@ -880,9 +880,9 @@ select optgroup {
 }
 
 .stock-chart-discovery .noteWrapper {
-  line-height: 1.6;
+  line-height: 1.5;
   margin-bottom: 2px;
-  max-height: 68px; /* 1.5 text lines, plus the section heading */
+  max-height: 43px;
   overflow: hidden;
   position: relative;
   transition: max-height 0.5s ease;
@@ -1177,9 +1177,9 @@ select optgroup {
                                     <section class="stock-chart-discovery" aria-labelledby="advanced-chart-content-heading">
                                         <button class="showNote" type="button" aria-controls="advancedChartNote" aria-expanded="false">Show more</button>
                                         <h3 id="advanced-chart-content-heading">Advanced Stock Chart</h3>
-                                        <p class="stock-chart-discovery-intro">Explore historical stock data with a responsive chart workspace for technical analysis, custom indicators, annotations, and browser-based Pine-compatible scripts.</p>
                                         <div class="chartNote">
                                             <div class="noteWrapper collapsed" id="advancedChartNote">
+                                                <p class="stock-chart-discovery-intro">Explore historical stock data with a responsive chart workspace for technical analysis, custom indicators, annotations, and browser-based Pine-compatible scripts.</p>
                                                 <div class="stock-chart-discovery-grid">
                                                     <div>
                                                         <h4>Chart analysis</h4>
