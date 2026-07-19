@@ -844,6 +844,10 @@ select optgroup {
   margin-bottom: 6px;
 }
 
+.stock-chart-discovery .sce-pine-beta {
+  color: #b45309;
+}
+
 .stock-chart-discovery p {
   font-size: 14px;
   line-height: 1.6;
@@ -909,6 +913,10 @@ select optgroup {
 [data-theme="dark"] .stock-chart-discovery h3,
 [data-theme="dark"] .stock-chart-discovery h4 {
   color: #f8fafc;
+}
+
+[data-theme="dark"] .stock-chart-discovery .sce-pine-beta {
+  color: #fbbf24;
 }
 
 [data-theme="dark"] .stock-chart-discovery .showNote {
@@ -1180,7 +1188,7 @@ select optgroup {
                                                         <p>Use candlestick, bar, line, area, and baseline views across daily, weekly, monthly, quarterly, and yearly end-of-day timeframes. Add indicators to the price pane or separate panes, adjust their settings, and use interactive drawing tools and annotations.</p>
                                                     </div>
                                                     <div>
-                                                        <h4>Pine Script beta</h4>
+                                                        <h4>Pine Script <span class="sce-pine-beta" aria-label="Beta">Beta</span></h4>
                                                         <p>Write and run supported Pine-compatible indicators in your browser, view the results on the chart, and use the built-in reference and autocomplete help. Historical strategy testing is available for supported end-of-day data; this workspace does not provide live or intraday execution.</p>
                                                     </div>
                                                 </div>
