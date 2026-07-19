@@ -7348,7 +7348,7 @@
       fullBrowserButton.setAttribute('aria-pressed', this.fullBrowserMode ? 'true' : 'false');
       fullBrowserButton.setAttribute('title', fullBrowserLabel);
       fullBrowserButton.setAttribute('aria-label', fullBrowserLabel);
-      fullBrowserButton.innerHTML = paneControlIconSvg(this.fullBrowserMode ? 'minimize' : 'full-browser');
+      fullBrowserButton.innerHTML = paneControlIconSvg(this.fullBrowserMode ? 'restore' : 'full-browser');
     }
     var fullscreenButton = this.toolbar.querySelector('[data-sce-action="fullscreen"]');
     if (fullscreenButton) {
@@ -7357,7 +7357,7 @@
       fullscreenButton.setAttribute('aria-pressed', fullscreenActive ? 'true' : 'false');
       fullscreenButton.setAttribute('title', fullscreenLabel);
       fullscreenButton.setAttribute('aria-label', fullscreenLabel);
-      fullscreenButton.innerHTML = paneControlIconSvg(fullscreenActive ? 'minimize' : 'fullscreen');
+      fullscreenButton.innerHTML = paneControlIconSvg(fullscreenActive ? 'restore' : 'fullscreen');
     }
     this.updateDrawingUtilityButtons();
     var strategyButton = this.toolbar.querySelector('[data-sce-action="strategy-tester"]');

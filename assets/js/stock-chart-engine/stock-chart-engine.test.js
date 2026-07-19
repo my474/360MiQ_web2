@@ -1757,6 +1757,7 @@ chart.toolbar.dispatchEvent({
 assert.strictEqual(chart.fullBrowserMode, true);
 assert.ok((chart.root.className || '').split(/\s+/).includes('sce-root-full-browser'));
 assert.strictEqual(fullBrowserButtonForTest.getAttribute('aria-pressed'), 'true');
+assert.ok(fullBrowserButtonForTest.innerHTML.includes('<path d="M10 4v6H4"/>'));
 const fullBrowserEscape = {
   key: 'Escape',
   preventDefault() {
@@ -1770,11 +1771,17 @@ assert.strictEqual((chart.root.className || '').split(/\s+/).includes('sce-root-
 chart.root.requestFullscreen = function requestFullscreenForTest() {
   global.document.fullscreenElement = chart.root;
 };
+const fullscreenButtonForTest = new FakeElement('button');
+fullscreenButtonForTest.setAttribute('data-sce-action', 'fullscreen');
+const fullscreenSvgForTest = new FakeElement('svg');
+fullscreenButtonForTest.appendChild(fullscreenSvgForTest);
+chart.toolbar.appendChild(fullscreenButtonForTest);
 global.document.exitFullscreen = function exitFullscreenForTest() {
   global.document.fullscreenElement = null;
 };
 chart.toggleFullscreenMode();
 assert.strictEqual(chart.isFullscreenActive(), true);
+assert.ok(fullscreenButtonForTest.innerHTML.includes('<path d="M10 4v6H4"/>'));
 chart.toggleFullscreenMode();
 assert.strictEqual(chart.isFullscreenActive(), false);
 assert.ok(chart.toolbar.innerHTML.indexOf('data-sce-stock-info-link') !== -1);
