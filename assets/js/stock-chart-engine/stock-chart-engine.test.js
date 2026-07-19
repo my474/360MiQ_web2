@@ -1174,6 +1174,8 @@ assert.ok(pineDocsDetail.innerHTML.includes('title="Insert and into the editor"'
 chart.closePineDocumentation();
 assert.strictEqual(pineDocsPanel.hidden, true);
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-window-action="minimize"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('<path d="M5 18h14"/>'));
+assert.ok(chart.settingsPopup.innerHTML.includes('<path d="M10 4v6H4"/>'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-resize'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-splitter'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-help-action="minimize"'));

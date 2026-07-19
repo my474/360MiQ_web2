@@ -4045,7 +4045,7 @@
       '<span class="sce-pine-window-controls">',
       '<button type="button" data-sce-pine-window-action="minimize" title="Minimize" aria-label="Minimize">', paneControlIconSvg('minimize'), '</button>',
       '<button type="button" data-sce-pine-window-action="maximize" title="Maximize" aria-label="Maximize">', paneControlIconSvg('maximize'), '</button>',
-      '<button type="button" data-sce-pine-window-action="restore" title="Restore size" aria-label="Restore size" hidden>', paneControlIconSvg('maximize'), '</button>',
+      '<button type="button" data-sce-pine-window-action="restore" title="Restore size" aria-label="Restore size" hidden>', paneControlIconSvg('restore'), '</button>',
       '<button type="button" data-sce-popup-action="close" title="Close" aria-label="Close">', paneControlIconSvg('close'), '</button>',
       '</span>',
       '</div>',
@@ -4104,7 +4104,7 @@
       '<div class="sce-pine-docs-header"><strong>Pine Script reference</strong><span class="sce-pine-doc-controls">',
       '<button type="button" data-sce-pine-help-action="minimize" title="Minimize help pane" aria-label="Minimize help pane">', paneControlIconSvg('minimize'), '</button>',
       '<button type="button" data-sce-pine-help-action="maximize" title="Maximize help pane" aria-label="Maximize help pane">', paneControlIconSvg('maximize'), '</button>',
-      '<button type="button" data-sce-pine-help-action="restore" title="Restore help pane size" aria-label="Restore help pane size" hidden>', paneControlIconSvg('maximize'), '</button>',
+      '<button type="button" data-sce-pine-help-action="restore" title="Restore help pane size" aria-label="Restore help pane size" hidden>', paneControlIconSvg('restore'), '</button>',
       '<button type="button" data-sce-pine-doc-action="close" title="Close documentation" aria-label="Close documentation">', paneControlIconSvg('close'), '</button>',
       '</span></div>',
       '<div class="sce-pine-docs-filters">',
@@ -5312,7 +5312,7 @@
       this.settingsPopup.style.height = state.minimized ? 'auto' : Math.round(state.height) + 'px';
     }
     if (minimizeButton) {
-      minimizeButton.innerHTML = paneControlIconSvg(state.minimized ? 'maximize' : 'minimize');
+      minimizeButton.innerHTML = paneControlIconSvg(state.minimized ? 'restore' : 'minimize');
       minimizeButton.setAttribute('title', state.minimized ? 'Restore window' : 'Minimize');
       minimizeButton.setAttribute('aria-label', state.minimized ? 'Restore window' : 'Minimize');
     }
@@ -5387,7 +5387,7 @@
     var maximizeButton = this.settingsPopup.querySelector('[data-sce-pine-help-action="maximize"]');
     var restoreButton = this.settingsPopup.querySelector('[data-sce-pine-help-action="restore"]');
     if (minimizeButton) {
-      minimizeButton.innerHTML = paneControlIconSvg(state.helpMinimized ? 'maximize' : 'minimize');
+      minimizeButton.innerHTML = paneControlIconSvg(state.helpMinimized ? 'restore' : 'minimize');
       minimizeButton.setAttribute('title', state.helpMinimized ? 'Restore help pane' : 'Minimize help pane');
       minimizeButton.setAttribute('aria-label', state.helpMinimized ? 'Restore help pane' : 'Minimize help pane');
     }
@@ -13294,7 +13294,8 @@
       'chevron-up': '<path d="m7 14 5-5 5 5"/>',
       'chevron-down': '<path d="m7 10 5 5 5-5"/>',
       maximize: '<path d="M8 4H4v4"/><path d="M16 4h4v4"/><path d="M20 16v4h-4"/><path d="M8 20H4v-4"/><path d="M4 4l6 6"/><path d="m20 4-6 6"/><path d="m20 20-6-6"/><path d="m4 20 6-6"/>',
-      minimize: '<path d="M10 4v6H4"/><path d="M14 4v6h6"/><path d="M14 20v-6h6"/><path d="M10 20v-6H4"/>',
+      minimize: '<path d="M5 18h14"/>',
+      restore: '<path d="M10 4v6H4"/><path d="M14 4v6h6"/><path d="M14 20v-6h6"/><path d="M10 20v-6H4"/>',
       close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
       help: '<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.1 1.7c-.9.8-1.8 1.2-1.8 2.6"/><path d="M12 17h.01"/>',
       trash: '<path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5"/><path d="M14 11v5"/>',
