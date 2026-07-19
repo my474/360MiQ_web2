@@ -5430,6 +5430,7 @@
     var state = this.pineWindowState;
     if (action === 'minimize') {
       state.minimized = !state.minimized;
+      state.maximized = false;
     } else if (action === 'maximize') {
       if (!state.maximized) {
         state.restore = { left: state.left, top: state.top, width: state.width, height: state.height };
