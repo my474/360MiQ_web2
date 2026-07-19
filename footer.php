@@ -267,7 +267,7 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--bg-sheet-overlay);
     z-index: 300000;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -282,11 +282,11 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #fff;
+    background: var(--bg-bottom-sheet);
     z-index: 300010;
-    border-radius: 20px 20px 0 0;
+    border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
     transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--sheet-transition);
     max-height: 80vh;
     overflow-y: auto;
     padding-bottom: env(safe-area-inset-bottom, 20px);
@@ -298,7 +298,7 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 .sheet-handle {
     width: 40px;
     height: 4px;
-    background: #ccc;
+    background: var(--sheet-handle-color);
     border-radius: 2px;
     margin: 12px auto;
     cursor: pointer;
@@ -306,7 +306,7 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     transition: background 0.2s;
 }
 .sheet-handle:active {
-    background: #999;
+    background: var(--sheet-handle-active-color);
 }
 
 .sheet-header {

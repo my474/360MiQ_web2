@@ -5832,6 +5832,7 @@
       '</select></label>'
     ]);
     this.settingsPopup.innerHTML = [
+      '<div class="sheet-handle sce-settings-sheet-handle" data-sce-popup-action="close" role="button" aria-label="Close settings"></div>',
       '<div class="sce-settings-title">',
       '<strong>', escapeHtml(definition.name || indicator.type), '</strong>',
       '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
@@ -5843,6 +5844,7 @@
       '</div>'
     ].join('');
     this.settingsPopup.removeAttribute('hidden');
+    this.prepareMobileSettingsSheet();
     this.settingsPopup.dataset.mode = 'indicator';
     this.settingsPopup.dataset.indicatorId = indicator.id;
     this.settingsPopup.dataset.output = output;
@@ -5920,6 +5922,20 @@
         self.closeIndicatorSettingsPopup();
       }
     };
+  };
+
+  Chart.prototype.prepareMobileSettingsSheet = function () {
+    if (!this.settingsPopup) return;
+    var popup = this.settingsPopup;
+    var mobile = this.isMobileViewport();
+    popup.dataset.sceMobileSheet = mobile ? 'closed' : 'desktop';
+    if (!mobile) return;
+    var schedule = typeof window !== 'undefined' && typeof window.setTimeout === 'function' ? window.setTimeout : setTimeout;
+    schedule(function () {
+      if (!popup.hasAttribute('hidden') && popup.dataset.sceMobileSheet === 'closed') {
+        popup.dataset.sceMobileSheet = 'open';
+      }
+    }, 0);
   };
 
   Chart.prototype.beginPineWindowInteraction = function (event) {
@@ -6010,6 +6026,7 @@
 
   Chart.prototype.closeIndicatorSettingsPopup = function () {
     if (this.settingsPopup && String(this.settingsPopup.className || '').split(/\s+/).indexOf('sce-pine-window') !== -1) this.savePineWindowSettings();
+    if (this.settingsPopup && this.settingsPopup.dataset) this.settingsPopup.dataset.sceMobileSheet = 'closed';
     this.settingsPopup.setAttribute('hidden', 'hidden');
   };
 
@@ -6117,6 +6134,7 @@
         '<p id="sce-inside-pitchfork-ratios-help" class="sce-settings-help">Use values from 0 to 1, such as 0.382, 0.5, 0.618, 1.</p>'
       : '';
     this.settingsPopup.innerHTML = [
+      '<div class="sheet-handle sce-settings-sheet-handle" data-sce-popup-action="close" role="button" aria-label="Close settings"></div>',
       '<div class="sce-settings-title">',
       '<strong>', escapeHtml(tool.name || 'Drawing'), '</strong>',
       '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
@@ -6147,6 +6165,7 @@
       '</div>'
     ].join('');
     this.settingsPopup.removeAttribute('hidden');
+    this.prepareMobileSettingsSheet();
     this.settingsPopup.dataset.mode = canEditText ? 'drawing-text' : 'drawing-style';
     this.settingsPopup.dataset.drawingId = drawing.id;
     delete this.settingsPopup.dataset.indicatorId;

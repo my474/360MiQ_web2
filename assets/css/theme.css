@@ -17,6 +17,10 @@
   --bg-chatbot-entry: #fff;
   --bg-bottom-sheet: #fff;
   --bg-sheet-overlay: rgba(0, 0, 0, 0.5);
+  --sheet-radius: 20px;
+  --sheet-handle-color: #ccc;
+  --sheet-handle-active-color: #999;
+  --sheet-transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --bg-tooltip: #f8f8ff;
   --bg-help-tip: #BCDBEA;
   --bg-help-tip2: rgba(188, 219, 234, 0.7);

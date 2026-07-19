@@ -2437,6 +2437,9 @@ assert.deepStrictEqual(
 chart.setPaneScaleMode('price', 'linear');
 chart.openIndicatorSettingsPopup({ indicatorId: rsiId, output: 'value' }, { x: 180, y: chart.canvas.clientHeight - 4 });
 assert.ok(parseFloat(chart.settingsPopup.style.top) <= chart.canvas.clientHeight - 324 - 8);
+assert.strictEqual(chart.settingsPopup.dataset.sceMobileSheet, 'open');
+assert.ok(chart.settingsPopup.innerHTML.indexOf('class="sheet-handle sce-settings-sheet-handle"') !== -1);
+assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-action="close" role="button" aria-label="Close settings"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
 const volumePaneIndicatorId = chart.addIndicator('VOLUME', { placement: 'new' });
 chart.updateIndicatorSettings(volumePaneIndicatorId, {
@@ -2460,6 +2463,8 @@ assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="
 assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="color"'), -1);
 assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="lineWidth"'), -1);
 assert.strictEqual(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="lineStyle"'), -1);
+chart.closeIndicatorSettingsPopup();
+assert.strictEqual(chart.settingsPopup.dataset.sceMobileSheet, 'closed');
 const paneLegendTexts = chart.canvas.commands
   .filter((command) => command.type === 'fillText')
   .map((command) => command.text);
