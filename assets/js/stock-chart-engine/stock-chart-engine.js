@@ -394,7 +394,7 @@
       markerRight: '<path d="M19 12L9 5v14z"/><path d="M4 12h5"/>',
       markerUp: '<path d="M12 5l7 10H5z"/><path d="M12 15v4"/>',
       markerDown: '<path d="M12 19L5 9h14z"/><path d="M12 5v4"/>',
-      flag: '<path d="M6 20V5"/><path d="M6 5h12l-2 4 2 4H6"/>',
+      flag: '<path d="M6 20V5"/><path d="M6 5h12v8H6z"/>',
       pattern: '<path d="M3 17l5-8 4 5 4-8 5 11"/><circle cx="8" cy="9" r="1"/><circle cx="16" cy="6" r="1"/>',
       numberedWave: '<path d="M3 17l5-8 4 5 4-8 5 11"/><path d="M6 20h2"/><path d="M12 20h2"/><path d="M18 20h2"/>',
       letteredWave: '<path d="M3 17l5-8 4 5 4-8 5 11"/><path d="M5 21l1-3 1 3"/><path d="M13 18v3"/><path d="M12 18h3"/>',
@@ -10988,6 +10988,14 @@
     var size = 9;
     ctx.fillStyle = color;
     ctx.beginPath();
+    if (kind === 'flag') {
+      ctx.fillRect(p.x, p.y - 22, 22, 13);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y - 22);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      return;
+    }
     if (kind === 'iconMarker') {
       ctx.strokeRect(p.x - size, p.y - size, size * 2, size * 2);
       ctx.moveTo(p.x - 5, p.y);
@@ -11021,13 +11029,6 @@
     }
     ctx.closePath();
     ctx.fill();
-    if (kind === 'flag') {
-      ctx.fillRect(p.x, p.y - 22, 22, 13);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y - 22);
-      ctx.lineTo(p.x, p.y + 12);
-      ctx.stroke();
-    }
   }
 
   function drawTag(ctx, label, p, color, background) {

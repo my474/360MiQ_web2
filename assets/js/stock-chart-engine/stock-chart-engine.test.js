@@ -2783,6 +2783,10 @@ const flagMarkId = chart.addDrawing('flag_mark', [
 chart.canvas.commands = [];
 chart.drawDrawing(chart.getPaneRect('price'), chart.paneRange('price'), chart.theme(), chart.getDrawingById(flagMarkId));
 assert.ok(!chart.canvas.commands.some((command) => command.type === 'fillText' && command.text === 'Flag mark'));
+assert.strictEqual(chart.canvas.commands.filter((command) => command.type === 'fill').length, 0);
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect' && command.width === 22 && command.height === 13));
+assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke'));
+assert.ok(StockChartEngine.drawingToolIconSvg('flag_mark').includes('M6 5h12v8H6z'));
 
 const shapeId = chart.createMultipointShape([
   { time: data[data.length - 20].time, price: data[data.length - 20].close },
