@@ -846,6 +846,12 @@ select optgroup {
 
 .stock-chart-discovery .sce-pine-beta {
   color: #b45309;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-left: 0.35em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 .stock-chart-discovery p {
