@@ -1,13 +1,47 @@
+<?php
+$is_advanced_chart_view = isset($_GET['tab']) && (string) $_GET['tab'] === '3';
+$tool_page_title = $is_advanced_chart_view
+    ? 'Advanced Stock Chart & Pine Script - 360MiQ.com'
+    : 'Stock Comparison & Chart Tools - 360MiQ.com';
+$tool_page_description = $is_advanced_chart_view
+    ? 'Analyze end-of-day stock data with interactive charts, indicators, drawing tools, shareable layouts, and a browser-based Pine-compatible scripting editor.'
+    : 'Compare stock performance over time and build custom market charts with 360MiQ\'s free visualization tools.';
+?>
 <!DOCTYPE html>
 <html>
 
 <head>
     <?php include "./meta.php" ?>
-    <meta property="og:title" content="Stock Comparison & Chart Tools - 360MiQ.com" />
-    <meta name="description" content="Compare stock performance over time and build custom market charts with 360MiQ's free visualization tools." />
-    <meta property="og:description" content="Compare stock performance over time and build custom market charts with 360MiQ's free visualization tools." />
+    <meta property="og:title" content="<?php echo htmlspecialchars($tool_page_title, ENT_QUOTES, 'UTF-8'); ?>" />
+    <meta name="description" content="<?php echo htmlspecialchars($tool_page_description, ENT_QUOTES, 'UTF-8'); ?>" />
+    <meta property="og:description" content="<?php echo htmlspecialchars($tool_page_description, ENT_QUOTES, 'UTF-8'); ?>" />
 
-    <title>Stock Comparison &amp; Chart Tools - 360MiQ.com</title>
+    <title><?php echo htmlspecialchars($tool_page_title, ENT_QUOTES, 'UTF-8'); ?></title>
+    <?php if ($is_advanced_chart_view): ?>
+    <script type="application/ld+json"><?php echo json_encode(array(
+        '@context' => 'https://schema.org',
+        '@type' => 'SoftwareApplication',
+        '@id' => 'https://360miq.com/tool?tab=3#advanced-chart',
+        'name' => '360MiQ Advanced Chart',
+        'url' => 'https://360miq.com/tool?tab=3',
+        'applicationCategory' => 'FinanceApplication',
+        'operatingSystem' => 'Web',
+        'description' => $tool_page_description,
+        'isAccessibleForFree' => true,
+        'offers' => array(
+            '@type' => 'Offer',
+            'price' => '0',
+            'priceCurrency' => 'USD'
+        ),
+        'featureList' => array(
+            'End-of-day stock charts across daily, weekly, monthly, quarterly, and yearly timeframes',
+            'Technical indicators, multi-pane analysis, and source-on-indicator calculations',
+            'Interactive drawing tools, annotations, shareable layouts, and browser-based Pine-compatible scripts',
+            'Historical strategy testing on supported end-of-day data'
+        ),
+        'publisher' => array('@id' => 'https://360miq.com/#organization')
+    ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?></script>
+    <?php endif; ?>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="16x15" href="assets/img/360Logo_16.png">
     <link rel="icon" type="image/png" sizes="32x31" href="assets/img/360Logo_32.png">
@@ -786,6 +820,57 @@ select optgroup {
   color: #dc2626;
 }
 
+.stock-chart-discovery {
+  border-top: 1px solid #dbe3ef;
+  color: #334155;
+  margin-top: 22px;
+  padding: 22px 2px 4px;
+}
+
+.stock-chart-discovery h3,
+.stock-chart-discovery h4 {
+  color: #1e293b;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stock-chart-discovery h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.stock-chart-discovery h4 {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.stock-chart-discovery p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.stock-chart-discovery-intro {
+  max-width: 860px;
+}
+
+.stock-chart-discovery-grid {
+  display: grid;
+  gap: 18px 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+[data-theme="dark"] .stock-chart-discovery {
+  border-top-color: #293244;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .stock-chart-discovery h3,
+[data-theme="dark"] .stock-chart-discovery h4 {
+  color: #f8fafc;
+}
+
 .stock-chart-stage {
   background: #ffffff;
   border: 1px solid #dbe3ef;
@@ -864,6 +949,10 @@ select optgroup {
   .stock-chart-stage,
   #toolStockChart {
     min-height: 620px;
+  }
+
+  .stock-chart-discovery-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -1031,6 +1120,20 @@ select optgroup {
                                     <div class="stock-chart-stage">
                                         <div id="toolStockChart"></div>
                                     </div>
+                                    <section class="stock-chart-discovery" aria-labelledby="advanced-chart-content-heading">
+                                        <h3 id="advanced-chart-content-heading">Advanced Stock Chart</h3>
+                                        <p class="stock-chart-discovery-intro">Explore historical stock data with a responsive chart workspace for technical analysis, custom indicators, annotations, and browser-based Pine-compatible scripts.</p>
+                                        <div class="stock-chart-discovery-grid">
+                                            <div>
+                                                <h4>Chart analysis</h4>
+                                                <p>Use candlestick, bar, line, area, and baseline views across daily, weekly, monthly, quarterly, and yearly end-of-day timeframes. Add indicators to the price pane or separate panes, adjust their settings, and use interactive drawing tools and annotations.</p>
+                                            </div>
+                                            <div>
+                                                <h4>Pine Script beta</h4>
+                                                <p>Write and run supported Pine-compatible indicators in your browser, view the results on the chart, and use the built-in reference and autocomplete help. Historical strategy testing is available for supported end-of-day data; this workspace does not provide live or intraday execution.</p>
+                                            </div>
+                                        </div>
+                                    </section>
                                 </div>
                             </div>
                         </div>

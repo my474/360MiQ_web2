@@ -35,6 +35,8 @@ if ($route === 'market') {
     if ($canonical_stock_code !== '') {
         $canonical_params['code'] = $canonical_stock_code;
     }
+} elseif ($route === 'tool' && isset($_GET['tab']) && (string) $_GET['tab'] === '3') {
+    $canonical_params['tab'] = '3';
 }
 
 $canonical_url = $site_url . ($path === '/' ? '/' : rtrim($path, '/'));
