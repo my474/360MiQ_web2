@@ -775,6 +775,28 @@ const dailyEodMagnifierSessionResult = dailyEodMagnifierSession.result();
 assert.strictEqual(dailyEodMagnifierSessionResult.trades.length, 1);
 assert.strictEqual(dailyEodMagnifierSessionResult.trades[0].exitTime, 15000);
 assert.strictEqual(dailyEodMagnifierSessionResult.executions[1].executionBarIndex, 6);
+const higherTimeframeDailyBars = StockChartEngine.createDemoData(420);
+[
+  ['monthly', '1M'],
+  ['quarterly', '1Q'],
+  ['yearly', '1Y']
+].forEach(([period, timeframe]) => {
+  const higherTimeframeBars = StockChartEngine.aggregateBars(higherTimeframeDailyBars, period);
+  const higherTimeframePreview = PineScriptRuntime.run(`strategy("${period} EOD magnifier")
+if bar_index == 0
+    strategy.entry("Long", strategy.long)`, higherTimeframeBars, {
+    symbol: 'TEST',
+    timeframe,
+    backtestDailyEodMagnifier: true,
+    backtestLowerTimeframe: '1D',
+    backtestLowerTimeframeBars: higherTimeframeDailyBars,
+    backtest: { initialCapital: 1000 }
+  });
+  assert.strictEqual(higherTimeframePreview.strategyBacktest.config.executionMode, 'daily-eod-magnifier');
+  assert.strictEqual(higherTimeframePreview.strategyBacktest.config.lowerTimeframe, '1D');
+  assert.strictEqual(higherTimeframePreview.strategyBacktest.config.lowerTimeframeCoverage.coveredChartBars, higherTimeframeBars.length);
+  assert.deepStrictEqual(higherTimeframePreview.strategyBacktest.config.barMagnifierFallbacks, []);
+});
 const tablePreview = PineScriptRuntime.run(`indicator("Table mutation", overlay=false)
 t = table.new("top_right", 1, 1)
 table.cell(t, 0, 0, "A")
@@ -2221,6 +2243,65 @@ additionalIndicators.forEach((type) => {
   assert.ok(result, `${type} should compute`);
   assert.ok(Object.keys(result.outputs).length > 0, `${type} should expose outputs`);
 });
+
+const nativeIndicatorTypes = Object.keys(StockChartEngine.Indicators).filter((type) => type !== 'PINE_SCRIPT');
+const nativeIndicatorProbe = nativeIndicatorTypes.map((type) => ({
+  id: `parity-${type.toLowerCase()}`,
+  type,
+  paneId: type === 'RELATIVE_STRENGTH' ? 'relative-strength' : 'price',
+  source: { kind: 'price', field: 'close' },
+  inputs: type === 'RELATIVE_STRENGTH' ? { benchmark: 'SPY', mode: 'rebased' } : {},
+  styles: {},
+  visible: true
+}));
+const nativeIndicatorProbeResults = StockChartEngine.computeIndicatorGraph(
+  data,
+  nativeIndicatorProbe,
+  { SPY: data },
+  { SPY: data },
+  '1D',
+  { symbol: 'TEST' }
+);
+nativeIndicatorProbe.forEach((indicator) => {
+  const result = nativeIndicatorProbeResults[indicator.id];
+  assert.ok(result, `${indicator.type} should be present in the complete native indicator probe`);
+  assert.ok(Object.keys(result.outputs || {}).length > 0, `${indicator.type} should expose at least one output in the complete native indicator probe`);
+});
+
+const performanceBars = [];
+let performanceClose = 100;
+for (let index = 0; index < 1600; index += 1) {
+  const open = performanceClose;
+  performanceClose = 100 + Math.sin(index / 19) * 12 + index * 0.01;
+  performanceBars.push({
+    time: 1700000000 + index * 86400,
+    open,
+    high: Math.max(open, performanceClose) + 1,
+    low: Math.min(open, performanceClose) - 1,
+    close: performanceClose,
+    volume: 1000000 + index
+  });
+}
+const performanceIndicators = ['SMA', 'EMA', 'RSI', 'MACD', 'BBANDS', 'ATR', 'STOCH', 'CMF', 'ICHIMOKU', 'KST', 'TSI'].map((type) => ({
+  id: `performance-${type.toLowerCase()}`,
+  type,
+  paneId: 'price',
+  source: { kind: 'price', field: 'close' },
+  inputs: {},
+  styles: {},
+  visible: true
+}));
+const performanceStart = Date.now();
+const performanceResults = StockChartEngine.computeIndicatorGraph(performanceBars, performanceIndicators, {}, {}, '1D', { symbol: 'PERF' });
+const performanceElapsed = Date.now() - performanceStart;
+assert.ok(performanceElapsed < 8000, `The representative indicator workload took ${performanceElapsed}ms`);
+performanceIndicators.forEach((indicator) => {
+  assert.ok(performanceResults[indicator.id] && Object.keys(performanceResults[indicator.id].outputs || {}).length > 0);
+});
+
+assert.throws(() => PineScriptRuntime.run(`indicator("Invalid character")
+plot(close)
+plot($close)`, data), (error) => error && error.name === 'PineError' && error.line === 3 && error.column === 6);
 
 const relativeStrengthPrimaryBars = [
   { time: 100, open: 10, high: 10, low: 10, close: 10, volume: 1 },
