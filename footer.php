@@ -289,7 +289,7 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     transition: var(--sheet-transition);
     max-height: 80vh;
     overflow-y: auto;
-    padding-bottom: env(safe-area-inset-bottom, 20px);
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
 }
 .bottom-sheet.show {
     transform: translateY(0);
