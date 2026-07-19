@@ -2355,7 +2355,7 @@
       left: null,
       top: null,
       width: 480,
-      height: 580,
+      height: null,
       paneSplit: 0.58,
       helpMinimized: false,
       helpMaximized: false,
@@ -5417,7 +5417,10 @@
     var maxWidth = Math.max(260, Math.min(720, availableWidth));
     var maxHeight = Math.max(220, bounds.height - margin * 2);
     state.width = clamp(Number(state.width) || 480, Math.min(320, maxWidth), maxWidth);
-    state.height = clamp(Number(state.height) || 580, Math.min(260, maxHeight), maxHeight);
+    var savedHeight = Number(state.height);
+    state.height = Number.isFinite(savedHeight) && savedHeight > 0
+      ? clamp(savedHeight, Math.min(260, maxHeight), maxHeight)
+      : maxHeight;
     if (state.left == null) {
       var pointerX = pointer && Number.isFinite(pointer.x) ? pointer.x + 12 : minimumLeft;
       state.left = pointerX + state.width > bounds.width - margin ? pointerX - state.width - 12 : pointerX;

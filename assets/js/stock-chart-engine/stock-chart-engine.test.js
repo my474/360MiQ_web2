@@ -1124,6 +1124,7 @@ assert.strictEqual(chart.indicatorResults[pineIndicatorId].error, null);
 assert.ok(chart.indicatorResults[pineIndicatorId].outputs.plot1.length > 0);
 chart.openPineScriptPopup();
 assert.ok(chart.settingsPopup.className.split(/\s+/).includes('sce-pine-window'));
+assert.strictEqual(chart.pineWindowState.height, chart.pineWindowBounds().height - 16);
 assert.ok(chart.settingsPopup.innerHTML.includes('class="sce-pine-beta"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('>Beta</span>'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-remove'));
