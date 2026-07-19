@@ -882,7 +882,7 @@ select optgroup {
 .stock-chart-discovery .noteWrapper {
   line-height: 1.6;
   margin-bottom: 2px;
-  max-height: 43px;
+  max-height: 68px; /* 1.5 text lines, plus the section heading */
   overflow: hidden;
   position: relative;
   transition: max-height 0.5s ease;
