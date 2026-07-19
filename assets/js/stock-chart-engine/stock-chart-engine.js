@@ -2337,6 +2337,7 @@
     this.dragState = null;
     this.yScaleDragState = null;
     this.tapState = null;
+    this.touchTapState = null;
     this.paneResizeState = null;
     this.panState = null;
     this.suppressNextClick = false;
@@ -6527,10 +6528,7 @@
     var pointer = this.pointerFromEvent(event);
     var scaleDragHit = this.hitTestScaleDrag(pointer);
     if (scaleDragHit) {
-      if (event.preventDefault) event.preventDefault();
-      this.setPaneManualRange(scaleDragHit.paneId, null);
-      this.draw();
-      this.emitChange('pane:y-scale-reset', { paneId: scaleDragHit.paneId });
+      this.resetPaneScale(scaleDragHit.paneId, event);
       return;
     }
     var hit = this.hitTestDrawing(pointer);
@@ -6540,6 +6538,15 @@
     this.hoverDrawingId = hit.drawing.id;
     this.openDrawingSettingsPopup(hit.drawing, pointer);
     this.draw();
+  };
+
+  Chart.prototype.resetPaneScale = function (paneId, event) {
+    if (!paneId) return false;
+    if (event && event.preventDefault) event.preventDefault();
+    this.setPaneManualRange(paneId, null);
+    this.draw();
+    this.emitChange('pane:y-scale-reset', { paneId: paneId });
+    return true;
   };
 
   Chart.prototype.handlePointerDown = function (event) {
@@ -6722,6 +6729,8 @@
 
   Chart.prototype.handleTouchStart = function (event) {
     if (event.preventDefault) event.preventDefault();
+    var pointer = this.pointerFromEvent(event);
+    if (!this.pendingDrawing && !this.hitTestScaleDrag(pointer)) this.touchTapState = null;
     this.handlePointerDown(event);
   };
 
@@ -6734,13 +6743,35 @@
     if (event.preventDefault) event.preventDefault();
     var wasPending = !!this.pendingDrawing;
     var moved = this.tapState && this.tapState.moved;
+    var scaleTap = this.yScaleDragState && !moved ? {
+      paneId: this.yScaleDragState.paneId,
+      pointer: this.pointerFromEvent(event)
+    } : null;
     if (wasPending && !moved) this.handleCanvasClick(event);
     this.handlePointerUp(event);
+    if (!scaleTap) return;
+    var now = Number(event && event.timeStamp);
+    if (!Number.isFinite(now) || now <= 0) now = Date.now();
+    var previous = this.touchTapState;
+    var samePane = previous && previous.paneId === scaleTap.paneId;
+    var withinTime = previous && now - previous.time <= 450 && now >= previous.time;
+    var withinDistance = previous && distance(previous.pointer, scaleTap.pointer) <= 28;
+    if (samePane && withinTime && withinDistance) {
+      this.touchTapState = null;
+      this.resetPaneScale(scaleTap.paneId, event);
+    } else {
+      this.touchTapState = {
+        paneId: scaleTap.paneId,
+        pointer: scaleTap.pointer,
+        time: now
+      };
+    }
   };
 
   Chart.prototype.handleTouchCancel = function (event) {
     if (event && event.preventDefault) event.preventDefault();
     this.tapState = null;
+    this.touchTapState = null;
     this.dragState = null;
     this.paneResizeState = null;
     this.hoverPaneResize = null;

@@ -1929,6 +1929,23 @@ chart.setPaneManualRange('price', yScaleZoomedInRange);
 chart.fitContent();
 assert.strictEqual(chart.paneManualRange('price'), null);
 
+chart.setPaneManualRange('price', yScaleZoomedInRange);
+const touchScalePoint = {
+  clientX: yScaleDragRect.scaleX + 12,
+  clientY: yScaleDragRect.y + yScaleDragRect.height / 2
+};
+const touchEvent = (timeStamp) => ({
+  changedTouches: [touchScalePoint],
+  timeStamp,
+  preventDefault() {}
+});
+chart.handleTouchStart(touchEvent(1000));
+chart.handleTouchEnd(touchEvent(1000));
+assert.ok(chart.paneManualRange('price'));
+chart.handleTouchStart(touchEvent(1200));
+chart.handleTouchEnd(touchEvent(1200));
+assert.strictEqual(chart.paneManualRange('price'), null);
+
 const macdLogId = chart.addIndicator('MACD', { placement: 'new' });
 const macdLogIndicator = chart.document.indicators.find((indicator) => indicator.id === macdLogId);
 chart.setPaneScaleMode(macdLogIndicator.paneId, 'log');
