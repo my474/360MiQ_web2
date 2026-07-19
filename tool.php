@@ -874,9 +874,7 @@ select optgroup {
 }
 
 .stock-chart-discovery .showNote:focus-visible {
-  border-radius: 3px;
-  outline: 2px solid rgba(0, 123, 255, 0.45);
-  outline-offset: 3px;
+  outline: none;
 }
 
 .stock-chart-discovery .noteWrapper {
