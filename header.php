@@ -211,9 +211,68 @@ $(document).on('click', '.color-item', function(event) {
 .ui-autocomplete {
     z-index: 9999 !important;
     font-size: 13px;
+    max-height: 360px;
+    overflow-y: auto;
 }
 .ui-autocomplete .ui-menu-item:nth-child(even){
     background-color: #ecf6fc;  // alternate item bgcolor
+}
+.ui-autocomplete .recent-autocomplete-heading,
+.ui-autocomplete .recent-autocomplete-footer {
+    padding: 7px 12px;
+    color: var(--text-muted, #666);
+    background: var(--bg-card, #fff);
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.ui-autocomplete .recent-autocomplete-footer {
+    border-top: 1px solid var(--border-color, #dee2e6);
+    border-bottom: 0;
+    text-align: right;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.recent-autocomplete-clear {
+    padding: 0;
+    border: 0;
+    color: var(--text-link, #007bff);
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+}
+.recent-autocomplete-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.recent-autocomplete-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.recent-autocomplete-remove {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    color: var(--text-muted, #666);
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 20px;
+}
+.recent-autocomplete-remove:hover,
+.recent-autocomplete-remove:focus {
+    color: var(--text-primary, #000);
+    background: var(--bg-autocomplete-alt, #ecf6fc);
+    outline: none;
 }
 [data-theme="dark"] #autocomplete,
 [data-theme="dark"] #autocomplete2 {
@@ -239,95 +298,203 @@ $(document).on('click', '.color-item', function(event) {
 <script type='text/javascript' >
 $( function() {
     var dot = ' \u25CF ';
-    $( "#autocomplete" ).autocomplete({
-        source: function( request, response ) {
-            
-            $.ajax({
-                url: "db_autocomplete.php",
-                type: 'post',
-                dataType: "json",
-                data: {
-                    search: request.term.trim()
-                },
-                success: function( data ) {
-                    response($.map(data, function (pn) {
-                        var label = pn.code + dot + pn.name_tc + dot + pn.name_en + dot + pn.exchange;
-                        if (pn.name_tc == null || pn.name_tc == pn.name_en)
-                        {
-                            if (pn.exchange == '')
-                            {
-                                if (pn.name_en == '')
-                                    label = pn.code;
-                                else
-                                    label = pn.code + dot + pn.name_en;
-                            }
-                            else if (pn.name_en == '')
-                                label = pn.code + dot + pn.exchange;
-                            else
-                                label = pn.code + dot + pn.name_en + dot + pn.exchange;
-                        }
+    var recentStorageKey = '360miq-recent-stocks';
+    var recentLimit = 6;
 
-                        return {
-                            label: label,
-                            value: pn.code,
-                        };
-                    }));
-                }
-            });
-        },
-        select: function (event, ui) {
-            $('#autocomplete').val(ui.item.value); // display the selected text
-            $(event.target).val(ui.item.value);
-            $('#ac').submit();
-            return false;
+    function readRecentStocks() {
+        try {
+            var stored = JSON.parse(localStorage.getItem(recentStorageKey) || '[]');
+            if (!Array.isArray(stored)) return [];
+            return stored.filter(function (item) {
+                return item && item.code && item.label;
+            }).slice(0, recentLimit);
+        } catch (error) {
+            return [];
         }
-    });
-});
-$( function() {
-    var dot = ' \u25CF ';
-    $( "#autocomplete2" ).autocomplete({
-        source: function( request, response ) {
-            
-            $.ajax({
-                url: "db_autocomplete.php",
-                type: 'post',
-                dataType: "json",
-                data: {
-                    search: request.term.trim()
-                },
-                success: function( data ) {
-                    response($.map(data, function (pn) {
-                        var label = pn.code + dot + pn.name_tc + dot + pn.name_en + dot + pn.exchange;
-                        if (pn.name_tc == null || pn.name_tc == pn.name_en)
-                        {
-                            if (pn.exchange == '')
-                            {
-                                if (pn.name_en == '')
-                                    label = pn.code;
-                                else
-                                    label = pn.code + dot + pn.name_en;
-                            }
-                            else if (pn.name_en == '')
-                                label = pn.code + dot + pn.exchange;
-                            else
-                                label = pn.code + dot + pn.name_en + dot + pn.exchange;
-                        }
+    }
 
-                        return {
-                            label: label,
-                            value: pn.code,
-                        };
-                    }));
-                }
-            });
-        },
-        select: function (event, ui) {
-            $('#autocomplete2').val(ui.item.value); // display the selected text
-            $(event.target).val(ui.item.value);
-            $('#ac2').submit();
-            return false;
+    function writeRecentStocks(stocks) {
+        try {
+            localStorage.setItem(recentStorageKey, JSON.stringify(stocks.slice(0, recentLimit)));
+        } catch (error) {
+            return;
         }
-    });
+    }
+
+    function rememberRecentStock(item) {
+        var code = String(item && item.value || '').trim().toUpperCase();
+        if (!code) return;
+
+        var label = String(item && item.label || code).trim();
+        var recent = readRecentStocks().filter(function (stock) {
+            return String(stock.code).toUpperCase() !== code;
+        });
+        recent.unshift({ code: code, label: label || code });
+        writeRecentStocks(recent);
+    }
+
+    function removeRecentStock(code) {
+        var normalizedCode = String(code || '').trim().toUpperCase();
+        writeRecentStocks(readRecentStocks().filter(function (stock) {
+            return String(stock.code).toUpperCase() !== normalizedCode;
+        }));
+    }
+
+    function clearRecentStocks() {
+        try {
+            localStorage.removeItem(recentStorageKey);
+        } catch (error) {
+            return;
+        }
+    }
+
+    function recentItems(term) {
+        var normalizedTerm = String(term || '').trim().toLowerCase();
+        return readRecentStocks().filter(function (stock) {
+            return !normalizedTerm || stock.label.toLowerCase().indexOf(normalizedTerm) !== -1;
+        }).map(function (stock) {
+            return {
+                label: stock.label,
+                value: stock.code,
+                recent: true
+            };
+        });
+    }
+
+    function remoteItems(data) {
+        return $.map(data, function (pn) {
+            var label = pn.code + dot + pn.name_tc + dot + pn.name_en + dot + pn.exchange;
+            if (pn.name_tc == null || pn.name_tc == pn.name_en) {
+                if (pn.exchange == '') {
+                    if (pn.name_en == '')
+                        label = pn.code;
+                    else
+                        label = pn.code + dot + pn.name_en;
+                } else if (pn.name_en == '') {
+                    label = pn.code + dot + pn.exchange;
+                } else {
+                    label = pn.code + dot + pn.name_en + dot + pn.exchange;
+                }
+            }
+
+            return {
+                label: label,
+                value: pn.code
+            };
+        });
+    }
+
+    function installStockAutocomplete(inputSelector, formSelector) {
+        var $input = $(inputSelector);
+        var autocomplete = $input.autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                var term = request.term.trim();
+                if (!term) {
+                    response(recentItems(term));
+                    return;
+                }
+
+                $.ajax({
+                    url: "db_autocomplete.php",
+                    type: 'post',
+                    dataType: "json",
+                    data: { search: term },
+                    success: function (data) {
+                        response(remoteItems(data));
+                    },
+                    error: function () {
+                        response([]);
+                    }
+                });
+            },
+            focus: function () {
+                if (!this.value.trim()) {
+                    $input.autocomplete('search', '');
+                }
+            },
+            select: function (event, ui) {
+                rememberRecentStock(ui.item);
+                $(event.target).val(ui.item.value);
+                $(formSelector).submit();
+                return false;
+            }
+        });
+
+        var instance = autocomplete.autocomplete('instance');
+        instance._renderItem = function (ul, item) {
+            var $li = $('<li>');
+            var $row = $('<div>', { class: 'ui-menu-item-wrapper recent-autocomplete-row' });
+
+            if (item.recent) {
+                $('<span>', {
+                    class: 'recent-autocomplete-label',
+                    text: item.label
+                }).appendTo($row);
+                $('<button>', {
+                    type: 'button',
+                    class: 'recent-autocomplete-remove',
+                    text: '\u00d7',
+                    title: 'Remove ' + item.value + ' from recent searches',
+                    'aria-label': 'Remove ' + item.value + ' from recent searches',
+                    'data-code': item.value
+                }).appendTo($row);
+                $li.addClass('recent-autocomplete-entry');
+                $row.find('.recent-autocomplete-remove').on('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    removeRecentStock($(this).attr('data-code'));
+                    $input.autocomplete('search', '');
+                });
+            } else {
+                $row.text(item.label);
+            }
+
+            return $li.append($row).appendTo(ul);
+        };
+
+        instance._renderMenu = function (ul, items) {
+            var hasRecentItems = items.some(function (item) { return item.recent; });
+            if (hasRecentItems) {
+                $('<li>', {
+                    class: 'recent-autocomplete-heading',
+                    text: 'Recent searches',
+                    role: 'presentation'
+                }).appendTo(ul);
+            }
+
+            var self = this;
+            $.each(items, function (index, item) {
+                self._renderItemData(ul, item);
+            });
+
+            if (hasRecentItems) {
+                var $clearButton = $('<button>', {
+                    type: 'button',
+                    class: 'recent-autocomplete-clear',
+                    text: 'Clear recent'
+                }).on('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    clearRecentStocks();
+                    $input.autocomplete('close');
+                });
+                $('<li>', { class: 'recent-autocomplete-footer', role: 'presentation' })
+                    .append($clearButton)
+                    .appendTo(ul);
+            }
+        };
+
+        $input.on('mousedown', function () {
+            if (!this.value.trim()) $(this).autocomplete('search', '');
+        });
+        $input.closest('form').on('submit.recentStocks', function () {
+            rememberRecentStock({ value: $input.val(), label: $input.val() });
+        });
+    }
+
+    installStockAutocomplete('#autocomplete', '#ac');
+    installStockAutocomplete('#autocomplete2', '#ac2');
 });
 
 function split( val ) {
