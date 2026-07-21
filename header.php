@@ -384,6 +384,7 @@ $( function() {
 
     function installStockAutocomplete(inputSelector, formSelector) {
         var $input = $(inputSelector);
+        var recentActiveIndex = -1;
         var autocomplete = $input.autocomplete({
             minLength: 0,
             source: function (request, response) {
@@ -420,6 +421,48 @@ $( function() {
         });
 
         var instance = autocomplete.autocomplete('instance');
+
+        function recentMenuItems() {
+            return autocomplete.autocomplete('widget').find('li.recent-autocomplete-entry');
+        }
+
+        function clearRecentKeyboardSelection() {
+            recentActiveIndex = -1;
+            autocomplete.autocomplete('widget').find('.ui-state-active').removeClass('ui-state-active');
+        }
+
+        function setRecentKeyboardSelection(index) {
+            var $items = recentMenuItems();
+            if (!$items.length) return false;
+
+            if (index < 0) index = $items.length - 1;
+            if (index >= $items.length) index = 0;
+
+            var $widget = autocomplete.autocomplete('widget');
+            $widget.find('.ui-state-active').removeClass('ui-state-active');
+            $items.removeAttr('aria-selected');
+
+            var $item = $items.eq(index);
+            $item.addClass('ui-state-active').attr('aria-selected', 'true');
+            $item.children('.ui-menu-item-wrapper').addClass('ui-state-active');
+            recentActiveIndex = index;
+            return true;
+        }
+
+        function selectRecentKeyboardItem() {
+            var $items = recentMenuItems();
+            if (recentActiveIndex < 0 || recentActiveIndex >= $items.length) return false;
+
+            var item = $items.eq(recentActiveIndex).data('recentItem');
+            if (!item) return false;
+
+            rememberRecentStock(item);
+            $input.val(item.value);
+            autocomplete.autocomplete('close');
+            $(formSelector).submit();
+            return true;
+        }
+
         instance._renderItem = function (ul, item) {
             var $li = $('<li>');
             var $row = $('<div>', { class: 'ui-menu-item-wrapper recent-autocomplete-row' });
@@ -438,6 +481,10 @@ $( function() {
                     'data-code': item.value
                 }).appendTo($row);
                 $li.addClass('recent-autocomplete-entry');
+                $li.data('recentItem', item);
+                $li.on('mouseenter.recentStocks', function () {
+                    recentActiveIndex = recentMenuItems().index(this);
+                });
                 $row.find('.recent-autocomplete-remove').on('click', function (event) {
                     event.preventDefault();
                     event.stopPropagation();
@@ -452,6 +499,7 @@ $( function() {
         };
 
         instance._renderMenu = function (ul, items) {
+            clearRecentKeyboardSelection();
             var hasRecentItems = items.some(function (item) { return item.recent; });
             if (hasRecentItems) {
                 $('<li>', {
@@ -482,6 +530,28 @@ $( function() {
                     .appendTo(ul);
             }
         };
+
+        $input[0].addEventListener('keydown', function (event) {
+            var $items = recentMenuItems();
+            var $menu = autocomplete.autocomplete('widget');
+            if (!$menu.is(':visible') || !$items.length) return;
+
+            var key = event.key || event.which;
+            if (key === 'ArrowDown' || key === 40) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                setRecentKeyboardSelection(recentActiveIndex + 1);
+            } else if (key === 'ArrowUp' || key === 38) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                setRecentKeyboardSelection(recentActiveIndex < 0 ? $items.length - 1 : recentActiveIndex - 1);
+            } else if ((key === 'Enter' || key === 13) && selectRecentKeyboardItem()) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
+        }, true);
+
+        $input.on('autocompleteopen.recentStocks autocompleteclose.recentStocks', clearRecentKeyboardSelection);
 
         $input.on('mousedown', function () {
             if (!this.value.trim()) $(this).autocomplete('search', '');
