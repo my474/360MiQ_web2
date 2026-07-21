@@ -211,8 +211,6 @@ $(document).on('click', '.color-item', function(event) {
 .ui-autocomplete {
     z-index: 9999 !important;
     font-size: 13px;
-    max-height: 360px;
-    overflow-y: auto;
 }
 .ui-autocomplete .ui-menu-item:nth-child(even){
     background-color: #ecf6fc;  // alternate item bgcolor
@@ -299,7 +297,7 @@ $(document).on('click', '.color-item', function(event) {
 $( function() {
     var dot = ' \u25CF ';
     var recentStorageKey = '360miq-recent-stocks';
-    var recentLimit = 6;
+    var recentLimit = 10;
 
     function readRecentStocks() {
         try {
