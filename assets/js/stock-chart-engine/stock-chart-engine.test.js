@@ -245,13 +245,15 @@ class FakeCanvas extends FakeElement {
       clip() {
         canvas.commands.push({ type: 'clip', alpha: this.globalAlpha });
       },
-      setLineDash() {},
+      setLineDash(value) {
+        this._lineDash = Array.isArray(value) ? value.slice() : [];
+      },
       setTransform() {},
       stroke() {
-        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha, strokeStyle: this.strokeStyle, lineWidth: this.lineWidth });
+        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha, strokeStyle: this.strokeStyle, lineWidth: this.lineWidth, lineDash: (this._lineDash || []).slice() });
       },
       strokeRect(x, y, width, height) {
-        canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha, strokeStyle: this.strokeStyle });
+        canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha, strokeStyle: this.strokeStyle, lineDash: (this._lineDash || []).slice() });
       }
     };
     return ctx;
@@ -2692,6 +2694,15 @@ assert.strictEqual(chart.getDrawingById(drawingId).style.width, 5);
 assert.strictEqual(chart.getDrawingById(drawingId).style.lineStyle, 'dot');
 assert.strictEqual(chart.getDrawingById(drawingId).style.opacity, 0.4);
 assert.strictEqual(chart.getDrawingById(drawingId).style.fill, 'rgba(239, 68, 68, 0.14)');
+chart.selectedDrawingId = drawingId;
+chart.canvas.commands = [];
+chart.draw();
+const drawingDeleteZone = chart.drawingDeleteZone(chart.getDrawingById(drawingId));
+const deleteControlStroke = chart.canvas.commands.find((command) => command.type === 'strokeRect' && command.x === drawingDeleteZone.x && command.y === drawingDeleteZone.y);
+assert.ok(deleteControlStroke);
+assert.deepStrictEqual(deleteControlStroke.lineDash, []);
+chart.handlePointerMove({ clientX: drawingDeleteZone.x + 4, clientY: drawingDeleteZone.y + 4 });
+assert.strictEqual(chart.canvas.style.cursor, 'pointer');
 chart.canvas.commands = [];
 chart.draw();
 assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && command.alpha === 0.4));

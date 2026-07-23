@@ -6700,6 +6700,7 @@
       return;
     }
     var hit = this.hitTestDrawing(this.pointer);
+    var deleteHit = this.hitTestDrawingDelete(this.pointer);
     var paneResizeHit = this.hitTestPaneResize(this.pointer);
     var strategyHit = this.hitTestStrategyExecution(this.pointer);
     this.hoverDrawingId = hit ? hit.drawing.id : null;
@@ -6710,6 +6711,7 @@
     if (strategyHit) this.showStrategyTooltip(strategyHit.execution, this.pointer);
     else this.hideStrategyTooltip();
     if (paneResizeHit) this.canvas.style.cursor = 'ns-resize';
+    else if (deleteHit) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestPaneControl(this.pointer)) this.canvas.style.cursor = 'pointer';
     else if (strategyHit) this.canvas.style.cursor = 'pointer';
     else if (this.hitTestLegend(this.pointer)) this.canvas.style.cursor = 'pointer';
@@ -10258,6 +10260,7 @@
     points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return;
     ctx.save();
+    ctx.setLineDash([]);
     ctx.fillStyle = theme.background;
     ctx.strokeStyle = drawing.id === this.selectedDrawingId ? theme.crosshair : theme.mutedText;
     ctx.lineWidth = 1;
