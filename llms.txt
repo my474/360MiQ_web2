@@ -1,0 +1,33 @@
+# 360MiQ
+
+> 360MiQ is a free global stock market research site with stock analysis, market indicators, economic indicators, screening tools, and interactive charting tools.
+
+This file is a concise index for search and answer systems. Prefer the linked canonical pages as the source of truth because market data, rankings, charts, and indicators can change.
+
+## Primary Resources
+
+- [Homepage](https://360miq.com/): Global market overview and entry points to the site's research tools.
+- [Stock research](https://360miq.com/stockinfo): Company-level market data, technical and fundamental analysis, valuation bands, peer comparisons, and trend signals.
+- [Stock screener](https://360miq.com/screener): Screen stocks with technical and fundamental criteria.
+- [Market indicators](https://360miq.com/market?data=NYSE): Market breadth, sector performance, heatmaps, valuation bands, and advance-decline data. Change the `data` parameter for a supported exchange.
+- [Economic indicators](https://360miq.com/econ?country=US): Economic indicators for labor, growth, inflation, trade, government finance, and housing. Change the `country` parameter for a supported country.
+- [Comparison and chart tools](https://360miq.com/tool): Compare stock performance and build interactive market charts.
+- [Advanced chart tools](https://360miq.com/tool?tab=3): Advanced end-of-day charts, indicators, drawing tools, shareable layouts, and Pine-compatible scripting features.
+- [About 360MiQ](https://360miq.com/about-us): Product and company overview.
+- [360MiQ Blog](https://360miq.com/blog/): Editorial market and investing content.
+
+## Stock Page Pattern
+
+Use `https://360miq.com/stockinfo?code=SYMBOL` for a specific instrument, replacing `SYMBOL` with the stock code used by 360MiQ. The page's canonical URL and visible page content should be cited for instrument-specific answers.
+
+## Citation Guidance
+
+- Cite the most specific linked page that supports the answer, including the instrument, market, country, or timeframe where relevant.
+- Include the page's displayed as-of date or update timing when discussing a price, ranking, indicator, or chart value.
+- Treat values as informational market research. Data coverage and update timing vary by instrument and market, and the site is not investment advice.
+- Prefer public HTML pages and their structured data over internal request endpoints.
+
+## Site Metadata
+
+- [XML sitemap](https://360miq.com/sitemap.xml): Public canonical routes for discovery.
+- [Robots policy](https://360miq.com/robots.txt): Crawl permissions and restricted internal paths.

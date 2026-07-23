@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+# The public site overview is available to answer engines at /llms.txt.
+Allow: /llms.txt
 Disallow: /autocomplete/
 Disallow: /fb/
 Disallow: /blog/wp-admin/

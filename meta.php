@@ -85,6 +85,7 @@ $structured_data = array(
 <script>window.__SITE_DISPLAY_POLICY={showStockIndexPrices:<?php echo $show_stock_index_prices ? 'true' : 'false'; ?>};</script>
 <script>window.__SCHEMA_MARKUP_CONFIG={siteUrl:<?php echo json_encode($site_url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,canonicalUrl:<?php echo json_encode($canonical_url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,route:<?php echo json_encode($route === '' ? 'home' : $route, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>};</script>
 <link rel="canonical" href="<?php echo htmlspecialchars($canonical_url, ENT_QUOTES, 'UTF-8'); ?>" />
+<link rel="alternate" type="text/plain" href="<?php echo $site_url; ?>/llms.txt" title="Machine-readable site overview" />
 <meta name="robots" content="<?php echo $robots_content; ?>">
 <meta name="theme-color" content="#ffc107">
 <meta name="referrer" content="strict-origin-when-cross-origin">
