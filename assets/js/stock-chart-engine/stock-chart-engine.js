@@ -8409,7 +8409,8 @@
     }
     if (kind === 'priceNote' && points[0]) {
       var priceNote = priceDrawingLabel(drawing, points[0]);
-      if (pointerInBounds(pointer, tagGeometry(priceNote, points[0]).bounds, tolerance)) return true;
+      var priceNoteLabelPoint = points[1] || points[0];
+      if (pointerInBounds(pointer, tagGeometry(priceNote, priceNoteLabelPoint).bounds, tolerance)) return true;
       return points[1] && distanceToSegment(pointer, points[0], points[1]) <= tolerance;
     }
     if (kind === 'callout') {
@@ -10138,7 +10139,7 @@
     } else if (kind === 'priceNote' && point(0)) {
       var noteLabel = priceDrawingLabel(drawing, point(0));
       if (point(1)) drawLine(ctx, point(0), point(1));
-      drawPriceNote(ctx, noteLabel, point(0), style.color, theme.background);
+      drawPriceNote(ctx, noteLabel, point(1), style.color, theme.background);
     } else if (kind === 'callout' && point(0)) {
       var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
       drawLine(ctx, point(0), target);
