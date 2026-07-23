@@ -3086,6 +3086,18 @@ assertUniqueRenderSignatures(['gann_fan', 'fib_speed_resistance_fan', 'pitchfan'
 assertUniqueRenderSignatures(['fib_time_zone', 'trend_based_fib_time', 'cyclic_lines', 'time_cycles'], measurementRenderPoints);
 assertUniqueRenderSignatures(['circle', 'ellipse'], measurementRenderPoints.slice(0, 2));
 assertUniqueRenderSignatures(['text', 'note', 'anchored_note', 'signpost', 'callout', 'price_label', 'price_note'], measurementRenderPoints);
+assert.strictEqual(StockChartEngine.drawingTools.price_label.points, 1);
+assert.strictEqual(StockChartEngine.drawingTools.price_note.points, 2);
+const priceLabelCommands = renderMeasurementTool('price_label', measurementRenderPoints.slice(0, 1));
+assert.ok(priceLabelCommands.some((command) => command.type === 'lineTo'));
+const priceNoteCommands = renderMeasurementTool('price_note', measurementRenderPoints.slice(0, 2));
+assert.ok(commandIncludesPoint(priceNoteCommands, 'lineTo', chart.drawingScreenPoints({ type: 'price_note', paneId: 'price', points: measurementRenderPoints.slice(0, 2) })[1]));
+const priceLabelDrawingId = chart.addDrawing('price_label', measurementRenderPoints.slice(0, 1), { text: 'Editable text should be ignored' });
+const priceLabelDrawing = chart.getDrawingById(priceLabelDrawingId);
+chart.openDrawingSettingsPopup(priceLabelDrawing, { x: 160, y: 140 });
+assert.strictEqual(chart.settingsPopup.innerHTML.includes('data-sce-popup-field="drawingText"'), false);
+chart.closeIndicatorSettingsPopup();
+chart.removeDrawing(priceLabelDrawingId);
 const noteCommands = renderMeasurementTool('note', measurementRenderPoints);
 assert.ok(noteCommands.some((command) => command.type === 'strokeRect'));
 const anchoredNoteCommands = renderMeasurementTool('anchored_note', measurementRenderPoints);

@@ -265,7 +265,7 @@
       ['signpost', 'Signpost', 'annotation', 'signpost', 1],
       ['callout', 'Callout', 'annotation', 'callout', 2],
       ['price_label', 'Price label', 'annotation', 'priceLabel', 1],
-      ['price_note', 'Price note', 'annotation', 'priceNote', 1],
+      ['price_note', 'Price note', 'annotation', 'priceNote', 2],
       ['arrow_marker', 'Arrow marker', 'annotation', 'marker', 1],
       ['arrow_mark_left', 'Arrow mark left', 'annotation', 'markerLeft', 1],
       ['arrow_mark_right', 'Arrow mark right', 'annotation', 'markerRight', 1],
@@ -6485,7 +6485,7 @@
       points: [],
       paneId: options.paneId || null,
       requiredPoints: drawingRequiredPointCount(type),
-      text: options.text != null ? options.text : (isIconOnlyDrawingType(type) ? '' : tool.name),
+      text: options.text != null ? options.text : (isIconOnlyDrawingType(type) || isAutomaticPriceDrawingType(type) ? '' : tool.name),
       style: sanitizeDrawingStyle(pendingStyle)
     };
     this.selectedDrawingId = null;
@@ -8401,8 +8401,16 @@
       if (pointerInBounds(pointer, noteHit.bounds, tolerance)) return true;
       return kind === 'anchoredNote' && distanceToSegment(pointer, points[0], noteHit.target) <= tolerance;
     }
-    if (kind === 'priceLabel' || kind === 'priceNote') {
-      return pointerInBounds(pointer, tagGeometry(drawing.text || tool.name, points[0]).bounds, tolerance);
+    if (kind === 'priceLabel' && points[0]) {
+      var priceLabel = priceDrawingLabel(drawing, points[0]);
+      var priceLabelTargetPoint = priceLabelTarget(priceLabel, points[0], rect);
+      return pointerInBounds(pointer, tagGeometry(priceLabel, priceLabelTargetPoint).bounds, tolerance) ||
+        distanceToSegment(pointer, points[0], priceLabelTargetPoint) <= tolerance;
+    }
+    if (kind === 'priceNote' && points[0]) {
+      var priceNote = priceDrawingLabel(drawing, points[0]);
+      if (pointerInBounds(pointer, tagGeometry(priceNote, points[0]).bounds, tolerance)) return true;
+      return points[1] && distanceToSegment(pointer, points[0], points[1]) <= tolerance;
     }
     if (kind === 'callout') {
       var calloutTarget = points[1] || { x: points[0].x + 56, y: points[0].y - 34 };
@@ -10123,10 +10131,13 @@
     } else if (kind === 'anchoredNote' && point(0)) {
       drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, theme.background, true);
     } else if (kind === 'priceLabel' && point(0)) {
-      var label = drawing.text || formatNumber(rawPoints[0] && rawPoints[0].value != null ? rawPoints[0].value : point(0).value);
-      drawTag(ctx, label, point(0), style.color, theme.background);
+      var label = priceDrawingLabel(drawing, point(0));
+      var labelTarget = priceLabelTarget(label, point(0), rect);
+      drawLine(ctx, point(0), labelTarget);
+      drawTag(ctx, label, labelTarget, style.color, theme.background);
     } else if (kind === 'priceNote' && point(0)) {
-      var noteLabel = drawing.text || formatNumber(rawPoints[0] && rawPoints[0].value != null ? rawPoints[0].value : point(0).value);
+      var noteLabel = priceDrawingLabel(drawing, point(0));
+      if (point(1)) drawLine(ctx, point(0), point(1));
       drawPriceNote(ctx, noteLabel, point(0), style.color, theme.background);
     } else if (kind === 'callout' && point(0)) {
       var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
@@ -11101,6 +11112,25 @@
     };
   }
 
+  function priceDrawingLabel(drawing, point) {
+    var rawPoint = drawing && drawing.points && drawing.points[0];
+    var value = rawPoint && rawPoint.value != null ? rawPoint.value : point && point.value;
+    return formatNumber(Number(value));
+  }
+
+  function priceLabelTarget(label, anchor, rect) {
+    var geometry = tagGeometry(label, { x: 0, y: 0 });
+    var target = { x: anchor.x + 14, y: anchor.y - 18 };
+    if (!rect) return target;
+    var minX = rect.x + 4;
+    var maxX = Math.max(minX, rect.x + rect.width - geometry.width - 4);
+    var minY = rect.y + geometry.height + 4;
+    var maxY = Math.max(minY, rect.y + rect.height - 4);
+    target.x = clamp(target.x, minX, maxX);
+    target.y = clamp(target.y, minY, maxY);
+    return target;
+  }
+
   function roundedRectPath(ctx, x, y, width, height, radius) {
     radius = Math.max(0, Math.min(radius || 6, width / 2, height / 2));
     ctx.beginPath();
@@ -11188,13 +11218,6 @@
 
   function drawPriceNote(ctx, label, p, color, background) {
     drawTag(ctx, label, p, color, background);
-    ctx.strokeStyle = background || '#fff';
-    ctx.beginPath();
-    ctx.moveTo(p.x + 8, p.y - 5);
-    ctx.lineTo(p.x + 44, p.y - 5);
-    ctx.moveTo(p.x + 8, p.y - 11);
-    ctx.lineTo(p.x + 34, p.y - 11);
-    ctx.stroke();
   }
 
   function patternLabelsForType(type, kind, pointCount) {
@@ -11489,6 +11512,11 @@
     return key === 'flag_mark' || key.indexOf('arrow_mark_') === 0;
   }
 
+  function isAutomaticPriceDrawingType(type) {
+    var key = normalizeDrawingType(type);
+    return key === 'price_label' || key === 'price_note';
+  }
+
   function markerDisplayText(drawing, tool) {
     if (!drawing || !drawing.text) return '';
     var typeKey = normalizeDrawingType(drawing.type);
@@ -11505,7 +11533,7 @@
   function isEditableTextDrawing(drawing) {
     if (!drawing) return false;
     var kind = drawingToolDefinition(drawing.type).renderKind;
-    return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' || kind === 'signpost' || kind === 'priceLabel' || kind === 'priceNote';
+    return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' || kind === 'signpost';
   }
 
   function nearestSeriesPoint(data, time) {
