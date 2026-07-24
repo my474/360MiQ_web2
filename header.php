@@ -162,8 +162,8 @@ $(document).on('click', '.color-item', function(event) {
         $('.langbtn').html(text.replace('<span class="normal">En</span>', span));
      }*/
 </script-->
-        <div style="float:right;">
-            <form id="ac2" class="hidden-xs collapse navbar-collapse form-inline my-2 my-lg-0" action="stockinfo">
+        <div class="miq-header-search">
+            <form id="ac2" class="hidden-xs form-inline my-2 my-lg-0" action="stockinfo">
             <!--<input id="autocomplete2" size="12" class="form-control mr-sm-2 copyMe" style="max-width:150px;" type="search" placeholder="Stock Code" aria-label="Search" name="code" spellcheck="false"  maxlength="25" autofocus required>-->
                 <input id="autocomplete2" size="10" class="form-control mr-sm-2 copyMe" type="search" placeholder="Stock Code" onchange="this.value = this.value.trim();" aria-label="Search" name="code" spellcheck="false"  maxlength="25" autofocus required>
                 <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" aria-label="Stock Search" style="width:39px"><i class="fas fa-search"></i></button>

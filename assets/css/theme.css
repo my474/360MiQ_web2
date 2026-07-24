@@ -362,6 +362,36 @@
    NAVBAR — override Bootstrap classes
    ============================ */
 
+@media (min-width: 992px) {
+  .clean-navbar .navbar-nav .nav-link {
+    padding-right: .6rem;
+    padding-left: .6rem;
+  }
+
+  .clean-navbar .miq-header-search {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .clean-navbar .miq-header-search #ac2 {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+  }
+
+  .clean-navbar .miq-header-search #autocomplete2 {
+    width: 150px;
+    flex: 0 1 150px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .clean-navbar .miq-header-search {
+    display: none;
+  }
+}
+
 [data-theme="dark"] .navbar {
   background-color: var(--bg-navbar) !important;
 }

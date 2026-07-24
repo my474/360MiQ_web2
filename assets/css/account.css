@@ -8,11 +8,6 @@
 }
 
 @media (min-width: 992px) {
-    .clean-navbar .navbar-nav .nav-link {
-        padding-right: .6rem;
-        padding-left: .6rem;
-    }
-
     .miq-signin-link .miq-signin-label {
         display: none;
     }
