@@ -72,7 +72,7 @@
         <a class="nav-link" href="https://play.google.com/store/apps/details?id=com.miq360" target="_blank"><img src="assets/img/googleplay_play_logo_icon.png" alt="Get it on Google Play" title="Get it on Google Play" width="22" height="22"></a>
       </li-->
       <!-- theme toggle -->
-      <li class="nav-item miq-account-menu-item">
+      <li class="nav-item">
         <?php if ($miq_nav_user): ?>
           <div class="dropdown miq-account-nav-item">
             <a class="nav-link dropdown-toggle miq-account-trigger" href="#" id="miqAccountMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Account">
@@ -90,7 +90,7 @@
             </div>
           </div>
         <?php else: ?>
-          <a class="nav-link miq-signin-link" href="/account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in to save charts and scripts"><i class="fas fa-user-circle"></i><span>Sign in</span></a>
+          <a class="nav-link miq-signin-link" href="/account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in to save charts and scripts" aria-label="Sign in"><i class="fas fa-user-circle" aria-hidden="true"></i><span class="miq-signin-label">Sign in</span></a>
         <?php endif; ?>
       </li>
       <li class="nav-item">
@@ -162,7 +162,7 @@ $(document).on('click', '.color-item', function(event) {
         $('.langbtn').html(text.replace('<span class="normal">En</span>', span));
      }*/
 </script-->
-        <div class="miq-header-search" style="float:right;">
+        <div style="float:right;">
             <form id="ac2" class="hidden-xs collapse navbar-collapse form-inline my-2 my-lg-0" action="stockinfo">
             <!--<input id="autocomplete2" size="12" class="form-control mr-sm-2 copyMe" style="max-width:150px;" type="search" placeholder="Stock Code" aria-label="Search" name="code" spellcheck="false"  maxlength="25" autofocus required>-->
                 <input id="autocomplete2" size="10" class="form-control mr-sm-2 copyMe" type="search" placeholder="Stock Code" onchange="this.value = this.value.trim();" aria-label="Search" name="code" spellcheck="false"  maxlength="25" autofocus required>
