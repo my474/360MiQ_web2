@@ -16,9 +16,9 @@
         padding-right: .65rem;
         padding-left: .65rem;
         position: relative;
-        top: 3px;
-        min-width: 1.6rem;
-        font-size: 1.4rem;
+        top: 1px;
+        min-width: 1.9rem;
+        font-size: 1.8rem;
         line-height: inherit;
         text-align: center;
     }
