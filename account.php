@@ -184,6 +184,17 @@ if ($current_user && $view !== 'reset') {
     <meta property="og:title" content="Account - 360MiQ.com" />
     <meta name="description" content="Sign in to save charts, Pine scripts, watchlists, and community ideas on 360MiQ.com." />
     <title>Account - 360MiQ.com</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
+    <link rel="stylesheet" href="assets/css/card.css">
+    <link rel="stylesheet" href="assets/css/jquery-ui.css">
+    <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
+    <link rel="stylesheet" href="assets/css/signallight.css">
+    <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <link rel="stylesheet" href="assets/css/account.css">
     <?php if (miq_account_config()['google_client_id'] !== ''): ?>
         <script src="https://accounts.google.com/gsi/client" async defer></script>
