@@ -25,6 +25,10 @@ RewriteRule ^(.*)$ https://360miq.com%{REQUEST_URI} [R=301,L]
 RewriteCond %{HTTP_HOST} ^mail\.360miq\.com$ [NC]
 RewriteRule ^ https://360miq.com%{REQUEST_URI} [NE,R=301,L]
 
+# The public account route shares its name with the protected helper folder.
+# Resolve it to the front controller before Apache applies account/.htaccess.
+RewriteRule ^account/?$ account.php [L]
+
 # Redirect public PHP URLs to their extensionless canonical equivalents.
 RewriteCond %{REQUEST_METHOD} =GET
 RewriteCond %{THE_REQUEST} \s/+index(?:\.php)?(?:[?\s]) [NC]
