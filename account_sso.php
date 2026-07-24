@@ -21,7 +21,7 @@ function miq_sso_begin()
     $return_to = miq_account_safe_return_to($_GET['return_to'] ?? '/blog/wp-admin/edit.php', '/blog/wp-admin/edit.php');
     if (!$user) {
         $handoff = 'account_sso.php?return_to=' . rawurlencode($return_to);
-        header('Location: account?view=login&return_to=' . rawurlencode($handoff));
+        header('Location: account.php?view=login&return_to=' . rawurlencode($handoff));
         exit;
     }
 

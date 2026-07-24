@@ -90,7 +90,7 @@
             </div>
           </div>
         <?php else: ?>
-          <a class="nav-link miq-signin-link" href="account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in to save charts and scripts" aria-label="Sign in"><i class="fas fa-user-circle" aria-hidden="true"></i><span class="miq-signin-label">Sign in</span></a>
+          <a class="nav-link miq-signin-link" href="account.php?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in to save charts and scripts" aria-label="Sign in"><i class="fas fa-user-circle" aria-hidden="true"></i><span class="miq-signin-label">Sign in</span></a>
         <?php endif; ?>
       </li>
       <li class="nav-item">

@@ -141,7 +141,7 @@
         Array.prototype.forEach.call(pulse.querySelectorAll('[data-pulse-vote]'), function (button) {
             button.addEventListener('click', function () {
                 if (!state.loggedIn) {
-                    window.location.href = 'account?view=login&return_to=' + encodeURIComponent(window.location.pathname + window.location.search);
+                    window.location.href = 'account.php?view=login&return_to=' + encodeURIComponent(window.location.pathname + window.location.search);
                     return;
                 }
                 jsonRequest('vote', { context_type: contextType, context_key: contextKey, direction: button.getAttribute('data-pulse-vote') }).then(function (body) {
