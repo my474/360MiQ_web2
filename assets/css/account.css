@@ -15,6 +15,12 @@
     .miq-signin-link {
         padding-right: .65rem;
         padding-left: .65rem;
+        position: relative;
+        top: 3px;
+        min-width: 1.5rem;
+        font-size: 1.2rem;
+        line-height: inherit;
+        text-align: center;
     }
 }
 
