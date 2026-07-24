@@ -2,7 +2,7 @@
 require_once __DIR__ . '/account/bootstrap.php';
 $user = miq_account_current_user();
 if (!$user) {
-    header('Location: /account?view=login&return_to=/workspace');
+    header('Location: account?view=login&return_to=/workspace');
     exit;
 }
 ?>

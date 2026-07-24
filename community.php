@@ -22,7 +22,7 @@ $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
             <h1>Community Ideas<?php echo $context_code !== '' ? ' for ' . htmlspecialchars($context_code, ENT_QUOTES, 'UTF-8') : ''; ?></h1>
             <p>Short, user-generated market opinions. They are not investment advice and are reviewed before publication.</p>
         </div>
-        <?php if ($user): ?><button class="btn btn-primary" type="button" data-open-idea-form>Share an idea</button><?php else: ?><a class="btn btn-primary" href="/account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/community'); ?>">Sign in to share</a><?php endif; ?>
+        <?php if ($user): ?><button class="btn btn-primary" type="button" data-open-idea-form>Share an idea</button><?php else: ?><a class="btn btn-primary" href="account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/community'); ?>">Sign in to share</a><?php endif; ?>
     </div>
     <section class="miq-community-form-card" data-idea-form <?php echo $user ? '' : 'hidden'; ?>>
         <h2>Share a concise idea</h2>

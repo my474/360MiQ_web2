@@ -96,7 +96,7 @@ if (isset($_GET['verify'])) {
     } catch (Throwable $error) {
         miq_account_flash('danger', 'We could not verify that link. Please request a new one.');
     }
-    miq_account_redirect('/account?view=login');
+    miq_account_redirect('account?view=login');
 }
 
 if (isset($_GET['reset'])) {
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $email = miq_account_normalize_email($_POST['email'] ?? '');
                 miq_account_process_email_registration($email, (string) ($_POST['password'] ?? ''), (string) ($_POST['display_name'] ?? ''));
                 miq_account_flash('success', 'Account created. Check your email to verify your address before signing in.');
-                miq_account_redirect('/account?view=login');
+                miq_account_redirect('account?view=login');
             } elseif ($action === 'login') {
                 $user = miq_account_find_user_by_email($_POST['email'] ?? '');
                 if (!$user || !$user['password_hash'] || !password_verify((string) ($_POST['password'] ?? ''), $user['password_hash'])) {
@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
                 miq_account_flash('success', 'If an account exists for that email, a reset link has been sent.');
-                miq_account_redirect('/account?view=login');
+                miq_account_redirect('account?view=login');
             } elseif ($action === 'reset_password') {
                 $token = (string) ($_POST['token'] ?? '');
                 $password = (string) ($_POST['password'] ?? '');
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 miq_account_query("UPDATE {$users} SET password_hash = ?, session_version = session_version + 1, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($hash, (int) $row['user_id']))->close();
                 miq_account_query("DELETE FROM {$tokens} WHERE id = ?", 'i', array((int) $row['token_id']))->close();
                 miq_account_flash('success', 'Your password was changed. You can now sign in.');
-                miq_account_redirect('/account?view=login');
+                miq_account_redirect('account?view=login');
             }
         } catch (Throwable $error) {
             $errors[] = miq_account_config()['debug'] ? $error->getMessage() : $error->getMessage();
@@ -215,7 +215,7 @@ if ($current_user && $view !== 'reset') {
                 <input id="register_password" name="password" class="form-control" type="password" minlength="8" autocomplete="new-password" required>
                 <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
-            <p class="miq-account-switch">Already have an account? <a href="/account?view=login">Sign in</a></p>
+            <p class="miq-account-switch">Already have an account? <a href="account?view=login">Sign in</a></p>
         <?php elseif ($view === 'reset'): ?>
             <form method="post" class="miq-account-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
@@ -249,7 +249,7 @@ if ($current_user && $view !== 'reset') {
             <?php else: ?>
                 <div class="miq-google-unavailable">Google login will appear after the production OAuth client is configured.</div>
             <?php endif; ?>
-            <div class="miq-account-links"><a href="/account?view=register">Create an account</a><a href="/account?view=forgot">Forgot password?</a></div>
+            <div class="miq-account-links"><a href="account?view=register">Create an account</a><a href="account?view=forgot">Forgot password?</a></div>
             <?php if ($view === 'forgot'): ?>
                 <form method="post" class="miq-account-form miq-reset-inline">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">

@@ -20,13 +20,13 @@ function miq_sso_begin()
     $user = miq_account_current_user();
     $return_to = miq_account_safe_return_to($_GET['return_to'] ?? '/blog/wp-admin/edit.php', '/blog/wp-admin/edit.php');
     if (!$user) {
-        $handoff = '/account_sso.php?return_to=' . rawurlencode($return_to);
-        header('Location: /account?view=login&return_to=' . rawurlencode($handoff));
+        $handoff = 'account_sso.php?return_to=' . rawurlencode($return_to);
+        header('Location: account?view=login&return_to=' . rawurlencode($handoff));
         exit;
     }
 
     if (miq_sso_shared_secret() === '') {
-        header('Location: /blog/wp-login.php?redirect_to=' . rawurlencode($return_to));
+        header('Location: blog/wp-login.php?redirect_to=' . rawurlencode($return_to));
         exit;
     }
 

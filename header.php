@@ -66,7 +66,7 @@
         <a class="nav-link" href="/blog">Analysis</a>
       </li>
       <!-- li class="nav-item">
-        <a class="nav-link" href="/blog/wp-login.php" target="_blank"><i class="fa-solid fa-pen-clip fa-xl" title="Analysis Contributor Login/Register&#10;&#10;Free Sign-up for Everyone!"></i></a>
+        <a class="nav-link" href="blog/wp-login.php" target="_blank"><i class="fa-solid fa-pen-clip fa-xl" title="Analysis Contributor Login/Register&#10;&#10;Free Sign-up for Everyone!"></i></a>
       </li-->
       <!--li class="nav-item">
         <a class="nav-link" href="https://play.google.com/store/apps/details?id=com.miq360" target="_blank"><img src="assets/img/googleplay_play_logo_icon.png" alt="Get it on Google Play" title="Get it on Google Play" width="22" height="22"></a>
@@ -83,14 +83,14 @@
               <a class="dropdown-item" href="/workspace?tab=charts"><i class="fas fa-chart-line fa-fw"></i> Saved Charts</a>
               <a class="dropdown-item" href="/workspace?tab=scripts"><i class="fas fa-code fa-fw"></i> Pine Scripts</a>
               <a class="dropdown-item" href="/community"><i class="fas fa-users fa-fw"></i> Community Ideas</a>
-              <a class="dropdown-item" href="/account_settings"><i class="fas fa-cog fa-fw"></i> Account Settings</a>
+              <a class="dropdown-item" href="account_settings"><i class="fas fa-cog fa-fw"></i> Account Settings</a>
               <?php if (miq_account_is_moderator($miq_nav_user)): ?><a class="dropdown-item" href="/community_moderation"><i class="fas fa-shield-alt fa-fw"></i> Moderation Queue</a><?php endif; ?>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/account_logout"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>
+              <a class="dropdown-item" href="account_logout"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>
             </div>
           </div>
         <?php else: ?>
-          <a class="nav-link miq-signin-link" href="/account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in to save charts and scripts" aria-label="Sign in"><i class="fas fa-user-circle" aria-hidden="true"></i><span class="miq-signin-label">Sign in</span></a>
+          <a class="nav-link miq-signin-link" href="account?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in to save charts and scripts" aria-label="Sign in"><i class="fas fa-user-circle" aria-hidden="true"></i><span class="miq-signin-label">Sign in</span></a>
         <?php endif; ?>
       </li>
       <li class="nav-item">
