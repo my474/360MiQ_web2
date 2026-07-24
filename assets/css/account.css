@@ -207,6 +207,24 @@ html[data-theme="dark"] .miq-community-pulse p {
     margin-top: 18px;
 }
 
+.miq-display-name-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: -4px 0 12px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.miq-display-name-suggestion {
+    margin: 0;
+}
+
+html[data-theme="dark"] .miq-display-name-suggestions {
+    color: #aab4c3;
+}
+
 .miq-account-divider {
     display: flex;
     align-items: center;

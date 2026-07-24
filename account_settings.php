@@ -7,6 +7,8 @@ if (!$user) {
 }
 $messages = array();
 $errors = array();
+$display_name_suggestions = array();
+$settings_display_name = $user['display_name'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!miq_account_check_csrf($_POST['csrf_token'] ?? '')) {
@@ -16,9 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $action = (string) ($_POST['action'] ?? '');
             $users = miq_account_table('users');
             if ($action === 'profile') {
-                $name = miq_account_display_name($_POST['display_name'] ?? '', $user['email']);
+                $settings_display_name = (string) ($_POST['display_name'] ?? '');
+                $name = miq_account_resolve_display_name($settings_display_name, $user['email'], false, (int) $user['id']);
                 miq_account_query("UPDATE {$users} SET display_name = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($name, (int) $user['id']))->close();
                 $messages[] = 'Your display name was updated.';
+                $settings_display_name = $name;
                 $user = miq_account_current_user();
             } elseif ($action === 'password') {
                 $current_password = (string) ($_POST['current_password'] ?? '');
@@ -53,6 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $error) {
             if (isset($db) && $db instanceof mysqli) $db->rollback();
+            if ($error instanceof MiqAccountDisplayNameTakenException) {
+                $display_name_suggestions = $error->suggestions;
+            }
             $errors[] = $error->getMessage();
         }
     }
@@ -76,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php foreach ($messages as $message): ?><div class="alert alert-success"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></div><?php endforeach; ?>
     <?php foreach ($errors as $error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div><?php endforeach; ?>
     <div class="miq-workspace-grid">
-        <section class="miq-workspace-panel"><h2>Profile</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="profile"><label for="settings-display-name">Display name</label><input id="settings-display-name" class="form-control" name="display_name" value="<?php echo htmlspecialchars($user['display_name'], ENT_QUOTES, 'UTF-8'); ?>" maxlength="80" required><button class="btn btn-primary" type="submit">Save profile</button></form></section>
+        <section class="miq-workspace-panel"><h2>Profile</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="profile"><label for="settings-display-name">Display name</label><input id="settings-display-name" class="form-control" name="display_name" value="<?php echo htmlspecialchars($settings_display_name, ENT_QUOTES, 'UTF-8'); ?>" maxlength="80" required><?php if (!empty($display_name_suggestions)): ?><div class="miq-display-name-suggestions" aria-live="polite"><span>Available suggestions:</span><?php foreach ($display_name_suggestions as $suggestion): ?><button type="button" class="btn btn-sm btn-outline-primary miq-display-name-suggestion" data-display-name-suggestion="<?php echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8'); ?>" data-display-name-target="settings-display-name"><?php echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8'); ?></button><?php endforeach; ?></div><?php endif; ?><button class="btn btn-primary" type="submit">Save profile</button></form></section>
         <section class="miq-workspace-panel"><h2>Change password</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="password"><label for="current-password">Current password</label><input id="current-password" class="form-control" type="password" name="current_password" autocomplete="current-password" required><label for="new-password">New password</label><input id="new-password" class="form-control" type="password" name="new_password" minlength="8" autocomplete="new-password" required><button class="btn btn-primary" type="submit">Change password</button></form></section>
         <section class="miq-workspace-panel"><h2>Your data</h2><p>Export your account data or permanently delete your account and private workspace.</p><a class="btn btn-outline-primary" href="account_export.php">Download my data</a></section>
         <section class="miq-workspace-panel"><h2>Connected login</h2><?php if (miq_account_config()['google_client_id'] !== ''): ?><p>Connect Google for faster sign-in. The Google email must match this account.</p><form method="post" id="google-link-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="google_link"><input type="hidden" name="credential" id="google-link-credential"><div id="g_id_onload_link" data-client_id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-callback="miqHandleGoogleLinkCredential" data-auto_prompt="false"></div><div class="g_id_signin" data-type="standard" data-size="medium" data-text="continue_with"></div></form><?php else: ?><p>Google connection will be available after the production OAuth client is configured.</p><?php endif; ?></section>

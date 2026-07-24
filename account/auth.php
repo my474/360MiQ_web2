@@ -109,14 +109,85 @@ function miq_account_normalize_email($email)
     return strtolower(trim((string) $email));
 }
 
-function miq_account_display_name($name, $email)
+if (!class_exists('MiqAccountDisplayNameTakenException')) {
+    class MiqAccountDisplayNameTakenException extends RuntimeException
+    {
+        public $suggestions;
+
+        public function __construct($suggestions = array())
+        {
+            $this->suggestions = is_array($suggestions) ? $suggestions : array();
+            parent::__construct('That display name is already taken. Choose an available suggestion or enter another name.');
+        }
+    }
+}
+
+function miq_account_clean_display_name($name)
 {
     $name = trim(preg_replace('/\s+/', ' ', (string) $name));
+    return substr($name, 0, 80);
+}
+
+function miq_account_display_name($name, $email)
+{
+    $name = miq_account_clean_display_name($name);
     if ($name === '') {
         $name = strstr($email, '@', true);
     }
-    $name = substr($name, 0, 80);
+    $name = miq_account_clean_display_name($name);
     return $name !== '' ? $name : 'Investor';
+}
+
+function miq_account_display_name_exists($display_name, $exclude_user_id = 0)
+{
+    $users = miq_account_table('users');
+    $sql = "SELECT id FROM {$users} WHERE LOWER(display_name) = LOWER(?)";
+    $types = 's';
+    $params = array($display_name);
+    if ((int) $exclude_user_id > 0) {
+        $sql .= ' AND id <> ?';
+        $types .= 'i';
+        $params[] = (int) $exclude_user_id;
+    }
+    $sql .= ' LIMIT 1';
+    return miq_account_fetch_one(miq_account_query($sql, $types, $params)) !== null;
+}
+
+function miq_account_display_name_with_suffix($base, $suffix)
+{
+    $max_base_length = 80 - strlen($suffix);
+    return substr($base, 0, max(1, $max_base_length)) . $suffix;
+}
+
+function miq_account_display_name_suggestions($name, $email, $exclude_user_id = 0)
+{
+    $base = miq_account_display_name($name, $email);
+    $suggestions = array();
+    foreach (array('2', '3', '4', '5', '6', '7', '8', '9', '10') as $suffix) {
+        $candidate = miq_account_display_name_with_suffix($base, $suffix);
+        if (!miq_account_display_name_exists($candidate, $exclude_user_id)) {
+            $suggestions[] = $candidate;
+        }
+        if (count($suggestions) >= 3) {
+            break;
+        }
+    }
+    return $suggestions;
+}
+
+function miq_account_resolve_display_name($name, $email, $allow_suggested_suffix = false, $exclude_user_id = 0)
+{
+    $candidate = miq_account_display_name($name, $email);
+    if (!miq_account_display_name_exists($candidate, $exclude_user_id)) {
+        return $candidate;
+    }
+
+    $suggestions = miq_account_display_name_suggestions($candidate, $email, $exclude_user_id);
+    if ($allow_suggested_suffix && !empty($suggestions)) {
+        return $suggestions[0];
+    }
+
+    throw new MiqAccountDisplayNameTakenException($suggestions);
 }
 
 function miq_account_csrf_token()
@@ -174,7 +245,7 @@ function miq_account_create_token($bytes = 32)
     return bin2hex(random_bytes($bytes));
 }
 
-function miq_account_create_user($email, $password = null, $display_name = '', $provider = 'email', $provider_user_id = null)
+function miq_account_create_user($email, $password = null, $display_name = '', $provider = 'email', $provider_user_id = null, $allow_suggested_name = false)
 {
     $email = miq_account_normalize_email($email);
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -193,12 +264,20 @@ function miq_account_create_user($email, $password = null, $display_name = '', $
             throw new RuntimeException('An account already exists for this email. Sign in or link Google from account settings.');
         }
 
-        $name = miq_account_display_name($display_name, $email);
-        $statement = miq_account_query(
-            "INSERT INTO {$users} (email, password_hash, display_name, role, status, session_version, created_at, updated_at) VALUES (?, ?, ?, 'user', 'active', 1, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
-            'sss',
-            array($email, $password_hash, $name)
-        );
+        $name = miq_account_resolve_display_name($display_name, $email, $allow_suggested_name);
+        try {
+            $statement = miq_account_query(
+                "INSERT INTO {$users} (email, password_hash, display_name, role, status, session_version, created_at, updated_at) VALUES (?, ?, ?, 'user', 'active', 1, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                'sss',
+                array($email, $password_hash, $name)
+            );
+        } catch (Throwable $error) {
+            // A unique database index can still reject a simultaneous signup.
+            if (miq_account_display_name_exists($name)) {
+                throw new MiqAccountDisplayNameTakenException(miq_account_display_name_suggestions($name, $email));
+            }
+            throw $error;
+        }
         $user_id = (int) $db->insert_id;
         $statement->close();
 

@@ -116,6 +116,18 @@
         form.submit();
     }
 
+    function bindDisplayNameSuggestions() {
+        Array.prototype.forEach.call(document.querySelectorAll('[data-display-name-suggestion]'), function (button) {
+            button.addEventListener('click', function () {
+                var targetId = button.getAttribute('data-display-name-target') || 'display_name';
+                var input = document.getElementById(targetId);
+                if (!input) return;
+                input.value = button.getAttribute('data-display-name-suggestion') || '';
+                input.focus();
+            });
+        });
+    }
+
     function bindSearchTracking() {
         Array.prototype.forEach.call(document.querySelectorAll('form[action="stockinfo"]'), function (form) {
             form.addEventListener('submit', function () {
@@ -171,6 +183,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         bindSearchTracking();
+        bindDisplayNameSuggestions();
         renderPulse();
         mergeLocalSearches();
     });

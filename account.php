@@ -4,6 +4,9 @@ require_once __DIR__ . '/account/bootstrap.php';
 $view = isset($_GET['view']) ? (string) $_GET['view'] : 'login';
 $return_to = miq_account_safe_return_to(isset($_GET['return_to']) ? $_GET['return_to'] : (isset($_POST['return_to']) ? $_POST['return_to'] : '/'));
 $errors = array();
+$display_name_suggestions = array();
+$register_display_name = '';
+$register_email = '';
 
 function miq_account_redirect($path)
 {
@@ -41,10 +44,13 @@ function miq_account_process_verification($token)
     miq_account_flash('success', 'Your email is verified. You can now sign in.');
 }
 
-function miq_account_process_email_registration($email, $password, $display_name)
+function miq_account_process_email_registration($email, $password, $confirm_password, $display_name)
 {
     if (strlen($password) < 8) {
         throw new InvalidArgumentException('Use a password with at least 8 characters.');
+    }
+    if ($password !== $confirm_password) {
+        throw new InvalidArgumentException('The passwords do not match.');
     }
 
     $user_id = miq_account_create_user($email, $password, $display_name, 'email', null);
@@ -73,7 +79,7 @@ function miq_account_process_google_login($credential)
             throw new RuntimeException('An account already exists for this email. Sign in with email first, then connect Google from your account settings.');
         }
 
-        $user_id = miq_account_create_user($identity['email'], null, $identity['display_name'], 'google', $identity['provider_user_id']);
+        $user_id = miq_account_create_user($identity['email'], null, $identity['display_name'], 'google', $identity['provider_user_id'], true);
         $users = miq_account_table('users');
         miq_account_query(
             "UPDATE {$users} SET avatar_url = ?, email_verified_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ?",
@@ -111,7 +117,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             if ($action === 'register') {
                 $email = miq_account_normalize_email($_POST['email'] ?? '');
-                miq_account_process_email_registration($email, (string) ($_POST['password'] ?? ''), (string) ($_POST['display_name'] ?? ''));
+                $register_email = (string) ($_POST['email'] ?? '');
+                $register_display_name = (string) ($_POST['display_name'] ?? '');
+                miq_account_process_email_registration(
+                    $email,
+                    (string) ($_POST['password'] ?? ''),
+                    (string) ($_POST['confirm_password'] ?? ''),
+                    $register_display_name
+                );
                 miq_account_flash('success', 'Account created. Check your email to verify your address before signing in.');
                 miq_account_redirect('account.php?view=login');
             } elseif ($action === 'login') {
@@ -166,6 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 miq_account_redirect('account.php?view=login');
             }
         } catch (Throwable $error) {
+            if ($error instanceof MiqAccountDisplayNameTakenException) {
+                $display_name_suggestions = $error->suggestions;
+            }
             $errors[] = miq_account_config()['debug'] ? $error->getMessage() : $error->getMessage();
         }
     }
@@ -219,11 +235,19 @@ if ($current_user && $view !== 'reset') {
                 <input type="hidden" name="action" value="register">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="display_name">Display name</label>
-                <input id="display_name" name="display_name" class="form-control" maxlength="80" autocomplete="name" required>
+                <input id="display_name" name="display_name" class="form-control" maxlength="80" autocomplete="name" value="<?php echo htmlspecialchars($register_display_name, ENT_QUOTES, 'UTF-8'); ?>" required>
+                <?php if (!empty($display_name_suggestions)): ?>
+                    <div class="miq-display-name-suggestions" aria-live="polite">
+                        <span>Available suggestions:</span>
+                        <?php foreach ($display_name_suggestions as $suggestion): ?><button type="button" class="btn btn-sm btn-outline-primary miq-display-name-suggestion" data-display-name-suggestion="<?php echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8'); ?>" data-display-name-target="display_name"><?php echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8'); ?></button><?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
                 <label for="register_email">Email</label>
-                <input id="register_email" name="email" class="form-control" type="email" autocomplete="email" required>
+                <input id="register_email" name="email" class="form-control" type="email" autocomplete="email" value="<?php echo htmlspecialchars($register_email, ENT_QUOTES, 'UTF-8'); ?>" required>
                 <label for="register_password">Password</label>
                 <input id="register_password" name="password" class="form-control" type="password" minlength="8" autocomplete="new-password" required>
+                <label for="confirm_password">Confirm password</label>
+                <input id="confirm_password" name="confirm_password" class="form-control" type="password" minlength="8" autocomplete="new-password" required>
                 <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
             <p class="miq-account-switch">Already have an account? <a href="account.php?view=login">Sign in</a></p>

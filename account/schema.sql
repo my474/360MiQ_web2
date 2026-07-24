@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS miq_users (
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_users_email (email),
+    UNIQUE KEY uq_miq_users_display_name (display_name),
     KEY ix_miq_users_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
