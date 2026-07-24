@@ -15,10 +15,6 @@ function miq_account_db()
         $include_candidates[] = $config['account_db_include'];
     }
 
-    // This is the existing production connection convention used by the
-    // public data endpoints. A dedicated account DB include is preferred.
-    $include_candidates[] = '/home2/aamiqcom/php_script/mysql_vars_stock.php';
-
     foreach ($include_candidates as $include_file) {
         if (!is_file($include_file)) {
             continue;
@@ -33,7 +29,7 @@ function miq_account_db()
     }
 
     if ($config['db_host'] === '' || $config['db_name'] === '' || $config['db_user'] === '') {
-        throw new RuntimeException('Account database is not configured. Set ACCOUNT_DB_INCLUDE or ACCOUNT_DB_HOST/NAME/USER/PASSWORD.');
+        throw new RuntimeException('Account database is not configured. Deploy mysql_vars_account.php or set ACCOUNT_DB_INCLUDE/ACCOUNT_DB_HOST/NAME/USER/PASSWORD.');
     }
 
     $connection = mysqli_init();

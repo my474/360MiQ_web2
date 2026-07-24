@@ -32,7 +32,9 @@ function miq_account_config()
         'base_url' => rtrim(miq_account_env('MIQ_SITE_URL', 'https://360miq.com'), '/'),
         'google_client_id' => miq_account_env('GOOGLE_CLIENT_ID', ''),
         'google_tokeninfo_url' => miq_account_env('GOOGLE_TOKENINFO_URL', 'https://oauth2.googleapis.com/tokeninfo'),
-        'account_db_include' => miq_account_env('ACCOUNT_DB_INCLUDE', ''),
+        // The production account connection lives outside the public web root.
+        // ACCOUNT_DB_INCLUDE can still override this path for local/staging.
+        'account_db_include' => miq_account_env('ACCOUNT_DB_INCLUDE', '/home2/aamiqcom/php_script/mysql_vars_account.php'),
         'db_host' => miq_account_env('ACCOUNT_DB_HOST', ''),
         'db_name' => miq_account_env('ACCOUNT_DB_NAME', ''),
         'db_user' => miq_account_env('ACCOUNT_DB_USER', ''),
