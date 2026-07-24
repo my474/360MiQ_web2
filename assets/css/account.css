@@ -37,6 +37,70 @@
     color: #3b99e0;
 }
 
+@media (min-width: 992px) {
+    .clean-navbar {
+        flex-wrap: nowrap;
+    }
+
+    .clean-navbar .navbar-collapse {
+        min-width: 0;
+        flex-wrap: nowrap;
+    }
+
+    .clean-navbar .navbar-nav {
+        min-width: 0;
+        flex-wrap: nowrap;
+    }
+
+    .clean-navbar .navbar-nav .nav-link,
+    .clean-navbar .miq-account-menu-item,
+    .clean-navbar .miq-account-menu-item .nav-link {
+        white-space: nowrap;
+    }
+
+    .clean-navbar .miq-account-menu-item {
+        flex: 0 0 auto;
+    }
+
+    .clean-navbar .miq-account-menu-item .miq-signin-link,
+    .clean-navbar .miq-account-menu-item .miq-account-trigger {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .clean-navbar .miq-header-search {
+        flex: 0 0 auto;
+        float: none !important;
+        margin-left: 10px;
+    }
+
+    .clean-navbar .miq-header-search #ac2 {
+        display: flex !important;
+        flex: 0 0 auto;
+        flex-wrap: nowrap;
+        align-items: center;
+        width: auto;
+    }
+
+    .clean-navbar .miq-header-search #autocomplete2 {
+        width: 132px;
+        flex: 0 1 132px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .clean-navbar .navbar-nav .nav-link {
+        padding-right: .45rem;
+        padding-left: .45rem;
+        font-size: .88rem;
+    }
+
+    .clean-navbar .miq-header-search #autocomplete2 {
+        width: 104px;
+        flex-basis: 104px;
+    }
+}
+
 .miq-community-pulse {
     display: flex;
     align-items: center;
