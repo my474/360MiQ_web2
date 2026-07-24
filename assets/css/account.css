@@ -289,6 +289,32 @@ html[data-theme="dark"] .miq-google-unavailable {
     color: #c5c9d6;
 }
 
+html[data-theme="dark"] .miq-account-card .form-control,
+html[data-theme="dark"] .miq-workspace-page .form-control {
+    border-color: #59607d;
+    background-color: #2b2d47;
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-account-card .form-control::placeholder,
+html[data-theme="dark"] .miq-workspace-page .form-control::placeholder {
+    color: #aab4c3;
+}
+
+html[data-theme="dark"] .miq-account-card .form-control:focus,
+html[data-theme="dark"] .miq-workspace-page .form-control:focus {
+    border-color: #6bb7ff;
+    background-color: #303250;
+    color: #ffffff;
+    box-shadow: 0 0 0 .2rem rgba(107, 183, 255, .2);
+}
+
+html[data-theme="dark"] .miq-account-card input:-webkit-autofill,
+html[data-theme="dark"] .miq-workspace-page input:-webkit-autofill {
+    -webkit-text-fill-color: #f1f3f7;
+    -webkit-box-shadow: 0 0 0 1000px #2b2d47 inset;
+}
+
 html[data-theme="dark"] .miq-account-nav-item .dropdown-menu {
     background: #24253d;
 }
