@@ -235,6 +235,30 @@ function miq_account_hash_token($token)
 function miq_account_send_mail($to, $subject, $body)
 {
     $config = miq_account_config();
+    // Production uses the existing authenticated PHPMailer helper outside
+    // the public web root. Keep SMTP credentials in that server-side file.
+    if ($config['mailer_include'] !== '') {
+        if (!is_file($config['mailer_include'])) {
+            error_log('360MiQ account mailer include was not found: ' . $config['mailer_include']);
+            return false;
+        }
+
+        require_once $config['mailer_include'];
+        if (!function_exists('email')) {
+            error_log('360MiQ account mailer include does not define email().');
+            return false;
+        }
+
+        try {
+            $html_body = nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8'));
+            $result = email($subject, $html_body, $to, $to);
+            return $result !== false;
+        } catch (Throwable $exception) {
+            error_log('360MiQ account email delivery failed: ' . $exception->getMessage());
+            return false;
+        }
+    }
+
     $headers = 'From: ' . $config['email_from_name'] . ' <' . $config['email_from'] . ">\r\n";
     $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
     return mail($to, $subject, $body, $headers);

@@ -42,6 +42,7 @@ function miq_account_config()
         'db_port' => (int) miq_account_env('ACCOUNT_DB_PORT', 3306),
         'email_from' => miq_account_env('ACCOUNT_EMAIL_FROM', 'no-reply@360miq.com'),
         'email_from_name' => miq_account_env('ACCOUNT_EMAIL_FROM_NAME', '360MiQ'),
+        'mailer_include' => miq_account_env('ACCOUNT_MAILER_INCLUDE', '/home2/aamiqcom/cronjobs/email.php'),
         'moderator_emails' => array_filter(array_map('trim', explode(',', miq_account_env('MIQ_MODERATOR_EMAILS', '')))),
         'debug' => filter_var(miq_account_env('MIQ_ACCOUNT_DEBUG', 'false'), FILTER_VALIDATE_BOOLEAN),
         'max_chart_bytes' => (int) miq_account_env('MIQ_MAX_CHART_BYTES', 1000000),
