@@ -1,5 +1,6 @@
 <footer class="page-footer dark not-selectable">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php include __DIR__ . '/components/community-pulse.php'; ?>
     <div class="container">
         <div class="row">
             <div class="col-sm-3">

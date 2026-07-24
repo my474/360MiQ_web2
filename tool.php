@@ -1178,6 +1178,7 @@ select optgroup {
                                         <button id="toolStockChartLoad" class="btn btn-primary" type="button"><i class="fas fa-search"></i> Load Chart</button>
                                         <button id="toolStockChartSaveShared" class="btn btn-outline-primary stock-chart-save-shared" type="button" hidden>Save Layout</button>
                                         <div id="toolStockChartStatus" class="stock-chart-status" aria-live="polite"></div>
+                                        <div id="toolStockChartAccountSyncStatus" class="miq-chart-sync-status" aria-live="polite"></div>
                                     </div>
                                     <div class="stock-chart-stage">
                                         <div id="toolStockChart"></div>

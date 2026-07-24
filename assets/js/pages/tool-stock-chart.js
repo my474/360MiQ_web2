@@ -17,6 +17,13 @@
     var sharedPreviewActive = false;
     var stockMetadataByCode = {};
 
+    function setAccountSyncStatus(message, isError) {
+        var status = document.getElementById('toolStockChartAccountSyncStatus');
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.toggle('is-error', !!isError);
+    }
+
     function normalizeCode(value) {
         var code = String(value || '').trim();
         if (code.indexOf('|') >= 0) code = code.split('|')[0];
@@ -181,6 +188,7 @@
             return;
         }
         if (stockChart && stockChart.setRecentStocks) stockChart.setRecentStocks(next);
+        if (window.MIQAccount && window.MIQAccount.saveSearch) window.MIQAccount.saveSearch(entry.code, entry);
     }
 
     function hasStockNameMetadata(metadata) {
@@ -258,6 +266,64 @@
         } catch (error) {
             return false;
         }
+    }
+
+    function accountChartStorage(code) {
+        var layoutId = escapeLayoutId(code);
+        var localKey = STOCK_CHART_STORAGE_PREFIX + ':' + layoutId;
+        function localLoad() {
+            try {
+                var raw = window.localStorage.getItem(localKey);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                return null;
+            }
+        }
+        function localSave(doc) {
+            try {
+                window.localStorage.setItem(localKey, JSON.stringify(doc));
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+        return {
+            load: localLoad,
+            save: function (id, doc) {
+                var saved = localSave(doc);
+                if (window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn) {
+                    setAccountSyncStatus('Saving to your workspace…', false);
+                    window.MIQAccount.saveChartLayout(code, doc).then(function () {
+                        setAccountSyncStatus('Saved to your workspace', false);
+                    }).catch(function (error) {
+                        setAccountSyncStatus('Local save only; account sync unavailable', true);
+                        console.warn('Account chart sync failed:', error.message);
+                    });
+                } else {
+                    setAccountSyncStatus('Sign in to sync this chart across devices', false);
+                }
+                return saved;
+            },
+            remove: function () {
+                try { window.localStorage.removeItem(localKey); } catch (error) { /* optional local cache */ }
+                return true;
+            }
+        };
+    }
+
+    function syncPineScripts(documentState) {
+        if (!window.MIQAccount || !window.MIQAccount.state || !window.MIQAccount.state.loggedIn || !documentState || !Array.isArray(documentState.indicators)) return;
+        documentState.indicators.forEach(function (indicator) {
+            if (!indicator || indicator.type !== 'PINE_SCRIPT' || !indicator.inputs || !indicator.inputs.code) return;
+            window.MIQAccount.saveScript({
+                name: indicator.title || indicator.inputs.title || 'Pine Script',
+                code: currentCode,
+                source_code: indicator.inputs.code,
+                autosave: true
+            }).catch(function (error) {
+                console.warn('Account Pine script sync failed:', error.message);
+            });
+        });
     }
 
     function updateHistory(code) {
@@ -548,9 +614,10 @@
         options = options || {};
         var container = document.getElementById('toolStockChart');
         if (!container || !window.StockChartEngine) return;
+        setAccountSyncStatus(window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? 'Account sync enabled' : 'Sign in to sync this chart across devices', false);
         var layoutId = escapeLayoutId(code);
         var shouldLoadStoredLayout = options.load !== false;
-        var layoutExisted = shouldLoadStoredLayout && hasStoredLayout(layoutId);
+        var layoutExisted = (shouldLoadStoredLayout && hasStoredLayout(layoutId)) || !!options.document;
         var carriedRelativeStrength = options.preserveRelativeStrength === false ? [] : relativeStrengthSnapshots(stockChart);
 
         if (stockChart && stockChart.destroy) stockChart.destroy();
@@ -560,9 +627,11 @@
             interval: 'daily',
             data: bars,
             layoutId: layoutId,
+            storage: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? accountChartStorage(code) : undefined,
             storagePrefix: STOCK_CHART_STORAGE_PREFIX,
             load: shouldLoadStoredLayout,
             autosave: options.autosave !== false,
+            document: options.document || undefined,
             theme: currentThemeName(),
             recentStocks: recentStocks(),
             onComparisonSymbolLoad: function (benchmark) {
@@ -574,6 +643,11 @@
                 if (stock && stock.code) loadStockChart(stock.code, stock);
             }
         });
+        if (stockChart.on && window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn) {
+            stockChart.on('save', function (event) {
+                syncPineScripts(event && event.document ? event.document : stockChart.serialize());
+            });
+        }
         applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         restoreRelativeStrengthSnapshots(stockChart, carriedRelativeStrength);
@@ -649,15 +723,18 @@
             if (requestId !== dataSerial) return;
             return Promise.all([
                 requestBars(code),
-                requestStockMetadata(code)
+                requestStockMetadata(code),
+                window.MIQAccount && window.MIQAccount.preloadChartLayout ? window.MIQAccount.preloadChartLayout(code) : Promise.resolve(null)
             ]).then(function (results) {
                 if (requestId !== dataSerial) return;
                 var payload = results[0];
                 symbolInfo = rememberStockMetadata(results[1] || symbolInfo, code);
+                var accountLayout = results[2] || null;
                 renderChart(code, payload.bars, {
                     symbolInfo: symbolInfo,
                     resetHistory: isNewSymbol,
-                    visibleRange: previousVisibleDateRange
+                    visibleRange: previousVisibleDateRange,
+                    document: accountLayout || undefined
                 });
                 recordRecentStock(code, symbolInfo);
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);

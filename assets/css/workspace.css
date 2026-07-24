@@ -1,0 +1,186 @@
+.miq-workspace-page,
+.miq-community-page {
+    min-height: 70vh;
+    padding-top: 125px;
+    padding-bottom: 70px;
+}
+
+.miq-workspace-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.miq-workspace-heading h1 {
+    margin: 7px 0;
+}
+
+.miq-workspace-heading p {
+    margin: 0;
+    color: #667085;
+}
+
+.miq-workspace-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.miq-workspace-tabs .active {
+    color: #fff;
+    background: #3b99e0;
+}
+
+.miq-workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.miq-workspace-panel,
+.miq-community-form-card,
+.miq-community-list-card {
+    padding: 22px;
+    border: 1px solid rgba(59, 153, 224, .22);
+    border-radius: 12px;
+    background: var(--card-bg, #fff);
+    box-shadow: 0 6px 20px rgba(31, 60, 85, .07);
+}
+
+.miq-workspace-panel h2,
+.miq-community-form-card h2,
+.miq-community-list-card h2 {
+    margin: 0 0 14px;
+    font-size: 20px;
+}
+
+.miq-workspace-panel-wide {
+    grid-column: 1 / -1;
+}
+
+.miq-workspace-panel ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.miq-workspace-panel li {
+    margin: 7px 0;
+}
+
+.miq-workspace-loading,
+.miq-empty-state {
+    grid-column: 1 / -1;
+    padding: 36px;
+    border: 1px dashed rgba(59, 153, 224, .35);
+    border-radius: 12px;
+    color: #667085;
+    text-align: center;
+}
+
+.miq-form-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.miq-form-row > div {
+    min-width: 0;
+}
+
+.miq-community-form-card,
+.miq-community-list-card {
+    margin-bottom: 22px;
+}
+
+.miq-community-form-card label {
+    display: block;
+    margin: 14px 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.miq-idea-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.miq-inline-status {
+    color: #667085;
+    font-size: 13px;
+}
+
+.miq-community-list-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.miq-idea-card {
+    padding: 18px 0;
+    border-top: 1px solid rgba(138, 148, 166, .25);
+}
+
+.miq-idea-card:first-child {
+    border-top: 0;
+}
+
+.miq-idea-card h3 {
+    margin: 0 0 5px;
+    font-size: 18px;
+}
+
+.miq-idea-meta {
+    color: #667085;
+    font-size: 12px;
+}
+
+.miq-idea-direction {
+    display: inline-block;
+    margin-right: 7px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.miq-idea-direction-bullish { color: #116b47; background: #d9f7e7; }
+.miq-idea-direction-bearish { color: #9d2e2e; background: #ffe1e1; }
+.miq-idea-direction-neutral { color: #6f5b09; background: #fff0b8; }
+
+html[data-theme="dark"] .miq-workspace-heading p,
+html[data-theme="dark"] .miq-workspace-panel,
+html[data-theme="dark"] .miq-community-form-card,
+html[data-theme="dark"] .miq-community-list-card,
+html[data-theme="dark"] .miq-workspace-heading p,
+html[data-theme="dark"] .miq-inline-status,
+html[data-theme="dark"] .miq-idea-meta,
+html[data-theme="dark"] .miq-empty-state {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-workspace-panel,
+html[data-theme="dark"] .miq-community-form-card,
+html[data-theme="dark"] .miq-community-list-card {
+    background: #20213a;
+    border-color: rgba(110, 168, 255, .35);
+}
+
+@media (max-width: 767.98px) {
+    .miq-workspace-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .miq-workspace-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .miq-form-row {
+        grid-template-columns: 1fr;
+    }
+}

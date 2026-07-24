@@ -10810,6 +10810,150 @@
       "source_file": "LLM_SQLiteCreateTable.php",
       "source_location": "L1",
       "community": 120
+    },
+    {
+      "id": "account_auth_php",
+      "label": "auth.php",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_bootstrap_php",
+      "label": "bootstrap.php",
+      "file_type": "code",
+      "source_file": "account\\bootstrap.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_config_php",
+      "label": "config.php",
+      "file_type": "code",
+      "source_file": "account\\config.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_db_php",
+      "label": "db.php",
+      "file_type": "code",
+      "source_file": "account\\db.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_php",
+      "label": "account.php",
+      "file_type": "code",
+      "source_file": "account.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_api_php",
+      "label": "account_api.php",
+      "file_type": "code",
+      "source_file": "account_api.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_export_php",
+      "label": "account_export.php",
+      "file_type": "code",
+      "source_file": "account_export.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_logout_php",
+      "label": "account_logout.php",
+      "file_type": "code",
+      "source_file": "account_logout.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_settings_php",
+      "label": "account_settings.php",
+      "file_type": "code",
+      "source_file": "account_settings.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "account_sso_php",
+      "label": "account_sso.php",
+      "file_type": "code",
+      "source_file": "account_sso.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "assets_js_account_js",
+      "label": "account.js",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "assets_js_community_js",
+      "label": "community.js",
+      "file_type": "code",
+      "source_file": "assets\\js\\community.js",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "assets_js_moderation_js",
+      "label": "moderation.js",
+      "file_type": "code",
+      "source_file": "assets\\js\\moderation.js",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "assets_js_workspace_js",
+      "label": "workspace.js",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "community_php",
+      "label": "community.php",
+      "file_type": "code",
+      "source_file": "community.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "community_moderation_php",
+      "label": "community_moderation.php",
+      "file_type": "code",
+      "source_file": "community_moderation.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "components_community_pulse_php",
+      "label": "community-pulse.php",
+      "file_type": "code",
+      "source_file": "components\\community-pulse.php",
+      "source_location": "L1",
+      "community": 0
+    },
+    {
+      "id": "workspace_php",
+      "label": "workspace.php",
+      "file_type": "code",
+      "source_file": "workspace.php",
+      "source_location": "L1",
+      "community": 0
     }
   ],
   "links": [

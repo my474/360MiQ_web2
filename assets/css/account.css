@@ -1,0 +1,285 @@
+.miq-account-nav-item {
+    position: relative;
+}
+
+.miq-account-trigger,
+.miq-signin-link {
+    white-space: nowrap;
+}
+
+.miq-account-avatar {
+    display: inline-flex;
+    width: 25px;
+    height: 25px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    border-radius: 50%;
+    color: #fff;
+    background: #3b99e0;
+    font-size: 12px;
+}
+
+.miq-account-name {
+    display: inline-block;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.miq-account-nav-item .dropdown-menu {
+    min-width: 210px;
+}
+
+.miq-account-nav-item .dropdown-item i {
+    margin-right: 7px;
+    color: #3b99e0;
+}
+
+.miq-community-pulse {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    max-width: 1160px;
+    margin: 0 auto 26px;
+    padding: 18px 22px;
+    border: 1px solid rgba(59, 153, 224, .28);
+    border-radius: 12px;
+    background: var(--card-bg, #fff);
+    color: #1d2939;
+}
+
+.miq-community-pulse-copy {
+    min-width: 190px;
+}
+
+.miq-community-pulse-kicker {
+    color: #3b99e0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.miq-community-pulse h2 {
+    margin: 2px 0 4px;
+    font-size: 18px;
+}
+
+.miq-community-pulse p {
+    margin: 0;
+    color: #667085;
+    font-size: 12px;
+}
+
+.miq-community-pulse-actions {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+}
+
+.miq-community-pulse-actions button {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid rgba(59, 153, 224, .25);
+    border-radius: 7px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.miq-community-pulse-actions button:hover,
+.miq-community-pulse.has-voted .miq-community-pulse-actions button {
+    border-color: #3b99e0;
+}
+
+.miq-community-pulse-actions i {
+    color: #3b99e0;
+}
+
+.miq-community-pulse-link {
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.miq-chart-sync-status {
+    min-height: 18px;
+    margin-top: 7px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.miq-chart-sync-status.is-error {
+    color: #b42318;
+}
+
+html[data-theme="dark"] .miq-chart-sync-status {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-community-pulse {
+    background: #20213a;
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-community-pulse p {
+    color: #c5c9d6;
+}
+
+.miq-account-page {
+    min-height: 70vh;
+    padding: 120px 15px 55px;
+    background: var(--bg, #fff);
+}
+
+.miq-account-card {
+    max-width: 620px;
+    padding: 34px;
+    border: 1px solid rgba(59, 153, 224, .22);
+    border-radius: 14px;
+    background: var(--card-bg, #fff);
+    box-shadow: 0 12px 35px rgba(31, 60, 85, .10);
+}
+
+.miq-account-intro {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.miq-account-kicker {
+    color: #3b99e0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.miq-account-intro h1 {
+    margin: 8px 0 10px;
+}
+
+.miq-account-intro p {
+    margin-bottom: 0;
+    color: #667085;
+}
+
+.miq-account-form label {
+    display: block;
+    margin: 13px 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.miq-account-form .btn {
+    margin-top: 18px;
+}
+
+.miq-account-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 23px 0;
+    color: #8a94a6;
+    font-size: 13px;
+}
+
+.miq-account-divider::before,
+.miq-account-divider::after {
+    flex: 1;
+    height: 1px;
+    content: "";
+    background: rgba(138, 148, 166, .35);
+}
+
+.miq-google-form {
+    display: flex;
+    justify-content: center;
+}
+
+.miq-google-unavailable {
+    padding: 12px;
+    border: 1px dashed rgba(59, 153, 224, .35);
+    border-radius: 6px;
+    color: #667085;
+    font-size: 13px;
+    text-align: center;
+}
+
+.miq-account-switch,
+.miq-account-links {
+    margin: 21px 0 0;
+    color: #667085;
+    font-size: 13px;
+    text-align: center;
+}
+
+.miq-account-links {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.miq-reset-inline {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(138, 148, 166, .25);
+}
+
+html[data-theme="dark"] .miq-account-card {
+    border-color: rgba(110, 168, 255, .35);
+    background: #20213a;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .24);
+}
+
+html[data-theme="dark"] .miq-account-intro p,
+html[data-theme="dark"] .miq-account-switch,
+html[data-theme="dark"] .miq-account-links,
+html[data-theme="dark"] .miq-google-unavailable {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-account-nav-item .dropdown-menu {
+    background: #24253d;
+}
+
+html[data-theme="dark"] .miq-account-nav-item .dropdown-item {
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-account-nav-item .dropdown-item:hover,
+html[data-theme="dark"] .miq-account-nav-item .dropdown-item:focus {
+    background: #303250;
+}
+
+@media (max-width: 991.98px) {
+    .miq-account-name {
+        max-width: none;
+    }
+
+    .miq-account-nav-item .dropdown-menu {
+        border: 0;
+        box-shadow: none;
+    }
+
+    .miq-community-pulse {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .miq-community-pulse-copy {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .miq-account-card {
+        padding: 25px 20px;
+    }
+
+    .miq-account-links {
+        flex-direction: column;
+    }
+}

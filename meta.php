@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/account/bootstrap.php';
+
 $site_url = 'https://360miq.com';
 $show_stock_index_prices_env = getenv('SHOW_STOCK_INDEX_PRICES');
 $show_stock_index_prices = true;
@@ -44,7 +46,8 @@ if (!empty($canonical_params)) {
     $canonical_url .= '?' . http_build_query($canonical_params, '', '&', PHP_QUERY_RFC3986);
 }
 
-$robots_content = $route === 'error' ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+$private_routes = array('account', 'workspace', 'account_settings', 'account_export', 'account_sso', 'account_logout');
+$robots_content = ($route === 'error' || in_array($route, $private_routes, true)) ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
 $social_image = $site_url . '/assets/img/360Logo_512.png';
 $structured_data = array(
     '@context' => 'https://schema.org',
@@ -83,6 +86,32 @@ $structured_data = array(
 <!-- Anti-FOUC: before all stylesheets -->
 <script>(function(){var s=localStorage.getItem('360miq-dark-mode');if(s==='true'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script>window.__SITE_DISPLAY_POLICY={showStockIndexPrices:<?php echo $show_stock_index_prices ? 'true' : 'false'; ?>};</script>
+<?php
+$miq_account_user = miq_account_current_user();
+$miq_account_context_type = $route === 'stockinfo' ? 'stock' : ($route === 'market' ? 'market' : ($route === 'econ' ? 'econ' : ($route === 'tool' ? 'tool' : 'site')));
+$miq_account_context_key = '';
+if ($miq_account_context_type === 'stock') {
+    $miq_account_context_key = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : (isset($_GET['stockcode']) ? $_GET['stockcode'] : '')));
+} elseif ($miq_account_context_type === 'market') {
+    $miq_account_context_key = strtoupper(trim(isset($_GET['data']) ? $_GET['data'] : 'NYSE'));
+} elseif ($miq_account_context_type === 'econ') {
+    $miq_account_context_key = strtoupper(trim(isset($_GET['country']) ? $_GET['country'] : 'US'));
+} elseif ($miq_account_context_type === 'tool') {
+    $miq_account_context_key = isset($_GET['tab']) ? (string) $_GET['tab'] : 'default';
+}
+$miq_account_client_state = array(
+    'loggedIn' => (bool) $miq_account_user,
+    'displayName' => $miq_account_user ? $miq_account_user['display_name'] : null,
+    'role' => $miq_account_user ? $miq_account_user['role'] : null,
+    'csrfToken' => miq_account_csrf_token(),
+    'apiUrl' => $site_url . '/account_api.php',
+    'accountUrl' => $site_url . '/account',
+    'workspaceUrl' => $site_url . '/workspace',
+    'contextType' => $miq_account_context_type,
+    'contextKey' => substr($miq_account_context_key, 0, 80),
+);
+?>
+<script>window.__MIQ_ACCOUNT__=<?php echo json_encode($miq_account_client_state, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
 <script>window.__SCHEMA_MARKUP_CONFIG={siteUrl:<?php echo json_encode($site_url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,canonicalUrl:<?php echo json_encode($canonical_url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,route:<?php echo json_encode($route === '' ? 'home' : $route, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>};</script>
 <link rel="canonical" href="<?php echo htmlspecialchars($canonical_url, ENT_QUOTES, 'UTF-8'); ?>" />
 <link rel="alternate" type="text/plain" href="<?php echo $site_url; ?>/llms.txt" title="Machine-readable site overview" />
