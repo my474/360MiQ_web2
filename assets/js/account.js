@@ -4,6 +4,147 @@
     var state = window.__MIQ_ACCOUNT__ || { loggedIn: false };
     var localSearchKey = '360miq-account-recent-searches';
     var sentimentTrendRequests = {};
+    var pulseDebugEnabled = new URLSearchParams(window.location.search).get('community_debug') === '1';
+    var pulseMarketLabels = {
+        NYSE: 'NYSE',
+        NASDAQ: 'Nasdaq',
+        LSE: 'London',
+        TSX: 'Toronto TSX',
+        ASX: 'Australia',
+        NSE: 'India NSE',
+        TYO: 'Tokyo',
+        HKEX: 'Hong Kong',
+        SHSE: 'Shanghai',
+        SZSE: 'Shenzhen'
+    };
+
+    function pulseDebug(message, details) {
+        if (!pulseDebugEnabled || !window.console) return;
+        window.console.info('[360MiQ Community Pulse] ' + message, details || '');
+    }
+
+    function livePageContext() {
+        var contextType = String(state.contextType || '').toLowerCase();
+        var contextKey = String(state.contextKey || '').trim().toUpperCase();
+
+        if (window.__STOCKINFO_PAGE_CONFIG) {
+            contextType = 'stock';
+            if (typeof window.stockcode !== 'undefined' && window.stockcode) {
+                contextKey = String(window.stockcode).trim().toUpperCase();
+            } else if (window.__STOCKINFO_PAGE_CONFIG.stockcode) {
+                contextKey = String(window.__STOCKINFO_PAGE_CONFIG.stockcode).trim().toUpperCase();
+            }
+        } else if (window.__MARKET_PAGE_CONFIG && window.__MARKET_PAGE_CONFIG.data) {
+            contextType = 'market';
+            contextKey = String(window.__MARKET_PAGE_CONFIG.data).trim().toUpperCase();
+        }
+
+        return {
+            contextType: contextType,
+            contextKey: contextKey
+        };
+    }
+
+    function applyLivePulseContext(pulse) {
+        var liveContext = livePageContext();
+        var contextType = pulse.getAttribute('data-context-type') || 'site';
+        var contextKey = pulse.getAttribute('data-context-key') || 'site';
+        var hasLiveContext = (liveContext.contextType === 'stock' || liveContext.contextType === 'market') && liveContext.contextKey;
+
+        if (hasLiveContext) {
+            contextType = liveContext.contextType;
+            contextKey = liveContext.contextKey;
+        }
+
+        if ((contextType !== 'stock' && contextType !== 'market') || !contextKey || contextKey === 'site') {
+            contextType = 'site';
+            contextKey = 'site';
+        }
+
+        state.contextType = contextType;
+        state.contextKey = contextKey;
+        pulse.setAttribute('data-context-type', contextType);
+        pulse.setAttribute('data-context-key', contextKey);
+
+        var periodEnd = pulse.getAttribute('data-period-end') || '';
+        var subject = 'Global market';
+        var title = 'Global market outlook for the next 30 days' + (periodEnd ? ' ending ' + periodEnd : '') + '?';
+        var ariaLabel = 'Thirty-day global community outlook' + (periodEnd ? ' ending ' + periodEnd : '');
+
+        if (contextType === 'stock') {
+            subject = contextKey;
+            title = 'Your view on ' + contextKey + ' for the next 30 days' + (periodEnd ? ' ending ' + periodEnd : '') + '?';
+            ariaLabel = 'Thirty-day community outlook for ' + contextKey + (periodEnd ? ' ending ' + periodEnd : '');
+        } else if (contextType === 'market') {
+            subject = pulseMarketLabels[contextKey] || contextKey;
+            title = 'Your view on ' + subject + ' for the next 30 days' + (periodEnd ? ' ending ' + periodEnd : '') + '?';
+            ariaLabel = 'Thirty-day community outlook for ' + subject + (periodEnd ? ' ending ' + periodEnd : '');
+        }
+
+        var titleElement = pulse.querySelector('#miq-community-pulse-title');
+        var actions = pulse.querySelector('.miq-community-pulse-actions');
+        var chart = pulse.querySelector('[data-sentiment-chart]');
+        var ideasLink = pulse.querySelector('.miq-community-pulse-link');
+        if (titleElement) titleElement.textContent = title;
+        if (actions) actions.setAttribute('aria-label', ariaLabel);
+        if (chart) {
+            chart.setAttribute('data-context-type', contextType);
+            chart.setAttribute('data-context-key', contextKey);
+            chart.setAttribute('data-subject', subject);
+        }
+        if (ideasLink) {
+            ideasLink.href = contextType === 'stock' ? 'community?code=' + encodeURIComponent(contextKey) : 'community';
+        }
+
+        return {
+            contextType: contextType,
+            contextKey: contextKey,
+            subject: subject,
+            title: title
+        };
+    }
+
+    function inspectPulse() {
+        var pulse = document.getElementById('miq-community-pulse');
+        if (!pulse) {
+            var missingPulseScript = document.querySelector('script[src*="assets/js/account.js"]');
+            return {
+                exists: false,
+                accountScript: missingPulseScript ? missingPulseScript.src : null
+            };
+        }
+
+        var styles = window.getComputedStyle(pulse);
+        var rect = pulse.getBoundingClientRect();
+        var pulseTitle = pulse.querySelector('#miq-community-pulse-title');
+        var accountScript = document.querySelector('script[src*="assets/js/account.js"]');
+        return {
+            exists: true,
+            page: {
+                path: window.location.pathname,
+                stockcode: typeof window.stockcode === 'undefined' ? null : window.stockcode,
+                stockConfig: window.__STOCKINFO_PAGE_CONFIG ? window.__STOCKINFO_PAGE_CONFIG.stockcode : null,
+                marketConfig: window.__MARKET_PAGE_CONFIG ? window.__MARKET_PAGE_CONFIG.data : null
+            },
+            account: {
+                loggedIn: !!state.loggedIn,
+                contextType: state.contextType || null,
+                contextKey: state.contextKey || null,
+                apiUrl: state.apiUrl || null
+            },
+            pulse: {
+                contextType: pulse.getAttribute('data-context-type'),
+                contextKey: pulse.getAttribute('data-context-key'),
+                title: pulseTitle ? pulseTitle.textContent : null,
+                display: styles.display,
+                visibility: styles.visibility,
+                opacity: styles.opacity,
+                width: Math.round(rect.width),
+                height: Math.round(rect.height)
+            },
+            accountScript: accountScript ? accountScript.src : null
+        };
+    }
 
     function jsonRequest(action, payload, method) {
         payload = payload || {};
@@ -375,10 +516,16 @@
         var days = container.getAttribute('data-chart-mode') === 'compact' ? 30 : 90;
         return sentimentTrendRequest(contextType, contextKey, timeframe, days, force).then(function (trend) {
             renderSentimentChart(container, trend);
-        }).catch(function () {
+        }).catch(function (error) {
             var status = container.querySelector('[data-sentiment-status]');
             if (container.getAttribute('data-chart-mode') === 'compact') container.hidden = true;
             else if (status) status.textContent = 'The sentiment trend could not be loaded.';
+            pulseDebug('Trend request failed', {
+                contextType: contextType,
+                contextKey: contextKey,
+                status: error && error.status,
+                message: error && error.message
+            });
         });
     }
 
@@ -391,17 +538,39 @@
 
     function renderPulse() {
         var pulse = document.getElementById('miq-community-pulse');
-        if (!pulse || !state.apiUrl) return;
-        var contextType = pulse.getAttribute('data-context-type') || state.contextType || 'site';
-        var contextKey = pulse.getAttribute('data-context-key') || state.contextKey || 'site';
+        if (!pulse) {
+            pulseDebug('Pulse element was not rendered');
+            return;
+        }
+        if (!state.apiUrl) {
+            pulseDebug('Account API URL is missing', inspectPulse());
+            return;
+        }
+        var resolvedContext = applyLivePulseContext(pulse);
+        var contextType = resolvedContext.contextType;
+        var contextKey = resolvedContext.contextKey;
         var timeframe = pulse.getAttribute('data-timeframe') || '30d';
+        pulseDebug('Resolved context', inspectPulse());
         jsonRequest('pulse', { context_type: contextType, context_key: contextKey, timeframe: timeframe }, 'GET').then(function (body) {
             var counts = body.counts || { bullish: 0, bearish: 0, neutral: 0 };
             pulse.querySelector('[data-count="bullish"]').textContent = counts.bullish || 0;
             pulse.querySelector('[data-count="bearish"]').textContent = counts.bearish || 0;
             pulse.querySelector('[data-count="neutral"]').textContent = counts.neutral || 0;
             pulse.classList.add('is-ready');
-        }).catch(function () { pulse.classList.add('is-ready'); });
+            pulseDebug('Counts loaded', {
+                contextType: contextType,
+                contextKey: contextKey,
+                counts: counts
+            });
+        }).catch(function (error) {
+            pulse.classList.add('is-ready');
+            pulseDebug('Counts request failed', {
+                contextType: contextType,
+                contextKey: contextKey,
+                status: error && error.status,
+                message: error && error.message
+            });
+        });
 
         Array.prototype.forEach.call(pulse.querySelectorAll('[data-pulse-vote]'), function (button) {
             button.addEventListener('click', function () {
@@ -436,7 +605,8 @@
         saveScript: saveScript,
         getScript: getScript,
         saveIdea: saveIdea,
-        localSearches: localSearches
+        localSearches: localSearches,
+        inspectPulse: inspectPulse
     };
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -445,5 +615,6 @@
         renderPulse();
         renderSentimentCharts(false);
         mergeLocalSearches();
+        pulseDebug('Initialization complete', inspectPulse());
     });
 }());
