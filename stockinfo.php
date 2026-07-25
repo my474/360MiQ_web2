@@ -256,7 +256,11 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <meta name="description" content="<?php echo $desc; ?>" />
     <meta property="og:description" content="<?php echo $desc; ?>" />
     <meta property="twitter:description" content="<?php echo $desc; ?>" />
-    
+
+    <?php
+    $miq_page_context_type = 'stock';
+    $miq_page_context_key = $stockcode;
+    ?>
     <?php include "./meta.php" ?>
 
     <link rel="manifest" href="manifest.json">

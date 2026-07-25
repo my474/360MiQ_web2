@@ -155,6 +155,10 @@
 <html style="opacity: 1;">
 
 <head>
+    <?php
+    $miq_page_context_type = 'market';
+    $miq_page_context_key = $data;
+    ?>
     <?php include "./meta.php" ?>
     <meta property="og:title" content="<?php echo $exchangeName . " Market Indicators - 360MiQ.com"; ?>" />
     <meta name="description" content="<?php echo $exchangeName; ?> market indicators including breadth, sector performance, heatmaps, valuation bands and advance-decline data." />

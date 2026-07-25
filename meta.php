@@ -92,16 +92,27 @@ $structured_data = array(
 <script>window.__SITE_DISPLAY_POLICY={showStockIndexPrices:<?php echo $show_stock_index_prices ? 'true' : 'false'; ?>};</script>
 <?php
 $miq_account_user = miq_account_current_user();
-$miq_account_context_type = $route === 'stockinfo' ? 'stock' : ($route === 'market' ? 'market' : ($route === 'econ' ? 'econ' : ($route === 'tool' ? 'tool' : 'site')));
-$miq_account_context_key = '';
+$miq_inferred_context_type = $route === 'stockinfo' ? 'stock' : ($route === 'market' ? 'market' : ($route === 'econ' ? 'econ' : ($route === 'tool' ? 'tool' : 'site')));
+$miq_account_context_type = isset($miq_page_context_type) && in_array($miq_page_context_type, array('stock', 'market', 'econ', 'tool', 'site'), true)
+    ? $miq_page_context_type
+    : $miq_inferred_context_type;
+$miq_account_context_key = isset($miq_page_context_key) ? strtoupper(trim((string) $miq_page_context_key)) : '';
 if ($miq_account_context_type === 'stock') {
-    $miq_account_context_key = strtoupper(trim(isset($stockcode) && $stockcode !== '' ? $stockcode : (isset($_GET['code']) ? $_GET['code'] : (isset($_GET['stockcode']) ? $_GET['stockcode'] : ''))));
+    if ($miq_account_context_key === '') {
+        $miq_account_context_key = strtoupper(trim(isset($stockcode) && $stockcode !== '' ? $stockcode : (isset($_GET['code']) ? $_GET['code'] : (isset($_GET['stockcode']) ? $_GET['stockcode'] : ''))));
+    }
 } elseif ($miq_account_context_type === 'market') {
-    $miq_account_context_key = strtoupper(trim(isset($data) && $data !== '' ? $data : (isset($_GET['data']) ? $_GET['data'] : 'NYSE')));
+    if ($miq_account_context_key === '') {
+        $miq_account_context_key = strtoupper(trim(isset($data) && $data !== '' ? $data : (isset($_GET['data']) ? $_GET['data'] : 'NYSE')));
+    }
 } elseif ($miq_account_context_type === 'econ') {
-    $miq_account_context_key = strtoupper(trim(isset($_GET['country']) ? $_GET['country'] : 'US'));
+    if ($miq_account_context_key === '') {
+        $miq_account_context_key = strtoupper(trim(isset($_GET['country']) ? $_GET['country'] : 'US'));
+    }
 } elseif ($miq_account_context_type === 'tool') {
-    $miq_account_context_key = isset($_GET['tab']) ? (string) $_GET['tab'] : 'default';
+    if ($miq_account_context_key === '') {
+        $miq_account_context_key = isset($_GET['tab']) ? (string) $_GET['tab'] : 'default';
+    }
 }
 $miq_account_client_state = array(
     'loggedIn' => (bool) $miq_account_user,
