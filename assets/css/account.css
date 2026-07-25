@@ -484,6 +484,13 @@ html[data-theme="dark"] .miq-display-name-suggestions {
     justify-content: center;
 }
 
+.miq-google-button {
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+}
+
 .miq-google-unavailable {
     padding: 12px;
     border: 1px dashed rgba(59, 153, 224, .35);

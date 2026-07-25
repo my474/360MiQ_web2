@@ -308,6 +308,56 @@
         form.submit();
     }
 
+    var googleButtonInitialized = false;
+    var googleButtonClientId = '';
+    var googleButtonMode = '';
+
+    function googleButtonIsDark() {
+        return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+
+    function googleButtonCallback(mode) {
+        return mode === 'link' ? handleGoogleLinkCredential : handleGoogleCredential;
+    }
+
+    function renderGoogleButtons() {
+        var targets = document.querySelectorAll('.miq-google-button[data-google-client-id]');
+        if (!targets.length || !window.google || !window.google.accounts || !window.google.accounts.id) {
+            return false;
+        }
+
+        var primary = targets[0];
+        var clientId = primary.getAttribute('data-google-client-id') || '';
+        var mode = primary.getAttribute('data-google-mode') || 'login';
+        if (!clientId) return false;
+
+        if (!googleButtonInitialized || googleButtonClientId !== clientId || googleButtonMode !== mode) {
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: googleButtonCallback(mode),
+                auto_select: false
+            });
+            googleButtonInitialized = true;
+            googleButtonClientId = clientId;
+            googleButtonMode = mode;
+        }
+
+        var buttonTheme = googleButtonIsDark() ? 'filled_black' : 'outline';
+        Array.prototype.forEach.call(targets, function (target) {
+            while (target.firstChild) target.removeChild(target.firstChild);
+            window.google.accounts.id.renderButton(target, {
+                type: 'standard',
+                theme: buttonTheme,
+                size: target.getAttribute('data-google-size') || 'large',
+                text: 'continue_with',
+                shape: 'rectangular',
+                logo_alignment: 'left'
+            });
+            target.setAttribute('data-google-rendered-theme', buttonTheme);
+        });
+        return true;
+    }
+
     function bindDisplayNameSuggestions() {
         Array.prototype.forEach.call(document.querySelectorAll('[data-display-name-suggestion]'), function (button) {
             button.addEventListener('click', function () {
@@ -765,6 +815,7 @@
 
     window.miqHandleGoogleCredential = handleGoogleCredential;
     window.miqHandleGoogleLinkCredential = handleGoogleLinkCredential;
+    window.miqInitGoogleButtons = renderGoogleButtons;
     window.MIQAccount = {
         state: state,
         request: jsonRequest,
@@ -781,9 +832,14 @@
         inspectPulse: inspectPulse
     };
 
+    document.documentElement.addEventListener('themechange', function () {
+        renderGoogleButtons();
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         bindSearchTracking();
         bindDisplayNameSuggestions();
+        renderGoogleButtons();
         renderPulse();
         renderSentimentCharts(false);
         mergeLocalSearches();

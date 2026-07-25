@@ -223,9 +223,9 @@ if ($current_user && $view !== 'reset') {
     <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
-    <link rel="stylesheet" href="assets/css/account.css">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260726.5">
     <?php if (miq_account_config()['google_client_id'] !== ''): ?>
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script>
     <?php endif; ?>
 </head>
 <body>
@@ -290,8 +290,7 @@ if ($current_user && $view !== 'reset') {
                     <input type="hidden" name="action" value="google">
                     <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="credential" id="google-credential">
-                    <div id="g_id_onload" data-client_id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-callback="miqHandleGoogleCredential" data-auto_prompt="false"></div>
-                    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="continue_with" data-shape="rectangular" data-logo_alignment="left"></div>
+                    <div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="login" data-google-size="large"></div>
                 </form>
             <?php else: ?>
                 <div class="miq-google-unavailable">Google login will appear after the production OAuth client is configured.</div>
