@@ -13,5 +13,5 @@ $miq_pulse_context_key = isset($miq_account_context_key) && $miq_account_context
         <button type="button" data-pulse-vote="neutral"><i class="fas fa-minus"></i> Neutral <span data-count="neutral">–</span></button>
         <button type="button" data-pulse-vote="bearish"><i class="fas fa-arrow-down"></i> Bearish <span data-count="bearish">–</span></button>
     </div>
-    <a class="miq-community-pulse-link" href="/community<?php echo $miq_pulse_context_type === 'stock' && $miq_pulse_context_key !== 'site' ? '?code=' . rawurlencode($miq_pulse_context_key) : ''; ?>">See published ideas</a>
+    <a class="miq-community-pulse-link" href="community<?php echo $miq_pulse_context_type === 'stock' && $miq_pulse_context_key !== 'site' ? '?code=' . rawurlencode($miq_pulse_context_key) : ''; ?>">See published ideas</a>
 </section>
