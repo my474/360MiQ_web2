@@ -87,6 +87,12 @@ $structured_data = array(
 ?>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="16x15" href="assets/img/360Logo_16.png">
+<link rel="icon" type="image/png" sizes="32x31" href="assets/img/360Logo_32.png">
+<link rel="icon" type="image/png" sizes="179x169" href="assets/img/360Logo_180.png">
+<link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
+<link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
 <!-- Anti-FOUC: before all stylesheets -->
 <script>(function(){var s=localStorage.getItem('360miq-dark-mode');if(s==='true'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script>window.__SITE_DISPLAY_POLICY={showStockIndexPrices:<?php echo $show_stock_index_prices ? 'true' : 'false'; ?>};</script>
