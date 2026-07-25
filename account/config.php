@@ -55,6 +55,7 @@ function miq_account_config()
             'email_ip' => array('limit' => (int) miq_account_env('MIQ_RATE_EMAIL_IP_LIMIT', 12), 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_IP_WINDOW', 3600)),
             'email_recipient' => array('limit' => (int) miq_account_env('MIQ_RATE_EMAIL_RECIPIENT_LIMIT', 3), 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_RECIPIENT_WINDOW', 3600)),
             'email_cooldown' => array('limit' => 1, 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_COOLDOWN', 60)),
+            'community_vote_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_VOTE_LIMIT', 30), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_VOTE_WINDOW', 3600)),
         ),
         'max_chart_bytes' => (int) miq_account_env('MIQ_MAX_CHART_BYTES', 1000000),
         'max_script_chars' => (int) miq_account_env('MIQ_MAX_SCRIPT_CHARS', 100000),

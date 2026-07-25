@@ -2,6 +2,9 @@
 require_once __DIR__ . '/account/bootstrap.php';
 $user = miq_account_current_user();
 $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
+$trend_context_type = $context_code !== '' ? 'stock' : 'site';
+$trend_context_key = $context_code !== '' ? $context_code : 'site';
+$trend_subject = $context_code !== '' ? $context_code : 'Global market';
 ?>
 <!DOCTYPE html>
 <html>
@@ -12,8 +15,8 @@ $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
     <title>Community Ideas - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260725.2">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260725.3">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260726.1">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.1">
 </head>
 <body class="miq-community-body">
 <?php $page = 'community'; include __DIR__ . '/header.php'; ?>
@@ -26,6 +29,21 @@ $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
         </div>
         <?php if ($user): ?><button class="btn btn-primary" type="button" data-open-idea-form>Share an idea</button><?php else: ?><a class="btn btn-primary" href="account.php?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/community'); ?>">Sign in to share</a><?php endif; ?>
     </div>
+    <section class="miq-community-list-card miq-sentiment-chart miq-sentiment-trend-card" data-sentiment-chart data-chart-mode="detail" data-context-type="<?php echo $trend_context_type; ?>" data-context-key="<?php echo htmlspecialchars($trend_context_key, ENT_QUOTES, 'UTF-8'); ?>" data-timeframe="30d" data-subject="<?php echo htmlspecialchars($trend_subject, ENT_QUOTES, 'UTF-8'); ?>">
+        <div class="miq-sentiment-trend-heading">
+            <div>
+                <h2><?php echo htmlspecialchars($trend_subject, ENT_QUOTES, 'UTF-8'); ?> 30-day outlook trend</h2>
+                <p>Daily share of active bullish, neutral, and bearish votes. Each vote expires 30 days after it is submitted or renewed.</p>
+            </div>
+            <div class="miq-sentiment-legend" data-sentiment-legend hidden>
+                <span class="is-bullish">Bullish</span>
+                <span class="is-neutral">Neutral</span>
+                <span class="is-bearish">Bearish</span>
+            </div>
+        </div>
+        <div class="miq-sentiment-chart-plot" data-sentiment-plot></div>
+        <div class="miq-sentiment-chart-status" data-sentiment-status aria-live="polite">Loading sentiment trend…</div>
+    </section>
     <section class="miq-community-form-card" data-idea-form <?php echo $user ? '' : 'hidden'; ?>>
         <h2>Share a concise idea</h2>
         <form id="miq-idea-form">

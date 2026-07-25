@@ -232,12 +232,50 @@ CREATE TABLE IF NOT EXISTS miq_community_votes (
     context_type VARCHAR(32) NOT NULL,
     context_key VARCHAR(80) NOT NULL,
     direction ENUM('bullish', 'bearish', 'neutral') NOT NULL,
+    expires_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_vote (user_id, context_type, context_key),
     KEY ix_miq_vote_context (context_type, context_key, direction),
+    KEY ix_miq_vote_active (context_type, context_key, expires_at, direction),
     CONSTRAINT fk_miq_vote_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS miq_community_vote_events (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NOT NULL,
+    context_type VARCHAR(32) NOT NULL,
+    context_key VARCHAR(80) NOT NULL,
+    direction ENUM('bullish', 'bearish', 'neutral') NOT NULL,
+    previous_direction ENUM('bullish', 'bearish', 'neutral') NULL,
+    timeframe VARCHAR(10) NOT NULL DEFAULT '30d',
+    period_end DATE NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    KEY ix_miq_vote_event_context (context_type, context_key, created_at),
+    KEY ix_miq_vote_event_user (user_id, context_type, context_key, created_at),
+    KEY ix_miq_vote_event_created (created_at),
+    CONSTRAINT fk_miq_vote_event_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS miq_community_sentiment_daily (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    snapshot_date DATE NOT NULL,
+    context_type VARCHAR(32) NOT NULL,
+    context_key VARCHAR(80) NOT NULL,
+    timeframe VARCHAR(10) NOT NULL DEFAULT '30d',
+    bullish_count INT UNSIGNED NOT NULL DEFAULT 0,
+    neutral_count INT UNSIGNED NOT NULL DEFAULT 0,
+    bearish_count INT UNSIGNED NOT NULL DEFAULT 0,
+    total_count INT UNSIGNED NOT NULL DEFAULT 0,
+    sentiment_score DECIMAL(6,2) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_miq_sentiment_daily (snapshot_date, context_type, context_key, timeframe),
+    KEY ix_miq_sentiment_context (context_type, context_key, snapshot_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_reports (

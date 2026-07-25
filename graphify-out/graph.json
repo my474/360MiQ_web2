@@ -9,7 +9,7 @@
       "source_file": "about-us.php",
       "source_location": "L1",
       "id": "about_us_php",
-      "community": 90
+      "community": 91
     },
     {
       "label": "account.php",
@@ -17,7 +17,7 @@
       "source_file": "account.php",
       "source_location": "L1",
       "id": "account_php",
-      "community": 33
+      "community": 34
     },
     {
       "label": "miq_account_redirect()",
@@ -25,7 +25,7 @@
       "source_file": "account.php",
       "source_location": "L11",
       "id": "account_miq_account_redirect",
-      "community": 33
+      "community": 34
     },
     {
       "label": "miq_account_token_link()",
@@ -33,7 +33,7 @@
       "source_file": "account.php",
       "source_location": "L17",
       "id": "account_miq_account_token_link",
-      "community": 33
+      "community": 34
     },
     {
       "label": "miq_account_process_verification()",
@@ -41,7 +41,7 @@
       "source_file": "account.php",
       "source_location": "L23",
       "id": "account_miq_account_process_verification",
-      "community": 33
+      "community": 34
     },
     {
       "label": "miq_account_process_email_registration()",
@@ -49,7 +49,7 @@
       "source_file": "account.php",
       "source_location": "L47",
       "id": "account_miq_account_process_email_registration",
-      "community": 33
+      "community": 34
     },
     {
       "label": "miq_account_process_google_login()",
@@ -57,7 +57,7 @@
       "source_file": "account.php",
       "source_location": "L71",
       "id": "account_miq_account_process_google_login",
-      "community": 33
+      "community": 34
     },
     {
       "label": "account_api.php",
@@ -65,151 +65,175 @@
       "source_file": "account_api.php",
       "source_location": "L1",
       "id": "account_api_php",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_json()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L7",
+      "source_location": "L8",
       "id": "account_api_miq_api_json",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_body()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L14",
+      "source_location": "L15",
       "id": "account_api_miq_api_body",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_user()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L21",
+      "source_location": "L22",
       "id": "account_api_miq_api_user",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_require_post_csrf()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L30",
+      "source_location": "L31",
       "id": "account_api_miq_api_require_post_csrf",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_clean_code()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L37",
+      "source_location": "L38",
       "id": "account_api_miq_api_clean_code",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_clean_text()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L43",
+      "source_location": "L44",
       "id": "account_api_miq_api_clean_text",
-      "community": 15
+      "community": 14
+    },
+    {
+      "label": "miq_api_pulse_timeframe()",
+      "file_type": "code",
+      "source_file": "account_api.php",
+      "source_location": "L53",
+      "id": "account_api_miq_api_pulse_timeframe",
+      "community": 14
+    },
+    {
+      "label": "miq_api_pulse_period_end()",
+      "file_type": "code",
+      "source_file": "account_api.php",
+      "source_location": "L68",
+      "id": "account_api_miq_api_pulse_period_end",
+      "community": 14
+    },
+    {
+      "label": "miq_api_pulse_context()",
+      "file_type": "code",
+      "source_file": "account_api.php",
+      "source_location": "L73",
+      "id": "account_api_miq_api_pulse_context",
+      "community": 14
     },
     {
       "label": "miq_api_asset_key()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L52",
+      "source_location": "L89",
       "id": "account_api_miq_api_asset_key",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_existing_asset_key()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L65",
+      "source_location": "L102",
       "id": "account_api_miq_api_existing_asset_key",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_client_datetime()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L71",
+      "source_location": "L108",
       "id": "account_api_miq_api_client_datetime",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_page()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L77",
+      "source_location": "L114",
       "id": "account_api_miq_api_page",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_limit()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L82",
+      "source_location": "L119",
       "id": "account_api_miq_api_limit",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_layout_json()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L88",
+      "source_location": "L125",
       "id": "account_api_miq_api_layout_json",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_chart_payload()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L107",
+      "source_location": "L144",
       "id": "account_api_miq_api_chart_payload",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_script_payload()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L119",
+      "source_location": "L156",
       "id": "account_api_miq_api_script_payload",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_count_rows()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L128",
+      "source_location": "L165",
       "id": "account_api_miq_api_count_rows",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_trim_versions()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L136",
+      "source_location": "L173",
       "id": "account_api_miq_api_trim_versions",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_counts()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L152",
+      "source_location": "L189",
       "id": "account_api_miq_api_counts",
-      "community": 15
+      "community": 14
     },
     {
       "label": "miq_api_workspace()",
       "file_type": "code",
       "source_file": "account_api.php",
-      "source_location": "L169",
+      "source_location": "L194",
       "id": "account_api_miq_api_workspace",
-      "community": 15
+      "community": 14
     },
     {
       "label": "account_export.php",
@@ -217,7 +241,7 @@
       "source_file": "account_export.php",
       "source_location": "L1",
       "id": "account_export_php",
-      "community": 91
+      "community": 92
     },
     {
       "label": "account_logout.php",
@@ -225,7 +249,7 @@
       "source_file": "account_logout.php",
       "source_location": "L1",
       "id": "account_logout_php",
-      "community": 92
+      "community": 93
     },
     {
       "label": "account_settings.php",
@@ -233,7 +257,7 @@
       "source_file": "account_settings.php",
       "source_location": "L1",
       "id": "account_settings_php",
-      "community": 93
+      "community": 94
     },
     {
       "label": "account_sso.php",
@@ -241,7 +265,7 @@
       "source_file": "account_sso.php",
       "source_location": "L1",
       "id": "account_sso_php",
-      "community": 43
+      "community": 44
     },
     {
       "label": "miq_sso_json()",
@@ -249,7 +273,7 @@
       "source_file": "account_sso.php",
       "source_location": "L4",
       "id": "account_sso_miq_sso_json",
-      "community": 43
+      "community": 44
     },
     {
       "label": "miq_sso_shared_secret()",
@@ -257,7 +281,7 @@
       "source_file": "account_sso.php",
       "source_location": "L13",
       "id": "account_sso_miq_sso_shared_secret",
-      "community": 43
+      "community": 44
     },
     {
       "label": "miq_sso_begin()",
@@ -265,7 +289,7 @@
       "source_file": "account_sso.php",
       "source_location": "L18",
       "id": "account_sso_miq_sso_begin",
-      "community": 43
+      "community": 44
     },
     {
       "label": "community.php",
@@ -273,7 +297,7 @@
       "source_file": "community.php",
       "source_location": "L1",
       "id": "community_php",
-      "community": 94
+      "community": 95
     },
     {
       "label": "community_moderation.php",
@@ -281,7 +305,7 @@
       "source_file": "community_moderation.php",
       "source_location": "L1",
       "id": "community_moderation_php",
-      "community": 95
+      "community": 96
     },
     {
       "label": "contact-us.php",
@@ -289,7 +313,7 @@
       "source_file": "contact-us.php",
       "source_location": "L1",
       "id": "contact_us_php",
-      "community": 96
+      "community": 97
     },
     {
       "label": "contact-us2.php",
@@ -297,7 +321,7 @@
       "source_file": "contact-us2.php",
       "source_location": "L1",
       "id": "contact_us2_php",
-      "community": 97
+      "community": 98
     },
     {
       "label": "db_adv_get2.php",
@@ -305,7 +329,7 @@
       "source_file": "db_adv_get2.php",
       "source_location": "L1",
       "id": "db_adv_get2_php",
-      "community": 65
+      "community": 66
     },
     {
       "label": "endsWith()",
@@ -313,7 +337,7 @@
       "source_file": "db_adv_get2.php",
       "source_location": "L56",
       "id": "db_adv_get2_endswith",
-      "community": 65
+      "community": 66
     },
     {
       "label": "db_api_get.php",
@@ -321,7 +345,7 @@
       "source_file": "db_api_get.php",
       "source_location": "L1",
       "id": "db_api_get_php",
-      "community": 66
+      "community": 67
     },
     {
       "label": "endsWith()",
@@ -329,7 +353,7 @@
       "source_file": "db_api_get.php",
       "source_location": "L54",
       "id": "db_api_get_endswith",
-      "community": 66
+      "community": 67
     },
     {
       "label": "db_autocomplete.php",
@@ -337,7 +361,7 @@
       "source_file": "db_autocomplete.php",
       "source_location": "L1",
       "id": "db_autocomplete_php",
-      "community": 98
+      "community": 99
     },
     {
       "label": "db_blogpost_get.php",
@@ -345,7 +369,7 @@
       "source_file": "db_blogpost_get.php",
       "source_location": "L1",
       "id": "db_blogpost_get_php",
-      "community": 99
+      "community": 100
     },
     {
       "label": "db_chartcomposer_get.php",
@@ -353,7 +377,7 @@
       "source_file": "db_chartcomposer_get.php",
       "source_location": "L1",
       "id": "db_chartcomposer_get_php",
-      "community": 67
+      "community": 68
     },
     {
       "label": "endsWith()",
@@ -361,7 +385,7 @@
       "source_file": "db_chartcomposer_get.php",
       "source_location": "L583",
       "id": "db_chartcomposer_get_endswith",
-      "community": 67
+      "community": 68
     },
     {
       "label": "db_chatbot.php",
@@ -369,7 +393,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L1",
       "id": "db_chatbot_php",
-      "community": 50
+      "community": 51
     },
     {
       "label": "calculateChanges()",
@@ -377,7 +401,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L294",
       "id": "db_chatbot_calculatechanges",
-      "community": 50
+      "community": 51
     },
     {
       "label": "endsWith()",
@@ -385,7 +409,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L442",
       "id": "db_chatbot_endswith",
-      "community": 50
+      "community": 51
     },
     {
       "label": "db_econ_get.php",
@@ -393,7 +417,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L1",
       "id": "db_econ_get_php",
-      "community": 51
+      "community": 52
     },
     {
       "label": "datestrFormat()",
@@ -401,7 +425,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L138",
       "id": "db_econ_get_datestrformat",
-      "community": 51
+      "community": 52
     },
     {
       "label": "sma()",
@@ -409,7 +433,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L166",
       "id": "db_econ_get_sma",
-      "community": 51
+      "community": 52
     },
     {
       "label": "db_fa_get.php",
@@ -417,7 +441,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L1",
       "id": "db_fa_get_php",
-      "community": 52
+      "community": 53
     },
     {
       "label": "endsWith()",
@@ -425,7 +449,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L545",
       "id": "db_fa_get_endswith",
-      "community": 52
+      "community": 53
     },
     {
       "label": "daycount()",
@@ -433,7 +457,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L549",
       "id": "db_fa_get_daycount",
-      "community": 52
+      "community": 53
     },
     {
       "label": "db_featuredblogpost_get.php",
@@ -441,7 +465,7 @@
       "source_file": "db_featuredblogpost_get.php",
       "source_location": "L1",
       "id": "db_featuredblogpost_get_php",
-      "community": 100
+      "community": 101
     },
     {
       "label": "db_get_CCASS.php",
@@ -449,7 +473,7 @@
       "source_file": "db_get_CCASS.php",
       "source_location": "L1",
       "id": "db_get_ccass_php",
-      "community": 68
+      "community": 69
     },
     {
       "label": "isValidDate()",
@@ -457,7 +481,7 @@
       "source_file": "db_get_CCASS.php",
       "source_location": "L49",
       "id": "db_get_ccass_isvaliddate",
-      "community": 68
+      "community": 69
     },
     {
       "label": "db_get_CCASS_market.php",
@@ -465,7 +489,7 @@
       "source_file": "db_get_CCASS_market.php",
       "source_location": "L1",
       "id": "db_get_ccass_market_php",
-      "community": 101
+      "community": 102
     },
     {
       "label": "db_get_HKHousing.php",
@@ -473,7 +497,7 @@
       "source_file": "db_get_HKHousing.php",
       "source_location": "L1",
       "id": "db_get_hkhousing_php",
-      "community": 102
+      "community": 103
     },
     {
       "label": "db_get_SP500_ratio.php",
@@ -481,7 +505,7 @@
       "source_file": "db_get_SP500_ratio.php",
       "source_location": "L1",
       "id": "db_get_sp500_ratio_php",
-      "community": 103
+      "community": 104
     },
     {
       "label": "db_income4Sankey_get.php",
@@ -489,7 +513,7 @@
       "source_file": "db_income4Sankey_get.php",
       "source_location": "L1",
       "id": "db_income4sankey_get_php",
-      "community": 69
+      "community": 70
     },
     {
       "label": "endsWith()",
@@ -497,7 +521,7 @@
       "source_file": "db_income4Sankey_get.php",
       "source_location": "L99",
       "id": "db_income4sankey_get_endswith",
-      "community": 69
+      "community": 70
     },
     {
       "label": "db_index_get.php",
@@ -505,7 +529,7 @@
       "source_file": "db_index_get.php",
       "source_location": "L1",
       "id": "db_index_get_php",
-      "community": 70
+      "community": 71
     },
     {
       "label": "datestrFormat()",
@@ -513,7 +537,7 @@
       "source_file": "db_index_get.php",
       "source_location": "L151",
       "id": "db_index_get_datestrformat",
-      "community": 70
+      "community": 71
     },
     {
       "label": "db_market_get.php",
@@ -521,7 +545,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L1",
       "id": "db_market_get_php",
-      "community": 53
+      "community": 54
     },
     {
       "label": "datestrFormat()",
@@ -529,7 +553,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L291",
       "id": "db_market_get_datestrformat",
-      "community": 53
+      "community": 54
     },
     {
       "label": "sma()",
@@ -537,7 +561,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L319",
       "id": "db_market_get_sma",
-      "community": 53
+      "community": 54
     },
     {
       "label": "db_market_trendgauge_get.php",
@@ -545,7 +569,7 @@
       "source_file": "db_market_trendgauge_get.php",
       "source_location": "L1",
       "id": "db_market_trendgauge_get_php",
-      "community": 104
+      "community": 105
     },
     {
       "label": "db_news_get.php",
@@ -553,7 +577,7 @@
       "source_file": "db_news_get.php",
       "source_location": "L1",
       "id": "db_news_get_php",
-      "community": 105
+      "community": 106
     },
     {
       "label": "db_PBband_get.php",
@@ -561,7 +585,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L1",
       "id": "db_pbband_get_php",
-      "community": 54
+      "community": 55
     },
     {
       "label": "endsWith()",
@@ -569,7 +593,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L235",
       "id": "db_pbband_get_endswith",
-      "community": 54
+      "community": 55
     },
     {
       "label": "daycount()",
@@ -577,7 +601,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L239",
       "id": "db_pbband_get_daycount",
-      "community": 54
+      "community": 55
     },
     {
       "label": "db_peers_get.php",
@@ -585,7 +609,7 @@
       "source_file": "db_peers_get.php",
       "source_location": "L1",
       "id": "db_peers_get_php",
-      "community": 71
+      "community": 72
     },
     {
       "label": "endsWith()",
@@ -593,7 +617,7 @@
       "source_file": "db_peers_get.php",
       "source_location": "L82",
       "id": "db_peers_get_endswith",
-      "community": 71
+      "community": 72
     },
     {
       "label": "db_screener_get.php",
@@ -601,7 +625,7 @@
       "source_file": "db_screener_get.php",
       "source_location": "L1",
       "id": "db_screener_get_php",
-      "community": 34
+      "community": 35
     },
     {
       "label": "macd()",
@@ -609,7 +633,7 @@
       "source_file": "db_screener_get.php",
       "source_location": "L835",
       "id": "db_screener_get_macd",
-      "community": 34
+      "community": 35
     },
     {
       "label": "rsi()",
@@ -617,7 +641,7 @@
       "source_file": "db_screener_get.php",
       "source_location": "L871",
       "id": "db_screener_get_rsi",
-      "community": 34
+      "community": 35
     },
     {
       "label": "bandTrend()",
@@ -625,7 +649,7 @@
       "source_file": "db_screener_get.php",
       "source_location": "L907",
       "id": "db_screener_get_bandtrend",
-      "community": 34
+      "community": 35
     },
     {
       "label": "bandSTDEV()",
@@ -633,7 +657,7 @@
       "source_file": "db_screener_get.php",
       "source_location": "L934",
       "id": "db_screener_get_bandstdev",
-      "community": 34
+      "community": 35
     },
     {
       "label": "polar()",
@@ -641,7 +665,7 @@
       "source_file": "db_screener_get.php",
       "source_location": "L989",
       "id": "db_screener_get_polar",
-      "community": 34
+      "community": 35
     },
     {
       "label": "db_sectorperformance_get.php",
@@ -649,7 +673,7 @@
       "source_file": "db_sectorperformance_get.php",
       "source_location": "L1",
       "id": "db_sectorperformance_get_php",
-      "community": 106
+      "community": 107
     },
     {
       "label": "db_stockinfo_get.php",
@@ -657,7 +681,7 @@
       "source_file": "db_stockinfo_get.php",
       "source_location": "L1",
       "id": "db_stockinfo_get_php",
-      "community": 72
+      "community": 73
     },
     {
       "label": "endsWith()",
@@ -665,7 +689,7 @@
       "source_file": "db_stockinfo_get.php",
       "source_location": "L167",
       "id": "db_stockinfo_get_endswith",
-      "community": 72
+      "community": 73
     },
     {
       "label": "db_stockquote_get.php",
@@ -673,7 +697,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L1",
       "id": "db_stockquote_get_php",
-      "community": 55
+      "community": 56
     },
     {
       "label": "datestrFormat()",
@@ -681,7 +705,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L234",
       "id": "db_stockquote_get_datestrformat",
-      "community": 55
+      "community": 56
     },
     {
       "label": "endsWith()",
@@ -689,7 +713,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L263",
       "id": "db_stockquote_get_endswith",
-      "community": 55
+      "community": 56
     },
     {
       "label": "db_SurpriseIndex_get.php",
@@ -697,7 +721,7 @@
       "source_file": "db_SurpriseIndex_get.php",
       "source_location": "L1",
       "id": "db_surpriseindex_get_php",
-      "community": 73
+      "community": 74
     },
     {
       "label": "datestrFormat()",
@@ -705,7 +729,7 @@
       "source_file": "db_SurpriseIndex_get.php",
       "source_location": "L137",
       "id": "db_surpriseindex_get_datestrformat",
-      "community": 73
+      "community": 74
     },
     {
       "label": "db_top10_get.php",
@@ -713,7 +737,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L1",
       "id": "db_top10_get_php",
-      "community": 56
+      "community": 57
     },
     {
       "label": "datestrFormat()",
@@ -721,7 +745,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L217",
       "id": "db_top10_get_datestrformat",
-      "community": 56
+      "community": 57
     },
     {
       "label": "endsWith()",
@@ -729,7 +753,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L246",
       "id": "db_top10_get_endswith",
-      "community": 56
+      "community": 57
     },
     {
       "label": "db_top10_get1.php",
@@ -737,7 +761,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L1",
       "id": "db_top10_get1_php",
-      "community": 57
+      "community": 58
     },
     {
       "label": "datestrFormat()",
@@ -745,7 +769,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L178",
       "id": "db_top10_get1_datestrformat",
-      "community": 57
+      "community": 58
     },
     {
       "label": "endsWith()",
@@ -753,7 +777,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L207",
       "id": "db_top10_get1_endswith",
-      "community": 57
+      "community": 58
     },
     {
       "label": "db_top10_name_get.php",
@@ -761,7 +785,7 @@
       "source_file": "db_top10_name_get.php",
       "source_location": "L1",
       "id": "db_top10_name_get_php",
-      "community": 107
+      "community": 108
     },
     {
       "label": "db_treemap_get.php",
@@ -769,7 +793,7 @@
       "source_file": "db_treemap_get.php",
       "source_location": "L1",
       "id": "db_treemap_get_php",
-      "community": 74
+      "community": 75
     },
     {
       "label": "endsWith()",
@@ -777,7 +801,7 @@
       "source_file": "db_treemap_get.php",
       "source_location": "L357",
       "id": "db_treemap_get_endswith",
-      "community": 74
+      "community": 75
     },
     {
       "label": "db_treemap_index_get.php",
@@ -785,7 +809,7 @@
       "source_file": "db_treemap_index_get.php",
       "source_location": "L1",
       "id": "db_treemap_index_get_php",
-      "community": 75
+      "community": 76
     },
     {
       "label": "endsWith()",
@@ -793,7 +817,7 @@
       "source_file": "db_treemap_index_get.php",
       "source_location": "L363",
       "id": "db_treemap_index_get_endswith",
-      "community": 75
+      "community": 76
     },
     {
       "label": "db_valuationbandsIndex_get.php",
@@ -801,7 +825,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L1",
       "id": "db_valuationbandsindex_get_php",
-      "community": 39
+      "community": 40
     },
     {
       "label": "datestr2num()",
@@ -809,7 +833,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L145",
       "id": "db_valuationbandsindex_get_datestr2num",
-      "community": 39
+      "community": 40
     },
     {
       "label": "str2num()",
@@ -817,7 +841,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L152",
       "id": "db_valuationbandsindex_get_str2num",
-      "community": 39
+      "community": 40
     },
     {
       "label": "datestrFormat()",
@@ -825,7 +849,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L162",
       "id": "db_valuationbandsindex_get_datestrformat",
-      "community": 39
+      "community": 40
     },
     {
       "label": "endsWith()",
@@ -833,7 +857,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L190",
       "id": "db_valuationbandsindex_get_endswith",
-      "community": 39
+      "community": 40
     },
     {
       "label": "db_valuationbands_get.php",
@@ -841,7 +865,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L1",
       "id": "db_valuationbands_get_php",
-      "community": 44
+      "community": 45
     },
     {
       "label": "estimate_from_fundamental_stock_earnings_trend()",
@@ -849,7 +873,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L412",
       "id": "db_valuationbands_get_estimate_from_fundamental_stock_earnings_trend",
-      "community": 44
+      "community": 45
     },
     {
       "label": "endsWith()",
@@ -857,7 +881,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L435",
       "id": "db_valuationbands_get_endswith",
-      "community": 44
+      "community": 45
     },
     {
       "label": "daycount()",
@@ -865,7 +889,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L439",
       "id": "db_valuationbands_get_daycount",
-      "community": 44
+      "community": 45
     },
     {
       "label": "disclaimer.php",
@@ -873,7 +897,7 @@
       "source_file": "disclaimer.php",
       "source_location": "L1",
       "id": "disclaimer_php",
-      "community": 108
+      "community": 109
     },
     {
       "label": "econ.php",
@@ -881,7 +905,7 @@
       "source_file": "econ.php",
       "source_location": "L1",
       "id": "econ_php",
-      "community": 109
+      "community": 110
     },
     {
       "label": "error.php",
@@ -889,7 +913,7 @@
       "source_file": "error.php",
       "source_location": "L1",
       "id": "error_php",
-      "community": 110
+      "community": 111
     },
     {
       "label": "footer.php",
@@ -897,7 +921,7 @@
       "source_file": "footer.php",
       "source_location": "L1",
       "id": "footer_php",
-      "community": 111
+      "community": 112
     },
     {
       "label": "footer_fullSave.php",
@@ -905,7 +929,7 @@
       "source_file": "footer_fullSave.php",
       "source_location": "L1",
       "id": "footer_fullsave_php",
-      "community": 112
+      "community": 113
     },
     {
       "label": "header.php",
@@ -913,7 +937,7 @@
       "source_file": "header.php",
       "source_location": "L1",
       "id": "header_php",
-      "community": 113
+      "community": 114
     },
     {
       "label": "idx.php",
@@ -921,7 +945,7 @@
       "source_file": "idx.php",
       "source_location": "L1",
       "id": "idx_php",
-      "community": 114
+      "community": 115
     },
     {
       "label": "index.php",
@@ -929,7 +953,7 @@
       "source_file": "index.php",
       "source_location": "L1",
       "id": "index_php",
-      "community": 76
+      "community": 77
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -937,7 +961,7 @@
       "source_file": "index.php",
       "source_location": "L2",
       "id": "index_scatterchartnotemarkup",
-      "community": 76
+      "community": 77
     },
     {
       "label": "index1.php",
@@ -945,7 +969,7 @@
       "source_file": "index1.php",
       "source_location": "L1",
       "id": "index1_php",
-      "community": 77
+      "community": 78
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -953,7 +977,7 @@
       "source_file": "index1.php",
       "source_location": "L2",
       "id": "index1_scatterchartnotemarkup",
-      "community": 77
+      "community": 78
     },
     {
       "label": "LLM_cancel_job.php",
@@ -961,7 +985,7 @@
       "source_file": "LLM_cancel_job.php",
       "source_location": "L1",
       "id": "llm_cancel_job_php",
-      "community": 115
+      "community": 116
     },
     {
       "label": "LLM_process_queue.php",
@@ -969,7 +993,7 @@
       "source_file": "LLM_process_queue.php",
       "source_location": "L1",
       "id": "llm_process_queue_php",
-      "community": 78
+      "community": 79
     },
     {
       "label": "ollama()",
@@ -977,7 +1001,7 @@
       "source_file": "LLM_process_queue.php",
       "source_location": "L58",
       "id": "llm_process_queue_ollama",
-      "community": 78
+      "community": 79
     },
     {
       "label": "LLM_request.php",
@@ -985,7 +1009,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L1",
       "id": "llm_request_php",
-      "community": 45
+      "community": 46
     },
     {
       "label": "ollama()",
@@ -993,7 +1017,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L292",
       "id": "llm_request_ollama",
-      "community": 45
+      "community": 46
     },
     {
       "label": "signage()",
@@ -1001,7 +1025,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L397",
       "id": "llm_request_signage",
-      "community": 45
+      "community": 46
     },
     {
       "label": "smartRound()",
@@ -1009,7 +1033,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L408",
       "id": "llm_request_smartround",
-      "community": 45
+      "community": 46
     },
     {
       "label": "LLM_SQLiteCreateTable.php",
@@ -1017,7 +1041,7 @@
       "source_file": "LLM_SQLiteCreateTable.php",
       "source_location": "L1",
       "id": "llm_sqlitecreatetable_php",
-      "community": 116
+      "community": 117
     },
     {
       "label": "LLM_SQLitePrintAll.php",
@@ -1025,7 +1049,7 @@
       "source_file": "LLM_SQLitePrintAll.php",
       "source_location": "L1",
       "id": "llm_sqliteprintall_php",
-      "community": 117
+      "community": 118
     },
     {
       "label": "LLM_SQLiteTruncate.php",
@@ -1033,7 +1057,7 @@
       "source_file": "LLM_SQLiteTruncate.php",
       "source_location": "L1",
       "id": "llm_sqlitetruncate_php",
-      "community": 118
+      "community": 119
     },
     {
       "label": "LLM_status.php",
@@ -1041,7 +1065,7 @@
       "source_file": "LLM_status.php",
       "source_location": "L1",
       "id": "llm_status_php",
-      "community": 119
+      "community": 120
     },
     {
       "label": "LLM_submit.php",
@@ -1049,7 +1073,7 @@
       "source_file": "LLM_submit.php",
       "source_location": "L1",
       "id": "llm_submit_php",
-      "community": 120
+      "community": 121
     },
     {
       "label": "market.php",
@@ -1057,7 +1081,7 @@
       "source_file": "market.php",
       "source_location": "L1",
       "id": "market_php",
-      "community": 79
+      "community": 80
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -1065,7 +1089,7 @@
       "source_file": "market.php",
       "source_location": "L119",
       "id": "market_scatterchartnotemarkup",
-      "community": 79
+      "community": 80
     },
     {
       "label": "meta.php",
@@ -1073,7 +1097,7 @@
       "source_file": "meta.php",
       "source_location": "L1",
       "id": "meta_php",
-      "community": 121
+      "community": 122
     },
     {
       "label": "mysql_vars_account.php",
@@ -1081,7 +1105,7 @@
       "source_file": "mysql_vars_account.php",
       "source_location": "L1",
       "id": "mysql_vars_account_php",
-      "community": 122
+      "community": 123
     },
     {
       "label": "ollama.php",
@@ -1089,7 +1113,7 @@
       "source_file": "ollama.php",
       "source_location": "L1",
       "id": "ollama_php",
-      "community": 58
+      "community": 59
     },
     {
       "label": "updateQueueCounter()",
@@ -1097,7 +1121,7 @@
       "source_file": "ollama.php",
       "source_location": "L22",
       "id": "ollama_updatequeuecounter",
-      "community": 58
+      "community": 59
     },
     {
       "label": "logQueueInfo()",
@@ -1105,7 +1129,7 @@
       "source_file": "ollama.php",
       "source_location": "L30",
       "id": "ollama_logqueueinfo",
-      "community": 58
+      "community": 59
     },
     {
       "label": "privacypolicy.php",
@@ -1113,7 +1137,7 @@
       "source_file": "privacypolicy.php",
       "source_location": "L1",
       "id": "privacypolicy_php",
-      "community": 123
+      "community": 124
     },
     {
       "label": "raceChart.php",
@@ -1121,7 +1145,7 @@
       "source_file": "raceChart.php",
       "source_location": "L1",
       "id": "racechart_php",
-      "community": 124
+      "community": 125
     },
     {
       "label": "screener.php",
@@ -1129,7 +1153,7 @@
       "source_file": "screener.php",
       "source_location": "L1",
       "id": "screener_php",
-      "community": 125
+      "community": 126
     },
     {
       "label": "stockinfo.php",
@@ -1137,7 +1161,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L1",
       "id": "stockinfo_php",
-      "community": 35
+      "community": 36
     },
     {
       "label": "HKcode()",
@@ -1145,7 +1169,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L194",
       "id": "stockinfo_hkcode",
-      "community": 35
+      "community": 36
     },
     {
       "label": "endsWith()",
@@ -1153,7 +1177,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L204",
       "id": "stockinfo_endswith",
-      "community": 35
+      "community": 36
     },
     {
       "label": "exchFn()",
@@ -1161,7 +1185,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L207",
       "id": "stockinfo_exchfn",
-      "community": 35
+      "community": 36
     },
     {
       "label": "mcapFn()",
@@ -1169,7 +1193,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L214",
       "id": "stockinfo_mcapfn",
-      "community": 35
+      "community": 36
     },
     {
       "label": "trendgauge2txt()",
@@ -1177,7 +1201,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L228",
       "id": "stockinfo_trendgauge2txt",
-      "community": 35
+      "community": 36
     },
     {
       "label": "stock_json.php",
@@ -1185,7 +1209,7 @@
       "source_file": "stock_json.php",
       "source_location": "L1",
       "id": "stock_json_php",
-      "community": 59
+      "community": 60
     },
     {
       "label": "cleanName()",
@@ -1193,7 +1217,7 @@
       "source_file": "stock_json.php",
       "source_location": "L11",
       "id": "stock_json_cleanname",
-      "community": 59
+      "community": 60
     },
     {
       "label": "cleanChinese()",
@@ -1201,7 +1225,7 @@
       "source_file": "stock_json.php",
       "source_location": "L66",
       "id": "stock_json_cleanchinese",
-      "community": 59
+      "community": 60
     },
     {
       "label": "terms.php",
@@ -1209,7 +1233,7 @@
       "source_file": "terms.php",
       "source_location": "L1",
       "id": "terms_php",
-      "community": 126
+      "community": 127
     },
     {
       "label": "tool.php",
@@ -1217,7 +1241,7 @@
       "source_file": "tool.php",
       "source_location": "L1",
       "id": "tool_php",
-      "community": 127
+      "community": 128
     },
     {
       "label": "workspace.php",
@@ -1225,7 +1249,7 @@
       "source_file": "workspace.php",
       "source_location": "L1",
       "id": "workspace_php",
-      "community": 128
+      "community": 129
     },
     {
       "label": "writeforus.php",
@@ -1233,7 +1257,7 @@
       "source_file": "writeforus.php",
       "source_location": "L1",
       "id": "writeforus_php",
-      "community": 129
+      "community": 130
     },
     {
       "label": "youtube.php",
@@ -1241,7 +1265,7 @@
       "source_file": "youtube.php",
       "source_location": "L1",
       "id": "youtube_php",
-      "community": 130
+      "community": 131
     },
     {
       "label": "youtube_get.php",
@@ -1249,7 +1273,7 @@
       "source_file": "youtube_get.php",
       "source_location": "L1",
       "id": "youtube_get_php",
-      "community": 131
+      "community": 132
     },
     {
       "label": "auth.php",
@@ -1545,7 +1569,7 @@
       "source_file": "account\\bootstrap.php",
       "source_location": "L1",
       "id": "account_bootstrap_php",
-      "community": 132
+      "community": 133
     },
     {
       "label": "cleanup_rate_limits.php",
@@ -1553,7 +1577,95 @@
       "source_file": "account\\cleanup_rate_limits.php",
       "source_location": "L1",
       "id": "account_cleanup_rate_limits_php",
-      "community": 133
+      "community": 134
+    },
+    {
+      "label": "community_sentiment.php",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L1",
+      "id": "account_community_sentiment_php",
+      "community": 23
+    },
+    {
+      "label": "miq_community_empty_counts()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L4",
+      "id": "community_sentiment_miq_community_empty_counts",
+      "community": 23
+    },
+    {
+      "label": "miq_community_schema_ready()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L9",
+      "id": "community_sentiment_miq_community_schema_ready",
+      "community": 23
+    },
+    {
+      "label": "miq_community_active_counts()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L36",
+      "id": "community_sentiment_miq_community_active_counts",
+      "community": 23
+    },
+    {
+      "label": "miq_community_snapshot_score()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L54",
+      "id": "community_sentiment_miq_community_snapshot_score",
+      "community": 23
+    },
+    {
+      "label": "miq_community_snapshot_point()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L60",
+      "id": "community_sentiment_miq_community_snapshot_point",
+      "community": 23
+    },
+    {
+      "label": "miq_community_upsert_snapshot()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L76",
+      "id": "community_sentiment_miq_community_upsert_snapshot",
+      "community": 23
+    },
+    {
+      "label": "miq_community_snapshot_today()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L91",
+      "id": "community_sentiment_miq_community_snapshot_today",
+      "community": 23
+    },
+    {
+      "label": "miq_community_save_vote()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L114",
+      "id": "community_sentiment_miq_community_save_vote",
+      "community": 23
+    },
+    {
+      "label": "miq_community_trend_payload()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L157",
+      "id": "community_sentiment_miq_community_trend_payload",
+      "community": 23
+    },
+    {
+      "label": "miq_community_rebuild_trend()",
+      "file_type": "code",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L174",
+      "id": "community_sentiment_miq_community_rebuild_trend",
+      "community": 23
     },
     {
       "label": "config.php",
@@ -1561,7 +1673,7 @@
       "source_file": "account\\config.php",
       "source_location": "L1",
       "id": "account_config_php",
-      "community": 60
+      "community": 61
     },
     {
       "label": "miq_account_env()",
@@ -1569,7 +1681,7 @@
       "source_file": "account\\config.php",
       "source_location": "L14",
       "id": "config_miq_account_env",
-      "community": 60
+      "community": 61
     },
     {
       "label": "miq_account_config()",
@@ -1577,7 +1689,7 @@
       "source_file": "account\\config.php",
       "source_location": "L20",
       "id": "config_miq_account_config",
-      "community": 60
+      "community": 61
     },
     {
       "label": "db.php",
@@ -1585,7 +1697,7 @@
       "source_file": "account\\db.php",
       "source_location": "L1",
       "id": "account_db_php",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_db()",
@@ -1593,7 +1705,7 @@
       "source_file": "account\\db.php",
       "source_location": "L4",
       "id": "db_miq_account_db",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_table()",
@@ -1601,31 +1713,39 @@
       "source_file": "account\\db.php",
       "source_location": "L50",
       "id": "db_miq_account_table",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_query()",
       "file_type": "code",
       "source_file": "account\\db.php",
-      "source_location": "L67",
+      "source_location": "L68",
       "id": "db_miq_account_query",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_fetch_all()",
       "file_type": "code",
       "source_file": "account\\db.php",
-      "source_location": "L91",
+      "source_location": "L92",
       "id": "db_miq_account_fetch_all",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_fetch_one()",
       "file_type": "code",
       "source_file": "account\\db.php",
-      "source_location": "L105",
+      "source_location": "L106",
       "id": "db_miq_account_fetch_one",
-      "community": 36
+      "community": 37
+    },
+    {
+      "label": "snapshot_community_sentiment.php",
+      "file_type": "code",
+      "source_file": "account\\snapshot_community_sentiment.php",
+      "source_location": "L1",
+      "id": "account_snapshot_community_sentiment_php",
+      "community": 135
     },
     {
       "label": "bootstrap.min.js",
@@ -1969,159 +2089,215 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L1",
       "id": "assets_js_account_js",
-      "community": 14
+      "community": 12
     },
     {
       "label": "jsonRequest()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L7",
+      "source_location": "L8",
       "id": "account_jsonrequest",
-      "community": 14
+      "community": 12
     },
     {
       "label": "parseResponse()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L28",
+      "source_location": "L29",
       "id": "account_parseresponse",
-      "community": 14
+      "community": 12
     },
     {
       "label": "makeAssetKey()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L43",
+      "source_location": "L44",
       "id": "account_makeassetkey",
-      "community": 14
+      "community": 12
     },
     {
       "label": "localSearches()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L57",
+      "source_location": "L58",
       "id": "account_localsearches",
-      "community": 14
+      "community": 12
     },
     {
       "label": "rememberLocalSearch()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L66",
+      "source_location": "L67",
       "id": "account_rememberlocalsearch",
-      "community": 14
+      "community": 12
     },
     {
       "label": "saveSearch()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L73",
+      "source_location": "L74",
       "id": "account_savesearch",
-      "community": 14
+      "community": 12
     },
     {
       "label": "saveChartLayout()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L87",
+      "source_location": "L88",
       "id": "account_savechartlayout",
-      "community": 14
+      "community": 12
     },
     {
       "label": "getChart()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L104",
+      "source_location": "L105",
       "id": "account_getchart",
-      "community": 14
+      "community": 12
     },
     {
       "label": "preloadChartLayout()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L112",
+      "source_location": "L113",
       "id": "account_preloadchartlayout",
-      "community": 14
+      "community": 12
     },
     {
       "label": "saveScript()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L118",
+      "source_location": "L119",
       "id": "account_savescript",
-      "community": 14
+      "community": 12
     },
     {
       "label": "getScript()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L126",
+      "source_location": "L127",
       "id": "account_getscript",
-      "community": 14
+      "community": 12
     },
     {
       "label": "accountAction()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L133",
+      "source_location": "L134",
       "id": "account_accountaction",
-      "community": 14
+      "community": 12
     },
     {
       "label": "saveIdea()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L138",
+      "source_location": "L139",
       "id": "account_saveidea",
-      "community": 14
+      "community": 12
     },
     {
       "label": "mergeLocalSearches()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L145",
+      "source_location": "L146",
       "id": "account_mergelocalsearches",
-      "community": 14
+      "community": 12
     },
     {
       "label": "handleGoogleCredential()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L150",
+      "source_location": "L151",
       "id": "account_handlegooglecredential",
-      "community": 14
+      "community": 12
     },
     {
       "label": "handleGoogleLinkCredential()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L158",
+      "source_location": "L159",
       "id": "account_handlegooglelinkcredential",
-      "community": 14
+      "community": 12
     },
     {
       "label": "bindDisplayNameSuggestions()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L166",
+      "source_location": "L167",
       "id": "account_binddisplaynamesuggestions",
-      "community": 14
+      "community": 12
     },
     {
       "label": "bindSearchTracking()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L178",
+      "source_location": "L179",
       "id": "account_bindsearchtracking",
-      "community": 14
+      "community": 12
+    },
+    {
+      "label": "sentimentSvgElement()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L188",
+      "id": "account_sentimentsvgelement",
+      "community": 12
+    },
+    {
+      "label": "sentimentLinePath()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L197",
+      "id": "account_sentimentlinepath",
+      "community": 12
+    },
+    {
+      "label": "clearElement()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L212",
+      "id": "account_clearelement",
+      "community": 12
+    },
+    {
+      "label": "renderSentimentChart()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L216",
+      "id": "account_rendersentimentchart",
+      "community": 12
+    },
+    {
+      "label": "sentimentTrendRequest()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L352",
+      "id": "account_sentimenttrendrequest",
+      "community": 12
+    },
+    {
+      "label": "loadSentimentChart()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L371",
+      "id": "account_loadsentimentchart",
+      "community": 12
+    },
+    {
+      "label": "renderSentimentCharts()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L385",
+      "id": "account_rendersentimentcharts",
+      "community": 12
     },
     {
       "label": "renderPulse()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L187",
+      "source_location": "L392",
       "id": "account_renderpulse",
-      "community": 14
+      "community": 12
     },
     {
       "label": "ADChart.js",
@@ -2129,7 +2305,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L1",
       "id": "assets_js_adchart_js",
-      "community": 61
+      "community": 62
     },
     {
       "label": "adchart()",
@@ -2137,7 +2313,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L1",
       "id": "adchart_adchart",
-      "community": 61
+      "community": 62
     },
     {
       "label": "adComment()",
@@ -2145,7 +2321,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L415",
       "id": "adchart_adcomment",
-      "community": 61
+      "community": 62
     },
     {
       "label": "AdvDecPie.js",
@@ -2153,7 +2329,7 @@
       "source_file": "assets\\js\\AdvDecPie.js",
       "source_location": "L1",
       "id": "assets_js_advdecpie_js",
-      "community": 80
+      "community": 81
     },
     {
       "label": "adpie()",
@@ -2161,7 +2337,7 @@
       "source_file": "assets\\js\\AdvDecPie.js",
       "source_location": "L1",
       "id": "advdecpie_adpie",
-      "community": 80
+      "community": 81
     },
     {
       "label": "anychart-bundle.min.js",
@@ -2265,7 +2441,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L1",
       "id": "assets_js_anystock_js",
-      "community": 23
+      "community": 24
     },
     {
       "label": "anystockTheme()",
@@ -2273,7 +2449,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L4",
       "id": "anystock_anystocktheme",
-      "community": 23
+      "community": 24
     },
     {
       "label": "applyAnystockTheme()",
@@ -2281,7 +2457,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L13",
       "id": "anystock_applyanystocktheme",
-      "community": 23
+      "community": 24
     },
     {
       "label": "patchAnystockSvgBackground()",
@@ -2289,7 +2465,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L49",
       "id": "anystock_patchanystocksvgbackground",
-      "community": 23
+      "community": 24
     },
     {
       "label": "patchAnystockRangeSelector()",
@@ -2297,7 +2473,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L70",
       "id": "anystock_patchanystockrangeselector",
-      "community": 23
+      "community": 24
     },
     {
       "label": "anystock()",
@@ -2305,7 +2481,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L88",
       "id": "anystock_anystock",
-      "community": 23
+      "community": 24
     },
     {
       "label": "createMarkers()",
@@ -2313,7 +2489,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L993",
       "id": "anystock_createmarkers",
-      "community": 23
+      "community": 24
     },
     {
       "label": "shareWithFacebook()",
@@ -2321,7 +2497,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L1012",
       "id": "anystock_sharewithfacebook",
-      "community": 23
+      "community": 24
     },
     {
       "label": "getDayOfWeek()",
@@ -2329,7 +2505,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L1018",
       "id": "anystock_getdayofweek",
-      "community": 23
+      "community": 24
     },
     {
       "label": "stdev()",
@@ -2337,7 +2513,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L1023",
       "id": "anystock_stdev",
-      "community": 23
+      "community": 24
     },
     {
       "label": "findLineByLeastSquaresAndSE()",
@@ -2345,7 +2521,7 @@
       "source_file": "assets\\js\\Anystock.js",
       "source_location": "L1082",
       "id": "anystock_findlinebyleastsquaresandse",
-      "community": 23
+      "community": 24
     },
     {
       "label": "bot-detector.js",
@@ -2353,7 +2529,7 @@
       "source_file": "assets\\js\\bot-detector.js",
       "source_location": "L1",
       "id": "assets_js_bot_detector_js",
-      "community": 81
+      "community": 82
     },
     {
       "label": "isHumanMove()",
@@ -2361,7 +2537,7 @@
       "source_file": "assets\\js\\bot-detector.js",
       "source_location": "L38",
       "id": "bot_detector_ishumanmove",
-      "community": 81
+      "community": 82
     },
     {
       "label": "bubble-price-policy.js",
@@ -2369,7 +2545,7 @@
       "source_file": "assets\\js\\bubble-price-policy.js",
       "source_location": "L1",
       "id": "assets_js_bubble_price_policy_js",
-      "community": 134
+      "community": 136
     },
     {
       "label": "Bubble.js",
@@ -2377,7 +2553,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L1",
       "id": "assets_js_bubble_js",
-      "community": 46
+      "community": 47
     },
     {
       "label": "bubble()",
@@ -2385,7 +2561,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L1",
       "id": "bubble_bubble",
-      "community": 46
+      "community": 47
     },
     {
       "label": "bubbleData()",
@@ -2393,7 +2569,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L726",
       "id": "bubble_bubbledata",
-      "community": 46
+      "community": 47
     },
     {
       "label": "findLineByLeastSquares()",
@@ -2401,7 +2577,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L917",
       "id": "bubble_findlinebyleastsquares",
-      "community": 46
+      "community": 47
     },
     {
       "label": "CCASS.js",
@@ -2409,7 +2585,7 @@
       "source_file": "assets\\js\\CCASS.js",
       "source_location": "L1",
       "id": "assets_js_ccass_js",
-      "community": 82
+      "community": 83
     },
     {
       "label": "CCASS()",
@@ -2417,7 +2593,7 @@
       "source_file": "assets\\js\\CCASS.js",
       "source_location": "L1",
       "id": "ccass_ccass",
-      "community": 82
+      "community": 83
     },
     {
       "label": "community.js",
@@ -2425,7 +2601,7 @@
       "source_file": "assets\\js\\community.js",
       "source_location": "L1",
       "id": "assets_js_community_js",
-      "community": 40
+      "community": 41
     },
     {
       "label": "escapeHtml()",
@@ -2433,7 +2609,7 @@
       "source_file": "assets\\js\\community.js",
       "source_location": "L10",
       "id": "community_escapehtml",
-      "community": 40
+      "community": 41
     },
     {
       "label": "collect()",
@@ -2441,7 +2617,7 @@
       "source_file": "assets\\js\\community.js",
       "source_location": "L16",
       "id": "community_collect",
-      "community": 40
+      "community": 41
     },
     {
       "label": "save()",
@@ -2449,7 +2625,7 @@
       "source_file": "assets\\js\\community.js",
       "source_location": "L22",
       "id": "community_save",
-      "community": 40
+      "community": 41
     },
     {
       "label": "loadIdeas()",
@@ -2457,7 +2633,7 @@
       "source_file": "assets\\js\\community.js",
       "source_location": "L32",
       "id": "community_loadideas",
-      "community": 40
+      "community": 41
     },
     {
       "label": "compromise.min.js",
@@ -2801,7 +2977,7 @@
       "source_file": "assets\\js\\cookieconsent.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsent_js",
-      "community": 83
+      "community": 84
     },
     {
       "label": "ga_ms()",
@@ -2809,7 +2985,7 @@
       "source_file": "assets\\js\\cookieconsent.js",
       "source_location": "L1",
       "id": "cookieconsent_ga_ms",
-      "community": 83
+      "community": 84
     },
     {
       "label": "cookieconsentrun.js",
@@ -2817,7 +2993,7 @@
       "source_file": "assets\\js\\cookieconsentrun.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsentrun_js",
-      "community": 135
+      "community": 137
     },
     {
       "label": "cookieconsentruna.js",
@@ -2825,7 +3001,7 @@
       "source_file": "assets\\js\\cookieconsentruna.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsentruna_js",
-      "community": 136
+      "community": 138
     },
     {
       "label": "datatables.input.js",
@@ -2833,7 +3009,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L1",
       "id": "assets_js_datatables_input_js",
-      "community": 47
+      "community": 48
     },
     {
       "label": "calcDisableClasses()",
@@ -2841,7 +3017,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L22",
       "id": "datatables_input_calcdisableclasses",
-      "community": 47
+      "community": 48
     },
     {
       "label": "calcCurrentPage()",
@@ -2849,7 +3025,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L43",
       "id": "datatables_input_calccurrentpage",
-      "community": 47
+      "community": 48
     },
     {
       "label": "calcPages()",
@@ -2857,7 +3033,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L47",
       "id": "datatables_input_calcpages",
-      "community": 47
+      "community": 48
     },
     {
       "label": "F-Z-M-ScoreChart.js",
@@ -2865,7 +3041,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L1",
       "id": "assets_js_f_z_m_scorechart_js",
-      "community": 24
+      "community": 25
     },
     {
       "label": "scoreGaugeZoneLabelStyle()",
@@ -2873,7 +3049,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L1",
       "id": "f_z_m_scorechart_scoregaugezonelabelstyle",
-      "community": 24
+      "community": 25
     },
     {
       "label": "forceScoreGaugeZoneLabels()",
@@ -2881,7 +3057,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L12",
       "id": "f_z_m_scorechart_forcescoregaugezonelabels",
-      "community": 24
+      "community": 25
     },
     {
       "label": "forceScoreGaugeAxisMarks()",
@@ -2889,7 +3065,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L45",
       "id": "f_z_m_scorechart_forcescoregaugeaxismarks",
-      "community": 24
+      "community": 25
     },
     {
       "label": "forceScoreGaugeTheme()",
@@ -2897,7 +3073,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L72",
       "id": "f_z_m_scorechart_forcescoregaugetheme",
-      "community": 24
+      "community": 25
     },
     {
       "label": "forceScoreGaugeThemeAfterRender()",
@@ -2905,7 +3081,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L77",
       "id": "f_z_m_scorechart_forcescoregaugethemeafterrender",
-      "community": 24
+      "community": 25
     },
     {
       "label": "mscore()",
@@ -2913,7 +3089,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L84",
       "id": "f_z_m_scorechart_mscore",
-      "community": 24
+      "community": 25
     },
     {
       "label": "zscore()",
@@ -2921,7 +3097,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L333",
       "id": "f_z_m_scorechart_zscore",
-      "community": 24
+      "community": 25
     },
     {
       "label": "fscoreTheme()",
@@ -2929,7 +3105,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L574",
       "id": "f_z_m_scorechart_fscoretheme",
-      "community": 24
+      "community": 25
     },
     {
       "label": "fscore()",
@@ -2937,7 +3113,7 @@
       "source_file": "assets\\js\\F-Z-M-ScoreChart.js",
       "source_location": "L592",
       "id": "f_z_m_scorechart_fscore",
-      "community": 24
+      "community": 25
     },
     {
       "label": "GaugeChart.js",
@@ -2945,7 +3121,7 @@
       "source_file": "assets\\js\\GaugeChart.js",
       "source_location": "L1",
       "id": "assets_js_gaugechart_js",
-      "community": 84
+      "community": 85
     },
     {
       "label": "trendgauge()",
@@ -2953,7 +3129,7 @@
       "source_file": "assets\\js\\GaugeChart.js",
       "source_location": "L68",
       "id": "gaugechart_trendgauge",
-      "community": 84
+      "community": 85
     },
     {
       "label": "highcharts-theme.js",
@@ -3777,7 +3953,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1",
       "id": "assets_js_highstock_js",
-      "community": 48
+      "community": 49
     },
     {
       "label": "highstock()",
@@ -3785,7 +3961,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1",
       "id": "highstock_highstock",
-      "community": 48
+      "community": 49
     },
     {
       "label": "name()",
@@ -3793,7 +3969,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1138",
       "id": "highstock_name",
-      "community": 48
+      "community": 49
     },
     {
       "label": "getPlotBandPeriods()",
@@ -3801,7 +3977,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1174",
       "id": "highstock_getplotbandperiods",
-      "community": 48
+      "community": 49
     },
     {
       "label": "jquery-ui.min.js",
@@ -3809,7 +3985,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_ui_min_js",
-      "community": 30
+      "community": 31
     },
     {
       "label": "i()",
@@ -3817,7 +3993,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_i",
-      "community": 30
+      "community": 31
     },
     {
       "label": "s()",
@@ -3825,7 +4001,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_s",
-      "community": 30
+      "community": 31
     },
     {
       "label": "n()",
@@ -3833,7 +4009,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_n",
-      "community": 30
+      "community": 31
     },
     {
       "label": "h()",
@@ -3841,7 +4017,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_h",
-      "community": 30
+      "community": 31
     },
     {
       "label": "e()",
@@ -3849,7 +4025,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_e",
-      "community": 30
+      "community": 31
     },
     {
       "label": "o()",
@@ -3857,7 +4033,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L12",
       "id": "jquery_ui_min_o",
-      "community": 30
+      "community": 31
     },
     {
       "label": "jquery-ui1.12.1.min.js",
@@ -3865,7 +4041,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_ui1_12_1_min_js",
-      "community": 27
+      "community": 28
     },
     {
       "label": "e()",
@@ -3873,7 +4049,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_e",
-      "community": 27
+      "community": 28
     },
     {
       "label": "i()",
@@ -3881,7 +4057,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_i",
-      "community": 27
+      "community": 28
     },
     {
       "label": "s()",
@@ -3889,7 +4065,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_s",
-      "community": 27
+      "community": 28
     },
     {
       "label": "n()",
@@ -3897,7 +4073,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_n",
-      "community": 27
+      "community": 28
     },
     {
       "label": "o()",
@@ -3905,7 +4081,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_o",
-      "community": 27
+      "community": 28
     },
     {
       "label": "a()",
@@ -3913,7 +4089,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_a",
-      "community": 27
+      "community": 28
     },
     {
       "label": "r()",
@@ -3921,7 +4097,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_r",
-      "community": 27
+      "community": 28
     },
     {
       "label": "t()",
@@ -3929,7 +4105,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_t",
-      "community": 27
+      "community": 28
     },
     {
       "label": "jquery.sparkline.min.js",
@@ -3937,7 +4113,7 @@
       "source_file": "assets\\js\\jquery.sparkline.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_sparkline_min_js",
-      "community": 137
+      "community": 139
     },
     {
       "label": "LanguageTimezone.js",
@@ -3945,7 +4121,7 @@
       "source_file": "assets\\js\\LanguageTimezone.js",
       "source_location": "L1",
       "id": "assets_js_languagetimezone_js",
-      "community": 85
+      "community": 86
     },
     {
       "label": "LanguageTimezone()",
@@ -3953,7 +4129,7 @@
       "source_file": "assets\\js\\LanguageTimezone.js",
       "source_location": "L1",
       "id": "languagetimezone_languagetimezone",
-      "community": 85
+      "community": 86
     },
     {
       "label": "MajorEvents.js",
@@ -3961,7 +4137,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L1",
       "id": "assets_js_majorevents_js",
-      "community": 62
+      "community": 63
     },
     {
       "label": "getHighstockMajorEvents()",
@@ -3969,7 +4145,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L1",
       "id": "majorevents_gethighstockmajorevents",
-      "community": 62
+      "community": 63
     },
     {
       "label": "applyHighstockMajorEventTheme()",
@@ -3977,7 +4153,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L768",
       "id": "majorevents_applyhighstockmajoreventtheme",
-      "community": 62
+      "community": 63
     },
     {
       "label": "moderation.js",
@@ -3985,7 +4161,7 @@
       "source_file": "assets\\js\\moderation.js",
       "source_location": "L1",
       "id": "assets_js_moderation_js",
-      "community": 63
+      "community": 64
     },
     {
       "label": "escapeHtml()",
@@ -3993,7 +4169,7 @@
       "source_file": "assets\\js\\moderation.js",
       "source_location": "L6",
       "id": "moderation_escapehtml",
-      "community": 63
+      "community": 64
     },
     {
       "label": "loadQueue()",
@@ -4001,7 +4177,7 @@
       "source_file": "assets\\js\\moderation.js",
       "source_location": "L12",
       "id": "moderation_loadqueue",
-      "community": 63
+      "community": 64
     },
     {
       "label": "PolarChart-Comment.js",
@@ -4009,7 +4185,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L1",
       "id": "assets_js_polarchart_comment_js",
-      "community": 41
+      "community": 42
     },
     {
       "label": "polarTheme()",
@@ -4017,7 +4193,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L2",
       "id": "polarchart_comment_polartheme",
-      "community": 41
+      "community": 42
     },
     {
       "label": "polarComment()",
@@ -4025,7 +4201,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L12",
       "id": "polarchart_comment_polarcomment",
-      "community": 41
+      "community": 42
     },
     {
       "label": "pchart()",
@@ -4033,7 +4209,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L284",
       "id": "polarchart_comment_pchart",
-      "community": 41
+      "community": 42
     },
     {
       "label": "setLabelEvent()",
@@ -4041,7 +4217,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L506",
       "id": "polarchart_comment_setlabelevent",
-      "community": 41
+      "community": 42
     },
     {
       "label": "price-display-page-hooks.js",
@@ -4049,7 +4225,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L1",
       "id": "assets_js_price_display_page_hooks_js",
-      "community": 25
+      "community": 26
     },
     {
       "label": "percentFromText()",
@@ -4057,7 +4233,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L7",
       "id": "price_display_page_hooks_percentfromtext",
-      "community": 25
+      "community": 26
     },
     {
       "label": "applyPeerRows()",
@@ -4065,7 +4241,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L11",
       "id": "price_display_page_hooks_applypeerrows",
-      "community": 25
+      "community": 26
     },
     {
       "label": "applyScreenerRows()",
@@ -4073,7 +4249,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L36",
       "id": "price_display_page_hooks_applyscreenerrows",
-      "community": 25
+      "community": 26
     },
     {
       "label": "applyScreenerHeaders()",
@@ -4081,7 +4257,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L63",
       "id": "price_display_page_hooks_applyscreenerheaders",
-      "community": 25
+      "community": 26
     },
     {
       "label": "configureScreenerExports()",
@@ -4089,7 +4265,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L71",
       "id": "price_display_page_hooks_configurescreenerexports",
-      "community": 25
+      "community": 26
     },
     {
       "label": "configureChartComposer()",
@@ -4097,7 +4273,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L103",
       "id": "price_display_page_hooks_configurechartcomposer",
-      "community": 25
+      "community": 26
     },
     {
       "label": "sanitizeAnyChart()",
@@ -4105,7 +4281,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L136",
       "id": "price_display_page_hooks_sanitizeanychart",
-      "community": 25
+      "community": 26
     },
     {
       "label": "applyAll()",
@@ -4113,7 +4289,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L160",
       "id": "price_display_page_hooks_applyall",
-      "community": 25
+      "community": 26
     },
     {
       "label": "start()",
@@ -4121,7 +4297,7 @@
       "source_file": "assets\\js\\price-display-page-hooks.js",
       "source_location": "L174",
       "id": "price_display_page_hooks_start",
-      "community": 25
+      "community": 26
     },
     {
       "label": "price-display-policy.js",
@@ -4129,7 +4305,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L1",
       "id": "assets_js_price_display_policy_js",
-      "community": 37
+      "community": 38
     },
     {
       "label": "numberOrNull()",
@@ -4137,7 +4313,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L7",
       "id": "price_display_policy_numberornull",
-      "community": 37
+      "community": 38
     },
     {
       "label": "formatPercent()",
@@ -4145,7 +4321,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L15",
       "id": "price_display_policy_formatpercent",
-      "community": 37
+      "community": 38
     },
     {
       "label": "percentChange()",
@@ -4153,7 +4329,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L32",
       "id": "price_display_policy_percentchange",
-      "community": 37
+      "community": 38
     },
     {
       "label": "pointPercentChange()",
@@ -4161,7 +4337,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L41",
       "id": "price_display_policy_pointpercentchange",
-      "community": 37
+      "community": 38
     },
     {
       "label": "extractLastPercent()",
@@ -4169,7 +4345,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L65",
       "id": "price_display_policy_extractlastpercent",
-      "community": 37
+      "community": 38
     },
     {
       "label": "priceDeviation.js",
@@ -4177,7 +4353,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L1",
       "id": "assets_js_pricedeviation_js",
-      "community": 64
+      "community": 65
     },
     {
       "label": "priceDeviation()",
@@ -4185,7 +4361,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L1",
       "id": "pricedeviation_pricedeviation",
-      "community": 64
+      "community": 65
     },
     {
       "label": "findMovingMax()",
@@ -4193,7 +4369,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L666",
       "id": "pricedeviation_findmovingmax",
-      "community": 64
+      "community": 65
     },
     {
       "label": "pwabuilder-sw.js",
@@ -4201,7 +4377,7 @@
       "source_file": "assets\\js\\pwabuilder-sw.js",
       "source_location": "L1",
       "id": "assets_js_pwabuilder_sw_js",
-      "community": 138
+      "community": 140
     },
     {
       "label": "RangeChart.js",
@@ -4209,7 +4385,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L1",
       "id": "assets_js_rangechart_js",
-      "community": 49
+      "community": 50
     },
     {
       "label": "rangeChart()",
@@ -4217,7 +4393,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L1",
       "id": "rangechart_rangechart",
-      "community": 49
+      "community": 50
     },
     {
       "label": "registerRangeChartThemeRefresh()",
@@ -4225,7 +4401,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L373",
       "id": "rangechart_registerrangechartthemerefresh",
-      "community": 49
+      "community": 50
     },
     {
       "label": "destroyRangeChartByContainer()",
@@ -4233,7 +4409,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L393",
       "id": "rangechart_destroyrangechartbycontainer",
-      "community": 49
+      "community": 50
     },
     {
       "label": "schema-markup.js",
@@ -4529,7 +4705,7 @@
       "source_file": "assets\\js\\seasonality.js",
       "source_location": "L1",
       "id": "assets_js_seasonality_js",
-      "community": 86
+      "community": 87
     },
     {
       "label": "seasonalityChart()",
@@ -4537,7 +4713,7 @@
       "source_file": "assets\\js\\seasonality.js",
       "source_location": "L1",
       "id": "seasonality_seasonalitychart",
-      "community": 86
+      "community": 87
     },
     {
       "label": "sectorPerformance.js",
@@ -4545,7 +4721,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L1",
       "id": "assets_js_sectorperformance_js",
-      "community": 31
+      "community": 32
     },
     {
       "label": "sectorPerformance()",
@@ -4553,7 +4729,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L1",
       "id": "sectorperformance_sectorperformance",
-      "community": 31
+      "community": 32
     },
     {
       "label": "sortAZ()",
@@ -4561,7 +4737,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L573",
       "id": "sectorperformance_sortaz",
-      "community": 31
+      "community": 32
     },
     {
       "label": "sort1day()",
@@ -4569,7 +4745,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L621",
       "id": "sectorperformance_sort1day",
-      "community": 31
+      "community": 32
     },
     {
       "label": "sort5day()",
@@ -4577,7 +4753,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L661",
       "id": "sectorperformance_sort5day",
-      "community": 31
+      "community": 32
     },
     {
       "label": "sort20day()",
@@ -4585,7 +4761,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L705",
       "id": "sectorperformance_sort20day",
-      "community": 31
+      "community": 32
     },
     {
       "label": "setLabelEvent()",
@@ -4593,7 +4769,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L749",
       "id": "sectorperformance_setlabelevent",
-      "community": 31
+      "community": 32
     },
     {
       "label": "smart-forms.min.js",
@@ -4697,7 +4873,7 @@
       "source_file": "assets\\js\\stockCompare.js",
       "source_location": "L1",
       "id": "assets_js_stockcompare_js",
-      "community": 87
+      "community": 88
     },
     {
       "label": "stockCompare()",
@@ -4705,7 +4881,7 @@
       "source_file": "assets\\js\\stockCompare.js",
       "source_location": "L1",
       "id": "stockcompare_stockcompare",
-      "community": 87
+      "community": 88
     },
     {
       "label": "TA.js",
@@ -4857,7 +5033,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L1",
       "id": "assets_js_theme_js",
-      "community": 29
+      "community": 30
     },
     {
       "label": "isDark()",
@@ -4865,7 +5041,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L13",
       "id": "theme_isdark",
-      "community": 29
+      "community": 30
     },
     {
       "label": "getSaved()",
@@ -4873,7 +5049,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L17",
       "id": "theme_getsaved",
-      "community": 29
+      "community": 30
     },
     {
       "label": "applyTheme()",
@@ -4881,7 +5057,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L23",
       "id": "theme_applytheme",
-      "community": 29
+      "community": 30
     },
     {
       "label": "setTheme()",
@@ -4889,7 +5065,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L53",
       "id": "theme_settheme",
-      "community": 29
+      "community": 30
     },
     {
       "label": "toggleTheme()",
@@ -4897,7 +5073,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L58",
       "id": "theme_toggletheme",
-      "community": 29
+      "community": 30
     },
     {
       "label": "updateToggleIcon()",
@@ -4905,7 +5081,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L64",
       "id": "theme_updatetoggleicon",
-      "community": 29
+      "community": 30
     },
     {
       "label": "initToggle()",
@@ -4913,7 +5089,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L74",
       "id": "theme_inittoggle",
-      "community": 29
+      "community": 30
     },
     {
       "label": "Treemap.js",
@@ -4921,7 +5097,7 @@
       "source_file": "assets\\js\\Treemap.js",
       "source_location": "L1",
       "id": "assets_js_treemap_js",
-      "community": 88
+      "community": 89
     },
     {
       "label": "treemap()",
@@ -4929,7 +5105,7 @@
       "source_file": "assets\\js\\Treemap.js",
       "source_location": "L1",
       "id": "treemap_treemap",
-      "community": 88
+      "community": 89
     },
     {
       "label": "TSF.js",
@@ -4937,7 +5113,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L1",
       "id": "assets_js_tsf_js",
-      "community": 42
+      "community": 43
     },
     {
       "label": "TSFchart()",
@@ -4945,7 +5121,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L1",
       "id": "tsf_tsfchart",
-      "community": 42
+      "community": 43
     },
     {
       "label": "ema0()",
@@ -4953,7 +5129,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L380",
       "id": "tsf_ema0",
-      "community": 42
+      "community": 43
     },
     {
       "label": "tsfLookback()",
@@ -4961,7 +5137,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L403",
       "id": "tsf_tsflookback",
-      "community": 42
+      "community": 43
     },
     {
       "label": "tsf()",
@@ -4969,7 +5145,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L412",
       "id": "tsf_tsf",
-      "community": 42
+      "community": 43
     },
     {
       "label": "Utils.js",
@@ -4977,7 +5153,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L1",
       "id": "assets_js_utils_js",
-      "community": 32
+      "community": 33
     },
     {
       "label": "utc()",
@@ -4985,7 +5161,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L1",
       "id": "utils_utc",
-      "community": 32
+      "community": 33
     },
     {
       "label": "str2date()",
@@ -4993,7 +5169,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L6",
       "id": "utils_str2date",
-      "community": 32
+      "community": 33
     },
     {
       "label": "formatDate()",
@@ -5001,7 +5177,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L21",
       "id": "utils_formatdate",
-      "community": 32
+      "community": 33
     },
     {
       "label": "formatDateNoBreak()",
@@ -5009,7 +5185,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L32",
       "id": "utils_formatdatenobreak",
-      "community": 32
+      "community": 33
     },
     {
       "label": "rounding()",
@@ -5017,7 +5193,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L43",
       "id": "utils_rounding",
-      "community": 32
+      "community": 33
     },
     {
       "label": "detectIE()",
@@ -5025,7 +5201,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L50",
       "id": "utils_detectie",
-      "community": 32
+      "community": 33
     },
     {
       "label": "ValuationBands.js",
@@ -5033,7 +5209,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1",
       "id": "assets_js_valuationbands_js",
-      "community": 38
+      "community": 39
     },
     {
       "label": "valuationBands()",
@@ -5041,7 +5217,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1",
       "id": "valuationbands_valuationbands",
-      "community": 38
+      "community": 39
     },
     {
       "label": "earningSurpriseChart()",
@@ -5049,7 +5225,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1121",
       "id": "valuationbands_earningsurprisechart",
-      "community": 38
+      "community": 39
     },
     {
       "label": "earningSurpriseComment()",
@@ -5057,7 +5233,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1286",
       "id": "valuationbands_earningsurprisecomment",
-      "community": 38
+      "community": 39
     },
     {
       "label": "Pxband()",
@@ -5065,7 +5241,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1355",
       "id": "valuationbands_pxband",
-      "community": 38
+      "community": 39
     },
     {
       "label": "valuationComment()",
@@ -5073,7 +5249,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1954",
       "id": "valuationbands_valuationcomment",
-      "community": 38
+      "community": 39
     },
     {
       "label": "workspace.js",
@@ -5081,7 +5257,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L1",
       "id": "assets_js_workspace_js",
-      "community": 13
+      "community": 15
     },
     {
       "label": "escapeHtml()",
@@ -5089,7 +5265,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L11",
       "id": "workspace_escapehtml",
-      "community": 13
+      "community": 15
     },
     {
       "label": "showStatus()",
@@ -5097,7 +5273,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L17",
       "id": "workspace_showstatus",
-      "community": 13
+      "community": 15
     },
     {
       "label": "panel()",
@@ -5105,7 +5281,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L24",
       "id": "workspace_panel",
-      "community": 13
+      "community": 15
     },
     {
       "label": "humanDate()",
@@ -5113,7 +5289,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L28",
       "id": "workspace_humandate",
-      "community": 13
+      "community": 15
     },
     {
       "label": "assetMeta()",
@@ -5121,7 +5297,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L34",
       "id": "workspace_assetmeta",
-      "community": 13
+      "community": 15
     },
     {
       "label": "renderOverview()",
@@ -5129,7 +5305,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L38",
       "id": "workspace_renderoverview",
-      "community": 13
+      "community": 15
     },
     {
       "label": "chartRow()",
@@ -5137,7 +5313,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L50",
       "id": "workspace_chartrow",
-      "community": 13
+      "community": 15
     },
     {
       "label": "renderCharts()",
@@ -5145,7 +5321,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L66",
       "id": "workspace_rendercharts",
-      "community": 13
+      "community": 15
     },
     {
       "label": "scriptRow()",
@@ -5153,7 +5329,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L73",
       "id": "workspace_scriptrow",
-      "community": 13
+      "community": 15
     },
     {
       "label": "renderScripts()",
@@ -5161,7 +5337,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L94",
       "id": "workspace_renderscripts",
-      "community": 13
+      "community": 15
     },
     {
       "label": "renderSimpleList()",
@@ -5169,7 +5345,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L101",
       "id": "workspace_rendersimplelist",
-      "community": 13
+      "community": 15
     },
     {
       "label": "render()",
@@ -5177,7 +5353,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L106",
       "id": "workspace_render",
-      "community": 13
+      "community": 15
     },
     {
       "label": "loadCharts()",
@@ -5185,7 +5361,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L128",
       "id": "workspace_loadcharts",
-      "community": 13
+      "community": 15
     },
     {
       "label": "loadScripts()",
@@ -5193,7 +5369,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L148",
       "id": "workspace_loadscripts",
-      "community": 13
+      "community": 15
     },
     {
       "label": "refreshWorkspaceAndTab()",
@@ -5201,7 +5377,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L168",
       "id": "workspace_refreshworkspaceandtab",
-      "community": 13
+      "community": 15
     },
     {
       "label": "closestAsset()",
@@ -5209,7 +5385,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L179",
       "id": "workspace_closestasset",
-      "community": 13
+      "community": 15
     },
     {
       "label": "renderVersions()",
@@ -5217,7 +5393,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L183",
       "id": "workspace_renderversions",
-      "community": 13
+      "community": 15
     },
     {
       "label": "downloadText()",
@@ -5225,7 +5401,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L194",
       "id": "workspace_downloadtext",
-      "community": 13
+      "community": 15
     },
     {
       "label": "safeFileName()",
@@ -5233,7 +5409,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L205",
       "id": "workspace_safefilename",
-      "community": 13
+      "community": 15
     },
     {
       "label": "importRecentScripts()",
@@ -5241,7 +5417,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L209",
       "id": "workspace_importrecentscripts",
-      "community": 13
+      "community": 15
     },
     {
       "label": "load()",
@@ -5249,7 +5425,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L305",
       "id": "workspace_load",
-      "community": 13
+      "community": 15
     },
     {
       "label": "yearlyTrendChart.js",
@@ -5257,7 +5433,7 @@
       "source_file": "assets\\js\\yearlyTrendChart.js",
       "source_location": "L1",
       "id": "assets_js_yearlytrendchart_js",
-      "community": 89
+      "community": 90
     },
     {
       "label": "yearlyTrendChart()",
@@ -5265,7 +5441,7 @@
       "source_file": "assets\\js\\yearlyTrendChart.js",
       "source_location": "L1",
       "id": "yearlytrendchart_yearlytrendchart",
-      "community": 89
+      "community": 90
     },
     {
       "label": "econ-main.js",
@@ -5905,7 +6081,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L1",
       "id": "assets_js_pages_screener_share_js",
-      "community": 28
+      "community": 29
     },
     {
       "label": "notify()",
@@ -5913,7 +6089,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L4",
       "id": "screener_share_notify",
-      "community": 28
+      "community": 29
     },
     {
       "label": "getShareUrl()",
@@ -5921,7 +6097,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L29",
       "id": "screener_share_getshareurl",
-      "community": 28
+      "community": 29
     },
     {
       "label": "fallbackCopy()",
@@ -5929,7 +6105,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L33",
       "id": "screener_share_fallbackcopy",
-      "community": 28
+      "community": 29
     },
     {
       "label": "copyUrl()",
@@ -5937,7 +6113,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L87",
       "id": "screener_share_copyurl",
-      "community": 28
+      "community": 29
     },
     {
       "label": "shareUrl()",
@@ -5945,7 +6121,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L100",
       "id": "screener_share_shareurl",
-      "community": 28
+      "community": 29
     },
     {
       "label": "makeButton()",
@@ -5953,7 +6129,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L119",
       "id": "screener_share_makebutton",
-      "community": 28
+      "community": 29
     },
     {
       "label": "ensureShareActions()",
@@ -5961,7 +6137,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L132",
       "id": "screener_share_ensureshareactions",
-      "community": 28
+      "community": 29
     },
     {
       "label": "init()",
@@ -5969,7 +6145,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L152",
       "id": "screener_share_init",
-      "community": 28
+      "community": 29
     },
     {
       "label": "stockinfo-main.js",
@@ -5977,7 +6153,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_stockinfo_main_js",
-      "community": 12
+      "community": 13
     },
     {
       "label": "numberformat()",
@@ -5985,7 +6161,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_numberformat",
-      "community": 12
+      "community": 13
     },
     {
       "label": "numberformatM()",
@@ -5993,7 +6169,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_numberformatm",
-      "community": 12
+      "community": 13
     },
     {
       "label": "exchFn()",
@@ -6001,7 +6177,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_exchfn",
-      "community": 12
+      "community": 13
     },
     {
       "label": "mcapFn()",
@@ -6009,7 +6185,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_mcapfn",
-      "community": 12
+      "community": 13
     },
     {
       "label": "trendgauge2txt()",
@@ -6017,7 +6193,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_trendgauge2txt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "getRandomInt()",
@@ -6025,7 +6201,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_getrandomint",
-      "community": 12
+      "community": 13
     },
     {
       "label": "setPriceInfoTrend()",
@@ -6033,7 +6209,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_setpriceinfotrend",
-      "community": 12
+      "community": 13
     },
     {
       "label": "applyPriceInfoTheme()",
@@ -6041,7 +6217,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_applypriceinfotheme",
-      "community": 12
+      "community": 13
     },
     {
       "label": "scheduleNonCriticalStockWork()",
@@ -6049,7 +6225,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_schedulenoncriticalstockwork",
-      "community": 12
+      "community": 13
     },
     {
       "label": "loadPeers()",
@@ -6057,7 +6233,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_loadpeers",
-      "community": 12
+      "community": 13
     },
     {
       "label": "maincontent()",
@@ -6065,7 +6241,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_maincontent",
-      "community": 12
+      "community": 13
     },
     {
       "label": "fscoreProfitabilityTXT()",
@@ -6073,7 +6249,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_fscoreprofitabilitytxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "fscoreLiquidityTXT()",
@@ -6081,7 +6257,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_fscoreliquiditytxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "fscoreEfficiencyTXT()",
@@ -6089,7 +6265,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_fscoreefficiencytxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "mscoreTXT()",
@@ -6097,7 +6273,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_mscoretxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "zscoreTXT()",
@@ -6105,7 +6281,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_zscoretxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "rsiTXT()",
@@ -6113,7 +6289,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_rsitxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "macdZeroTXT()",
@@ -6121,7 +6297,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_macdzerotxt",
-      "community": 12
+      "community": 13
     },
     {
       "label": "priceDeviationChartDraw()",
@@ -6129,7 +6305,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_pricedeviationchartdraw",
-      "community": 12
+      "community": 13
     },
     {
       "label": "scroll2peers()",
@@ -6137,7 +6313,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_scroll2peers",
-      "community": 12
+      "community": 13
     },
     {
       "label": "openTOOL()",
@@ -6145,7 +6321,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_opentool",
-      "community": 12
+      "community": 13
     },
     {
       "label": "updateColumns()",
@@ -6153,7 +6329,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_updatecolumns",
-      "community": 12
+      "community": 13
     },
     {
       "label": "add_Days()",
@@ -6161,7 +6337,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_add_days",
-      "community": 12
+      "community": 13
     },
     {
       "label": "dayofyear()",
@@ -6169,7 +6345,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_dayofyear",
-      "community": 12
+      "community": 13
     },
     {
       "label": "YearlyTrendToggle()",
@@ -6177,7 +6353,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_yearlytrendtoggle",
-      "community": 12
+      "community": 13
     },
     {
       "label": "tool-main.js",
@@ -6513,7 +6689,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L1",
       "id": "assets_js_pages_tool_share_js",
-      "community": 26
+      "community": 27
     },
     {
       "label": "notify()",
@@ -6521,7 +6697,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L4",
       "id": "tool_share_notify",
-      "community": 26
+      "community": 27
     },
     {
       "label": "toAbsoluteUrl()",
@@ -6529,7 +6705,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L34",
       "id": "tool_share_toabsoluteurl",
-      "community": 26
+      "community": 27
     },
     {
       "label": "getRaceShareUrl()",
@@ -6537,7 +6713,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L38",
       "id": "tool_share_getraceshareurl",
-      "community": 26
+      "community": 27
     },
     {
       "label": "getComposerShareUrl()",
@@ -6545,7 +6721,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L42",
       "id": "tool_share_getcomposershareurl",
-      "community": 26
+      "community": 27
     },
     {
       "label": "fallbackCopy()",
@@ -6553,7 +6729,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L46",
       "id": "tool_share_fallbackcopy",
-      "community": 26
+      "community": 27
     },
     {
       "label": "copyUrl()",
@@ -6561,7 +6737,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L99",
       "id": "tool_share_copyurl",
-      "community": 26
+      "community": 27
     },
     {
       "label": "shareUrl()",
@@ -6569,7 +6745,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L112",
       "id": "tool_share_shareurl",
-      "community": 26
+      "community": 27
     },
     {
       "label": "bindButton()",
@@ -6577,7 +6753,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L131",
       "id": "tool_share_bindbutton",
-      "community": 26
+      "community": 27
     },
     {
       "label": "setupSharing()",
@@ -6585,7 +6761,7 @@
       "source_file": "assets\\js\\pages\\tool-share.js",
       "source_location": "L147",
       "id": "tool_share_setupsharing",
-      "community": 26
+      "community": 27
     },
     {
       "label": "tool-stock-chart.js",
@@ -7737,7 +7913,7 @@
       "source_file": "assets\\js\\stock-chart-engine\\pine-script-worker.js",
       "source_location": "L1",
       "id": "assets_js_stock_chart_engine_pine_script_worker_js",
-      "community": 139
+      "community": 141
     },
     {
       "label": "stock-chart-engine.js",
@@ -10017,7 +10193,7 @@
       "source_file": "components\\community-pulse.php",
       "source_location": "L1",
       "id": "components_community_pulse_php",
-      "community": 140
+      "community": 142
     }
   ],
   "links": [
@@ -10097,7 +10273,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_json",
@@ -10109,7 +10285,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_body",
@@ -10121,7 +10297,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_user",
@@ -10133,7 +10309,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L30",
+      "source_location": "L31",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_require_post_csrf",
@@ -10145,7 +10321,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_clean_code",
@@ -10157,7 +10333,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_clean_text",
@@ -10169,7 +10345,43 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L52",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "account_api_php",
+      "_tgt": "account_api_miq_api_pulse_timeframe",
+      "source": "account_api_php",
+      "target": "account_api_miq_api_pulse_timeframe",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_api.php",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "account_api_php",
+      "_tgt": "account_api_miq_api_pulse_period_end",
+      "source": "account_api_php",
+      "target": "account_api_miq_api_pulse_period_end",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_api.php",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_src": "account_api_php",
+      "_tgt": "account_api_miq_api_pulse_context",
+      "source": "account_api_php",
+      "target": "account_api_miq_api_pulse_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_api.php",
+      "source_location": "L89",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_asset_key",
@@ -10181,7 +10393,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L65",
+      "source_location": "L102",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_existing_asset_key",
@@ -10193,7 +10405,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L71",
+      "source_location": "L108",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_client_datetime",
@@ -10205,7 +10417,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L77",
+      "source_location": "L114",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_page",
@@ -10217,7 +10429,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L82",
+      "source_location": "L119",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_limit",
@@ -10229,7 +10441,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L88",
+      "source_location": "L125",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_layout_json",
@@ -10241,7 +10453,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L107",
+      "source_location": "L144",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_chart_payload",
@@ -10253,7 +10465,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L119",
+      "source_location": "L156",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_script_payload",
@@ -10265,7 +10477,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L128",
+      "source_location": "L165",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_count_rows",
@@ -10277,7 +10489,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L136",
+      "source_location": "L173",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_trim_versions",
@@ -10289,7 +10501,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L152",
+      "source_location": "L189",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_counts",
@@ -10301,7 +10513,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L169",
+      "source_location": "L194",
       "weight": 1.0,
       "_src": "account_api_php",
       "_tgt": "account_api_miq_api_workspace",
@@ -10313,7 +10525,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_src": "account_api_miq_api_user",
       "_tgt": "account_api_miq_api_json",
@@ -10325,7 +10537,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L33",
+      "source_location": "L34",
       "weight": 1.0,
       "_src": "account_api_miq_api_require_post_csrf",
       "_tgt": "account_api_miq_api_json",
@@ -10337,7 +10549,43 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L189",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "account_api_miq_api_pulse_timeframe",
+      "_tgt": "account_api_miq_api_json",
+      "source": "account_api_miq_api_json",
+      "target": "account_api_miq_api_pulse_timeframe",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account_api.php",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_src": "account_api_miq_api_pulse_context",
+      "_tgt": "account_api_miq_api_json",
+      "source": "account_api_miq_api_json",
+      "target": "account_api_miq_api_pulse_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account_api.php",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_src": "account_api_miq_api_pulse_context",
+      "_tgt": "account_api_miq_api_clean_text",
+      "source": "account_api_miq_api_clean_text",
+      "target": "account_api_miq_api_pulse_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account_api.php",
+      "source_location": "L214",
       "weight": 1.0,
       "_src": "account_api_miq_api_workspace",
       "_tgt": "account_api_miq_api_count_rows",
@@ -11884,6 +12132,342 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_empty_counts",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_empty_counts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_schema_ready",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_schema_ready",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_active_counts",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_active_counts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_snapshot_score",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_snapshot_score",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_snapshot_point",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_snapshot_point",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_upsert_snapshot",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_upsert_snapshot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L91",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_snapshot_today",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_snapshot_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L114",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_save_vote",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_save_vote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L157",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_trend_payload",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_trend_payload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L174",
+      "weight": 1.0,
+      "_src": "account_community_sentiment_php",
+      "_tgt": "community_sentiment_miq_community_rebuild_trend",
+      "source": "account_community_sentiment_php",
+      "target": "community_sentiment_miq_community_rebuild_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_active_counts",
+      "_tgt": "community_sentiment_miq_community_empty_counts",
+      "source": "community_sentiment_miq_community_empty_counts",
+      "target": "community_sentiment_miq_community_active_counts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L161",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_trend_payload",
+      "_tgt": "community_sentiment_miq_community_empty_counts",
+      "source": "community_sentiment_miq_community_empty_counts",
+      "target": "community_sentiment_miq_community_trend_payload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L241",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_rebuild_trend",
+      "_tgt": "community_sentiment_miq_community_empty_counts",
+      "source": "community_sentiment_miq_community_empty_counts",
+      "target": "community_sentiment_miq_community_rebuild_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_active_counts",
+      "_tgt": "community_sentiment_miq_community_schema_ready",
+      "source": "community_sentiment_miq_community_schema_ready",
+      "target": "community_sentiment_miq_community_active_counts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_upsert_snapshot",
+      "_tgt": "community_sentiment_miq_community_schema_ready",
+      "source": "community_sentiment_miq_community_schema_ready",
+      "target": "community_sentiment_miq_community_upsert_snapshot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_snapshot_today",
+      "_tgt": "community_sentiment_miq_community_schema_ready",
+      "source": "community_sentiment_miq_community_schema_ready",
+      "target": "community_sentiment_miq_community_snapshot_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L120",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_save_vote",
+      "_tgt": "community_sentiment_miq_community_schema_ready",
+      "source": "community_sentiment_miq_community_schema_ready",
+      "target": "community_sentiment_miq_community_save_vote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L178",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_rebuild_trend",
+      "_tgt": "community_sentiment_miq_community_schema_ready",
+      "source": "community_sentiment_miq_community_schema_ready",
+      "target": "community_sentiment_miq_community_rebuild_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L109",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_snapshot_today",
+      "_tgt": "community_sentiment_miq_community_active_counts",
+      "source": "community_sentiment_miq_community_active_counts",
+      "target": "community_sentiment_miq_community_snapshot_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L127",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_save_vote",
+      "_tgt": "community_sentiment_miq_community_active_counts",
+      "source": "community_sentiment_miq_community_active_counts",
+      "target": "community_sentiment_miq_community_save_vote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L207",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_rebuild_trend",
+      "_tgt": "community_sentiment_miq_community_active_counts",
+      "source": "community_sentiment_miq_community_active_counts",
+      "target": "community_sentiment_miq_community_rebuild_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_snapshot_point",
+      "_tgt": "community_sentiment_miq_community_snapshot_score",
+      "source": "community_sentiment_miq_community_snapshot_score",
+      "target": "community_sentiment_miq_community_snapshot_point",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L83",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_upsert_snapshot",
+      "_tgt": "community_sentiment_miq_community_snapshot_score",
+      "source": "community_sentiment_miq_community_snapshot_score",
+      "target": "community_sentiment_miq_community_upsert_snapshot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L161",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_trend_payload",
+      "_tgt": "community_sentiment_miq_community_snapshot_point",
+      "source": "community_sentiment_miq_community_snapshot_point",
+      "target": "community_sentiment_miq_community_trend_payload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L199",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_rebuild_trend",
+      "_tgt": "community_sentiment_miq_community_snapshot_point",
+      "source": "community_sentiment_miq_community_snapshot_point",
+      "target": "community_sentiment_miq_community_rebuild_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L110",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_snapshot_today",
+      "_tgt": "community_sentiment_miq_community_upsert_snapshot",
+      "source": "community_sentiment_miq_community_upsert_snapshot",
+      "target": "community_sentiment_miq_community_snapshot_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L154",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_save_vote",
+      "_tgt": "community_sentiment_miq_community_snapshot_today",
+      "source": "community_sentiment_miq_community_snapshot_today",
+      "target": "community_sentiment_miq_community_save_vote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\community_sentiment.php",
+      "source_location": "L209",
+      "weight": 1.0,
+      "_src": "community_sentiment_miq_community_rebuild_trend",
+      "_tgt": "community_sentiment_miq_community_trend_payload",
+      "source": "community_sentiment_miq_community_trend_payload",
+      "target": "community_sentiment_miq_community_rebuild_trend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "account\\config.php",
       "source_location": "L14",
       "weight": 1.0,
@@ -11945,7 +12529,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L67",
+      "source_location": "L68",
       "weight": 1.0,
       "_src": "account_db_php",
       "_tgt": "db_miq_account_query",
@@ -11957,7 +12541,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L91",
+      "source_location": "L92",
       "weight": 1.0,
       "_src": "account_db_php",
       "_tgt": "db_miq_account_fetch_all",
@@ -11969,7 +12553,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L105",
+      "source_location": "L106",
       "weight": 1.0,
       "_src": "account_db_php",
       "_tgt": "db_miq_account_fetch_one",
@@ -11981,7 +12565,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L69",
+      "source_location": "L70",
       "weight": 1.0,
       "_src": "db_miq_account_query",
       "_tgt": "db_miq_account_db",
@@ -13097,7 +13681,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_jsonrequest",
@@ -13109,7 +13693,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L28",
+      "source_location": "L29",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_parseresponse",
@@ -13121,7 +13705,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_makeassetkey",
@@ -13133,7 +13717,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_localsearches",
@@ -13145,7 +13729,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L66",
+      "source_location": "L67",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rememberlocalsearch",
@@ -13157,7 +13741,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L73",
+      "source_location": "L74",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_savesearch",
@@ -13169,7 +13753,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L87",
+      "source_location": "L88",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_savechartlayout",
@@ -13181,7 +13765,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L104",
+      "source_location": "L105",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_getchart",
@@ -13193,7 +13777,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L112",
+      "source_location": "L113",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_preloadchartlayout",
@@ -13205,7 +13789,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L118",
+      "source_location": "L119",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_savescript",
@@ -13217,7 +13801,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L126",
+      "source_location": "L127",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_getscript",
@@ -13229,7 +13813,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L133",
+      "source_location": "L134",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_accountaction",
@@ -13241,7 +13825,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L138",
+      "source_location": "L139",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_saveidea",
@@ -13253,7 +13837,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L145",
+      "source_location": "L146",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_mergelocalsearches",
@@ -13265,7 +13849,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L150",
+      "source_location": "L151",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_handlegooglecredential",
@@ -13277,7 +13861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L158",
+      "source_location": "L159",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_handlegooglelinkcredential",
@@ -13289,7 +13873,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L166",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_binddisplaynamesuggestions",
@@ -13301,7 +13885,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L178",
+      "source_location": "L179",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_bindsearchtracking",
@@ -13313,7 +13897,91 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L187",
+      "source_location": "L188",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_sentimentsvgelement",
+      "source": "assets_js_account_js",
+      "target": "account_sentimentsvgelement",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L197",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_sentimentlinepath",
+      "source": "assets_js_account_js",
+      "target": "account_sentimentlinepath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L212",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_clearelement",
+      "source": "assets_js_account_js",
+      "target": "account_clearelement",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L216",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_rendersentimentchart",
+      "source": "assets_js_account_js",
+      "target": "account_rendersentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L352",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_sentimenttrendrequest",
+      "source": "assets_js_account_js",
+      "target": "account_sentimenttrendrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L371",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_loadsentimentchart",
+      "source": "assets_js_account_js",
+      "target": "account_loadsentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L385",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_rendersentimentcharts",
+      "source": "assets_js_account_js",
+      "target": "account_rendersentimentcharts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L392",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_renderpulse",
@@ -13325,7 +13993,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L84",
+      "source_location": "L85",
       "weight": 1.0,
       "_src": "account_savesearch",
       "_tgt": "account_jsonrequest",
@@ -13337,7 +14005,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L101",
+      "source_location": "L102",
       "weight": 1.0,
       "_src": "account_savechartlayout",
       "_tgt": "account_jsonrequest",
@@ -13349,7 +14017,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L107",
+      "source_location": "L108",
       "weight": 1.0,
       "_src": "account_getchart",
       "_tgt": "account_jsonrequest",
@@ -13361,7 +14029,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L123",
+      "source_location": "L124",
       "weight": 1.0,
       "_src": "account_savescript",
       "_tgt": "account_jsonrequest",
@@ -13373,7 +14041,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L128",
+      "source_location": "L129",
       "weight": 1.0,
       "_src": "account_getscript",
       "_tgt": "account_jsonrequest",
@@ -13385,7 +14053,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L135",
+      "source_location": "L136",
       "weight": 1.0,
       "_src": "account_accountaction",
       "_tgt": "account_jsonrequest",
@@ -13397,7 +14065,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L142",
+      "source_location": "L143",
       "weight": 1.0,
       "_src": "account_saveidea",
       "_tgt": "account_jsonrequest",
@@ -13409,7 +14077,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L192",
+      "source_location": "L356",
+      "weight": 1.0,
+      "_src": "account_sentimenttrendrequest",
+      "_tgt": "account_jsonrequest",
+      "source": "account_jsonrequest",
+      "target": "account_sentimenttrendrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L398",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_jsonrequest",
@@ -13421,7 +14101,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L121",
+      "source_location": "L122",
       "weight": 1.0,
       "_src": "account_savescript",
       "_tgt": "account_makeassetkey",
@@ -13433,7 +14113,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L67",
+      "source_location": "L68",
       "weight": 1.0,
       "_src": "account_rememberlocalsearch",
       "_tgt": "account_localsearches",
@@ -13445,7 +14125,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L147",
+      "source_location": "L148",
       "weight": 1.0,
       "_src": "account_mergelocalsearches",
       "_tgt": "account_localsearches",
@@ -13457,7 +14137,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L82",
+      "source_location": "L83",
       "weight": 1.0,
       "_src": "account_savesearch",
       "_tgt": "account_rememberlocalsearch",
@@ -13469,7 +14149,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L147",
+      "source_location": "L148",
       "weight": 1.0,
       "_src": "account_mergelocalsearches",
       "_tgt": "account_savesearch",
@@ -13481,7 +14161,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L182",
+      "source_location": "L183",
       "weight": 1.0,
       "_src": "account_bindsearchtracking",
       "_tgt": "account_savesearch",
@@ -13493,12 +14173,96 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L113",
+      "source_location": "L114",
       "weight": 1.0,
       "_src": "account_preloadchartlayout",
       "_tgt": "account_getchart",
       "source": "account_getchart",
       "target": "account_preloadchartlayout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L263",
+      "weight": 1.0,
+      "_src": "account_rendersentimentchart",
+      "_tgt": "account_sentimentsvgelement",
+      "source": "account_sentimentsvgelement",
+      "target": "account_rendersentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L281",
+      "weight": 1.0,
+      "_src": "account_rendersentimentchart",
+      "_tgt": "account_sentimentlinepath",
+      "source": "account_sentimentlinepath",
+      "target": "account_rendersentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L241",
+      "weight": 1.0,
+      "_src": "account_rendersentimentchart",
+      "_tgt": "account_clearelement",
+      "source": "account_clearelement",
+      "target": "account_rendersentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L377",
+      "weight": 1.0,
+      "_src": "account_loadsentimentchart",
+      "_tgt": "account_rendersentimentchart",
+      "source": "account_rendersentimentchart",
+      "target": "account_loadsentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L376",
+      "weight": 1.0,
+      "_src": "account_loadsentimentchart",
+      "_tgt": "account_sentimenttrendrequest",
+      "source": "account_sentimenttrendrequest",
+      "target": "account_loadsentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L388",
+      "weight": 1.0,
+      "_src": "account_rendersentimentcharts",
+      "_tgt": "account_loadsentimentchart",
+      "source": "account_loadsentimentchart",
+      "target": "account_rendersentimentcharts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L419",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_rendersentimentcharts",
+      "source": "account_rendersentimentcharts",
+      "target": "account_renderpulse",
       "confidence_score": 1.0
     },
     {

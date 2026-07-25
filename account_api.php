@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/account/bootstrap.php';
+require_once __DIR__ . '/account/community_sentiment.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 header('Cache-Control: no-store');
@@ -67,6 +68,22 @@ function miq_api_pulse_timeframe($value)
 function miq_api_pulse_period_end()
 {
     return gmdate('Y-m-d', time() + (30 * 86400));
+}
+
+function miq_api_pulse_context($context_type, $context_key)
+{
+    $context_type = strtolower(miq_api_clean_text($context_type, 32));
+    if (!in_array($context_type, array('site', 'stock', 'market'), true)) {
+        miq_api_json(array('error' => 'Invalid community pulse context.'), 422);
+    }
+    if ($context_type === 'site') {
+        return array('site', 'site');
+    }
+    $context_key = strtoupper(miq_api_clean_text($context_key, 80));
+    if ($context_key === '') {
+        miq_api_json(array('error' => 'A community pulse subject is required.'), 422);
+    }
+    return array($context_type, $context_key);
 }
 
 function miq_api_asset_key($value = '')
@@ -171,19 +188,7 @@ function miq_api_trim_versions($table, $asset_column, $asset_id)
 
 function miq_api_counts($context_type, $context_key)
 {
-    $votes = miq_account_table('community_votes');
-    $rows = miq_account_fetch_all(miq_account_query(
-        "SELECT direction, COUNT(*) AS total FROM {$votes} WHERE context_type = ? AND context_key = ? GROUP BY direction",
-        'ss',
-        array($context_type, $context_key)
-    ));
-    $counts = array('bullish' => 0, 'bearish' => 0, 'neutral' => 0);
-    foreach ($rows as $row) {
-        if (isset($counts[$row['direction']])) {
-            $counts[$row['direction']] = (int) $row['total'];
-        }
-    }
-    return $counts;
+    return miq_community_active_counts($context_type, $context_key);
 }
 
 function miq_api_workspace($user)
@@ -223,10 +228,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 try {
     if ($action === 'pulse') {
-        $context_type = miq_api_clean_text($_GET['context_type'] ?? 'site', 32);
-        $context_key = miq_api_clean_text($_GET['context_key'] ?? 'site', 80);
+        list($context_type, $context_key) = miq_api_pulse_context($_GET['context_type'] ?? 'site', $_GET['context_key'] ?? 'site');
         $timeframe = miq_api_pulse_timeframe($_GET['timeframe'] ?? '30d');
-        miq_api_json(array('counts' => miq_api_counts($context_type, $context_key), 'timeframe' => $timeframe, 'period_end' => miq_api_pulse_period_end()));
+        miq_api_json(array(
+            'counts' => miq_api_counts($context_type, $context_key),
+            'timeframe' => $timeframe,
+            'period_end' => miq_api_pulse_period_end(),
+            'trend_available' => miq_community_schema_ready(),
+        ));
+    }
+
+    if ($action === 'pulse_trend') {
+        list($context_type, $context_key) = miq_api_pulse_context($_GET['context_type'] ?? 'site', $_GET['context_key'] ?? 'site');
+        miq_api_pulse_timeframe($_GET['timeframe'] ?? '30d');
+        $days = max(7, min(180, (int) ($_GET['days'] ?? 90)));
+        miq_api_json(array('trend' => miq_community_rebuild_trend($context_type, $context_key, $days, 10)));
     }
 
     if ($action === 'public_ideas') {
@@ -758,14 +774,22 @@ try {
     }
 
     if ($action === 'vote') {
-        $context_type = miq_api_clean_text($body['context_type'] ?? 'site', 32);
-        $context_key = miq_api_clean_text($body['context_key'] ?? 'site', 80);
+        list($context_type, $context_key) = miq_api_pulse_context($body['context_type'] ?? 'site', $body['context_key'] ?? 'site');
         $timeframe = miq_api_pulse_timeframe($body['timeframe'] ?? '30d');
         $direction = $body['direction'] ?? '';
         if (!in_array($direction, array('bullish', 'bearish', 'neutral'), true)) miq_api_json(array('error' => 'Invalid community vote.'), 422);
-        $votes = miq_account_table('community_votes');
-        miq_account_query("INSERT INTO {$votes} (user_id, context_type, context_key, direction, created_at, updated_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE direction = VALUES(direction), updated_at = UTC_TIMESTAMP()", 'isss', array($user_id, $context_type, $context_key, $direction))->close();
-        miq_api_json(array('saved' => true, 'counts' => miq_api_counts($context_type, $context_key), 'timeframe' => $timeframe, 'period_end' => miq_api_pulse_period_end()));
+        $vote_limit = miq_account_config()['rate_limits']['community_vote_user'];
+        if (!miq_account_rate_limit('community_vote_user', (string) $user_id, $vote_limit['limit'], $vote_limit['window'])) {
+            miq_api_json(array('error' => 'Too many community vote changes. Try again later.'), 429);
+        }
+        $counts = miq_community_save_vote($user_id, $context_type, $context_key, $direction);
+        miq_api_json(array(
+            'saved' => true,
+            'counts' => $counts,
+            'timeframe' => $timeframe,
+            'period_end' => miq_api_pulse_period_end(),
+            'trend_available' => miq_community_schema_ready(),
+        ));
     }
 
     if ($action === 'report_idea') {

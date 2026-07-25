@@ -140,6 +140,89 @@
     font-size: 13px;
 }
 
+.miq-sentiment-chart {
+    --miq-sentiment-grid: rgba(102, 112, 133, .24);
+    --miq-sentiment-label: #667085;
+    --miq-sentiment-bullish: #16875f;
+    --miq-sentiment-neutral: #667085;
+    --miq-sentiment-bearish: #c63d3d;
+    --miq-sentiment-score: #3b99e0;
+}
+
+.miq-sentiment-chart-compact {
+    max-width: 250px;
+    margin-top: 8px;
+}
+
+.miq-sentiment-chart-compact[hidden] {
+    display: none !important;
+}
+
+.miq-sentiment-chart-compact .miq-sentiment-chart-plot {
+    width: 220px;
+    max-width: 100%;
+    height: 48px;
+}
+
+.miq-sentiment-chart-compact .miq-sentiment-chart-status {
+    display: block;
+    margin-top: 2px;
+    color: #667085;
+    font-size: 11px;
+}
+
+.miq-sentiment-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.miq-sentiment-grid-line {
+    stroke: var(--miq-sentiment-grid);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.miq-sentiment-axis-label {
+    fill: var(--miq-sentiment-label);
+    font-family: Montserrat, sans-serif;
+    font-size: 10px;
+}
+
+.miq-sentiment-line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.miq-sentiment-line.is-bullish,
+.miq-sentiment-point.is-bullish {
+    stroke: var(--miq-sentiment-bullish);
+}
+
+.miq-sentiment-line.is-neutral,
+.miq-sentiment-point.is-neutral {
+    stroke: var(--miq-sentiment-neutral);
+}
+
+.miq-sentiment-line.is-bearish,
+.miq-sentiment-point.is-bearish {
+    stroke: var(--miq-sentiment-bearish);
+}
+
+.miq-sentiment-line.is-score {
+    stroke: var(--miq-sentiment-score);
+}
+
+.miq-sentiment-point {
+    fill: var(--bg-card, #fff);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
 .miq-chart-sync-status {
     min-height: 18px;
     margin-top: 7px;
@@ -162,6 +245,23 @@ html[data-theme="dark"] .miq-community-pulse {
 
 html[data-theme="dark"] .miq-community-pulse p {
     color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-sentiment-chart {
+    --miq-sentiment-grid: rgba(197, 201, 214, .22);
+    --miq-sentiment-label: #c5c9d6;
+    --miq-sentiment-bullish: #52d49b;
+    --miq-sentiment-neutral: #b2b9c8;
+    --miq-sentiment-bearish: #ff7b7b;
+    --miq-sentiment-score: #6bb7ff;
+}
+
+html[data-theme="dark"] .miq-sentiment-chart-compact .miq-sentiment-chart-status {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-sentiment-point {
+    fill: #20213a;
 }
 
 .miq-account-page {

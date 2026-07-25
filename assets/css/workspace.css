@@ -211,6 +211,58 @@ html[data-theme="dark"] body.miq-community-body {
     margin-bottom: 22px;
 }
 
+.miq-sentiment-trend-card {
+    min-height: 170px;
+}
+
+.miq-sentiment-trend-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.miq-sentiment-trend-heading p {
+    max-width: 720px;
+    margin: 0;
+    color: #667085;
+    font-size: 13px;
+}
+
+.miq-sentiment-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.miq-sentiment-legend span::before {
+    display: inline-block;
+    width: 18px;
+    height: 3px;
+    margin-right: 5px;
+    border-radius: 999px;
+    vertical-align: middle;
+    content: "";
+}
+
+.miq-sentiment-legend .is-bullish::before { background: var(--miq-sentiment-bullish); }
+.miq-sentiment-legend .is-neutral::before { background: var(--miq-sentiment-neutral); }
+.miq-sentiment-legend .is-bearish::before { background: var(--miq-sentiment-bearish); }
+
+.miq-sentiment-trend-card .miq-sentiment-chart-plot {
+    width: 100%;
+    height: 280px;
+    margin-top: 18px;
+}
+
+.miq-sentiment-trend-card .miq-sentiment-chart-status {
+    margin-top: 10px;
+    color: #667085;
+    font-size: 12px;
+}
+
 .miq-community-form-card label {
     display: block;
     margin: 14px 0 6px;
@@ -277,7 +329,10 @@ html[data-theme="dark"] .miq-inline-status,
 html[data-theme="dark"] .miq-idea-meta,
 html[data-theme="dark"] .miq-empty-state,
 html[data-theme="dark"] .miq-asset-note,
-html[data-theme="dark"] .miq-asset-meta {
+html[data-theme="dark"] .miq-asset-meta,
+html[data-theme="dark"] .miq-sentiment-trend-heading p,
+html[data-theme="dark"] .miq-sentiment-legend,
+html[data-theme="dark"] .miq-sentiment-trend-card .miq-sentiment-chart-status {
     color: #c5c9d6;
 }
 
@@ -334,6 +389,14 @@ html[data-theme="dark"] .miq-community-page input:-webkit-autofill {
 
     .miq-form-row {
         grid-template-columns: 1fr;
+    }
+
+    .miq-sentiment-trend-heading {
+        flex-direction: column;
+    }
+
+    .miq-sentiment-trend-card .miq-sentiment-chart-plot {
+        height: 230px;
     }
 
     .miq-asset-filter {

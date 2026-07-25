@@ -3,6 +3,7 @@
 
     var state = window.__MIQ_ACCOUNT__ || { loggedIn: false };
     var localSearchKey = '360miq-account-recent-searches';
+    var sentimentTrendRequests = {};
 
     function jsonRequest(action, payload, method) {
         payload = payload || {};
@@ -184,6 +185,210 @@
         });
     }
 
+    function sentimentSvgElement(name, attributes, text) {
+        var element = document.createElementNS('http://www.w3.org/2000/svg', name);
+        Object.keys(attributes || {}).forEach(function (key) {
+            element.setAttribute(key, attributes[key]);
+        });
+        if (text != null) element.textContent = text;
+        return element;
+    }
+
+    function sentimentLinePath(points, field, minimumSample, xForIndex, yForValue) {
+        var commands = [];
+        var drawing = false;
+        points.forEach(function (point, index) {
+            var value = Number(point[field]);
+            if (Number(point.total) < minimumSample || !Number.isFinite(value)) {
+                drawing = false;
+                return;
+            }
+            commands.push((drawing ? 'L' : 'M') + xForIndex(index).toFixed(2) + ' ' + yForValue(value).toFixed(2));
+            drawing = true;
+        });
+        return commands.join(' ');
+    }
+
+    function clearElement(element) {
+        while (element && element.firstChild) element.removeChild(element.firstChild);
+    }
+
+    function renderSentimentChart(container, trend) {
+        var compact = container.getAttribute('data-chart-mode') === 'compact';
+        var plot = container.querySelector('[data-sentiment-plot]');
+        var status = container.querySelector('[data-sentiment-status]');
+        var legend = container.querySelector('[data-sentiment-legend]');
+        var subject = container.getAttribute('data-subject') || 'Market';
+        var minimumSample = Number(trend && trend.minimum_sample) || 10;
+        var latest = trend && trend.latest ? trend.latest : { total: 0 };
+
+        if (!trend || !trend.available) {
+            if (compact) {
+                container.hidden = true;
+            } else if (status) {
+                status.textContent = 'Sentiment trend history is not available yet.';
+            }
+            return;
+        }
+
+        if (!trend.meets_minimum) {
+            if (compact) {
+                container.hidden = true;
+            } else if (status) {
+                status.textContent = 'The trend will appear after ' + minimumSample + ' active votes. Current active votes: ' + Number(latest.total || 0) + '.';
+            }
+            if (legend) legend.hidden = true;
+            clearElement(plot);
+            return;
+        }
+
+        var points = Array.isArray(trend.points) ? trend.points : [];
+        if (compact && points.length > 30) points = points.slice(points.length - 30);
+        var eligiblePoints = points.filter(function (point) { return Number(point.total) >= minimumSample; });
+        if (compact && eligiblePoints.length < 2) {
+            container.hidden = true;
+            return;
+        }
+
+        var width = compact ? 220 : 760;
+        var height = compact ? 48 : 280;
+        var padding = compact ? { left: 3, right: 3, top: 4, bottom: 4 } : { left: 46, right: 16, top: 14, bottom: 34 };
+        var plotWidth = width - padding.left - padding.right;
+        var plotHeight = height - padding.top - padding.bottom;
+        var xForIndex = function (index) {
+            return padding.left + (points.length > 1 ? (index / (points.length - 1)) * plotWidth : plotWidth / 2);
+        };
+        var percentageY = function (value) { return padding.top + ((100 - value) / 100) * plotHeight; };
+        var scoreY = function (value) { return padding.top + ((100 - value) / 200) * plotHeight; };
+        var svg = sentimentSvgElement('svg', {
+            viewBox: '0 0 ' + width + ' ' + height,
+            role: 'img',
+            'aria-label': compact
+                ? subject + ' rolling 30-day sentiment score trend'
+                : subject + ' rolling 30-day bullish, neutral, and bearish vote trend'
+        });
+        svg.classList.add('miq-sentiment-svg');
+        svg.appendChild(sentimentSvgElement('title', {}, svg.getAttribute('aria-label')));
+
+        if (compact) {
+            svg.appendChild(sentimentSvgElement('line', {
+                x1: padding.left,
+                y1: scoreY(0),
+                x2: width - padding.right,
+                y2: scoreY(0),
+                class: 'miq-sentiment-grid-line'
+            }));
+            var scorePath = sentimentLinePath(points, 'score', minimumSample, xForIndex, scoreY);
+            if (scorePath) {
+                svg.appendChild(sentimentSvgElement('path', { d: scorePath, class: 'miq-sentiment-line is-score' }));
+            }
+        } else {
+            [0, 50, 100].forEach(function (value) {
+                var y = percentageY(value);
+                svg.appendChild(sentimentSvgElement('line', {
+                    x1: padding.left,
+                    y1: y,
+                    x2: width - padding.right,
+                    y2: y,
+                    class: 'miq-sentiment-grid-line'
+                }));
+                svg.appendChild(sentimentSvgElement('text', {
+                    x: padding.left - 8,
+                    y: y + 4,
+                    'text-anchor': 'end',
+                    class: 'miq-sentiment-axis-label'
+                }, value + '%'));
+            });
+
+            [
+                ['bullish_pct', 'is-bullish', 'Bullish'],
+                ['neutral_pct', 'is-neutral', 'Neutral'],
+                ['bearish_pct', 'is-bearish', 'Bearish']
+            ].forEach(function (series) {
+                var path = sentimentLinePath(points, series[0], minimumSample, xForIndex, percentageY);
+                if (path) svg.appendChild(sentimentSvgElement('path', { d: path, class: 'miq-sentiment-line ' + series[1] }));
+                points.forEach(function (point, index) {
+                    if (Number(point.total) < minimumSample) return;
+                    var circle = sentimentSvgElement('circle', {
+                        cx: xForIndex(index),
+                        cy: percentageY(Number(point[series[0]])),
+                        r: 3,
+                        class: 'miq-sentiment-point ' + series[1]
+                    });
+                    circle.appendChild(sentimentSvgElement('title', {}, point.date + ': ' + series[2] + ' ' + Number(point[series[0]]).toFixed(1) + '% (' + Number(point.total) + ' active votes)'));
+                    svg.appendChild(circle);
+                });
+            });
+
+            if (points.length) {
+                [0, Math.floor((points.length - 1) / 2), points.length - 1].filter(function (index, position, indexes) {
+                    return indexes.indexOf(index) === position;
+                }).forEach(function (index) {
+                    svg.appendChild(sentimentSvgElement('text', {
+                        x: xForIndex(index),
+                        y: height - 9,
+                        'text-anchor': index === 0 ? 'start' : (index === points.length - 1 ? 'end' : 'middle'),
+                        class: 'miq-sentiment-axis-label'
+                    }, points[index].date));
+                });
+            }
+        }
+
+        clearElement(plot);
+        plot.appendChild(svg);
+        container.hidden = false;
+        container.classList.add('is-ready');
+        if (legend) legend.hidden = false;
+        if (status) {
+            if (compact) {
+                var score = Number(latest.score || 0);
+                status.textContent = '30-day trend: ' + (score > 0 ? '+' : '') + score.toFixed(0) + ' · ' + Number(latest.total || 0) + ' votes';
+            } else {
+                status.textContent = 'Latest: ' + Number(latest.bullish_pct || 0).toFixed(1) + '% bullish, ' + Number(latest.neutral_pct || 0).toFixed(1) + '% neutral, ' + Number(latest.bearish_pct || 0).toFixed(1) + '% bearish · ' + Number(latest.total || 0) + ' active votes · outlook ending ' + (trend.period_end || '') + '.';
+            }
+        }
+    }
+
+    function sentimentTrendRequest(contextType, contextKey, timeframe, days, force) {
+        var cacheKey = [contextType, contextKey, timeframe, days].join('|');
+        if (force) delete sentimentTrendRequests[cacheKey];
+        if (!sentimentTrendRequests[cacheKey]) {
+            sentimentTrendRequests[cacheKey] = jsonRequest('pulse_trend', {
+                context_type: contextType,
+                context_key: contextKey,
+                timeframe: timeframe,
+                days: days
+            }, 'GET').then(function (body) {
+                return body.trend || null;
+            }).catch(function (error) {
+                delete sentimentTrendRequests[cacheKey];
+                throw error;
+            });
+        }
+        return sentimentTrendRequests[cacheKey];
+    }
+
+    function loadSentimentChart(container, force) {
+        var contextType = container.getAttribute('data-context-type') || 'site';
+        var contextKey = container.getAttribute('data-context-key') || 'site';
+        var timeframe = container.getAttribute('data-timeframe') || '30d';
+        var days = container.getAttribute('data-chart-mode') === 'compact' ? 30 : 90;
+        return sentimentTrendRequest(contextType, contextKey, timeframe, days, force).then(function (trend) {
+            renderSentimentChart(container, trend);
+        }).catch(function () {
+            var status = container.querySelector('[data-sentiment-status]');
+            if (container.getAttribute('data-chart-mode') === 'compact') container.hidden = true;
+            else if (status) status.textContent = 'The sentiment trend could not be loaded.';
+        });
+    }
+
+    function renderSentimentCharts(force, contextType, contextKey) {
+        Array.prototype.forEach.call(document.querySelectorAll('[data-sentiment-chart]'), function (container) {
+            if (contextType && (container.getAttribute('data-context-type') !== contextType || container.getAttribute('data-context-key') !== contextKey)) return;
+            loadSentimentChart(container, !!force);
+        });
+    }
+
     function renderPulse() {
         var pulse = document.getElementById('miq-community-pulse');
         if (!pulse || !state.apiUrl) return;
@@ -211,6 +416,7 @@
                         if (target) target.textContent = counts[direction] || 0;
                     });
                     pulse.classList.add('has-voted');
+                    renderSentimentCharts(true, contextType, contextKey);
                 }).catch(function (error) { window.alert(error.message); });
             });
         });
@@ -237,6 +443,7 @@
         bindSearchTracking();
         bindDisplayNameSuggestions();
         renderPulse();
+        renderSentimentCharts(false);
         mergeLocalSearches();
     });
 }());

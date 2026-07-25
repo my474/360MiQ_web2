@@ -24,9 +24,10 @@ Public browsing does not require an account. Saving, following, voting, submitti
 
 ## Deployment setup
 
-1. For a new account database, apply `schema.sql`. For an existing account database, apply both migrations in this order:
+1. For a new account database, apply `schema.sql`. For an existing account database, apply all migrations in this order:
    - `migrations/20260725_add_rate_limits.sql`
    - `migrations/20260725_upgrade_chart_script_assets.sql`
+   - `migrations/20260726_add_community_sentiment_history.sql`
 
    Apply the chart/script asset migration before deploying the matching PHP and JavaScript changes. It preserves existing chart layouts and Pine scripts while assigning stable asset keys and identifying the existing `Auto:*` chart records as per-symbol workspaces. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
 
@@ -68,6 +69,7 @@ The mu-plugin `blog/wp-content/mu-plugins/miq-main-site-sso.php` maps a main-sit
 - Add SMTP delivery monitoring before relying on verification and reset email.
 - Add a scheduled cleanup for expired email, reset, and SSO tokens.
 - Run the included cleanup script daily from cron: `php /path/to/account/cleanup_rate_limits.php`. It removes rate-limit rows unused for two days.
+- Run `php /path/to/account/snapshot_community_sentiment.php` daily after midnight UTC. It persists the current rolling 30-day bullish/neutral/bearish counts for every active stock, market, and global context. The same job bounds storage by retaining 211 days of vote events and 400 days of daily snapshots.
 - Review the financial-content disclaimer, privacy notice, user-content terms, and moderation policy before publishing community content.
 
 ## Default abuse limits
@@ -78,6 +80,7 @@ The account layer stores only a SHA-256 hash of each IP/email key. Defaults are 
 - Registration: 5 attempts per IP and 3 per email per hour.
 - Password reset: 10 requests per IP and 3 per email per hour.
 - Verification/reset email delivery: 12 per IP per hour, 3 per recipient per hour, and one message per recipient per 60 seconds.
+- Community pulse: 30 vote submissions or changes per account per hour.
 
 Rate-limit failures fail closed and are logged without recording raw IP addresses or email addresses.
 
