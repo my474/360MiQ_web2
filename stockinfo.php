@@ -1062,7 +1062,7 @@ function adsBlocked(callback){
 
 </div></div></div>
 </section>
-    <div class="container miq-community-pulse-placement">
+    <div class="container miq-community-pulse-placement miq-community-pulse-placement-stock">
         <?php include __DIR__ . '/components/community-pulse.php'; ?>
     </div>
     <!--div id="featuredpost" class="card clean-card text-center container" style="padding: 0;margin-bottom:16px;display:none">
