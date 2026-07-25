@@ -189,7 +189,8 @@
         if (!pulse || !state.apiUrl) return;
         var contextType = pulse.getAttribute('data-context-type') || state.contextType || 'site';
         var contextKey = pulse.getAttribute('data-context-key') || state.contextKey || 'site';
-        jsonRequest('pulse', { context_type: contextType, context_key: contextKey }, 'GET').then(function (body) {
+        var timeframe = pulse.getAttribute('data-timeframe') || '1m';
+        jsonRequest('pulse', { context_type: contextType, context_key: contextKey, timeframe: timeframe }, 'GET').then(function (body) {
             var counts = body.counts || { bullish: 0, bearish: 0, neutral: 0 };
             pulse.querySelector('[data-count="bullish"]').textContent = counts.bullish || 0;
             pulse.querySelector('[data-count="bearish"]').textContent = counts.bearish || 0;
@@ -203,7 +204,7 @@
                     window.location.href = 'account.php?view=login&return_to=' + encodeURIComponent(window.location.pathname + window.location.search);
                     return;
                 }
-                jsonRequest('vote', { context_type: contextType, context_key: contextKey, direction: button.getAttribute('data-pulse-vote') }).then(function (body) {
+                jsonRequest('vote', { context_type: contextType, context_key: contextKey, timeframe: timeframe, direction: button.getAttribute('data-pulse-vote') }).then(function (body) {
                     var counts = body.counts || {};
                     ['bullish', 'bearish', 'neutral'].forEach(function (direction) {
                         var target = pulse.querySelector('[data-count="' + direction + '"]');

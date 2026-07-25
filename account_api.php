@@ -49,6 +49,18 @@ function miq_api_clean_text($value, $max)
     return substr($value, 0, $max);
 }
 
+function miq_api_pulse_timeframe($value)
+{
+    $timeframe = strtolower(trim((string) $value));
+    if ($timeframe === '') {
+        $timeframe = '1m';
+    }
+    if ($timeframe !== '1m') {
+        miq_api_json(array('error' => 'Invalid community pulse timeframe.'), 422);
+    }
+    return $timeframe;
+}
+
 function miq_api_asset_key($value = '')
 {
     $value = strtolower(trim((string) $value));
@@ -205,7 +217,8 @@ try {
     if ($action === 'pulse') {
         $context_type = miq_api_clean_text($_GET['context_type'] ?? 'site', 32);
         $context_key = miq_api_clean_text($_GET['context_key'] ?? 'site', 80);
-        miq_api_json(array('counts' => miq_api_counts($context_type, $context_key)));
+        $timeframe = miq_api_pulse_timeframe($_GET['timeframe'] ?? '1m');
+        miq_api_json(array('counts' => miq_api_counts($context_type, $context_key), 'timeframe' => $timeframe));
     }
 
     if ($action === 'public_ideas') {
@@ -739,11 +752,12 @@ try {
     if ($action === 'vote') {
         $context_type = miq_api_clean_text($body['context_type'] ?? 'site', 32);
         $context_key = miq_api_clean_text($body['context_key'] ?? 'site', 80);
+        $timeframe = miq_api_pulse_timeframe($body['timeframe'] ?? '1m');
         $direction = $body['direction'] ?? '';
         if (!in_array($direction, array('bullish', 'bearish', 'neutral'), true)) miq_api_json(array('error' => 'Invalid community vote.'), 422);
         $votes = miq_account_table('community_votes');
         miq_account_query("INSERT INTO {$votes} (user_id, context_type, context_key, direction, created_at, updated_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE direction = VALUES(direction), updated_at = UTC_TIMESTAMP()", 'isss', array($user_id, $context_type, $context_key, $direction))->close();
-        miq_api_json(array('saved' => true, 'counts' => miq_api_counts($context_type, $context_key)));
+        miq_api_json(array('saved' => true, 'counts' => miq_api_counts($context_type, $context_key), 'timeframe' => $timeframe));
     }
 
     if ($action === 'report_idea') {

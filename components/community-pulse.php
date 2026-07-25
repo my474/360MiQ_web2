@@ -1,14 +1,41 @@
 <?php
 $miq_pulse_context_type = isset($miq_account_context_type) ? $miq_account_context_type : 'site';
 $miq_pulse_context_key = isset($miq_account_context_key) && $miq_account_context_key !== '' ? $miq_account_context_key : 'site';
+$miq_pulse_timeframe = '1m';
+$miq_pulse_market_labels = array(
+    'NYSE' => 'NYSE',
+    'NASDAQ' => 'Nasdaq',
+    'LSE' => 'London',
+    'TSX' => 'Toronto TSX',
+    'ASX' => 'Australia',
+    'NSE' => 'India NSE',
+    'TYO' => 'Tokyo',
+    'HKEX' => 'Hong Kong',
+    'SHSE' => 'Shanghai',
+    'SZSE' => 'Shenzhen',
+);
+
+if ($miq_pulse_context_type === 'stock' && $miq_pulse_context_key !== 'site') {
+    $miq_pulse_title = 'Your view on ' . $miq_pulse_context_key . ' over the next month?';
+    $miq_pulse_aria_label = 'One-month community outlook for ' . $miq_pulse_context_key;
+} elseif ($miq_pulse_context_type === 'market' && $miq_pulse_context_key !== 'site') {
+    $miq_pulse_market_name = isset($miq_pulse_market_labels[$miq_pulse_context_key])
+        ? $miq_pulse_market_labels[$miq_pulse_context_key]
+        : $miq_pulse_context_key;
+    $miq_pulse_title = 'Your view on ' . $miq_pulse_market_name . ' over the next month?';
+    $miq_pulse_aria_label = 'One-month community outlook for ' . $miq_pulse_market_name;
+} else {
+    $miq_pulse_title = 'Global market outlook for the next month?';
+    $miq_pulse_aria_label = 'One-month global community outlook';
+}
 ?>
-<section id="miq-community-pulse" class="miq-community-pulse" data-context-type="<?php echo htmlspecialchars($miq_pulse_context_type, ENT_QUOTES, 'UTF-8'); ?>" data-context-key="<?php echo htmlspecialchars($miq_pulse_context_key, ENT_QUOTES, 'UTF-8'); ?>" aria-labelledby="miq-community-pulse-title">
+<section id="miq-community-pulse" class="miq-community-pulse" data-context-type="<?php echo htmlspecialchars($miq_pulse_context_type, ENT_QUOTES, 'UTF-8'); ?>" data-context-key="<?php echo htmlspecialchars($miq_pulse_context_key, ENT_QUOTES, 'UTF-8'); ?>" data-timeframe="<?php echo $miq_pulse_timeframe; ?>" aria-labelledby="miq-community-pulse-title">
     <div class="miq-community-pulse-copy">
         <span class="miq-community-pulse-kicker">Community pulse</span>
-        <h2 id="miq-community-pulse-title">What is your view?</h2>
-        <p>Share a one-tap, time-bound market opinion. Published explanations are moderated.</p>
+        <h2 id="miq-community-pulse-title"><?php echo htmlspecialchars($miq_pulse_title, ENT_QUOTES, 'UTF-8'); ?></h2>
+        <p>Vote bullish, neutral, or bearish for the next month. You can change your view anytime.</p>
     </div>
-    <div class="miq-community-pulse-actions" role="group" aria-label="Community sentiment">
+    <div class="miq-community-pulse-actions" role="group" aria-label="<?php echo htmlspecialchars($miq_pulse_aria_label, ENT_QUOTES, 'UTF-8'); ?>">
         <button type="button" data-pulse-vote="bullish"><i class="fas fa-arrow-up"></i> Bullish <span data-count="bullish">–</span></button>
         <button type="button" data-pulse-vote="neutral"><i class="fas fa-minus"></i> Neutral <span data-count="neutral">–</span></button>
         <button type="button" data-pulse-vote="bearish"><i class="fas fa-arrow-down"></i> Bearish <span data-count="bearish">–</span></button>
