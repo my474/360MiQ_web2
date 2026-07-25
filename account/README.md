@@ -15,8 +15,8 @@ The main PHP site now has a first-party account/workspace layer. It is intention
 - Existing browser-local chart and Pine storage formats remain supported.
 - Watchlist storage and workspace display.
 - Community Pulse voting on every page through the shared footer.
-- Moderated community idea drafts and public idea feed.
-- Moderator queue with publish/reject/hide actions.
+- Moderated community idea drafts, public idea feed, and logged-in user reporting.
+- Moderator dashboard with pending and reported-content queues, publish/reject/hide decisions, required adverse-action notes, and audit history.
 - Account settings, data export, Google linking, and account deletion.
 - Optional main-site-to-WordPress contributor SSO handoff.
 
@@ -81,6 +81,7 @@ The account layer stores only a SHA-256 hash of each IP/email key. Defaults are 
 - Password reset: 10 requests per IP and 3 per email per hour.
 - Verification/reset email delivery: 12 per IP per hour, 3 per recipient per hour, and one message per recipient per 60 seconds.
 - Community pulse: 30 vote submissions or changes per account per hour.
+- Community reports: 10 report submissions per account per hour, with duplicate open reports blocked.
 
 Rate-limit failures fail closed and are logged without recording raw IP addresses or email addresses.
 

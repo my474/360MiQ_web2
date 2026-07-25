@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-07-26)
 
 ## Corpus Check
-- 143 files · ~748,094 words
+- 143 files · ~750,431 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1274 nodes · 2291 edges · 143 communities detected
+- 1294 nodes · 2343 edges · 143 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -228,156 +228,156 @@ Cohesion: 0.13
 Nodes (18): add_Days(), applyPriceInfoTheme(), dayofyear(), exchFn(), fscoreEfficiencyTXT(), fscoreLiquidityTXT(), fscoreProfitabilityTXT(), macdZeroTXT() (+10 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.12
-Nodes (8): miq_api_clean_text(), miq_api_count_rows(), miq_api_json(), miq_api_pulse_context(), miq_api_pulse_timeframe(), miq_api_require_post_csrf(), miq_api_user(), miq_api_workspace()
+Cohesion: 0.11
+Nodes (10): miq_api_clean_text(), miq_api_count_rows(), miq_api_json(), miq_api_pulse_context(), miq_api_pulse_timeframe(), miq_api_record_moderation_action(), miq_api_require_moderator(), miq_api_require_post_csrf() (+2 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.25
 Nodes (18): assetMeta(), chartRow(), escapeHtml(), humanDate(), importRecentScripts(), load(), loadCharts(), loadScripts() (+10 more)
 
 ### Community 16 - "Community 16"
+Cohesion: 0.27
+Nodes (17): actionLabel(), directionBadge(), escapeHtml(), humanDate(), ideaContent(), loadDashboard(), moderateIdea(), moderateReport() (+9 more)
+
+### Community 17 - "Community 17"
 Cohesion: 0.17
 Nodes (13): addWeekday(), embedVideo(), enqueueNewsSparklines(), fetchLatestVideo(), getTopBottom10HighLow(), getTopBottom10MA(), getTopBottom10Movers(), loadTreemapScatter() (+5 more)
 
-### Community 17 - "Community 17"
+### Community 18 - "Community 18"
 Cohesion: 0.2
 Nodes (13): addDays(), dataCompression_monthly(), dataCompression_weekly(), dataCompression_yearly(), divergence(), ema(), findPeaksAndTroughsBarFromEnd(), high() (+5 more)
 
-### Community 18 - "Community 18"
+### Community 19 - "Community 19"
 Cohesion: 0.25
 Nodes (12): datedecrypt(), dayofyear(), enqueueChartRender(), lazyRenderChart(), markChartRenderFailed(), openTabHash(), returnComment(), runChartRenderQueue() (+4 more)
 
-### Community 19 - "Community 19"
+### Community 20 - "Community 20"
 Cohesion: 0.25
 Nodes (13): bandComment(), bandTrend(), enqueueSparkline(), ensureScreenerExportLibraries(), lazyScreenerExportAction(), loadScreenerScriptOnce(), menu_disable(), observeSparklines() (+5 more)
 
-### Community 20 - "Community 20"
+### Community 21 - "Community 21"
 Cohesion: 0.35
 Nodes (9): a(), b(), c(), d(), e(), f(), k(), l() (+1 more)
 
-### Community 21 - "Community 21"
+### Community 22 - "Community 22"
 Cohesion: 0.24
 Nodes (8): b(), d(), h(), l(), n(), p(), v(), y()
 
-### Community 22 - "Community 22"
+### Community 23 - "Community 23"
 Cohesion: 0.36
 Nodes (10): boundedLimit(), commission(), createSession(), normalizeBars(), normalizeSettings(), number(), orderQuantity(), orderSidePrice() (+2 more)
 
-### Community 23 - "Community 23"
+### Community 24 - "Community 24"
 Cohesion: 0.51
 Nodes (10): miq_community_active_counts(), miq_community_empty_counts(), miq_community_rebuild_trend(), miq_community_save_vote(), miq_community_schema_ready(), miq_community_snapshot_point(), miq_community_snapshot_score(), miq_community_snapshot_today() (+2 more)
 
-### Community 24 - "Community 24"
+### Community 25 - "Community 25"
 Cohesion: 0.36
 Nodes (9): anystock(), anystockTheme(), applyAnystockTheme(), createMarkers(), findLineByLeastSquaresAndSE(), getDayOfWeek(), patchAnystockRangeSelector(), patchAnystockSvgBackground() (+1 more)
 
-### Community 25 - "Community 25"
+### Community 26 - "Community 26"
 Cohesion: 0.38
 Nodes (9): forceScoreGaugeAxisMarks(), forceScoreGaugeTheme(), forceScoreGaugeThemeAfterRender(), forceScoreGaugeZoneLabels(), fscore(), fscoreTheme(), mscore(), scoreGaugeZoneLabelStyle() (+1 more)
 
-### Community 26 - "Community 26"
+### Community 27 - "Community 27"
 Cohesion: 0.38
 Nodes (8): applyAll(), applyPeerRows(), applyScreenerHeaders(), applyScreenerRows(), configureScreenerExports(), percentFromText(), sanitizeAnyChart(), start()
 
-### Community 27 - "Community 27"
+### Community 28 - "Community 28"
 Cohesion: 0.4
 Nodes (9): bindButton(), copyUrl(), fallbackCopy(), getComposerShareUrl(), getRaceShareUrl(), notify(), setupSharing(), shareUrl() (+1 more)
 
-### Community 28 - "Community 28"
+### Community 29 - "Community 29"
 Cohesion: 0.44
 Nodes (7): a(), i(), n(), o(), r(), s(), t()
 
-### Community 29 - "Community 29"
+### Community 30 - "Community 30"
 Cohesion: 0.47
 Nodes (8): copyUrl(), ensureShareActions(), fallbackCopy(), getShareUrl(), init(), makeButton(), notify(), shareUrl()
 
-### Community 30 - "Community 30"
+### Community 31 - "Community 31"
 Cohesion: 0.5
 Nodes (6): applyTheme(), initToggle(), isDark(), setTheme(), toggleTheme(), updateToggleIcon()
 
-### Community 31 - "Community 31"
+### Community 32 - "Community 32"
 Cohesion: 0.48
 Nodes (4): e(), i(), n(), s()
 
-### Community 32 - "Community 32"
+### Community 33 - "Community 33"
 Cohesion: 0.52
 Nodes (6): sectorPerformance(), setLabelEvent(), sort1day(), sort20day(), sort5day(), sortAZ()
 
-### Community 33 - "Community 33"
+### Community 34 - "Community 34"
 Cohesion: 0.33
 Nodes (2): detectIE(), rounding()
 
-### Community 34 - "Community 34"
+### Community 35 - "Community 35"
 Cohesion: 0.4
 Nodes (2): miq_account_process_email_registration(), miq_account_token_link()
-
-### Community 35 - "Community 35"
-Cohesion: 0.33
-Nodes (0):
 
 ### Community 36 - "Community 36"
 Cohesion: 0.33
 Nodes (0):
 
 ### Community 37 - "Community 37"
+Cohesion: 0.33
+Nodes (0):
+
+### Community 38 - "Community 38"
 Cohesion: 0.4
 Nodes (2): miq_account_db(), miq_account_query()
 
-### Community 38 - "Community 38"
+### Community 39 - "Community 39"
+Cohesion: 0.67
+Nodes (5): appendReportControls(), collect(), escapeHtml(), loadIdeas(), save()
+
+### Community 40 - "Community 40"
 Cohesion: 0.6
 Nodes (4): formatPercent(), numberOrNull(), percentChange(), pointPercentChange()
 
-### Community 39 - "Community 39"
+### Community 41 - "Community 41"
 Cohesion: 0.53
 Nodes (5): earningSurpriseChart(), earningSurpriseComment(), Pxband(), valuationBands(), valuationComment()
 
-### Community 40 - "Community 40"
+### Community 42 - "Community 42"
 Cohesion: 0.4
 Nodes (0):
 
-### Community 41 - "Community 41"
-Cohesion: 0.7
-Nodes (4): collect(), escapeHtml(), loadIdeas(), save()
-
-### Community 42 - "Community 42"
+### Community 43 - "Community 43"
 Cohesion: 0.6
 Nodes (3): pchart(), polarTheme(), setLabelEvent()
 
-### Community 43 - "Community 43"
+### Community 44 - "Community 44"
 Cohesion: 0.7
 Nodes (4): ema0(), tsf(), TSFchart(), tsfLookback()
 
-### Community 44 - "Community 44"
+### Community 45 - "Community 45"
 Cohesion: 0.67
 Nodes (2): miq_sso_begin(), miq_sso_shared_secret()
-
-### Community 45 - "Community 45"
-Cohesion: 0.5
-Nodes (0):
 
 ### Community 46 - "Community 46"
 Cohesion: 0.5
 Nodes (0):
 
 ### Community 47 - "Community 47"
-Cohesion: 0.67
-Nodes (2): bubble(), findLineByLeastSquares()
-
-### Community 48 - "Community 48"
 Cohesion: 0.5
 Nodes (0):
 
+### Community 48 - "Community 48"
+Cohesion: 0.67
+Nodes (2): bubble(), findLineByLeastSquares()
+
 ### Community 49 - "Community 49"
-Cohesion: 0.83
-Nodes (3): getPlotBandPeriods(), highstock(), name()
+Cohesion: 0.5
+Nodes (0):
 
 ### Community 50 - "Community 50"
 Cohesion: 0.83
-Nodes (3): destroyRangeChartByContainer(), rangeChart(), registerRangeChartThemeRefresh()
+Nodes (3): getPlotBandPeriods(), highstock(), name()
 
 ### Community 51 - "Community 51"
-Cohesion: 0.67
-Nodes (0):
+Cohesion: 0.83
+Nodes (3): destroyRangeChartByContainer(), rangeChart(), registerRangeChartThemeRefresh()
 
 ### Community 52 - "Community 52"
 Cohesion: 0.67
@@ -416,20 +416,20 @@ Cohesion: 0.67
 Nodes (0):
 
 ### Community 61 - "Community 61"
-Cohesion: 1.0
-Nodes (2): miq_account_config(), miq_account_env()
+Cohesion: 0.67
+Nodes (0):
 
 ### Community 62 - "Community 62"
 Cohesion: 1.0
-Nodes (2): adchart(), adComment()
+Nodes (2): miq_account_config(), miq_account_env()
 
 ### Community 63 - "Community 63"
 Cohesion: 1.0
-Nodes (2): applyHighstockMajorEventTheme(), getHighstockMajorEvents()
+Nodes (2): adchart(), adComment()
 
 ### Community 64 - "Community 64"
 Cohesion: 1.0
-Nodes (2): escapeHtml(), loadQueue()
+Nodes (2): applyHighstockMajorEventTheme(), getHighstockMajorEvents()
 
 ### Community 65 - "Community 65"
 Cohesion: 1.0

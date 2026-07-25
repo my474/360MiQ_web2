@@ -191,6 +191,54 @@ function miq_api_counts($context_type, $context_key)
     return miq_community_active_counts($context_type, $context_key);
 }
 
+function miq_api_require_moderator($user)
+{
+    if (!miq_account_is_moderator($user)) {
+        miq_api_json(array('error' => 'Moderator access is required.'), 403);
+    }
+}
+
+function miq_api_moderation_dashboard()
+{
+    $ideas = miq_account_table('community_ideas');
+    $users = miq_account_table('users');
+    $reports = miq_account_table('community_reports');
+    $actions = miq_account_table('moderation_actions');
+
+    $pending = miq_account_fetch_all(miq_account_query(
+        "SELECT i.id, i.user_id, i.code, i.title, i.direction, i.timeframe, i.thesis, i.catalyst, i.risk, i.disclosure, i.status, i.visibility, i.created_at, i.updated_at, i.published_at, author.display_name AS author_display_name, author.email AS author_email, (SELECT COUNT(*) FROM {$reports} report_count WHERE report_count.idea_id = i.id AND report_count.status = 'open') AS open_report_count FROM {$ideas} i INNER JOIN {$users} author ON author.id = i.user_id WHERE i.status = 'pending' ORDER BY i.updated_at ASC LIMIT 100"
+    ));
+    $open_reports = miq_account_fetch_all(miq_account_query(
+        "SELECT r.id AS report_id, r.reason AS report_reason, r.details AS report_details, r.status AS report_status, r.created_at AS report_created_at, reporter.display_name AS reporter_display_name, reporter.email AS reporter_email, i.id AS idea_id, i.user_id AS author_user_id, i.code, i.title, i.direction, i.timeframe, i.thesis, i.catalyst, i.risk, i.disclosure, i.status AS idea_status, i.visibility AS idea_visibility, i.created_at AS idea_created_at, i.updated_at AS idea_updated_at, i.published_at, author.display_name AS author_display_name, author.email AS author_email FROM {$reports} r INNER JOIN {$ideas} i ON i.id = r.idea_id INNER JOIN {$users} reporter ON reporter.id = r.reporter_user_id INNER JOIN {$users} author ON author.id = i.user_id WHERE r.status = 'open' ORDER BY r.created_at ASC LIMIT 100"
+    ));
+    $history = miq_account_fetch_all(miq_account_query(
+        "SELECT action_log.id, action_log.idea_id, action_log.action, action_log.note, action_log.created_at, moderator.display_name AS moderator_display_name, moderator.email AS moderator_email, i.title AS idea_title, i.code AS idea_code, i.status AS idea_status FROM {$actions} action_log INNER JOIN {$users} moderator ON moderator.id = action_log.moderator_user_id INNER JOIN {$ideas} i ON i.id = action_log.idea_id ORDER BY action_log.created_at DESC, action_log.id DESC LIMIT 100"
+    ));
+    $pending_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$ideas} WHERE status = 'pending'"));
+    $report_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$reports} WHERE status = 'open'"));
+    $action_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$actions}"));
+
+    return array(
+        'ideas' => $pending,
+        'reports' => $open_reports,
+        'history' => $history,
+        'counts' => array(
+            'pending' => (int) ($pending_count['total'] ?? 0),
+            'reports' => (int) ($report_count['total'] ?? 0),
+            'actions' => (int) ($action_count['total'] ?? 0),
+        ),
+    );
+}
+
+function miq_api_record_moderation_action($moderator_user_id, $idea_id, $action, $note)
+{
+    miq_account_query(
+        "INSERT INTO " . miq_account_table('moderation_actions') . " (moderator_user_id, idea_id, action, note, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())",
+        'iiss',
+        array((int) $moderator_user_id, (int) $idea_id, miq_api_clean_text($action, 32), miq_api_clean_text($note, 500))
+    )->close();
+}
+
 function miq_api_workspace($user)
 {
     $user_id = (int) $user['id'];
@@ -794,28 +842,133 @@ try {
 
     if ($action === 'report_idea') {
         $idea_id = (int) ($body['idea_id'] ?? 0);
+        $reason = strtolower(miq_api_clean_text($body['reason'] ?? 'other', 80));
+        $details = miq_api_clean_text($body['details'] ?? '', 500);
+        $allowed_reasons = array('spam', 'misleading', 'harassment', 'undisclosed_conflict', 'other');
+        if (!$idea_id || !in_array($reason, $allowed_reasons, true)) {
+            miq_api_json(array('error' => 'Choose a valid report reason.'), 422);
+        }
+        if ($reason === 'other' && $details === '') {
+            miq_api_json(array('error' => 'Add a short explanation for this report.'), 422);
+        }
+        $ideas = miq_account_table('community_ideas');
+        $idea = miq_account_fetch_one(miq_account_query(
+            "SELECT id, user_id FROM {$ideas} WHERE id = ? AND status = 'published' AND visibility = 'public' LIMIT 1",
+            'i',
+            array($idea_id)
+        ));
+        if (!$idea) miq_api_json(array('error' => 'That published idea is no longer available.'), 404);
+        if ((int) $idea['user_id'] === $user_id) miq_api_json(array('error' => 'You cannot report your own idea.'), 422);
         $reports = miq_account_table('community_reports');
-        miq_account_query("INSERT INTO {$reports} (idea_id, reporter_user_id, reason, details, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiss', array($idea_id, $user_id, miq_api_clean_text($body['reason'] ?? 'other', 80), miq_api_clean_text($body['details'] ?? '', 500)))->close();
+        $existing_report = miq_account_fetch_one(miq_account_query(
+            "SELECT id FROM {$reports} WHERE idea_id = ? AND reporter_user_id = ? AND status = 'open' LIMIT 1",
+            'ii',
+            array($idea_id, $user_id)
+        ));
+        if ($existing_report) miq_api_json(array('error' => 'You already have an open report for this idea.'), 409);
+        $report_limit = miq_account_config()['rate_limits']['community_report_user'];
+        if (!miq_account_rate_limit('community_report_user', (string) $user_id, $report_limit['limit'], $report_limit['window'])) {
+            miq_api_json(array('error' => 'Too many reports. Try again later.'), 429);
+        }
+        miq_account_query(
+            "INSERT INTO {$reports} (idea_id, reporter_user_id, reason, details, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())",
+            'iiss',
+            array($idea_id, $user_id, $reason, $details)
+        )->close();
         miq_api_json(array('saved' => true));
     }
 
-    if ($action === 'moderation_queue') {
-        if (!miq_account_is_moderator($user)) miq_api_json(array('error' => 'Moderator access is required.'), 403);
-        $ideas = miq_account_table('community_ideas');
-        $rows = miq_account_fetch_all(miq_account_query("SELECT i.*, u.display_name, u.email FROM {$ideas} i INNER JOIN " . miq_account_table('users') . " u ON u.id = i.user_id WHERE i.status = 'pending' ORDER BY i.updated_at ASC LIMIT 100"));
-        miq_api_json(array('ideas' => $rows));
+    if ($action === 'moderation_dashboard' || $action === 'moderation_queue') {
+        miq_api_require_moderator($user);
+        miq_api_json(miq_api_moderation_dashboard());
     }
 
     if ($action === 'moderate_idea') {
-        if (!miq_account_is_moderator($user)) miq_api_json(array('error' => 'Moderator access is required.'), 403);
+        miq_api_require_moderator($user);
         $idea_id = (int) ($body['idea_id'] ?? 0);
         $decision = in_array(($body['decision'] ?? ''), array('publish', 'reject', 'hide'), true) ? $body['decision'] : '';
+        $note = miq_api_clean_text($body['note'] ?? '', 500);
         if (!$idea_id || $decision === '') miq_api_json(array('error' => 'Invalid moderation action.'), 422);
+        if (in_array($decision, array('reject', 'hide'), true) && $note === '') {
+            miq_api_json(array('error' => 'Add a moderator note before rejecting or hiding content.'), 422);
+        }
         $status = $decision === 'publish' ? 'published' : ($decision === 'reject' ? 'rejected' : 'hidden');
         $ideas = miq_account_table('community_ideas');
-        miq_account_query("UPDATE {$ideas} SET status = ?, visibility = CASE WHEN ? = 'published' THEN 'public' ELSE 'private' END, published_at = CASE WHEN ? = 'published' THEN UTC_TIMESTAMP() ELSE published_at END, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'sssi', array($status, $status, $status, $idea_id))->close();
-        miq_account_query("INSERT INTO " . miq_account_table('moderation_actions') . " (moderator_user_id, idea_id, action, note, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiss', array($user_id, $idea_id, $decision, miq_api_clean_text($body['note'] ?? '', 500)))->close();
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            $idea = miq_account_fetch_one(miq_account_query(
+                "SELECT id, status FROM {$ideas} WHERE id = ? LIMIT 1 FOR UPDATE",
+                'i',
+                array($idea_id)
+            ));
+            if (!$idea) {
+                $db->rollback();
+                miq_api_json(array('error' => 'Idea not found.'), 404);
+            }
+            if (in_array($idea['status'], array('draft', 'archived'), true)) {
+                $db->rollback();
+                miq_api_json(array('error' => 'That idea is not available for moderation.'), 422);
+            }
+            miq_account_query(
+                "UPDATE {$ideas} SET status = ?, visibility = CASE WHEN ? = 'published' THEN 'public' ELSE 'private' END, published_at = CASE WHEN ? = 'published' THEN COALESCE(published_at, UTC_TIMESTAMP()) ELSE published_at END, updated_at = UTC_TIMESTAMP() WHERE id = ?",
+                'sssi',
+                array($status, $status, $status, $idea_id)
+            )->close();
+            if ($decision === 'hide') {
+                $reports = miq_account_table('community_reports');
+                miq_account_query("UPDATE {$reports} SET status = 'reviewed' WHERE idea_id = ? AND status = 'open'", 'i', array($idea_id))->close();
+            }
+            miq_api_record_moderation_action($user_id, $idea_id, $decision, $note);
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         miq_api_json(array('saved' => true, 'status' => $status));
+    }
+
+    if ($action === 'moderate_report') {
+        miq_api_require_moderator($user);
+        $report_id = (int) ($body['report_id'] ?? 0);
+        $decision = in_array(($body['decision'] ?? ''), array('dismiss', 'hide'), true) ? $body['decision'] : '';
+        $note = miq_api_clean_text($body['note'] ?? '', 500);
+        if (!$report_id || $decision === '') miq_api_json(array('error' => 'Invalid report action.'), 422);
+        if ($note === '') miq_api_json(array('error' => 'Add a moderator note before resolving a report.'), 422);
+
+        $reports = miq_account_table('community_reports');
+        $ideas = miq_account_table('community_ideas');
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            $report = miq_account_fetch_one(miq_account_query(
+                "SELECT id, idea_id, status FROM {$reports} WHERE id = ? LIMIT 1 FOR UPDATE",
+                'i',
+                array($report_id)
+            ));
+            if (!$report) {
+                $db->rollback();
+                miq_api_json(array('error' => 'Report not found.'), 404);
+            }
+            if ($report['status'] !== 'open') {
+                $db->rollback();
+                miq_api_json(array('error' => 'That report has already been resolved.'), 409);
+            }
+            $idea_id = (int) $report['idea_id'];
+            if ($decision === 'dismiss') {
+                miq_account_query("UPDATE {$reports} SET status = 'dismissed' WHERE id = ?", 'i', array($report_id))->close();
+                miq_api_record_moderation_action($user_id, $idea_id, 'report_dismissed', 'Report #' . $report_id . ': ' . $note);
+            } else {
+                miq_account_query("UPDATE {$ideas} SET status = 'hidden', visibility = 'private', updated_at = UTC_TIMESTAMP() WHERE id = ?", 'i', array($idea_id))->close();
+                miq_account_query("UPDATE {$reports} SET status = 'reviewed' WHERE idea_id = ? AND status = 'open'", 'i', array($idea_id))->close();
+                miq_api_record_moderation_action($user_id, $idea_id, 'hide', 'Report #' . $report_id . ': ' . $note);
+            }
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        miq_api_json(array('saved' => true, 'status' => $decision === 'dismiss' ? 'dismissed' : 'hidden'));
     }
 
     miq_api_json(array('error' => 'Unknown account action.'), 404);
