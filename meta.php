@@ -104,9 +104,9 @@ $miq_account_client_state = array(
     'displayName' => $miq_account_user ? $miq_account_user['display_name'] : null,
     'role' => $miq_account_user ? $miq_account_user['role'] : null,
     'csrfToken' => miq_account_csrf_token(),
-    'apiUrl' => $site_url . '/account_api.php',
-    'accountUrl' => $site_url . '/account.php',
-    'workspaceUrl' => $site_url . '/workspace',
+    'apiUrl' => 'account_api.php',
+    'accountUrl' => 'account.php',
+    'workspaceUrl' => 'workspace',
     'contextType' => $miq_account_context_type,
     'contextKey' => substr($miq_account_context_key, 0, 80),
 );
