@@ -294,10 +294,27 @@ html[data-theme="dark"] .miq-asset-versions {
 }
 
 html[data-theme="dark"] .miq-asset-filter .form-control,
-html[data-theme="dark"] .miq-asset-inline-form .form-control {
+html[data-theme="dark"] .miq-asset-inline-form .form-control,
+html[data-theme="dark"] .miq-community-page .form-control {
     background: #2b2d47;
     border-color: #59607d;
     color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-community-page .form-control::placeholder {
+    color: #aab4c3;
+}
+
+html[data-theme="dark"] .miq-community-page .form-control:focus {
+    background: #303250;
+    border-color: #6bb7ff;
+    color: #fff;
+    box-shadow: 0 0 0 .2rem rgba(107, 183, 255, .2);
+}
+
+html[data-theme="dark"] .miq-community-page input:-webkit-autofill {
+    -webkit-text-fill-color: #f1f3f7;
+    -webkit-box-shadow: 0 0 0 1000px #2b2d47 inset;
 }
 
 @media (max-width: 767.98px) {

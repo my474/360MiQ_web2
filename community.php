@@ -10,8 +10,10 @@ $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
     <meta property="og:title" content="Community Ideas - 360MiQ.com" />
     <meta name="description" content="Explore moderated user-generated market ideas on 360MiQ.com." />
     <title>Community Ideas - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css">
-    <link rel="stylesheet" href="assets/css/workspace.css">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260725.2">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260725.2">
 </head>
 <body>
 <?php $page = 'community'; include __DIR__ . '/header.php'; ?>
