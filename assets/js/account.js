@@ -3,6 +3,8 @@
 
     var state = window.__MIQ_ACCOUNT__ || { loggedIn: false };
     var localSearchKey = '360miq-account-recent-searches';
+    var pendingPulseVoteKey = '360miq-pending-community-vote';
+    var pendingPulseVoteMaxAge = 24 * 60 * 60 * 1000;
     var sentimentTrendRequests = {};
     var pulseDebugEnabled = new URLSearchParams(window.location.search).get('community_debug') === '1';
     var pulseMarketLabels = {
@@ -100,7 +102,8 @@
             contextType: contextType,
             contextKey: contextKey,
             subject: subject,
-            title: title
+            title: title,
+            periodEnd: periodEnd
         };
     }
 
@@ -536,6 +539,173 @@
         });
     }
 
+    function rememberPendingPulseVote(vote) {
+        vote.createdAt = Date.now();
+        try {
+            window.localStorage.setItem(pendingPulseVoteKey, JSON.stringify(vote));
+        } catch (error) {
+            pulseDebug('Pending vote could not be stored', { message: error && error.message });
+        }
+    }
+
+    function pendingPulseVote() {
+        var vote = null;
+        try {
+            vote = JSON.parse(window.localStorage.getItem(pendingPulseVoteKey) || 'null');
+        } catch (error) {
+            vote = null;
+        }
+        if (!vote || !vote.createdAt || Date.now() - Number(vote.createdAt) > pendingPulseVoteMaxAge) {
+            try { window.localStorage.removeItem(pendingPulseVoteKey); } catch (error) { /* optional storage */ }
+            return null;
+        }
+        return vote;
+    }
+
+    function clearPendingPulseVote() {
+        try { window.localStorage.removeItem(pendingPulseVoteKey); } catch (error) { /* optional storage */ }
+    }
+
+    function updatePulseCounts(pulse, counts) {
+        var total = 0;
+        ['bullish', 'bearish', 'neutral'].forEach(function (direction) {
+            var value = Number(counts && counts[direction]) || 0;
+            var target = pulse.querySelector('[data-count="' + direction + '"]');
+            if (target) target.textContent = value;
+            total += value;
+        });
+        var zeroState = pulse.querySelector('[data-pulse-zero-state]');
+        if (zeroState) zeroState.hidden = total !== 0;
+        return total;
+    }
+
+    function setPulseBusy(pulse, busy) {
+        Array.prototype.forEach.call(pulse.querySelectorAll('[data-pulse-vote]'), function (button) {
+            button.disabled = !!busy;
+        });
+    }
+
+    function selectPulseDirection(pulse, direction) {
+        Array.prototype.forEach.call(pulse.querySelectorAll('[data-pulse-vote]'), function (button) {
+            button.setAttribute('aria-pressed', button.getAttribute('data-pulse-vote') === direction ? 'true' : 'false');
+        });
+    }
+
+    function showPulseExplanation(pulse, direction, message) {
+        var form = pulse.querySelector('[data-pulse-explanation]');
+        var status = pulse.querySelector('[data-pulse-explanation-status]');
+        if (!form) return;
+        form.setAttribute('data-direction', direction);
+        form.hidden = false;
+        if (status) status.textContent = message || 'Your vote is counted. Add context if you want to explain it.';
+    }
+
+    function submitPulseVote(pulse, context, timeframe, direction, options) {
+        options = options || {};
+        setPulseBusy(pulse, true);
+        return jsonRequest('vote', {
+            context_type: context.contextType,
+            context_key: context.contextKey,
+            timeframe: timeframe,
+            direction: direction
+        }).then(function (body) {
+            setPulseBusy(pulse, false);
+            updatePulseCounts(pulse, body.counts || {});
+            selectPulseDirection(pulse, direction);
+            pulse.classList.add('has-voted');
+            showPulseExplanation(
+                pulse,
+                direction,
+                options.replayed ? 'Your saved vote was added after sign-in.' : 'Your vote is counted.'
+            );
+            renderSentimentCharts(true, context.contextType, context.contextKey);
+            pulseDebug('Vote saved', {
+                contextType: context.contextType,
+                contextKey: context.contextKey,
+                direction: direction,
+                replayed: !!options.replayed
+            });
+            return body;
+        }, function (error) {
+            setPulseBusy(pulse, false);
+            throw error;
+        });
+    }
+
+    function replayPendingPulseVote(pulse, context, timeframe) {
+        if (!state.loggedIn) return;
+        var pending = pendingPulseVote();
+        if (!pending) return;
+        if (
+            pending.contextType !== context.contextType ||
+            String(pending.contextKey).toUpperCase() !== String(context.contextKey).toUpperCase() ||
+            pending.timeframe !== timeframe ||
+            ['bullish', 'neutral', 'bearish'].indexOf(pending.direction) === -1
+        ) return;
+
+        clearPendingPulseVote();
+        submitPulseVote(pulse, context, timeframe, pending.direction, { replayed: true }).catch(function (error) {
+            var status = pulse.querySelector('[data-pulse-explanation-status]');
+            showPulseExplanation(pulse, pending.direction, '');
+            if (status) status.textContent = error.message;
+            pulseDebug('Saved vote replay failed', {
+                status: error && error.status,
+                message: error && error.message
+            });
+        });
+    }
+
+    function bindPulseExplanation(pulse, context) {
+        var form = pulse.querySelector('[data-pulse-explanation]');
+        if (!form) return;
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            var input = form.querySelector('[data-pulse-explanation-input]');
+            var button = form.querySelector('[data-pulse-explanation-submit]');
+            var status = form.querySelector('[data-pulse-explanation-status]');
+            var explanation = input ? input.value.trim() : '';
+            var direction = form.getAttribute('data-direction') || '';
+            if (!explanation) {
+                if (status) status.textContent = 'Add one sentence before submitting.';
+                if (input) input.focus();
+                return;
+            }
+            if (!state.loggedIn || !direction) {
+                if (status) status.textContent = 'Sign in and vote before sharing an explanation.';
+                return;
+            }
+
+            var directionLabel = direction.charAt(0).toUpperCase() + direction.slice(1);
+            var subject = context.contextType === 'site' ? 'the global market' : context.subject;
+            var timeframe = context.periodEnd ? 'Next 30 days ending ' + context.periodEnd : 'Next 30 days';
+            if (button) button.disabled = true;
+            if (status) status.textContent = 'Submitting for moderation...';
+            saveIdea({
+                code: context.contextType === 'stock' ? context.contextKey : '',
+                title: directionLabel + ' on ' + subject + ' for the next 30 days',
+                direction: direction,
+                timeframe: timeframe,
+                thesis: explanation,
+                catalyst: '',
+                risk: '',
+                disclosure: ''
+            }, true).then(function () {
+                if (input) {
+                    input.value = '';
+                    input.disabled = true;
+                }
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = 'Submitted';
+                }
+                if (status) status.textContent = 'Submitted for moderation. It will appear after review.';
+            }).catch(function (error) {
+                if (button) button.disabled = false;
+                if (status) status.textContent = error.message;
+            });
+        });
+    }
+
     function renderPulse() {
         var pulse = document.getElementById('miq-community-pulse');
         if (!pulse) {
@@ -551,11 +721,9 @@
         var contextKey = resolvedContext.contextKey;
         var timeframe = pulse.getAttribute('data-timeframe') || '30d';
         pulseDebug('Resolved context', inspectPulse());
-        jsonRequest('pulse', { context_type: contextType, context_key: contextKey, timeframe: timeframe }, 'GET').then(function (body) {
+        var countsRequest = jsonRequest('pulse', { context_type: contextType, context_key: contextKey, timeframe: timeframe }, 'GET').then(function (body) {
             var counts = body.counts || { bullish: 0, bearish: 0, neutral: 0 };
-            pulse.querySelector('[data-count="bullish"]').textContent = counts.bullish || 0;
-            pulse.querySelector('[data-count="bearish"]').textContent = counts.bearish || 0;
-            pulse.querySelector('[data-count="neutral"]').textContent = counts.neutral || 0;
+            updatePulseCounts(pulse, counts);
             pulse.classList.add('is-ready');
             pulseDebug('Counts loaded', {
                 contextType: contextType,
@@ -572,22 +740,26 @@
             });
         });
 
+        bindPulseExplanation(pulse, resolvedContext);
         Array.prototype.forEach.call(pulse.querySelectorAll('[data-pulse-vote]'), function (button) {
+            button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', function () {
+                var direction = button.getAttribute('data-pulse-vote');
                 if (!state.loggedIn) {
+                    rememberPendingPulseVote({
+                        contextType: contextType,
+                        contextKey: contextKey,
+                        timeframe: timeframe,
+                        direction: direction
+                    });
                     window.location.href = 'account.php?view=login&return_to=' + encodeURIComponent(window.location.pathname + window.location.search);
                     return;
                 }
-                jsonRequest('vote', { context_type: contextType, context_key: contextKey, timeframe: timeframe, direction: button.getAttribute('data-pulse-vote') }).then(function (body) {
-                    var counts = body.counts || {};
-                    ['bullish', 'bearish', 'neutral'].forEach(function (direction) {
-                        var target = pulse.querySelector('[data-count="' + direction + '"]');
-                        if (target) target.textContent = counts[direction] || 0;
-                    });
-                    pulse.classList.add('has-voted');
-                    renderSentimentCharts(true, contextType, contextKey);
-                }).catch(function (error) { window.alert(error.message); });
+                submitPulseVote(pulse, resolvedContext, timeframe, direction).catch(function (error) { window.alert(error.message); });
             });
+        });
+        countsRequest.then(function () {
+            replayPendingPulseVote(pulse, resolvedContext, timeframe);
         });
     }
 

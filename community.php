@@ -9,13 +9,17 @@ $trend_subject = $context_code !== '' ? $context_code : 'Global market';
 <!DOCTYPE html>
 <html>
 <head>
+    <?php
+    $miq_page_context_type = $trend_context_type;
+    $miq_page_context_key = $trend_context_key;
+    ?>
     <?php include __DIR__ . '/meta.php'; ?>
     <meta property="og:title" content="Community Ideas - 360MiQ.com" />
     <meta name="description" content="Explore moderated user-generated market ideas on 360MiQ.com." />
     <title>Community Ideas - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260726.1">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260726.2">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.2">
 </head>
 <body class="miq-community-body">
@@ -29,6 +33,11 @@ $trend_subject = $context_code !== '' ? $context_code : 'Global market';
         </div>
         <?php if ($user): ?><button class="btn btn-primary" type="button" data-open-idea-form>Share an idea</button><?php else: ?><a class="btn btn-primary" href="account.php?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/community'); ?>">Sign in to share</a><?php endif; ?>
     </div>
+    <?php
+    $miq_pulse_featured = true;
+    include __DIR__ . '/components/community-pulse.php';
+    unset($miq_pulse_featured);
+    ?>
     <section class="miq-community-list-card miq-sentiment-chart miq-sentiment-trend-card" data-sentiment-chart data-chart-mode="detail" data-context-type="<?php echo $trend_context_type; ?>" data-context-key="<?php echo htmlspecialchars($trend_context_key, ENT_QUOTES, 'UTF-8'); ?>" data-timeframe="30d" data-subject="<?php echo htmlspecialchars($trend_subject, ENT_QUOTES, 'UTF-8'); ?>">
         <div class="miq-sentiment-trend-heading">
             <div>

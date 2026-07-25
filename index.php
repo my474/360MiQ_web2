@@ -487,6 +487,14 @@ function adsBlocked(callback){
     </div>
 </div>
 
+<div class="miq-community-pulse-placement">
+    <?php
+    $miq_pulse_featured = true;
+    include __DIR__ . '/components/community-pulse.php';
+    unset($miq_pulse_featured);
+    ?>
+</div>
+
 <p></p>
 <style>
 .btn-group-xs > .btn, .btn-xs {

@@ -1,6 +1,5 @@
 <footer class="page-footer dark not-selectable">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <?php include __DIR__ . '/components/community-pulse.php'; ?>
     <div class="container">
         <div class="row">
             <div class="col-sm-3">
@@ -12,6 +11,7 @@
                     <li><a href="econ?country=US">Econ - US</a></li>
                     <li><a href="econ?country=HK">Econ - HK</a></li>
                     <li><a href="tool">Tool</a></li>
+                    <li><a href="community">Community Ideas</a></li>
                     <li><a href="/blog">Analysis</a></li>
                     <li><a href="writeforus">Write for Us&nbsp;<i class="fa-solid fa-pen-clip" title="Analysis Contributor Login/Register&#10;&#10;Free Sign-up for Everyone!"></i></a></li>
                     <li><a href="https://rapidapi.com/mchanlg/api/360miq1/" target="_blank">Data API<sub>&emsp13;by&nbsp;RapidAPI</sub></a></li>

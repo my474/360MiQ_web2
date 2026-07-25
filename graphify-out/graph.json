@@ -1305,7 +1305,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L1",
       "id": "account_auth_php",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_start_session()",
@@ -1313,7 +1313,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L4",
       "id": "auth_miq_account_start_session",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_bootstrap()",
@@ -1321,7 +1321,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L23",
       "id": "auth_miq_account_bootstrap",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_current_user()",
@@ -1329,7 +1329,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L31",
       "id": "auth_miq_account_current_user",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_is_authenticated()",
@@ -1337,7 +1337,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L65",
       "id": "auth_miq_account_is_authenticated",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_is_moderator()",
@@ -1345,7 +1345,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L70",
       "id": "auth_miq_account_is_moderator",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_logout()",
@@ -1353,7 +1353,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L85",
       "id": "auth_miq_account_logout",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_login_user()",
@@ -1361,7 +1361,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L99",
       "id": "auth_miq_account_login_user",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_normalize_email()",
@@ -1369,7 +1369,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L107",
       "id": "auth_miq_account_normalize_email",
-      "community": 9
+      "community": 10
     },
     {
       "label": "MiqAccountDisplayNameTakenException",
@@ -1377,7 +1377,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L113",
       "id": "auth_miqaccountdisplaynametakenexception",
-      "community": 9
+      "community": 10
     },
     {
       "label": ".__construct()",
@@ -1385,7 +1385,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L117",
       "id": "auth_miqaccountdisplaynametakenexception_construct",
-      "community": 9
+      "community": 10
     },
     {
       "label": "MiqAccountRateLimitException",
@@ -1393,7 +1393,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L126",
       "id": "auth_miqaccountratelimitexception",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_clean_display_name()",
@@ -1401,7 +1401,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L131",
       "id": "auth_miq_account_clean_display_name",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_display_name()",
@@ -1409,7 +1409,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L137",
       "id": "auth_miq_account_display_name",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_display_name_exists()",
@@ -1417,7 +1417,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L147",
       "id": "auth_miq_account_display_name_exists",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_display_name_with_suffix()",
@@ -1425,7 +1425,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L162",
       "id": "auth_miq_account_display_name_with_suffix",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_display_name_suggestions()",
@@ -1433,7 +1433,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L168",
       "id": "auth_miq_account_display_name_suggestions",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_resolve_display_name()",
@@ -1441,7 +1441,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L184",
       "id": "auth_miq_account_resolve_display_name",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_csrf_token()",
@@ -1449,7 +1449,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L199",
       "id": "auth_miq_account_csrf_token",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_check_csrf()",
@@ -1457,7 +1457,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L208",
       "id": "auth_miq_account_check_csrf",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_safe_return_to()",
@@ -1465,7 +1465,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L213",
       "id": "auth_miq_account_safe_return_to",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_flash()",
@@ -1473,7 +1473,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L222",
       "id": "auth_miq_account_flash",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_take_flash()",
@@ -1481,7 +1481,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L228",
       "id": "auth_miq_account_take_flash",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_hash_token()",
@@ -1489,7 +1489,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L236",
       "id": "auth_miq_account_hash_token",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_client_ip()",
@@ -1497,7 +1497,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L241",
       "id": "auth_miq_account_client_ip",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_rate_limit_key()",
@@ -1505,7 +1505,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L247",
       "id": "auth_miq_account_rate_limit_key",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_rate_limit()",
@@ -1513,7 +1513,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L252",
       "id": "auth_miq_account_rate_limit",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_require_rate_limit()",
@@ -1521,7 +1521,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L325",
       "id": "auth_miq_account_require_rate_limit",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_email_rate_limit()",
@@ -1529,7 +1529,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L333",
       "id": "auth_miq_account_email_rate_limit",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_send_mail()",
@@ -1537,7 +1537,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L351",
       "id": "auth_miq_account_send_mail",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_create_token()",
@@ -1545,7 +1545,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L387",
       "id": "auth_miq_account_create_token",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_create_user()",
@@ -1553,7 +1553,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L392",
       "id": "auth_miq_account_create_user",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_issue_email_token()",
@@ -1561,7 +1561,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L441",
       "id": "auth_miq_account_issue_email_token",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_google_identity()",
@@ -1569,7 +1569,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L456",
       "id": "auth_miq_account_google_identity",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_find_google_user()",
@@ -1577,7 +1577,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L497",
       "id": "auth_miq_account_find_google_user",
-      "community": 9
+      "community": 10
     },
     {
       "label": "miq_account_find_user_by_email()",
@@ -1585,7 +1585,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L508",
       "id": "auth_miq_account_find_user_by_email",
-      "community": 9
+      "community": 10
     },
     {
       "label": "bootstrap.php",
@@ -2113,215 +2113,327 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L1",
       "id": "assets_js_account_js",
-      "community": 12
+      "community": 8
+    },
+    {
+      "label": "pulseDebug()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L23",
+      "id": "account_pulsedebug",
+      "community": 8
+    },
+    {
+      "label": "livePageContext()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L28",
+      "id": "account_livepagecontext",
+      "community": 8
+    },
+    {
+      "label": "applyLivePulseContext()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L50",
+      "id": "account_applylivepulsecontext",
+      "community": 8
+    },
+    {
+      "label": "inspectPulse()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L110",
+      "id": "account_inspectpulse",
+      "community": 8
     },
     {
       "label": "jsonRequest()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L8",
+      "source_location": "L152",
       "id": "account_jsonrequest",
-      "community": 12
+      "community": 8
     },
     {
       "label": "parseResponse()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L29",
+      "source_location": "L173",
       "id": "account_parseresponse",
-      "community": 12
+      "community": 8
     },
     {
       "label": "makeAssetKey()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L44",
+      "source_location": "L188",
       "id": "account_makeassetkey",
-      "community": 12
+      "community": 8
     },
     {
       "label": "localSearches()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L58",
+      "source_location": "L202",
       "id": "account_localsearches",
-      "community": 12
+      "community": 8
     },
     {
       "label": "rememberLocalSearch()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L67",
+      "source_location": "L211",
       "id": "account_rememberlocalsearch",
-      "community": 12
+      "community": 8
     },
     {
       "label": "saveSearch()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L74",
+      "source_location": "L218",
       "id": "account_savesearch",
-      "community": 12
+      "community": 8
     },
     {
       "label": "saveChartLayout()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L88",
+      "source_location": "L232",
       "id": "account_savechartlayout",
-      "community": 12
+      "community": 8
     },
     {
       "label": "getChart()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L105",
+      "source_location": "L249",
       "id": "account_getchart",
-      "community": 12
+      "community": 8
     },
     {
       "label": "preloadChartLayout()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L113",
+      "source_location": "L257",
       "id": "account_preloadchartlayout",
-      "community": 12
+      "community": 8
     },
     {
       "label": "saveScript()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L119",
+      "source_location": "L263",
       "id": "account_savescript",
-      "community": 12
+      "community": 8
     },
     {
       "label": "getScript()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L127",
+      "source_location": "L271",
       "id": "account_getscript",
-      "community": 12
+      "community": 8
     },
     {
       "label": "accountAction()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L134",
+      "source_location": "L278",
       "id": "account_accountaction",
-      "community": 12
+      "community": 8
     },
     {
       "label": "saveIdea()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L139",
+      "source_location": "L283",
       "id": "account_saveidea",
-      "community": 12
+      "community": 8
     },
     {
       "label": "mergeLocalSearches()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L146",
+      "source_location": "L290",
       "id": "account_mergelocalsearches",
-      "community": 12
+      "community": 8
     },
     {
       "label": "handleGoogleCredential()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L151",
+      "source_location": "L295",
       "id": "account_handlegooglecredential",
-      "community": 12
+      "community": 8
     },
     {
       "label": "handleGoogleLinkCredential()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L159",
+      "source_location": "L303",
       "id": "account_handlegooglelinkcredential",
-      "community": 12
+      "community": 8
     },
     {
       "label": "bindDisplayNameSuggestions()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L167",
+      "source_location": "L311",
       "id": "account_binddisplaynamesuggestions",
-      "community": 12
+      "community": 8
     },
     {
       "label": "bindSearchTracking()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L179",
+      "source_location": "L323",
       "id": "account_bindsearchtracking",
-      "community": 12
+      "community": 8
     },
     {
       "label": "sentimentSvgElement()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L188",
+      "source_location": "L332",
       "id": "account_sentimentsvgelement",
-      "community": 12
+      "community": 8
     },
     {
       "label": "sentimentLinePath()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L197",
+      "source_location": "L341",
       "id": "account_sentimentlinepath",
-      "community": 12
+      "community": 8
     },
     {
       "label": "clearElement()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L212",
+      "source_location": "L356",
       "id": "account_clearelement",
-      "community": 12
+      "community": 8
     },
     {
       "label": "renderSentimentChart()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L216",
+      "source_location": "L360",
       "id": "account_rendersentimentchart",
-      "community": 12
+      "community": 8
     },
     {
       "label": "sentimentTrendRequest()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L352",
+      "source_location": "L496",
       "id": "account_sentimenttrendrequest",
-      "community": 12
+      "community": 8
     },
     {
       "label": "loadSentimentChart()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L371",
+      "source_location": "L515",
       "id": "account_loadsentimentchart",
-      "community": 12
+      "community": 8
     },
     {
       "label": "renderSentimentCharts()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L385",
+      "source_location": "L535",
       "id": "account_rendersentimentcharts",
-      "community": 12
+      "community": 8
+    },
+    {
+      "label": "rememberPendingPulseVote()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L542",
+      "id": "account_rememberpendingpulsevote",
+      "community": 8
+    },
+    {
+      "label": "pendingPulseVote()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L551",
+      "id": "account_pendingpulsevote",
+      "community": 8
+    },
+    {
+      "label": "clearPendingPulseVote()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L565",
+      "id": "account_clearpendingpulsevote",
+      "community": 8
+    },
+    {
+      "label": "updatePulseCounts()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L569",
+      "id": "account_updatepulsecounts",
+      "community": 8
+    },
+    {
+      "label": "setPulseBusy()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L582",
+      "id": "account_setpulsebusy",
+      "community": 8
+    },
+    {
+      "label": "selectPulseDirection()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L588",
+      "id": "account_selectpulsedirection",
+      "community": 8
+    },
+    {
+      "label": "showPulseExplanation()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L594",
+      "id": "account_showpulseexplanation",
+      "community": 8
+    },
+    {
+      "label": "submitPulseVote()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L603",
+      "id": "account_submitpulsevote",
+      "community": 8
+    },
+    {
+      "label": "replayPendingPulseVote()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L635",
+      "id": "account_replaypendingpulsevote",
+      "community": 8
+    },
+    {
+      "label": "bindPulseExplanation()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L658",
+      "id": "account_bindpulseexplanation",
+      "community": 8
     },
     {
       "label": "renderPulse()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L392",
+      "source_location": "L709",
       "id": "account_renderpulse",
-      "community": 12
+      "community": 8
     },
     {
       "label": "ADChart.js",
@@ -4577,7 +4689,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L1",
       "id": "assets_js_schema_markup_js",
-      "community": 10
+      "community": 11
     },
     {
       "label": "routeFromPath()",
@@ -4585,7 +4697,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L14",
       "id": "schema_markup_routefrompath",
-      "community": 10
+      "community": 11
     },
     {
       "label": "isFiniteNumber()",
@@ -4593,7 +4705,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L19",
       "id": "schema_markup_isfinitenumber",
-      "community": 10
+      "community": 11
     },
     {
       "label": "asNumber()",
@@ -4601,7 +4713,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L23",
       "id": "schema_markup_asnumber",
-      "community": 10
+      "community": 11
     },
     {
       "label": "cleanText()",
@@ -4609,7 +4721,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L32",
       "id": "schema_markup_cleantext",
-      "community": 10
+      "community": 11
     },
     {
       "label": "cleanValue()",
@@ -4617,7 +4729,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L37",
       "id": "schema_markup_cleanvalue",
-      "community": 10
+      "community": 11
     },
     {
       "label": "safeSerialize()",
@@ -4625,7 +4737,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L65",
       "id": "schema_markup_safeserialize",
-      "community": 10
+      "community": 11
     },
     {
       "label": "absoluteUrl()",
@@ -4633,7 +4745,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L72",
       "id": "schema_markup_absoluteurl",
-      "community": 10
+      "community": 11
     },
     {
       "label": "stableId()",
@@ -4641,7 +4753,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L81",
       "id": "schema_markup_stableid",
-      "community": 10
+      "community": 11
     },
     {
       "label": "SchemaMarkup()",
@@ -4649,7 +4761,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L88",
       "id": "schema_markup_schemamarkup",
-      "community": 10
+      "community": 11
     },
     {
       "label": "propertyValue()",
@@ -4657,7 +4769,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L128",
       "id": "schema_markup_propertyvalue",
-      "community": 10
+      "community": 11
     },
     {
       "label": "pageName()",
@@ -4665,7 +4777,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L144",
       "id": "schema_markup_pagename",
-      "community": 10
+      "community": 11
     },
     {
       "label": "pageDescription()",
@@ -4673,7 +4785,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L149",
       "id": "schema_markup_pagedescription",
-      "community": 10
+      "community": 11
     },
     {
       "label": "pageType()",
@@ -4681,7 +4793,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L156",
       "id": "schema_markup_pagetype",
-      "community": 10
+      "community": 11
     },
     {
       "label": "nearestTitle()",
@@ -4689,7 +4801,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L163",
       "id": "schema_markup_nearesttitle",
-      "community": 10
+      "community": 11
     },
     {
       "label": "codeFromLink()",
@@ -4697,7 +4809,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L187",
       "id": "schema_markup_codefromlink",
-      "community": 10
+      "community": 11
     },
     {
       "label": "isLayoutTable()",
@@ -4705,7 +4817,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L198",
       "id": "schema_markup_islayouttable",
-      "community": 10
+      "community": 11
     },
     {
       "label": "tableHeaders()",
@@ -4713,7 +4825,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L207",
       "id": "schema_markup_tableheaders",
-      "community": 10
+      "community": 11
     },
     {
       "label": "tableRows()",
@@ -4721,7 +4833,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L221",
       "id": "schema_markup_tablerows",
-      "community": 10
+      "community": 11
     },
     {
       "label": "rankingMetric()",
@@ -4729,7 +4841,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L237",
       "id": "schema_markup_rankingmetric",
-      "community": 10
+      "community": 11
     },
     {
       "label": "financialItem()",
@@ -4737,7 +4849,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L244",
       "id": "schema_markup_financialitem",
-      "community": 10
+      "community": 11
     },
     {
       "label": "rankingLists()",
@@ -4745,7 +4857,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L265",
       "id": "schema_markup_rankinglists",
-      "community": 10
+      "community": 11
     },
     {
       "label": "screenerList()",
@@ -4753,7 +4865,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L293",
       "id": "schema_markup_screenerlist",
-      "community": 10
+      "community": 11
     },
     {
       "label": "tableDatasets()",
@@ -4761,7 +4873,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L330",
       "id": "schema_markup_tabledatasets",
-      "community": 10
+      "community": 11
     },
     {
       "label": "seriesData()",
@@ -4769,7 +4881,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L356",
       "id": "schema_markup_seriesdata",
-      "community": 10
+      "community": 11
     },
     {
       "label": "pointXY()",
@@ -4777,7 +4889,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L365",
       "id": "schema_markup_pointxy",
-      "community": 10
+      "community": 11
     },
     {
       "label": "dateString()",
@@ -4785,7 +4897,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L393",
       "id": "schema_markup_datestring",
-      "community": 10
+      "community": 11
     },
     {
       "label": "chartDatasets()",
@@ -4793,7 +4905,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L403",
       "id": "schema_markup_chartdatasets",
-      "community": 10
+      "community": 11
     },
     {
       "label": "stockHistoryDataset()",
@@ -4801,7 +4913,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L455",
       "id": "schema_markup_stockhistorydataset",
-      "community": 10
+      "community": 11
     },
     {
       "label": "stockEntity()",
@@ -4809,7 +4921,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L486",
       "id": "schema_markup_stockentity",
-      "community": 10
+      "community": 11
     },
     {
       "label": "routeDataset()",
@@ -4817,7 +4929,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L544",
       "id": "schema_markup_routedataset",
-      "community": 10
+      "community": 11
     },
     {
       "label": "toolEntity()",
@@ -4825,7 +4937,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L576",
       "id": "schema_markup_toolentity",
-      "community": 10
+      "community": 11
     },
     {
       "label": "currentGraph()",
@@ -4833,7 +4945,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L597",
       "id": "schema_markup_currentgraph",
-      "community": 10
+      "community": 11
     },
     {
       "label": "updatePageSchema()",
@@ -4841,7 +4953,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L638",
       "id": "schema_markup_updatepageschema",
-      "community": 10
+      "community": 11
     },
     {
       "label": "scheduleUpdate()",
@@ -4849,7 +4961,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L656",
       "id": "schema_markup_scheduleupdate",
-      "community": 10
+      "community": 11
     },
     {
       "label": "mutationIsSchemaOnly()",
@@ -4857,7 +4969,7 @@
       "source_file": "assets\\js\\schema-markup.js",
       "source_location": "L667",
       "id": "schema_markup_mutationisschemaonly",
-      "community": 10
+      "community": 11
     },
     {
       "label": "seasonality.js",
@@ -5881,7 +5993,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_market_main_js",
-      "community": 11
+      "community": 12
     },
     {
       "label": "marketIndexDisplayName()",
@@ -5889,7 +6001,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_marketindexdisplayname",
-      "community": 11
+      "community": 12
     },
     {
       "label": "yieldToBrowser()",
@@ -5897,7 +6009,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_yieldtobrowser",
-      "community": 11
+      "community": 12
     },
     {
       "label": "stopObservingChart()",
@@ -5905,7 +6017,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_stopobservingchart",
-      "community": 11
+      "community": 12
     },
     {
       "label": "markChartRenderFailed()",
@@ -5913,7 +6025,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_markchartrenderfailed",
-      "community": 11
+      "community": 12
     },
     {
       "label": "enqueueChartRender()",
@@ -5921,7 +6033,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_enqueuechartrender",
-      "community": 11
+      "community": 12
     },
     {
       "label": "runChartRenderQueue()",
@@ -5929,7 +6041,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_runchartrenderqueue",
-      "community": 11
+      "community": 12
     },
     {
       "label": "lazyRenderChart()",
@@ -5937,7 +6049,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_lazyrenderchart",
-      "community": 11
+      "community": 12
     },
     {
       "label": "loadMarketFeaturedPosts()",
@@ -5945,7 +6057,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_loadmarketfeaturedposts",
-      "community": 11
+      "community": 12
     },
     {
       "label": "embedVideo()",
@@ -5953,7 +6065,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_embedvideo",
-      "community": 11
+      "community": 12
     },
     {
       "label": "updateColumns()",
@@ -5961,7 +6073,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_updatecolumns",
-      "community": 11
+      "community": 12
     },
     {
       "label": "tab1()",
@@ -5969,7 +6081,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_tab1",
-      "community": 11
+      "community": 12
     },
     {
       "label": "openTabHash()",
@@ -5977,7 +6089,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_opentabhash",
-      "community": 11
+      "community": 12
     },
     {
       "label": "seasonality()",
@@ -5985,7 +6097,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_seasonality",
-      "community": 11
+      "community": 12
     },
     {
       "label": "datedecrypt()",
@@ -5993,7 +6105,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_datedecrypt",
-      "community": 11
+      "community": 12
     },
     {
       "label": "dayofyear()",
@@ -6001,7 +6113,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_dayofyear",
-      "community": 11
+      "community": 12
     },
     {
       "label": "highchartReflow()",
@@ -6009,7 +6121,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_highchartreflow",
-      "community": 11
+      "community": 12
     },
     {
       "label": "returnComment()",
@@ -6017,7 +6129,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_returncomment",
-      "community": 11
+      "community": 12
     },
     {
       "label": "CCASSComment()",
@@ -6025,7 +6137,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_ccasscomment",
-      "community": 11
+      "community": 12
     },
     {
       "label": "CCASSyearlyComment()",
@@ -6033,7 +6145,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_ccassyearlycomment",
-      "community": 11
+      "community": 12
     },
     {
       "label": "openTOOL()",
@@ -6041,7 +6153,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_opentool",
-      "community": 11
+      "community": 12
     },
     {
       "label": "YearlyTrendToggle()",
@@ -6049,7 +6161,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_yearlytrendtoggle",
-      "community": 11
+      "community": 12
     },
     {
       "label": "CCASSmonthlyCompression()",
@@ -6057,7 +6169,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_ccassmonthlycompression",
-      "community": 11
+      "community": 12
     },
     {
       "label": "formatToMonthYear()",
@@ -6065,7 +6177,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_formattomonthyear",
-      "community": 11
+      "community": 12
     },
     {
       "label": "getTopBottom10Movers()",
@@ -6073,7 +6185,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_gettopbottom10movers",
-      "community": 11
+      "community": 12
     },
     {
       "label": "getTopBottom10HighLow()",
@@ -6081,7 +6193,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_gettopbottom10highlow",
-      "community": 11
+      "community": 12
     },
     {
       "label": "getTopBottom10MA()",
@@ -6089,7 +6201,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_gettopbottom10ma",
-      "community": 11
+      "community": 12
     },
     {
       "label": "renderMovers()",
@@ -6097,7 +6209,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_rendermovers",
-      "community": 11
+      "community": 12
     },
     {
       "label": "renderMoversXY()",
@@ -6105,7 +6217,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_rendermoversxy",
-      "community": 11
+      "community": 12
     },
     {
       "label": "addWeekday()",
@@ -6113,7 +6225,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_addweekday",
-      "community": 11
+      "community": 12
     },
     {
       "label": "screener-main.js",
@@ -6521,7 +6633,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_tool_main_js",
-      "community": 8
+      "community": 9
     },
     {
       "label": "pauseChart()",
@@ -6529,7 +6641,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_pausechart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "timeframeBTN()",
@@ -6537,7 +6649,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_timeframebtn",
-      "community": 8
+      "community": 9
     },
     {
       "label": "stockcodeInputRED()",
@@ -6545,7 +6657,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_stockcodeinputred",
-      "community": 8
+      "community": 9
     },
     {
       "label": "periodBTN()",
@@ -6553,7 +6665,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_periodbtn",
-      "community": 8
+      "community": 9
     },
     {
       "label": "add_Days()",
@@ -6561,7 +6673,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_add_days",
-      "community": 8
+      "community": 9
     },
     {
       "label": "dateFormatStr()",
@@ -6569,7 +6681,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_dateformatstr",
-      "community": 8
+      "community": 9
     },
     {
       "label": "updateInputs()",
@@ -6577,7 +6689,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updateinputs",
-      "community": 8
+      "community": 9
     },
     {
       "label": "validate()",
@@ -6585,7 +6697,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_validate",
-      "community": 8
+      "community": 9
     },
     {
       "label": "race()",
@@ -6593,7 +6705,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_race",
-      "community": 8
+      "community": 9
     },
     {
       "label": "raceChart()",
@@ -6601,7 +6713,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_racechart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "getSubtitle()",
@@ -6609,7 +6721,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_getsubtitle",
-      "community": 8
+      "community": 9
     },
     {
       "label": "stop()",
@@ -6617,7 +6729,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_stop",
-      "community": 8
+      "community": 9
     },
     {
       "label": "pause()",
@@ -6625,7 +6737,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_pause",
-      "community": 8
+      "community": 9
     },
     {
       "label": "update()",
@@ -6633,7 +6745,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_update",
-      "community": 8
+      "community": 9
     },
     {
       "label": "play()",
@@ -6641,7 +6753,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_play",
-      "community": 8
+      "community": 9
     },
     {
       "label": "restoreComposerSeries()",
@@ -6649,7 +6761,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_restorecomposerseries",
-      "community": 8
+      "community": 9
     },
     {
       "label": "updateResults()",
@@ -6657,7 +6769,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updateresults",
-      "community": 8
+      "community": 9
     },
     {
       "label": "showSuggestions()",
@@ -6665,7 +6777,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_showsuggestions",
-      "community": 8
+      "community": 9
     },
     {
       "label": "selectItem()",
@@ -6673,7 +6785,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_selectitem",
-      "community": 8
+      "community": 9
     },
     {
       "label": "loadScriptOnce()",
@@ -6681,7 +6793,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadscriptonce",
-      "community": 8
+      "community": 9
     },
     {
       "label": "loadStylesheetOnce()",
@@ -6689,7 +6801,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadstylesheetonce",
-      "community": 8
+      "community": 9
     },
     {
       "label": "loadComposerCatalog()",
@@ -6697,7 +6809,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadcomposercatalog",
-      "community": 8
+      "community": 9
     },
     {
       "label": "setComposerLoading()",
@@ -6705,7 +6817,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_setcomposerloading",
-      "community": 8
+      "community": 9
     },
     {
       "label": "ensureComposerReady()",
@@ -6713,7 +6825,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_ensurecomposerready",
-      "community": 8
+      "community": 9
     },
     {
       "label": "adjustComboBoxWidth()",
@@ -6721,7 +6833,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_adjustcomboboxwidth",
-      "community": 8
+      "community": 9
     },
     {
       "label": "updateDataSeriesList()",
@@ -6729,7 +6841,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatedataserieslist",
-      "community": 8
+      "community": 9
     },
     {
       "label": "getSeriesList()",
@@ -6737,7 +6849,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_getserieslist",
-      "community": 8
+      "community": 9
     },
     {
       "label": "fetchAjaxSeriesData()",
@@ -6745,7 +6857,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_fetchajaxseriesdata",
-      "community": 8
+      "community": 9
     },
     {
       "label": "initializeAutocomplete()",
@@ -6753,7 +6865,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_initializeautocomplete",
-      "community": 8
+      "community": 9
     },
     {
       "label": "clearChart()",
@@ -6761,7 +6873,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_clearchart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "updateNavigatorToEarliestSeries()",
@@ -6769,7 +6881,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatenavigatortoearliestseries",
-      "community": 8
+      "community": 9
     },
     {
       "label": "updateHistory()",
@@ -6777,7 +6889,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatehistory",
-      "community": 8
+      "community": 9
     },
     {
       "label": "openTabHash()",
@@ -6785,7 +6897,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_opentabhash",
-      "community": 8
+      "community": 9
     },
     {
       "label": "highchartReflow()",
@@ -6793,7 +6905,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_highchartreflow",
-      "community": 8
+      "community": 9
     },
     {
       "label": "initializeControls()",
@@ -6801,7 +6913,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_initializecontrols",
-      "community": 8
+      "community": 9
     },
     {
       "label": "findNameByIdAndType()",
@@ -6809,7 +6921,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_findnamebyidandtype",
-      "community": 8
+      "community": 9
     },
     {
       "label": "createChart()",
@@ -6817,7 +6929,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_createchart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "insertStepTransitions()",
@@ -6825,7 +6937,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_insertsteptransitions",
-      "community": 8
+      "community": 9
     },
     {
       "label": "showNotification()",
@@ -6833,7 +6945,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_shownotification",
-      "community": 8
+      "community": 9
     },
     {
       "label": "removeBadgeIfExpired()",
@@ -6841,7 +6953,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_removebadgeifexpired",
-      "community": 8
+      "community": 9
     },
     {
       "label": "tool-share.js",
@@ -13901,7 +14013,55 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L8",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_pulsedebug",
+      "source": "assets_js_account_js",
+      "target": "account_pulsedebug",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_livepagecontext",
+      "source": "assets_js_account_js",
+      "target": "account_livepagecontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_applylivepulsecontext",
+      "source": "assets_js_account_js",
+      "target": "account_applylivepulsecontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L110",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_inspectpulse",
+      "source": "assets_js_account_js",
+      "target": "account_inspectpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L152",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_jsonrequest",
@@ -13913,7 +14073,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L29",
+      "source_location": "L173",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_parseresponse",
@@ -13925,7 +14085,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L44",
+      "source_location": "L188",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_makeassetkey",
@@ -13937,7 +14097,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L58",
+      "source_location": "L202",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_localsearches",
@@ -13949,7 +14109,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L67",
+      "source_location": "L211",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rememberlocalsearch",
@@ -13961,7 +14121,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L74",
+      "source_location": "L218",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_savesearch",
@@ -13973,7 +14133,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L88",
+      "source_location": "L232",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_savechartlayout",
@@ -13985,7 +14145,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L105",
+      "source_location": "L249",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_getchart",
@@ -13997,7 +14157,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L113",
+      "source_location": "L257",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_preloadchartlayout",
@@ -14009,7 +14169,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L119",
+      "source_location": "L263",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_savescript",
@@ -14021,7 +14181,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L127",
+      "source_location": "L271",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_getscript",
@@ -14033,7 +14193,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L134",
+      "source_location": "L278",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_accountaction",
@@ -14045,7 +14205,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L139",
+      "source_location": "L283",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_saveidea",
@@ -14057,7 +14217,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L146",
+      "source_location": "L290",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_mergelocalsearches",
@@ -14069,7 +14229,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L151",
+      "source_location": "L295",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_handlegooglecredential",
@@ -14081,7 +14241,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L159",
+      "source_location": "L303",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_handlegooglelinkcredential",
@@ -14093,7 +14253,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L167",
+      "source_location": "L311",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_binddisplaynamesuggestions",
@@ -14105,7 +14265,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L179",
+      "source_location": "L323",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_bindsearchtracking",
@@ -14117,7 +14277,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L188",
+      "source_location": "L332",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_sentimentsvgelement",
@@ -14129,7 +14289,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L197",
+      "source_location": "L341",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_sentimentlinepath",
@@ -14141,7 +14301,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L212",
+      "source_location": "L356",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_clearelement",
@@ -14153,7 +14313,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L216",
+      "source_location": "L360",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rendersentimentchart",
@@ -14165,7 +14325,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L352",
+      "source_location": "L496",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_sentimenttrendrequest",
@@ -14177,7 +14337,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L371",
+      "source_location": "L515",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_loadsentimentchart",
@@ -14189,7 +14349,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L385",
+      "source_location": "L535",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rendersentimentcharts",
@@ -14201,7 +14361,127 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L392",
+      "source_location": "L542",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_rememberpendingpulsevote",
+      "source": "assets_js_account_js",
+      "target": "account_rememberpendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L551",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_pendingpulsevote",
+      "source": "assets_js_account_js",
+      "target": "account_pendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L565",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_clearpendingpulsevote",
+      "source": "assets_js_account_js",
+      "target": "account_clearpendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L569",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_updatepulsecounts",
+      "source": "assets_js_account_js",
+      "target": "account_updatepulsecounts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L582",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_setpulsebusy",
+      "source": "assets_js_account_js",
+      "target": "account_setpulsebusy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L588",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_selectpulsedirection",
+      "source": "assets_js_account_js",
+      "target": "account_selectpulsedirection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L594",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_showpulseexplanation",
+      "source": "assets_js_account_js",
+      "target": "account_showpulseexplanation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L603",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_submitpulsevote",
+      "source": "assets_js_account_js",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L635",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_replaypendingpulsevote",
+      "source": "assets_js_account_js",
+      "target": "account_replaypendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L658",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_bindpulseexplanation",
+      "source": "assets_js_account_js",
+      "target": "account_bindpulseexplanation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L709",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_renderpulse",
@@ -14213,7 +14493,103 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L85",
+      "source_location": "L526",
+      "weight": 1.0,
+      "_src": "account_loadsentimentchart",
+      "_tgt": "account_pulsedebug",
+      "source": "account_pulsedebug",
+      "target": "account_loadsentimentchart",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L547",
+      "weight": 1.0,
+      "_src": "account_rememberpendingpulsevote",
+      "_tgt": "account_pulsedebug",
+      "source": "account_pulsedebug",
+      "target": "account_rememberpendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L622",
+      "weight": 1.0,
+      "_src": "account_submitpulsevote",
+      "_tgt": "account_pulsedebug",
+      "source": "account_pulsedebug",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L651",
+      "weight": 1.0,
+      "_src": "account_replaypendingpulsevote",
+      "_tgt": "account_pulsedebug",
+      "source": "account_pulsedebug",
+      "target": "account_replaypendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L712",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_pulsedebug",
+      "source": "account_pulsedebug",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_src": "account_applylivepulsecontext",
+      "_tgt": "account_livepagecontext",
+      "source": "account_livepagecontext",
+      "target": "account_applylivepulsecontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L719",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_applylivepulsecontext",
+      "source": "account_applylivepulsecontext",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L716",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_inspectpulse",
+      "source": "account_inspectpulse",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L229",
       "weight": 1.0,
       "_src": "account_savesearch",
       "_tgt": "account_jsonrequest",
@@ -14225,7 +14601,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L102",
+      "source_location": "L246",
       "weight": 1.0,
       "_src": "account_savechartlayout",
       "_tgt": "account_jsonrequest",
@@ -14237,7 +14613,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L108",
+      "source_location": "L252",
       "weight": 1.0,
       "_src": "account_getchart",
       "_tgt": "account_jsonrequest",
@@ -14249,7 +14625,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L124",
+      "source_location": "L268",
       "weight": 1.0,
       "_src": "account_savescript",
       "_tgt": "account_jsonrequest",
@@ -14261,7 +14637,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L129",
+      "source_location": "L273",
       "weight": 1.0,
       "_src": "account_getscript",
       "_tgt": "account_jsonrequest",
@@ -14273,7 +14649,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L136",
+      "source_location": "L280",
       "weight": 1.0,
       "_src": "account_accountaction",
       "_tgt": "account_jsonrequest",
@@ -14285,7 +14661,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L143",
+      "source_location": "L287",
       "weight": 1.0,
       "_src": "account_saveidea",
       "_tgt": "account_jsonrequest",
@@ -14297,7 +14673,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L356",
+      "source_location": "L500",
       "weight": 1.0,
       "_src": "account_sentimenttrendrequest",
       "_tgt": "account_jsonrequest",
@@ -14309,7 +14685,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L398",
+      "source_location": "L606",
+      "weight": 1.0,
+      "_src": "account_submitpulsevote",
+      "_tgt": "account_jsonrequest",
+      "source": "account_jsonrequest",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L724",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_jsonrequest",
@@ -14321,7 +14709,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L122",
+      "source_location": "L266",
       "weight": 1.0,
       "_src": "account_savescript",
       "_tgt": "account_makeassetkey",
@@ -14333,7 +14721,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L68",
+      "source_location": "L212",
       "weight": 1.0,
       "_src": "account_rememberlocalsearch",
       "_tgt": "account_localsearches",
@@ -14345,7 +14733,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L148",
+      "source_location": "L292",
       "weight": 1.0,
       "_src": "account_mergelocalsearches",
       "_tgt": "account_localsearches",
@@ -14357,7 +14745,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L83",
+      "source_location": "L227",
       "weight": 1.0,
       "_src": "account_savesearch",
       "_tgt": "account_rememberlocalsearch",
@@ -14369,7 +14757,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L148",
+      "source_location": "L292",
       "weight": 1.0,
       "_src": "account_mergelocalsearches",
       "_tgt": "account_savesearch",
@@ -14381,7 +14769,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L183",
+      "source_location": "L327",
       "weight": 1.0,
       "_src": "account_bindsearchtracking",
       "_tgt": "account_savesearch",
@@ -14393,7 +14781,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L114",
+      "source_location": "L258",
       "weight": 1.0,
       "_src": "account_preloadchartlayout",
       "_tgt": "account_getchart",
@@ -14405,7 +14793,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L263",
+      "source_location": "L683",
+      "weight": 1.0,
+      "_src": "account_bindpulseexplanation",
+      "_tgt": "account_saveidea",
+      "source": "account_saveidea",
+      "target": "account_bindpulseexplanation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L407",
       "weight": 1.0,
       "_src": "account_rendersentimentchart",
       "_tgt": "account_sentimentsvgelement",
@@ -14417,7 +14817,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L281",
+      "source_location": "L425",
       "weight": 1.0,
       "_src": "account_rendersentimentchart",
       "_tgt": "account_sentimentlinepath",
@@ -14429,7 +14829,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L241",
+      "source_location": "L385",
       "weight": 1.0,
       "_src": "account_rendersentimentchart",
       "_tgt": "account_clearelement",
@@ -14441,7 +14841,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L377",
+      "source_location": "L521",
       "weight": 1.0,
       "_src": "account_loadsentimentchart",
       "_tgt": "account_rendersentimentchart",
@@ -14453,7 +14853,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L376",
+      "source_location": "L520",
       "weight": 1.0,
       "_src": "account_loadsentimentchart",
       "_tgt": "account_sentimenttrendrequest",
@@ -14465,7 +14865,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L388",
+      "source_location": "L538",
       "weight": 1.0,
       "_src": "account_rendersentimentcharts",
       "_tgt": "account_loadsentimentchart",
@@ -14477,11 +14877,167 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L419",
+      "source_location": "L621",
       "weight": 1.0,
-      "_src": "account_renderpulse",
+      "_src": "account_submitpulsevote",
       "_tgt": "account_rendersentimentcharts",
       "source": "account_rendersentimentcharts",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L749",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_rememberpendingpulsevote",
+      "source": "account_rememberpendingpulsevote",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L637",
+      "weight": 1.0,
+      "_src": "account_replaypendingpulsevote",
+      "_tgt": "account_pendingpulsevote",
+      "source": "account_pendingpulsevote",
+      "target": "account_replaypendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L646",
+      "weight": 1.0,
+      "_src": "account_replaypendingpulsevote",
+      "_tgt": "account_clearpendingpulsevote",
+      "source": "account_clearpendingpulsevote",
+      "target": "account_replaypendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L613",
+      "weight": 1.0,
+      "_src": "account_submitpulsevote",
+      "_tgt": "account_updatepulsecounts",
+      "source": "account_updatepulsecounts",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L726",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_updatepulsecounts",
+      "source": "account_updatepulsecounts",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L605",
+      "weight": 1.0,
+      "_src": "account_submitpulsevote",
+      "_tgt": "account_setpulsebusy",
+      "source": "account_setpulsebusy",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L614",
+      "weight": 1.0,
+      "_src": "account_submitpulsevote",
+      "_tgt": "account_selectpulsedirection",
+      "source": "account_selectpulsedirection",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L616",
+      "weight": 1.0,
+      "_src": "account_submitpulsevote",
+      "_tgt": "account_showpulseexplanation",
+      "source": "account_showpulseexplanation",
+      "target": "account_submitpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L649",
+      "weight": 1.0,
+      "_src": "account_replaypendingpulsevote",
+      "_tgt": "account_showpulseexplanation",
+      "source": "account_showpulseexplanation",
+      "target": "account_replaypendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L647",
+      "weight": 1.0,
+      "_src": "account_replaypendingpulsevote",
+      "_tgt": "account_submitpulsevote",
+      "source": "account_submitpulsevote",
+      "target": "account_replaypendingpulsevote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L758",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_submitpulsevote",
+      "source": "account_submitpulsevote",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L762",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_replaypendingpulsevote",
+      "source": "account_replaypendingpulsevote",
+      "target": "account_renderpulse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L743",
+      "weight": 1.0,
+      "_src": "account_renderpulse",
+      "_tgt": "account_bindpulseexplanation",
+      "source": "account_bindpulseexplanation",
       "target": "account_renderpulse",
       "confidence_score": 1.0
     },

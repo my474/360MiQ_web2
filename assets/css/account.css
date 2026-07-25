@@ -75,6 +75,7 @@
 
 .miq-community-pulse {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 22px;
     max-width: 1160px;
@@ -83,11 +84,22 @@
     border: 1px solid rgba(59, 153, 224, .28);
     border-radius: 12px;
     background: var(--card-bg, #fff);
+    box-shadow: 0 10px 30px rgba(16, 24, 40, .08);
     color: #1d2939;
 }
 
+.miq-community-pulse-placement {
+    margin-top: 18px;
+    margin-bottom: 28px;
+}
+
+.miq-community-pulse-placement .miq-community-pulse {
+    margin-bottom: 0;
+}
+
 .miq-community-pulse-copy {
-    min-width: 190px;
+    flex: 1 1 320px;
+    min-width: 240px;
 }
 
 .miq-community-pulse-kicker {
@@ -109,9 +121,21 @@
     font-size: 12px;
 }
 
+.miq-community-pulse-zero-state {
+    display: inline-block;
+    margin-top: 6px;
+    color: #16875f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.miq-community-pulse-zero-state[hidden] {
+    display: none !important;
+}
+
 .miq-community-pulse-actions {
     display: flex;
-    flex: 1;
+    flex: 1 1 360px;
     gap: 8px;
 }
 
@@ -127,8 +151,19 @@
 }
 
 .miq-community-pulse-actions button:hover,
-.miq-community-pulse.has-voted .miq-community-pulse-actions button {
+.miq-community-pulse-actions button:focus,
+.miq-community-pulse-actions button[aria-pressed="true"] {
     border-color: #3b99e0;
+}
+
+.miq-community-pulse-actions button[aria-pressed="true"] {
+    background: rgba(59, 153, 224, .13);
+    box-shadow: inset 0 0 0 1px rgba(59, 153, 224, .24);
+}
+
+.miq-community-pulse-actions button:disabled {
+    cursor: wait;
+    opacity: .65;
 }
 
 .miq-community-pulse-actions i {
@@ -138,6 +173,69 @@
 .miq-community-pulse-link {
     white-space: nowrap;
     font-size: 13px;
+}
+
+.miq-community-pulse-explanation {
+    flex: 0 0 100%;
+    padding-top: 14px;
+    border-top: 1px solid rgba(102, 112, 133, .18);
+}
+
+.miq-community-pulse-explanation[hidden] {
+    display: none !important;
+}
+
+.miq-community-pulse-explanation label {
+    display: block;
+    margin-bottom: 7px;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.miq-community-pulse-explanation-row {
+    display: flex;
+    gap: 8px;
+}
+
+.miq-community-pulse-explanation input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 11px;
+    border: 1px solid #cfd4dc;
+    border-radius: 7px;
+    background: #fff;
+    color: #1d2939;
+    font-size: 13px;
+}
+
+.miq-community-pulse-explanation input:focus {
+    outline: 2px solid rgba(59, 153, 224, .25);
+    border-color: #3b99e0;
+}
+
+.miq-community-pulse-explanation button {
+    padding: 9px 14px;
+    border: 1px solid #3b99e0;
+    border-radius: 7px;
+    background: #3b99e0;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.miq-community-pulse-explanation button:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+.miq-community-pulse-explanation-status {
+    display: block;
+    min-height: 18px;
+    margin-top: 5px;
+    color: #667085;
+    font-size: 12px;
 }
 
 .miq-sentiment-chart {
@@ -241,10 +339,34 @@ html[data-theme="dark"] .miq-chart-sync-status {
 html[data-theme="dark"] .miq-community-pulse {
     background: #20213a;
     color: #f1f3f7;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
 }
 
 html[data-theme="dark"] .miq-community-pulse p {
     color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-community-pulse-zero-state {
+    color: #52d49b;
+}
+
+html[data-theme="dark"] .miq-community-pulse-explanation {
+    border-top-color: rgba(197, 201, 214, .2);
+}
+
+html[data-theme="dark"] .miq-community-pulse-explanation label,
+html[data-theme="dark"] .miq-community-pulse-explanation-status {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-community-pulse-explanation input {
+    border-color: #54566f;
+    background: #17182d;
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-community-pulse-explanation input::placeholder {
+    color: #959bb0;
 }
 
 html[data-theme="dark"] .miq-sentiment-chart {
@@ -452,6 +574,10 @@ html[data-theme="dark"] .miq-account-nav-item .dropdown-item:focus {
     .miq-community-pulse-copy {
         min-width: 0;
     }
+
+    .miq-community-pulse-actions {
+        flex-basis: auto;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -461,5 +587,13 @@ html[data-theme="dark"] .miq-account-nav-item .dropdown-item:focus {
 
     .miq-account-links {
         flex-direction: column;
+    }
+
+    .miq-community-pulse-explanation-row {
+        flex-direction: column;
+    }
+
+    .miq-community-pulse-explanation button {
+        width: 100%;
     }
 }

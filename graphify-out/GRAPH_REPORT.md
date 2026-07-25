@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-07-26)
 
 ## Corpus Check
-- 143 files · ~750,431 words
+- 143 files · ~751,815 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1294 nodes · 2343 edges · 143 communities detected
+- 1308 nodes · 2380 edges · 143 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -204,24 +204,24 @@ Cohesion: 0.05
 Nodes (11): ar, E(), eg, ip(), nC(), nF(), nN(), s0 (+3 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.11
-Nodes (33): add_Days(), createChart(), dateFormatStr(), ensureComposerReady(), fetchAjaxSeriesData(), findNameByIdAndType(), getSeriesList(), getSubtitle() (+25 more)
+Cohesion: 0.1
+Nodes (36): accountAction(), applyLivePulseContext(), bindPulseExplanation(), bindSearchTracking(), clearElement(), clearPendingPulseVote(), getChart(), getScript() (+28 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.11
-Nodes (32): miq_account_bootstrap(), miq_account_check_csrf(), miq_account_clean_display_name(), miq_account_client_ip(), miq_account_create_token(), miq_account_create_user(), miq_account_csrf_token(), miq_account_current_user() (+24 more)
+Nodes (33): add_Days(), createChart(), dateFormatStr(), ensureComposerReady(), fetchAjaxSeriesData(), findNameByIdAndType(), getSeriesList(), getSubtitle() (+25 more)
 
 ### Community 10 - "Community 10"
+Cohesion: 0.11
+Nodes (32): miq_account_bootstrap(), miq_account_check_csrf(), miq_account_clean_display_name(), miq_account_client_ip(), miq_account_create_token(), miq_account_create_user(), miq_account_csrf_token(), miq_account_current_user() (+24 more)
+
+### Community 11 - "Community 11"
 Cohesion: 0.19
 Nodes (32): absoluteUrl(), asNumber(), chartDatasets(), cleanText(), cleanValue(), codeFromLink(), currentGraph(), dateString() (+24 more)
 
-### Community 11 - "Community 11"
+### Community 12 - "Community 12"
 Cohesion: 0.13
 Nodes (25): addWeekday(), CCASSComment(), CCASSmonthlyCompression(), CCASSyearlyComment(), datedecrypt(), dayofyear(), embedVideo(), enqueueChartRender() (+17 more)
-
-### Community 12 - "Community 12"
-Cohesion: 0.14
-Nodes (22): accountAction(), bindSearchTracking(), clearElement(), getChart(), getScript(), jsonRequest(), loadSentimentChart(), localSearches() (+14 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.13
@@ -317,11 +317,11 @@ Nodes (2): miq_account_process_email_registration(), miq_account_token_link()
 
 ### Community 36 - "Community 36"
 Cohesion: 0.33
-Nodes (0):
+Nodes (0): 
 
 ### Community 37 - "Community 37"
 Cohesion: 0.33
-Nodes (0):
+Nodes (0): 
 
 ### Community 38 - "Community 38"
 Cohesion: 0.4
@@ -341,7 +341,7 @@ Nodes (5): earningSurpriseChart(), earningSurpriseComment(), Pxband(), valuation
 
 ### Community 42 - "Community 42"
 Cohesion: 0.4
-Nodes (0):
+Nodes (0): 
 
 ### Community 43 - "Community 43"
 Cohesion: 0.6
@@ -357,11 +357,11 @@ Nodes (2): miq_sso_begin(), miq_sso_shared_secret()
 
 ### Community 46 - "Community 46"
 Cohesion: 0.5
-Nodes (0):
+Nodes (0): 
 
 ### Community 47 - "Community 47"
 Cohesion: 0.5
-Nodes (0):
+Nodes (0): 
 
 ### Community 48 - "Community 48"
 Cohesion: 0.67
@@ -369,7 +369,7 @@ Nodes (2): bubble(), findLineByLeastSquares()
 
 ### Community 49 - "Community 49"
 Cohesion: 0.5
-Nodes (0):
+Nodes (0): 
 
 ### Community 50 - "Community 50"
 Cohesion: 0.83
@@ -381,43 +381,43 @@ Nodes (3): destroyRangeChartByContainer(), rangeChart(), registerRangeChartTheme
 
 ### Community 52 - "Community 52"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 53 - "Community 53"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 54 - "Community 54"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 55 - "Community 55"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 56 - "Community 56"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 57 - "Community 57"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 58 - "Community 58"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 59 - "Community 59"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 60 - "Community 60"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 61 - "Community 61"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 62 - "Community 62"
 Cohesion: 1.0
@@ -437,311 +437,311 @@ Nodes (2): findMovingMax(), priceDeviation()
 
 ### Community 66 - "Community 66"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 67 - "Community 67"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 68 - "Community 68"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 69 - "Community 69"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 70 - "Community 70"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 71 - "Community 71"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 72 - "Community 72"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 73 - "Community 73"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 74 - "Community 74"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 75 - "Community 75"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 76 - "Community 76"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 77 - "Community 77"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 78 - "Community 78"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 79 - "Community 79"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 80 - "Community 80"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 81 - "Community 81"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 82 - "Community 82"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 83 - "Community 83"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 84 - "Community 84"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 85 - "Community 85"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 86 - "Community 86"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 87 - "Community 87"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 88 - "Community 88"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 89 - "Community 89"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 90 - "Community 90"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 91 - "Community 91"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 92 - "Community 92"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 93 - "Community 93"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 94 - "Community 94"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 95 - "Community 95"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 96 - "Community 96"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 97 - "Community 97"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 98 - "Community 98"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 99 - "Community 99"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 100 - "Community 100"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 101 - "Community 101"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 102 - "Community 102"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 103 - "Community 103"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 104 - "Community 104"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 105 - "Community 105"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 106 - "Community 106"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 107 - "Community 107"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 108 - "Community 108"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 109 - "Community 109"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 110 - "Community 110"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 111 - "Community 111"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 112 - "Community 112"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 113 - "Community 113"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 114 - "Community 114"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 115 - "Community 115"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 116 - "Community 116"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 117 - "Community 117"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 118 - "Community 118"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 119 - "Community 119"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 120 - "Community 120"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 121 - "Community 121"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 122 - "Community 122"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 123 - "Community 123"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 124 - "Community 124"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 125 - "Community 125"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 126 - "Community 126"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 127 - "Community 127"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 128 - "Community 128"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 129 - "Community 129"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 130 - "Community 130"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 131 - "Community 131"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 132 - "Community 132"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 133 - "Community 133"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 134 - "Community 134"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 135 - "Community 135"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 136 - "Community 136"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 137 - "Community 137"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 138 - "Community 138"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 139 - "Community 139"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 140 - "Community 140"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 141 - "Community 141"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 142 - "Community 142"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ## Knowledge Gaps
 - **1 isolated node(s):** `MiqAccountRateLimitException`
