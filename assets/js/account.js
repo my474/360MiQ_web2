@@ -189,7 +189,7 @@
         if (!pulse || !state.apiUrl) return;
         var contextType = pulse.getAttribute('data-context-type') || state.contextType || 'site';
         var contextKey = pulse.getAttribute('data-context-key') || state.contextKey || 'site';
-        var timeframe = pulse.getAttribute('data-timeframe') || '1m';
+        var timeframe = pulse.getAttribute('data-timeframe') || '30d';
         jsonRequest('pulse', { context_type: contextType, context_key: contextKey, timeframe: timeframe }, 'GET').then(function (body) {
             var counts = body.counts || { bullish: 0, bearish: 0, neutral: 0 };
             pulse.querySelector('[data-count="bullish"]').textContent = counts.bullish || 0;
