@@ -13,9 +13,9 @@ $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/css/account.css?v=20260725.2">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260725.2">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260725.3">
 </head>
-<body>
+<body class="miq-community-body">
 <?php $page = 'community'; include __DIR__ . '/header.php'; ?>
 <main class="miq-community-page container">
     <div class="miq-workspace-heading">

@@ -5,6 +5,11 @@
     padding-bottom: 70px;
 }
 
+html[data-theme="dark"] body.miq-community-body {
+    background-color: var(--bg-primary, #1a1a2e);
+    color: var(--text-primary, #e8e8e8);
+}
+
 .miq-workspace-heading {
     display: flex;
     align-items: flex-end;
