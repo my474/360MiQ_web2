@@ -122,6 +122,12 @@ if (!class_exists('MiqAccountDisplayNameTakenException')) {
     }
 }
 
+if (!class_exists('MiqAccountRateLimitException')) {
+    class MiqAccountRateLimitException extends RuntimeException
+    {
+    }
+}
+
 function miq_account_clean_display_name($name)
 {
     $name = trim(preg_replace('/\s+/', ' ', (string) $name));
@@ -232,9 +238,123 @@ function miq_account_hash_token($token)
     return hash('sha256', $token);
 }
 
+function miq_account_client_ip()
+{
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? trim((string) $_SERVER['REMOTE_ADDR']) : '';
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : 'unknown';
+}
+
+function miq_account_rate_limit_key($scope, $identifier)
+{
+    return hash('sha256', (string) $scope . "\0" . strtolower(trim((string) $identifier)));
+}
+
+function miq_account_rate_limit($scope, $identifier, $limit, $window_seconds)
+{
+    $limit = max(1, (int) $limit);
+    $window_seconds = max(1, (int) $window_seconds);
+    $db = null;
+
+    try {
+        $db = miq_account_db();
+        $table = miq_account_table('rate_limits');
+        $key_hash = miq_account_rate_limit_key($scope, $identifier);
+
+        $db->begin_transaction();
+
+        $insert = $db->prepare("INSERT IGNORE INTO {$table} (scope, key_hash, window_started_at, attempts, last_attempt_at) VALUES (?, ?, UTC_TIMESTAMP(), 0, UTC_TIMESTAMP())");
+        if (!$insert) {
+            throw new RuntimeException('Rate-limit initialization failed.');
+        }
+        $insert->bind_param('ss', $scope, $key_hash);
+        if (!$insert->execute()) {
+            $insert->close();
+            throw new RuntimeException('Rate-limit initialization failed.');
+        }
+        $insert->close();
+
+        $select = $db->prepare("SELECT window_started_at, attempts FROM {$table} WHERE scope = ? AND key_hash = ? FOR UPDATE");
+        if (!$select) {
+            throw new RuntimeException('Rate-limit lookup failed.');
+        }
+        $select->bind_param('ss', $scope, $key_hash);
+        if (!$select->execute()) {
+            $select->close();
+            throw new RuntimeException('Rate-limit lookup failed.');
+        }
+        $result = $select->get_result();
+        $row = $result ? $result->fetch_assoc() : null;
+        if ($result) {
+            $result->free();
+        }
+        $select->close();
+        if (!$row) {
+            throw new RuntimeException('Rate-limit record was not created.');
+        }
+
+        $window_started = strtotime($row['window_started_at'] . ' UTC');
+        $attempts = (int) $row['attempts'];
+        if ($window_started === false || time() - $window_started >= $window_seconds) {
+            $attempts = 1;
+            $update = $db->prepare("UPDATE {$table} SET window_started_at = UTC_TIMESTAMP(), attempts = ?, last_attempt_at = UTC_TIMESTAMP() WHERE scope = ? AND key_hash = ?");
+        } else {
+            $attempts++;
+            $update = $db->prepare("UPDATE {$table} SET attempts = ?, last_attempt_at = UTC_TIMESTAMP() WHERE scope = ? AND key_hash = ?");
+        }
+        if (!$update) {
+            throw new RuntimeException('Rate-limit update failed.');
+        }
+        $update->bind_param('iss', $attempts, $scope, $key_hash);
+        if (!$update->execute()) {
+            $update->close();
+            throw new RuntimeException('Rate-limit update failed.');
+        }
+        $update->close();
+        $db->commit();
+
+        return $attempts <= $limit;
+    } catch (Throwable $error) {
+        if ($db instanceof mysqli) {
+            $db->rollback();
+        }
+        error_log('360MiQ account rate-limit failure: ' . $error->getMessage());
+        return false;
+    }
+}
+
+function miq_account_require_rate_limit($scope, $identifier, $message)
+{
+    $limits = miq_account_config()['rate_limits'];
+    if (!isset($limits[$scope]) || !miq_account_rate_limit($scope, $identifier, $limits[$scope]['limit'], $limits[$scope]['window'])) {
+        throw new MiqAccountRateLimitException($message);
+    }
+}
+
+function miq_account_email_rate_limit($to)
+{
+    $limits = miq_account_config()['rate_limits'];
+    $checks = array(
+        array('email_ip', miq_account_client_ip()),
+        array('email_recipient', miq_account_normalize_email($to)),
+        array('email_cooldown', miq_account_normalize_email($to)),
+    );
+
+    foreach ($checks as $check) {
+        if (!isset($limits[$check[0]]) || !miq_account_rate_limit($check[0], $check[1], $limits[$check[0]]['limit'], $limits[$check[0]]['window'])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function miq_account_send_mail($to, $subject, $body)
 {
     $config = miq_account_config();
+    if (!miq_account_email_rate_limit($to)) {
+        error_log('360MiQ account email rate limit reached for recipient hash ' . miq_account_rate_limit_key('email_recipient', $to));
+        return false;
+    }
     // Production uses the existing authenticated PHPMailer helper outside
     // the public web root. Keep SMTP credentials in that server-side file.
     if ($config['mailer_include'] !== '') {

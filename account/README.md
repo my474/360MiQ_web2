@@ -22,7 +22,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
 
 ## Deployment setup
 
-1. Apply `schema.sql` to the account database. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
+1. Apply `schema.sql` to the account database. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required. If the account schema was already imported, apply `migrations/20260725_add_rate_limits.sql`.
    Existing installations must resolve any duplicate display names before adding `uq_miq_users_display_name` to the existing users table. Check them with `SELECT LOWER(display_name) AS normalized_name, COUNT(*) AS total FROM miq_users GROUP BY LOWER(display_name) HAVING COUNT(*) > 1;`, then run `ALTER TABLE miq_users ADD UNIQUE KEY uq_miq_users_display_name (display_name);` using the configured table prefix.
 2. Configure the dedicated account database include. Production defaults to `/home2/aamiqcom/php_script/mysql_vars_account.php`; `ACCOUNT_DB_INCLUDE` can override it. The repository template is `mysql_vars_account.php`; deploy it outside the web root, or provide `ACCOUNT_DB_HOST`, `ACCOUNT_DB_NAME`, `ACCOUNT_DB_USER`, `ACCOUNT_DB_PASSWORD`, and optional `ACCOUNT_DB_PORT`. Account code never falls back to the stock database.
 3. Set `MIQ_SITE_URL=https://360miq.com` and `ACCOUNT_EMAIL_FROM` to a sender that the host can deliver.
@@ -58,7 +58,19 @@ The mu-plugin `blog/wp-content/mu-plugins/miq-main-site-sso.php` maps a main-sit
 - Keep Pine execution in the existing browser-safe restricted runtime.
 - Add SMTP delivery monitoring before relying on verification and reset email.
 - Add a scheduled cleanup for expired email, reset, and SSO tokens.
+- Run the included cleanup script daily from cron: `php /path/to/account/cleanup_rate_limits.php`. It removes rate-limit rows unused for two days.
 - Review the financial-content disclaimer, privacy notice, user-content terms, and moderation policy before publishing community content.
+
+## Default abuse limits
+
+The account layer stores only a SHA-256 hash of each IP/email key. Defaults are configurable through environment variables:
+
+- Login: 20 attempts per IP and 8 per email per 15 minutes.
+- Registration: 5 attempts per IP and 3 per email per hour.
+- Password reset: 10 requests per IP and 3 per email per hour.
+- Verification/reset email delivery: 12 per IP per hour, 3 per recipient per hour, and one message per recipient per 60 seconds.
+
+Rate-limit failures fail closed and are logged without recording raw IP addresses or email addresses.
 
 ## API surface
 

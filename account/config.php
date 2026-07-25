@@ -45,6 +45,17 @@ function miq_account_config()
         'mailer_include' => miq_account_env('ACCOUNT_MAILER_INCLUDE', '/home2/aamiqcom/cronjobs/email.php'),
         'moderator_emails' => array_filter(array_map('trim', explode(',', miq_account_env('MIQ_MODERATOR_EMAILS', '')))),
         'debug' => filter_var(miq_account_env('MIQ_ACCOUNT_DEBUG', 'false'), FILTER_VALIDATE_BOOLEAN),
+        'rate_limits' => array(
+            'login_ip' => array('limit' => (int) miq_account_env('MIQ_RATE_LOGIN_IP_LIMIT', 20), 'window' => (int) miq_account_env('MIQ_RATE_LOGIN_IP_WINDOW', 900)),
+            'login_email' => array('limit' => (int) miq_account_env('MIQ_RATE_LOGIN_EMAIL_LIMIT', 8), 'window' => (int) miq_account_env('MIQ_RATE_LOGIN_EMAIL_WINDOW', 900)),
+            'register_ip' => array('limit' => (int) miq_account_env('MIQ_RATE_REGISTER_IP_LIMIT', 5), 'window' => (int) miq_account_env('MIQ_RATE_REGISTER_IP_WINDOW', 3600)),
+            'register_email' => array('limit' => (int) miq_account_env('MIQ_RATE_REGISTER_EMAIL_LIMIT', 3), 'window' => (int) miq_account_env('MIQ_RATE_REGISTER_EMAIL_WINDOW', 3600)),
+            'reset_ip' => array('limit' => (int) miq_account_env('MIQ_RATE_RESET_IP_LIMIT', 10), 'window' => (int) miq_account_env('MIQ_RATE_RESET_IP_WINDOW', 3600)),
+            'reset_email' => array('limit' => (int) miq_account_env('MIQ_RATE_RESET_EMAIL_LIMIT', 3), 'window' => (int) miq_account_env('MIQ_RATE_RESET_EMAIL_WINDOW', 3600)),
+            'email_ip' => array('limit' => (int) miq_account_env('MIQ_RATE_EMAIL_IP_LIMIT', 12), 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_IP_WINDOW', 3600)),
+            'email_recipient' => array('limit' => (int) miq_account_env('MIQ_RATE_EMAIL_RECIPIENT_LIMIT', 3), 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_RECIPIENT_WINDOW', 3600)),
+            'email_cooldown' => array('limit' => 1, 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_COOLDOWN', 60)),
+        ),
         'max_chart_bytes' => (int) miq_account_env('MIQ_MAX_CHART_BYTES', 1000000),
         'max_script_chars' => (int) miq_account_env('MIQ_MAX_SCRIPT_CHARS', 100000),
     );

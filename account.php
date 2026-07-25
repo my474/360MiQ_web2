@@ -119,6 +119,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $email = miq_account_normalize_email($_POST['email'] ?? '');
                 $register_email = (string) ($_POST['email'] ?? '');
                 $register_display_name = (string) ($_POST['display_name'] ?? '');
+                miq_account_require_rate_limit('register_ip', miq_account_client_ip(), 'Too many registration attempts. Please try again later.');
+                if ($email !== '') {
+                    miq_account_require_rate_limit('register_email', $email, 'Too many registration attempts for this email. Please try again later.');
+                }
                 miq_account_process_email_registration(
                     $email,
                     (string) ($_POST['password'] ?? ''),
@@ -128,7 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 miq_account_flash('success', 'Account created. Check your email to verify your address before signing in.');
                 miq_account_redirect('account.php?view=login');
             } elseif ($action === 'login') {
-                $user = miq_account_find_user_by_email($_POST['email'] ?? '');
+                $login_email = miq_account_normalize_email($_POST['email'] ?? '');
+                miq_account_require_rate_limit('login_ip', miq_account_client_ip(), 'Too many login attempts. Please try again later.');
+                if ($login_email !== '') {
+                    miq_account_require_rate_limit('login_email', $login_email, 'Too many login attempts for this email. Please try again later.');
+                }
+                $user = miq_account_find_user_by_email($login_email);
                 if (!$user || !$user['password_hash'] || !password_verify((string) ($_POST['password'] ?? ''), $user['password_hash'])) {
                     throw new RuntimeException('The email or password is not correct.');
                 }
@@ -141,10 +150,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 miq_account_login_user($user['id'], $user['session_version']);
                 miq_account_redirect($return_to);
             } elseif ($action === 'google') {
+                miq_account_require_rate_limit('login_ip', miq_account_client_ip(), 'Too many login attempts. Please try again later.');
                 miq_account_process_google_login((string) ($_POST['credential'] ?? ''));
                 miq_account_redirect($return_to);
             } elseif ($action === 'request_reset') {
                 $email = miq_account_normalize_email($_POST['email'] ?? '');
+                miq_account_require_rate_limit('reset_ip', miq_account_client_ip(), 'Too many password-reset requests. Please try again later.');
+                if ($email !== '') {
+                    miq_account_require_rate_limit('reset_email', $email, 'Too many password-reset requests for this email. Please try again later.');
+                }
                 $user = miq_account_find_user_by_email($email);
                 if ($user && $user['password_hash']) {
                     $token = miq_account_issue_email_token($user['id'], 'reset');

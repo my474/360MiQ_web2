@@ -54,7 +54,7 @@ function miq_account_table($name)
         'recent_searches', 'saved_charts', 'chart_versions', 'pine_scripts',
         'pine_script_versions', 'watchlists', 'watchlist_items', 'community_ideas',
         'community_idea_revisions', 'community_votes', 'community_reports',
-        'moderation_actions', 'sso_tokens'
+        'moderation_actions', 'sso_tokens', 'rate_limits'
     );
 
     if (!in_array($name, $allowed, true)) {
