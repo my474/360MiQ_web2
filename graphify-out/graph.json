@@ -9,7 +9,7 @@
       "source_file": "about-us.php",
       "source_location": "L1",
       "id": "about_us_php",
-      "community": 91
+      "community": 92
     },
     {
       "label": "account.php",
@@ -265,7 +265,7 @@
       "source_file": "account_export.php",
       "source_location": "L1",
       "id": "account_export_php",
-      "community": 92
+      "community": 93
     },
     {
       "label": "account_logout.php",
@@ -273,7 +273,7 @@
       "source_file": "account_logout.php",
       "source_location": "L1",
       "id": "account_logout_php",
-      "community": 93
+      "community": 94
     },
     {
       "label": "account_settings.php",
@@ -281,7 +281,7 @@
       "source_file": "account_settings.php",
       "source_location": "L1",
       "id": "account_settings_php",
-      "community": 94
+      "community": 95
     },
     {
       "label": "account_sso.php",
@@ -289,7 +289,7 @@
       "source_file": "account_sso.php",
       "source_location": "L1",
       "id": "account_sso_php",
-      "community": 45
+      "community": 46
     },
     {
       "label": "miq_sso_json()",
@@ -297,7 +297,7 @@
       "source_file": "account_sso.php",
       "source_location": "L4",
       "id": "account_sso_miq_sso_json",
-      "community": 45
+      "community": 46
     },
     {
       "label": "miq_sso_shared_secret()",
@@ -305,7 +305,7 @@
       "source_file": "account_sso.php",
       "source_location": "L13",
       "id": "account_sso_miq_sso_shared_secret",
-      "community": 45
+      "community": 46
     },
     {
       "label": "miq_sso_begin()",
@@ -313,7 +313,47 @@
       "source_file": "account_sso.php",
       "source_location": "L18",
       "id": "account_sso_miq_sso_begin",
-      "community": 45
+      "community": 46
+    },
+    {
+      "label": "account_user_admin.php",
+      "file_type": "code",
+      "source_file": "account_user_admin.php",
+      "source_location": "L1",
+      "id": "account_user_admin_php",
+      "community": 42
+    },
+    {
+      "label": "miq_user_admin_h()",
+      "file_type": "code",
+      "source_file": "account_user_admin.php",
+      "source_location": "L18",
+      "id": "account_user_admin_miq_user_admin_h",
+      "community": 42
+    },
+    {
+      "label": "miq_user_admin_utc()",
+      "file_type": "code",
+      "source_file": "account_user_admin.php",
+      "source_location": "L23",
+      "id": "account_user_admin_miq_user_admin_utc",
+      "community": 42
+    },
+    {
+      "label": "miq_user_admin_duration()",
+      "file_type": "code",
+      "source_file": "account_user_admin.php",
+      "source_location": "L32",
+      "id": "account_user_admin_miq_user_admin_duration",
+      "community": 42
+    },
+    {
+      "label": "miq_user_admin_redirect()",
+      "file_type": "code",
+      "source_file": "account_user_admin.php",
+      "source_location": "L60",
+      "id": "account_user_admin_miq_user_admin_redirect",
+      "community": 42
     },
     {
       "label": "community.php",
@@ -321,7 +361,7 @@
       "source_file": "community.php",
       "source_location": "L1",
       "id": "community_php",
-      "community": 95
+      "community": 96
     },
     {
       "label": "community_moderation.php",
@@ -329,7 +369,7 @@
       "source_file": "community_moderation.php",
       "source_location": "L1",
       "id": "community_moderation_php",
-      "community": 96
+      "community": 97
     },
     {
       "label": "contact-us.php",
@@ -337,7 +377,7 @@
       "source_file": "contact-us.php",
       "source_location": "L1",
       "id": "contact_us_php",
-      "community": 97
+      "community": 98
     },
     {
       "label": "contact-us2.php",
@@ -345,7 +385,7 @@
       "source_file": "contact-us2.php",
       "source_location": "L1",
       "id": "contact_us2_php",
-      "community": 98
+      "community": 99
     },
     {
       "label": "db_adv_get2.php",
@@ -353,7 +393,7 @@
       "source_file": "db_adv_get2.php",
       "source_location": "L1",
       "id": "db_adv_get2_php",
-      "community": 66
+      "community": 67
     },
     {
       "label": "endsWith()",
@@ -361,7 +401,7 @@
       "source_file": "db_adv_get2.php",
       "source_location": "L56",
       "id": "db_adv_get2_endswith",
-      "community": 66
+      "community": 67
     },
     {
       "label": "db_api_get.php",
@@ -369,7 +409,7 @@
       "source_file": "db_api_get.php",
       "source_location": "L1",
       "id": "db_api_get_php",
-      "community": 67
+      "community": 68
     },
     {
       "label": "endsWith()",
@@ -377,7 +417,7 @@
       "source_file": "db_api_get.php",
       "source_location": "L54",
       "id": "db_api_get_endswith",
-      "community": 67
+      "community": 68
     },
     {
       "label": "db_autocomplete.php",
@@ -385,7 +425,7 @@
       "source_file": "db_autocomplete.php",
       "source_location": "L1",
       "id": "db_autocomplete_php",
-      "community": 99
+      "community": 100
     },
     {
       "label": "db_blogpost_get.php",
@@ -393,7 +433,7 @@
       "source_file": "db_blogpost_get.php",
       "source_location": "L1",
       "id": "db_blogpost_get_php",
-      "community": 100
+      "community": 101
     },
     {
       "label": "db_chartcomposer_get.php",
@@ -401,7 +441,7 @@
       "source_file": "db_chartcomposer_get.php",
       "source_location": "L1",
       "id": "db_chartcomposer_get_php",
-      "community": 68
+      "community": 69
     },
     {
       "label": "endsWith()",
@@ -409,7 +449,7 @@
       "source_file": "db_chartcomposer_get.php",
       "source_location": "L583",
       "id": "db_chartcomposer_get_endswith",
-      "community": 68
+      "community": 69
     },
     {
       "label": "db_chatbot.php",
@@ -417,7 +457,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L1",
       "id": "db_chatbot_php",
-      "community": 53
+      "community": 54
     },
     {
       "label": "calculateChanges()",
@@ -425,7 +465,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L294",
       "id": "db_chatbot_calculatechanges",
-      "community": 53
+      "community": 54
     },
     {
       "label": "endsWith()",
@@ -433,7 +473,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L442",
       "id": "db_chatbot_endswith",
-      "community": 53
+      "community": 54
     },
     {
       "label": "db_econ_get.php",
@@ -441,7 +481,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L1",
       "id": "db_econ_get_php",
-      "community": 54
+      "community": 55
     },
     {
       "label": "datestrFormat()",
@@ -449,7 +489,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L138",
       "id": "db_econ_get_datestrformat",
-      "community": 54
+      "community": 55
     },
     {
       "label": "sma()",
@@ -457,7 +497,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L166",
       "id": "db_econ_get_sma",
-      "community": 54
+      "community": 55
     },
     {
       "label": "db_fa_get.php",
@@ -465,7 +505,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L1",
       "id": "db_fa_get_php",
-      "community": 55
+      "community": 56
     },
     {
       "label": "endsWith()",
@@ -473,7 +513,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L545",
       "id": "db_fa_get_endswith",
-      "community": 55
+      "community": 56
     },
     {
       "label": "daycount()",
@@ -481,7 +521,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L549",
       "id": "db_fa_get_daycount",
-      "community": 55
+      "community": 56
     },
     {
       "label": "db_featuredblogpost_get.php",
@@ -489,7 +529,7 @@
       "source_file": "db_featuredblogpost_get.php",
       "source_location": "L1",
       "id": "db_featuredblogpost_get_php",
-      "community": 101
+      "community": 102
     },
     {
       "label": "db_get_CCASS.php",
@@ -497,7 +537,7 @@
       "source_file": "db_get_CCASS.php",
       "source_location": "L1",
       "id": "db_get_ccass_php",
-      "community": 69
+      "community": 70
     },
     {
       "label": "isValidDate()",
@@ -505,7 +545,7 @@
       "source_file": "db_get_CCASS.php",
       "source_location": "L49",
       "id": "db_get_ccass_isvaliddate",
-      "community": 69
+      "community": 70
     },
     {
       "label": "db_get_CCASS_market.php",
@@ -513,7 +553,7 @@
       "source_file": "db_get_CCASS_market.php",
       "source_location": "L1",
       "id": "db_get_ccass_market_php",
-      "community": 102
+      "community": 103
     },
     {
       "label": "db_get_HKHousing.php",
@@ -521,7 +561,7 @@
       "source_file": "db_get_HKHousing.php",
       "source_location": "L1",
       "id": "db_get_hkhousing_php",
-      "community": 103
+      "community": 104
     },
     {
       "label": "db_get_SP500_ratio.php",
@@ -529,7 +569,7 @@
       "source_file": "db_get_SP500_ratio.php",
       "source_location": "L1",
       "id": "db_get_sp500_ratio_php",
-      "community": 104
+      "community": 105
     },
     {
       "label": "db_income4Sankey_get.php",
@@ -537,7 +577,7 @@
       "source_file": "db_income4Sankey_get.php",
       "source_location": "L1",
       "id": "db_income4sankey_get_php",
-      "community": 70
+      "community": 71
     },
     {
       "label": "endsWith()",
@@ -545,7 +585,7 @@
       "source_file": "db_income4Sankey_get.php",
       "source_location": "L99",
       "id": "db_income4sankey_get_endswith",
-      "community": 70
+      "community": 71
     },
     {
       "label": "db_index_get.php",
@@ -553,7 +593,7 @@
       "source_file": "db_index_get.php",
       "source_location": "L1",
       "id": "db_index_get_php",
-      "community": 71
+      "community": 72
     },
     {
       "label": "datestrFormat()",
@@ -561,7 +601,7 @@
       "source_file": "db_index_get.php",
       "source_location": "L151",
       "id": "db_index_get_datestrformat",
-      "community": 71
+      "community": 72
     },
     {
       "label": "db_market_get.php",
@@ -569,7 +609,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L1",
       "id": "db_market_get_php",
-      "community": 56
+      "community": 57
     },
     {
       "label": "datestrFormat()",
@@ -577,7 +617,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L291",
       "id": "db_market_get_datestrformat",
-      "community": 56
+      "community": 57
     },
     {
       "label": "sma()",
@@ -585,7 +625,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L319",
       "id": "db_market_get_sma",
-      "community": 56
+      "community": 57
     },
     {
       "label": "db_market_trendgauge_get.php",
@@ -593,7 +633,7 @@
       "source_file": "db_market_trendgauge_get.php",
       "source_location": "L1",
       "id": "db_market_trendgauge_get_php",
-      "community": 105
+      "community": 106
     },
     {
       "label": "db_news_get.php",
@@ -601,7 +641,7 @@
       "source_file": "db_news_get.php",
       "source_location": "L1",
       "id": "db_news_get_php",
-      "community": 106
+      "community": 107
     },
     {
       "label": "db_PBband_get.php",
@@ -609,7 +649,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L1",
       "id": "db_pbband_get_php",
-      "community": 57
+      "community": 58
     },
     {
       "label": "endsWith()",
@@ -617,7 +657,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L235",
       "id": "db_pbband_get_endswith",
-      "community": 57
+      "community": 58
     },
     {
       "label": "daycount()",
@@ -625,7 +665,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L239",
       "id": "db_pbband_get_daycount",
-      "community": 57
+      "community": 58
     },
     {
       "label": "db_peers_get.php",
@@ -633,7 +673,7 @@
       "source_file": "db_peers_get.php",
       "source_location": "L1",
       "id": "db_peers_get_php",
-      "community": 72
+      "community": 73
     },
     {
       "label": "endsWith()",
@@ -641,7 +681,7 @@
       "source_file": "db_peers_get.php",
       "source_location": "L82",
       "id": "db_peers_get_endswith",
-      "community": 72
+      "community": 73
     },
     {
       "label": "db_screener_get.php",
@@ -697,7 +737,7 @@
       "source_file": "db_sectorperformance_get.php",
       "source_location": "L1",
       "id": "db_sectorperformance_get_php",
-      "community": 107
+      "community": 108
     },
     {
       "label": "db_stockinfo_get.php",
@@ -705,7 +745,7 @@
       "source_file": "db_stockinfo_get.php",
       "source_location": "L1",
       "id": "db_stockinfo_get_php",
-      "community": 73
+      "community": 74
     },
     {
       "label": "endsWith()",
@@ -713,7 +753,7 @@
       "source_file": "db_stockinfo_get.php",
       "source_location": "L167",
       "id": "db_stockinfo_get_endswith",
-      "community": 73
+      "community": 74
     },
     {
       "label": "db_stockquote_get.php",
@@ -721,7 +761,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L1",
       "id": "db_stockquote_get_php",
-      "community": 58
+      "community": 59
     },
     {
       "label": "datestrFormat()",
@@ -729,7 +769,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L234",
       "id": "db_stockquote_get_datestrformat",
-      "community": 58
+      "community": 59
     },
     {
       "label": "endsWith()",
@@ -737,7 +777,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L263",
       "id": "db_stockquote_get_endswith",
-      "community": 58
+      "community": 59
     },
     {
       "label": "db_SurpriseIndex_get.php",
@@ -745,7 +785,7 @@
       "source_file": "db_SurpriseIndex_get.php",
       "source_location": "L1",
       "id": "db_surpriseindex_get_php",
-      "community": 74
+      "community": 75
     },
     {
       "label": "datestrFormat()",
@@ -753,7 +793,7 @@
       "source_file": "db_SurpriseIndex_get.php",
       "source_location": "L137",
       "id": "db_surpriseindex_get_datestrformat",
-      "community": 74
+      "community": 75
     },
     {
       "label": "db_top10_get.php",
@@ -761,7 +801,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L1",
       "id": "db_top10_get_php",
-      "community": 59
+      "community": 60
     },
     {
       "label": "datestrFormat()",
@@ -769,7 +809,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L217",
       "id": "db_top10_get_datestrformat",
-      "community": 59
+      "community": 60
     },
     {
       "label": "endsWith()",
@@ -777,7 +817,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L246",
       "id": "db_top10_get_endswith",
-      "community": 59
+      "community": 60
     },
     {
       "label": "db_top10_get1.php",
@@ -785,7 +825,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L1",
       "id": "db_top10_get1_php",
-      "community": 60
+      "community": 61
     },
     {
       "label": "datestrFormat()",
@@ -793,7 +833,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L178",
       "id": "db_top10_get1_datestrformat",
-      "community": 60
+      "community": 61
     },
     {
       "label": "endsWith()",
@@ -801,7 +841,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L207",
       "id": "db_top10_get1_endswith",
-      "community": 60
+      "community": 61
     },
     {
       "label": "db_top10_name_get.php",
@@ -809,7 +849,7 @@
       "source_file": "db_top10_name_get.php",
       "source_location": "L1",
       "id": "db_top10_name_get_php",
-      "community": 108
+      "community": 109
     },
     {
       "label": "db_treemap_get.php",
@@ -817,7 +857,7 @@
       "source_file": "db_treemap_get.php",
       "source_location": "L1",
       "id": "db_treemap_get_php",
-      "community": 75
+      "community": 76
     },
     {
       "label": "endsWith()",
@@ -825,7 +865,7 @@
       "source_file": "db_treemap_get.php",
       "source_location": "L357",
       "id": "db_treemap_get_endswith",
-      "community": 75
+      "community": 76
     },
     {
       "label": "db_treemap_index_get.php",
@@ -833,7 +873,7 @@
       "source_file": "db_treemap_index_get.php",
       "source_location": "L1",
       "id": "db_treemap_index_get_php",
-      "community": 76
+      "community": 77
     },
     {
       "label": "endsWith()",
@@ -841,7 +881,7 @@
       "source_file": "db_treemap_index_get.php",
       "source_location": "L363",
       "id": "db_treemap_index_get_endswith",
-      "community": 76
+      "community": 77
     },
     {
       "label": "db_valuationbandsIndex_get.php",
@@ -849,7 +889,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L1",
       "id": "db_valuationbandsindex_get_php",
-      "community": 42
+      "community": 43
     },
     {
       "label": "datestr2num()",
@@ -857,7 +897,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L145",
       "id": "db_valuationbandsindex_get_datestr2num",
-      "community": 42
+      "community": 43
     },
     {
       "label": "str2num()",
@@ -865,7 +905,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L152",
       "id": "db_valuationbandsindex_get_str2num",
-      "community": 42
+      "community": 43
     },
     {
       "label": "datestrFormat()",
@@ -873,7 +913,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L162",
       "id": "db_valuationbandsindex_get_datestrformat",
-      "community": 42
+      "community": 43
     },
     {
       "label": "endsWith()",
@@ -881,7 +921,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L190",
       "id": "db_valuationbandsindex_get_endswith",
-      "community": 42
+      "community": 43
     },
     {
       "label": "db_valuationbands_get.php",
@@ -889,7 +929,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L1",
       "id": "db_valuationbands_get_php",
-      "community": 46
+      "community": 47
     },
     {
       "label": "estimate_from_fundamental_stock_earnings_trend()",
@@ -897,7 +937,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L412",
       "id": "db_valuationbands_get_estimate_from_fundamental_stock_earnings_trend",
-      "community": 46
+      "community": 47
     },
     {
       "label": "endsWith()",
@@ -905,7 +945,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L435",
       "id": "db_valuationbands_get_endswith",
-      "community": 46
+      "community": 47
     },
     {
       "label": "daycount()",
@@ -913,7 +953,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L439",
       "id": "db_valuationbands_get_daycount",
-      "community": 46
+      "community": 47
     },
     {
       "label": "disclaimer.php",
@@ -921,7 +961,7 @@
       "source_file": "disclaimer.php",
       "source_location": "L1",
       "id": "disclaimer_php",
-      "community": 109
+      "community": 110
     },
     {
       "label": "econ.php",
@@ -929,7 +969,7 @@
       "source_file": "econ.php",
       "source_location": "L1",
       "id": "econ_php",
-      "community": 110
+      "community": 111
     },
     {
       "label": "error.php",
@@ -937,7 +977,7 @@
       "source_file": "error.php",
       "source_location": "L1",
       "id": "error_php",
-      "community": 111
+      "community": 112
     },
     {
       "label": "footer.php",
@@ -945,7 +985,7 @@
       "source_file": "footer.php",
       "source_location": "L1",
       "id": "footer_php",
-      "community": 112
+      "community": 113
     },
     {
       "label": "footer_fullSave.php",
@@ -953,7 +993,7 @@
       "source_file": "footer_fullSave.php",
       "source_location": "L1",
       "id": "footer_fullsave_php",
-      "community": 113
+      "community": 114
     },
     {
       "label": "header.php",
@@ -961,7 +1001,7 @@
       "source_file": "header.php",
       "source_location": "L1",
       "id": "header_php",
-      "community": 114
+      "community": 115
     },
     {
       "label": "idx.php",
@@ -969,7 +1009,7 @@
       "source_file": "idx.php",
       "source_location": "L1",
       "id": "idx_php",
-      "community": 115
+      "community": 116
     },
     {
       "label": "index.php",
@@ -977,7 +1017,7 @@
       "source_file": "index.php",
       "source_location": "L1",
       "id": "index_php",
-      "community": 77
+      "community": 78
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -985,7 +1025,7 @@
       "source_file": "index.php",
       "source_location": "L2",
       "id": "index_scatterchartnotemarkup",
-      "community": 77
+      "community": 78
     },
     {
       "label": "index1.php",
@@ -993,7 +1033,7 @@
       "source_file": "index1.php",
       "source_location": "L1",
       "id": "index1_php",
-      "community": 78
+      "community": 79
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -1001,7 +1041,7 @@
       "source_file": "index1.php",
       "source_location": "L2",
       "id": "index1_scatterchartnotemarkup",
-      "community": 78
+      "community": 79
     },
     {
       "label": "LLM_cancel_job.php",
@@ -1009,7 +1049,7 @@
       "source_file": "LLM_cancel_job.php",
       "source_location": "L1",
       "id": "llm_cancel_job_php",
-      "community": 116
+      "community": 117
     },
     {
       "label": "LLM_process_queue.php",
@@ -1017,7 +1057,7 @@
       "source_file": "LLM_process_queue.php",
       "source_location": "L1",
       "id": "llm_process_queue_php",
-      "community": 79
+      "community": 80
     },
     {
       "label": "ollama()",
@@ -1025,7 +1065,7 @@
       "source_file": "LLM_process_queue.php",
       "source_location": "L58",
       "id": "llm_process_queue_ollama",
-      "community": 79
+      "community": 80
     },
     {
       "label": "LLM_request.php",
@@ -1033,7 +1073,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L1",
       "id": "llm_request_php",
-      "community": 47
+      "community": 48
     },
     {
       "label": "ollama()",
@@ -1041,7 +1081,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L292",
       "id": "llm_request_ollama",
-      "community": 47
+      "community": 48
     },
     {
       "label": "signage()",
@@ -1049,7 +1089,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L397",
       "id": "llm_request_signage",
-      "community": 47
+      "community": 48
     },
     {
       "label": "smartRound()",
@@ -1057,7 +1097,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L408",
       "id": "llm_request_smartround",
-      "community": 47
+      "community": 48
     },
     {
       "label": "LLM_SQLiteCreateTable.php",
@@ -1065,7 +1105,7 @@
       "source_file": "LLM_SQLiteCreateTable.php",
       "source_location": "L1",
       "id": "llm_sqlitecreatetable_php",
-      "community": 117
+      "community": 118
     },
     {
       "label": "LLM_SQLitePrintAll.php",
@@ -1073,7 +1113,7 @@
       "source_file": "LLM_SQLitePrintAll.php",
       "source_location": "L1",
       "id": "llm_sqliteprintall_php",
-      "community": 118
+      "community": 119
     },
     {
       "label": "LLM_SQLiteTruncate.php",
@@ -1081,7 +1121,7 @@
       "source_file": "LLM_SQLiteTruncate.php",
       "source_location": "L1",
       "id": "llm_sqlitetruncate_php",
-      "community": 119
+      "community": 120
     },
     {
       "label": "LLM_status.php",
@@ -1089,7 +1129,7 @@
       "source_file": "LLM_status.php",
       "source_location": "L1",
       "id": "llm_status_php",
-      "community": 120
+      "community": 121
     },
     {
       "label": "LLM_submit.php",
@@ -1097,7 +1137,7 @@
       "source_file": "LLM_submit.php",
       "source_location": "L1",
       "id": "llm_submit_php",
-      "community": 121
+      "community": 122
     },
     {
       "label": "market.php",
@@ -1105,7 +1145,7 @@
       "source_file": "market.php",
       "source_location": "L1",
       "id": "market_php",
-      "community": 80
+      "community": 81
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -1113,7 +1153,7 @@
       "source_file": "market.php",
       "source_location": "L119",
       "id": "market_scatterchartnotemarkup",
-      "community": 80
+      "community": 81
     },
     {
       "label": "meta.php",
@@ -1121,7 +1161,7 @@
       "source_file": "meta.php",
       "source_location": "L1",
       "id": "meta_php",
-      "community": 122
+      "community": 123
     },
     {
       "label": "mysql_vars_account.php",
@@ -1129,7 +1169,7 @@
       "source_file": "mysql_vars_account.php",
       "source_location": "L1",
       "id": "mysql_vars_account_php",
-      "community": 123
+      "community": 124
     },
     {
       "label": "ollama.php",
@@ -1137,7 +1177,7 @@
       "source_file": "ollama.php",
       "source_location": "L1",
       "id": "ollama_php",
-      "community": 61
+      "community": 62
     },
     {
       "label": "updateQueueCounter()",
@@ -1145,7 +1185,7 @@
       "source_file": "ollama.php",
       "source_location": "L22",
       "id": "ollama_updatequeuecounter",
-      "community": 61
+      "community": 62
     },
     {
       "label": "logQueueInfo()",
@@ -1153,7 +1193,7 @@
       "source_file": "ollama.php",
       "source_location": "L30",
       "id": "ollama_logqueueinfo",
-      "community": 61
+      "community": 62
     },
     {
       "label": "privacypolicy.php",
@@ -1161,7 +1201,7 @@
       "source_file": "privacypolicy.php",
       "source_location": "L1",
       "id": "privacypolicy_php",
-      "community": 124
+      "community": 125
     },
     {
       "label": "raceChart.php",
@@ -1169,7 +1209,7 @@
       "source_file": "raceChart.php",
       "source_location": "L1",
       "id": "racechart_php",
-      "community": 125
+      "community": 126
     },
     {
       "label": "screener.php",
@@ -1177,7 +1217,7 @@
       "source_file": "screener.php",
       "source_location": "L1",
       "id": "screener_php",
-      "community": 126
+      "community": 127
     },
     {
       "label": "stockinfo.php",
@@ -1233,7 +1273,7 @@
       "source_file": "stock_json.php",
       "source_location": "L1",
       "id": "stock_json_php",
-      "community": 62
+      "community": 63
     },
     {
       "label": "cleanName()",
@@ -1241,7 +1281,7 @@
       "source_file": "stock_json.php",
       "source_location": "L11",
       "id": "stock_json_cleanname",
-      "community": 62
+      "community": 63
     },
     {
       "label": "cleanChinese()",
@@ -1249,7 +1289,7 @@
       "source_file": "stock_json.php",
       "source_location": "L66",
       "id": "stock_json_cleanchinese",
-      "community": 62
+      "community": 63
     },
     {
       "label": "terms.php",
@@ -1257,7 +1297,7 @@
       "source_file": "terms.php",
       "source_location": "L1",
       "id": "terms_php",
-      "community": 127
+      "community": 128
     },
     {
       "label": "tool.php",
@@ -1265,7 +1305,7 @@
       "source_file": "tool.php",
       "source_location": "L1",
       "id": "tool_php",
-      "community": 128
+      "community": 129
     },
     {
       "label": "workspace.php",
@@ -1273,7 +1313,7 @@
       "source_file": "workspace.php",
       "source_location": "L1",
       "id": "workspace_php",
-      "community": 129
+      "community": 130
     },
     {
       "label": "writeforus.php",
@@ -1281,7 +1321,7 @@
       "source_file": "writeforus.php",
       "source_location": "L1",
       "id": "writeforus_php",
-      "community": 130
+      "community": 131
     },
     {
       "label": "youtube.php",
@@ -1289,7 +1329,7 @@
       "source_file": "youtube.php",
       "source_location": "L1",
       "id": "youtube_php",
-      "community": 131
+      "community": 132
     },
     {
       "label": "youtube_get.php",
@@ -1297,7 +1337,7 @@
       "source_file": "youtube_get.php",
       "source_location": "L1",
       "id": "youtube_get_php",
-      "community": 132
+      "community": 133
     },
     {
       "label": "auth.php",
@@ -1305,7 +1345,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L1",
       "id": "account_auth_php",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_start_session()",
@@ -1313,7 +1353,7 @@
       "source_file": "account\\auth.php",
       "source_location": "L4",
       "id": "auth_miq_account_start_session",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_bootstrap()",
@@ -1321,271 +1361,327 @@
       "source_file": "account\\auth.php",
       "source_location": "L23",
       "id": "auth_miq_account_bootstrap",
-      "community": 10
+      "community": 6
+    },
+    {
+      "label": "miq_account_session_hash()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L31",
+      "id": "auth_miq_account_session_hash",
+      "community": 6
+    },
+    {
+      "label": "miq_account_remove_current_session()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L38",
+      "id": "auth_miq_account_remove_current_session",
+      "community": 6
+    },
+    {
+      "label": "miq_account_record_activity()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L53",
+      "id": "auth_miq_account_record_activity",
+      "community": 6
+    },
+    {
+      "label": "miq_account_release_expired_suspension()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L105",
+      "id": "auth_miq_account_release_expired_suspension",
+      "community": 6
+    },
+    {
+      "label": "miq_account_access_error()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L133",
+      "id": "auth_miq_account_access_error",
+      "community": 6
+    },
+    {
+      "label": "miq_account_require_active_user()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L147",
+      "id": "auth_miq_account_require_active_user",
+      "community": 6
     },
     {
       "label": "miq_account_current_user()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L31",
+      "source_location": "L156",
       "id": "auth_miq_account_current_user",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_is_authenticated()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L65",
+      "source_location": "L192",
       "id": "auth_miq_account_is_authenticated",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_is_moderator()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L70",
+      "source_location": "L197",
       "id": "auth_miq_account_is_moderator",
-      "community": 10
+      "community": 6
+    },
+    {
+      "label": "miq_account_is_admin()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L212",
+      "id": "auth_miq_account_is_admin",
+      "community": 6
     },
     {
       "label": "miq_account_logout()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L85",
+      "source_location": "L225",
       "id": "auth_miq_account_logout",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_login_user()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L99",
+      "source_location": "L240",
       "id": "auth_miq_account_login_user",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_normalize_email()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L107",
+      "source_location": "L251",
       "id": "auth_miq_account_normalize_email",
-      "community": 10
+      "community": 6
     },
     {
       "label": "MiqAccountDisplayNameTakenException",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L113",
+      "source_location": "L257",
       "id": "auth_miqaccountdisplaynametakenexception",
-      "community": 10
+      "community": 6
     },
     {
       "label": ".__construct()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L117",
+      "source_location": "L261",
       "id": "auth_miqaccountdisplaynametakenexception_construct",
-      "community": 10
+      "community": 6
     },
     {
       "label": "MiqAccountRateLimitException",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L126",
+      "source_location": "L270",
       "id": "auth_miqaccountratelimitexception",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_clean_display_name()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L131",
+      "source_location": "L275",
       "id": "auth_miq_account_clean_display_name",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_display_name()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L137",
+      "source_location": "L281",
       "id": "auth_miq_account_display_name",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_display_name_exists()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L147",
+      "source_location": "L291",
       "id": "auth_miq_account_display_name_exists",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_display_name_with_suffix()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L162",
+      "source_location": "L306",
       "id": "auth_miq_account_display_name_with_suffix",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_display_name_suggestions()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L168",
+      "source_location": "L312",
       "id": "auth_miq_account_display_name_suggestions",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_resolve_display_name()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L184",
+      "source_location": "L328",
       "id": "auth_miq_account_resolve_display_name",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_csrf_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L199",
+      "source_location": "L343",
       "id": "auth_miq_account_csrf_token",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_check_csrf()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L208",
+      "source_location": "L352",
       "id": "auth_miq_account_check_csrf",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_safe_return_to()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L213",
+      "source_location": "L357",
       "id": "auth_miq_account_safe_return_to",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_flash()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L222",
+      "source_location": "L366",
       "id": "auth_miq_account_flash",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_take_flash()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L228",
+      "source_location": "L372",
       "id": "auth_miq_account_take_flash",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_hash_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L236",
+      "source_location": "L380",
       "id": "auth_miq_account_hash_token",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_client_ip()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L241",
+      "source_location": "L385",
       "id": "auth_miq_account_client_ip",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_rate_limit_key()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L247",
+      "source_location": "L391",
       "id": "auth_miq_account_rate_limit_key",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_rate_limit()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L252",
+      "source_location": "L396",
       "id": "auth_miq_account_rate_limit",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_require_rate_limit()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L325",
+      "source_location": "L469",
       "id": "auth_miq_account_require_rate_limit",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_email_rate_limit()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L333",
+      "source_location": "L477",
       "id": "auth_miq_account_email_rate_limit",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_send_mail()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L351",
+      "source_location": "L495",
       "id": "auth_miq_account_send_mail",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_create_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L387",
+      "source_location": "L531",
       "id": "auth_miq_account_create_token",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_create_user()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L392",
+      "source_location": "L536",
       "id": "auth_miq_account_create_user",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_issue_email_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L441",
+      "source_location": "L585",
       "id": "auth_miq_account_issue_email_token",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_google_identity()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L456",
+      "source_location": "L600",
       "id": "auth_miq_account_google_identity",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_find_google_user()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L497",
+      "source_location": "L641",
       "id": "auth_miq_account_find_google_user",
-      "community": 10
+      "community": 6
     },
     {
       "label": "miq_account_find_user_by_email()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L508",
+      "source_location": "L652",
       "id": "auth_miq_account_find_user_by_email",
-      "community": 10
+      "community": 6
     },
     {
       "label": "bootstrap.php",
@@ -1593,7 +1689,7 @@
       "source_file": "account\\bootstrap.php",
       "source_location": "L1",
       "id": "account_bootstrap_php",
-      "community": 133
+      "community": 134
     },
     {
       "label": "cleanup_rate_limits.php",
@@ -1601,7 +1697,7 @@
       "source_file": "account\\cleanup_rate_limits.php",
       "source_location": "L1",
       "id": "account_cleanup_rate_limits_php",
-      "community": 134
+      "community": 135
     },
     {
       "label": "community_sentiment.php",
@@ -1697,7 +1793,7 @@
       "source_file": "account\\config.php",
       "source_location": "L1",
       "id": "account_config_php",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_account_env()",
@@ -1705,7 +1801,7 @@
       "source_file": "account\\config.php",
       "source_location": "L14",
       "id": "config_miq_account_env",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_community_enabled()",
@@ -1713,7 +1809,7 @@
       "source_file": "account\\config.php",
       "source_location": "L20",
       "id": "config_miq_community_enabled",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_account_config()",
@@ -1721,7 +1817,7 @@
       "source_file": "account\\config.php",
       "source_location": "L30",
       "id": "config_miq_account_config",
-      "community": 48
+      "community": 49
     },
     {
       "label": "db.php",
@@ -1751,7 +1847,7 @@
       "label": "miq_account_query()",
       "file_type": "code",
       "source_file": "account\\db.php",
-      "source_location": "L68",
+      "source_location": "L69",
       "id": "db_miq_account_query",
       "community": 38
     },
@@ -1759,7 +1855,7 @@
       "label": "miq_account_fetch_all()",
       "file_type": "code",
       "source_file": "account\\db.php",
-      "source_location": "L92",
+      "source_location": "L93",
       "id": "db_miq_account_fetch_all",
       "community": 38
     },
@@ -1767,7 +1863,7 @@
       "label": "miq_account_fetch_one()",
       "file_type": "code",
       "source_file": "account\\db.php",
-      "source_location": "L106",
+      "source_location": "L107",
       "id": "db_miq_account_fetch_one",
       "community": 38
     },
@@ -1777,7 +1873,7 @@
       "source_file": "account\\snapshot_community_sentiment.php",
       "source_location": "L1",
       "id": "account_snapshot_community_sentiment_php",
-      "community": 135
+      "community": 136
     },
     {
       "label": "bootstrap.min.js",
@@ -1785,7 +1881,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L1",
       "id": "assets_bootstrap_js_bootstrap_min_js",
-      "community": 6
+      "community": 7
     },
     {
       "label": "i()",
@@ -1793,7 +1889,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_i",
-      "community": 6
+      "community": 7
     },
     {
       "label": "s()",
@@ -1801,7 +1897,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_s",
-      "community": 6
+      "community": 7
     },
     {
       "label": "l()",
@@ -1809,7 +1905,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_l",
-      "community": 6
+      "community": 7
     },
     {
       "label": "n()",
@@ -1817,7 +1913,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_n",
-      "community": 6
+      "community": 7
     },
     {
       "label": "r()",
@@ -1825,7 +1921,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_r",
-      "community": 6
+      "community": 7
     },
     {
       "label": "a()",
@@ -1833,7 +1929,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_a",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Ot()",
@@ -1841,7 +1937,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ot",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Nt()",
@@ -1849,7 +1945,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_nt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "kt()",
@@ -1857,7 +1953,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_kt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Lt()",
@@ -1865,7 +1961,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_lt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Ht()",
@@ -1873,7 +1969,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ht",
-      "community": 6
+      "community": 7
     },
     {
       "label": "jt()",
@@ -1881,7 +1977,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_jt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Rt()",
@@ -1889,7 +1985,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_rt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Ft()",
@@ -1897,7 +1993,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ft",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Mt()",
@@ -1905,7 +2001,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_mt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Wt()",
@@ -1913,7 +2009,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_wt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Ut()",
@@ -1921,7 +2017,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ut",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Bt()",
@@ -1929,7 +2025,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_bt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Vt()",
@@ -1937,7 +2033,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_vt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Yt()",
@@ -1945,7 +2041,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_yt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "zt()",
@@ -1953,7 +2049,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_zt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Xt()",
@@ -1961,7 +2057,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_xt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Gt()",
@@ -1969,7 +2065,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_gt",
-      "community": 6
+      "community": 7
     },
     {
       "label": "$t()",
@@ -1977,7 +2073,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_t",
-      "community": 6
+      "community": 7
     },
     {
       "label": "te()",
@@ -1985,7 +2081,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_te",
-      "community": 6
+      "community": 7
     },
     {
       "label": "ee()",
@@ -1993,7 +2089,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ee",
-      "community": 6
+      "community": 7
     },
     {
       "label": "ne()",
@@ -2001,7 +2097,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ne",
-      "community": 6
+      "community": 7
     },
     {
       "label": "ie()",
@@ -2009,7 +2105,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ie",
-      "community": 6
+      "community": 7
     },
     {
       "label": "oe()",
@@ -2017,7 +2113,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_oe",
-      "community": 6
+      "community": 7
     },
     {
       "label": "re()",
@@ -2025,7 +2121,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_re",
-      "community": 6
+      "community": 7
     },
     {
       "label": "se()",
@@ -2033,7 +2129,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_se",
-      "community": 6
+      "community": 7
     },
     {
       "label": "ae()",
@@ -2041,7 +2137,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ae",
-      "community": 6
+      "community": 7
     },
     {
       "label": "le()",
@@ -2049,7 +2145,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_le",
-      "community": 6
+      "community": 7
     },
     {
       "label": "ce()",
@@ -2057,7 +2153,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ce",
-      "community": 6
+      "community": 7
     },
     {
       "label": "he()",
@@ -2065,7 +2161,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_he",
-      "community": 6
+      "community": 7
     },
     {
       "label": "fe()",
@@ -2073,7 +2169,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_fe",
-      "community": 6
+      "community": 7
     },
     {
       "label": "me()",
@@ -2081,7 +2177,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_me",
-      "community": 6
+      "community": 7
     },
     {
       "label": "ye()",
@@ -2089,7 +2185,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_ye",
-      "community": 6
+      "community": 7
     },
     {
       "label": "c()",
@@ -2097,7 +2193,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_c",
-      "community": 6
+      "community": 7
     },
     {
       "label": "o()",
@@ -2105,7 +2201,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_o",
-      "community": 6
+      "community": 7
     },
     {
       "label": "bn()",
@@ -2113,7 +2209,7 @@
       "source_file": "assets\\bootstrap\\js\\bootstrap.min.js",
       "source_location": "L6",
       "id": "bootstrap_min_bn",
-      "community": 6
+      "community": 7
     },
     {
       "label": "account.js",
@@ -2121,7 +2217,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L1",
       "id": "assets_js_account_js",
-      "community": 8
+      "community": 9
     },
     {
       "label": "pulseDebug()",
@@ -2129,7 +2225,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L23",
       "id": "account_pulsedebug",
-      "community": 8
+      "community": 9
     },
     {
       "label": "livePageContext()",
@@ -2137,7 +2233,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L28",
       "id": "account_livepagecontext",
-      "community": 8
+      "community": 9
     },
     {
       "label": "applyLivePulseContext()",
@@ -2145,7 +2241,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L50",
       "id": "account_applylivepulsecontext",
-      "community": 8
+      "community": 9
     },
     {
       "label": "inspectPulse()",
@@ -2153,7 +2249,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L110",
       "id": "account_inspectpulse",
-      "community": 8
+      "community": 9
     },
     {
       "label": "jsonRequest()",
@@ -2161,7 +2257,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L152",
       "id": "account_jsonrequest",
-      "community": 8
+      "community": 9
     },
     {
       "label": "parseResponse()",
@@ -2169,7 +2265,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L173",
       "id": "account_parseresponse",
-      "community": 8
+      "community": 9
     },
     {
       "label": "makeAssetKey()",
@@ -2177,7 +2273,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L188",
       "id": "account_makeassetkey",
-      "community": 8
+      "community": 9
     },
     {
       "label": "localSearches()",
@@ -2185,7 +2281,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L202",
       "id": "account_localsearches",
-      "community": 8
+      "community": 9
     },
     {
       "label": "rememberLocalSearch()",
@@ -2193,7 +2289,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L211",
       "id": "account_rememberlocalsearch",
-      "community": 8
+      "community": 9
     },
     {
       "label": "saveSearch()",
@@ -2201,7 +2297,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L218",
       "id": "account_savesearch",
-      "community": 8
+      "community": 9
     },
     {
       "label": "saveChartLayout()",
@@ -2209,7 +2305,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L232",
       "id": "account_savechartlayout",
-      "community": 8
+      "community": 9
     },
     {
       "label": "getChart()",
@@ -2217,7 +2313,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L249",
       "id": "account_getchart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "preloadChartLayout()",
@@ -2225,7 +2321,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L257",
       "id": "account_preloadchartlayout",
-      "community": 8
+      "community": 9
     },
     {
       "label": "saveScript()",
@@ -2233,7 +2329,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L263",
       "id": "account_savescript",
-      "community": 8
+      "community": 9
     },
     {
       "label": "getScript()",
@@ -2241,7 +2337,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L271",
       "id": "account_getscript",
-      "community": 8
+      "community": 9
     },
     {
       "label": "accountAction()",
@@ -2249,7 +2345,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L278",
       "id": "account_accountaction",
-      "community": 8
+      "community": 9
     },
     {
       "label": "saveIdea()",
@@ -2257,7 +2353,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L283",
       "id": "account_saveidea",
-      "community": 8
+      "community": 9
     },
     {
       "label": "mergeLocalSearches()",
@@ -2265,7 +2361,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L290",
       "id": "account_mergelocalsearches",
-      "community": 8
+      "community": 9
     },
     {
       "label": "handleGoogleCredential()",
@@ -2273,7 +2369,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L295",
       "id": "account_handlegooglecredential",
-      "community": 8
+      "community": 9
     },
     {
       "label": "handleGoogleLinkCredential()",
@@ -2281,7 +2377,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L303",
       "id": "account_handlegooglelinkcredential",
-      "community": 8
+      "community": 9
     },
     {
       "label": "bindDisplayNameSuggestions()",
@@ -2289,7 +2385,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L311",
       "id": "account_binddisplaynamesuggestions",
-      "community": 8
+      "community": 9
     },
     {
       "label": "bindSearchTracking()",
@@ -2297,7 +2393,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L323",
       "id": "account_bindsearchtracking",
-      "community": 8
+      "community": 9
     },
     {
       "label": "sentimentSvgElement()",
@@ -2305,7 +2401,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L332",
       "id": "account_sentimentsvgelement",
-      "community": 8
+      "community": 9
     },
     {
       "label": "sentimentLinePath()",
@@ -2313,7 +2409,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L341",
       "id": "account_sentimentlinepath",
-      "community": 8
+      "community": 9
     },
     {
       "label": "clearElement()",
@@ -2321,7 +2417,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L356",
       "id": "account_clearelement",
-      "community": 8
+      "community": 9
     },
     {
       "label": "renderSentimentChart()",
@@ -2329,7 +2425,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L360",
       "id": "account_rendersentimentchart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "sentimentTrendRequest()",
@@ -2337,7 +2433,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L496",
       "id": "account_sentimenttrendrequest",
-      "community": 8
+      "community": 9
     },
     {
       "label": "loadSentimentChart()",
@@ -2345,7 +2441,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L515",
       "id": "account_loadsentimentchart",
-      "community": 8
+      "community": 9
     },
     {
       "label": "renderSentimentCharts()",
@@ -2353,7 +2449,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L535",
       "id": "account_rendersentimentcharts",
-      "community": 8
+      "community": 9
     },
     {
       "label": "rememberPendingPulseVote()",
@@ -2361,7 +2457,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L542",
       "id": "account_rememberpendingpulsevote",
-      "community": 8
+      "community": 9
     },
     {
       "label": "pendingPulseVote()",
@@ -2369,7 +2465,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L551",
       "id": "account_pendingpulsevote",
-      "community": 8
+      "community": 9
     },
     {
       "label": "clearPendingPulseVote()",
@@ -2377,7 +2473,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L565",
       "id": "account_clearpendingpulsevote",
-      "community": 8
+      "community": 9
     },
     {
       "label": "updatePulseCounts()",
@@ -2385,7 +2481,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L569",
       "id": "account_updatepulsecounts",
-      "community": 8
+      "community": 9
     },
     {
       "label": "setPulseBusy()",
@@ -2393,7 +2489,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L582",
       "id": "account_setpulsebusy",
-      "community": 8
+      "community": 9
     },
     {
       "label": "selectPulseDirection()",
@@ -2401,7 +2497,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L588",
       "id": "account_selectpulsedirection",
-      "community": 8
+      "community": 9
     },
     {
       "label": "showPulseExplanation()",
@@ -2409,7 +2505,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L594",
       "id": "account_showpulseexplanation",
-      "community": 8
+      "community": 9
     },
     {
       "label": "submitPulseVote()",
@@ -2417,7 +2513,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L603",
       "id": "account_submitpulsevote",
-      "community": 8
+      "community": 9
     },
     {
       "label": "replayPendingPulseVote()",
@@ -2425,7 +2521,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L635",
       "id": "account_replaypendingpulsevote",
-      "community": 8
+      "community": 9
     },
     {
       "label": "bindPulseExplanation()",
@@ -2433,7 +2529,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L658",
       "id": "account_bindpulseexplanation",
-      "community": 8
+      "community": 9
     },
     {
       "label": "renderPulse()",
@@ -2441,7 +2537,7 @@
       "source_file": "assets\\js\\account.js",
       "source_location": "L709",
       "id": "account_renderpulse",
-      "community": 8
+      "community": 9
     },
     {
       "label": "ADChart.js",
@@ -2449,7 +2545,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L1",
       "id": "assets_js_adchart_js",
-      "community": 63
+      "community": 64
     },
     {
       "label": "adchart()",
@@ -2457,7 +2553,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L1",
       "id": "adchart_adchart",
-      "community": 63
+      "community": 64
     },
     {
       "label": "adComment()",
@@ -2465,7 +2561,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L415",
       "id": "adchart_adcomment",
-      "community": 63
+      "community": 64
     },
     {
       "label": "AdvDecPie.js",
@@ -2473,7 +2569,7 @@
       "source_file": "assets\\js\\AdvDecPie.js",
       "source_location": "L1",
       "id": "assets_js_advdecpie_js",
-      "community": 81
+      "community": 82
     },
     {
       "label": "adpie()",
@@ -2481,7 +2577,7 @@
       "source_file": "assets\\js\\AdvDecPie.js",
       "source_location": "L1",
       "id": "advdecpie_adpie",
-      "community": 81
+      "community": 82
     },
     {
       "label": "anychart-bundle.min.js",
@@ -2673,7 +2769,7 @@
       "source_file": "assets\\js\\bot-detector.js",
       "source_location": "L1",
       "id": "assets_js_bot_detector_js",
-      "community": 82
+      "community": 83
     },
     {
       "label": "isHumanMove()",
@@ -2681,7 +2777,7 @@
       "source_file": "assets\\js\\bot-detector.js",
       "source_location": "L38",
       "id": "bot_detector_ishumanmove",
-      "community": 82
+      "community": 83
     },
     {
       "label": "bubble-price-policy.js",
@@ -2689,7 +2785,7 @@
       "source_file": "assets\\js\\bubble-price-policy.js",
       "source_location": "L1",
       "id": "assets_js_bubble_price_policy_js",
-      "community": 136
+      "community": 137
     },
     {
       "label": "Bubble.js",
@@ -2697,7 +2793,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L1",
       "id": "assets_js_bubble_js",
-      "community": 49
+      "community": 50
     },
     {
       "label": "bubble()",
@@ -2705,7 +2801,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L1",
       "id": "bubble_bubble",
-      "community": 49
+      "community": 50
     },
     {
       "label": "bubbleData()",
@@ -2713,7 +2809,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L726",
       "id": "bubble_bubbledata",
-      "community": 49
+      "community": 50
     },
     {
       "label": "findLineByLeastSquares()",
@@ -2721,7 +2817,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L917",
       "id": "bubble_findlinebyleastsquares",
-      "community": 49
+      "community": 50
     },
     {
       "label": "CCASS.js",
@@ -2729,7 +2825,7 @@
       "source_file": "assets\\js\\CCASS.js",
       "source_location": "L1",
       "id": "assets_js_ccass_js",
-      "community": 83
+      "community": 84
     },
     {
       "label": "CCASS()",
@@ -2737,7 +2833,7 @@
       "source_file": "assets\\js\\CCASS.js",
       "source_location": "L1",
       "id": "ccass_ccass",
-      "community": 83
+      "community": 84
     },
     {
       "label": "community.js",
@@ -2793,7 +2889,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "assets_js_compromise_min_js",
-      "community": 7
+      "community": 8
     },
     {
       "label": "i()",
@@ -2801,7 +2897,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_i",
-      "community": 7
+      "community": 8
     },
     {
       "label": "E()",
@@ -2809,7 +2905,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_e",
-      "community": 7
+      "community": 8
     },
     {
       "label": "Y()",
@@ -2817,7 +2913,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_y",
-      "community": 7
+      "community": 8
     },
     {
       "label": "eo()",
@@ -2825,7 +2921,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_eo",
-      "community": 7
+      "community": 8
     },
     {
       "label": "eg",
@@ -2833,7 +2929,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_eg",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".constructor()",
@@ -2841,7 +2937,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_eg_constructor",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".set()",
@@ -2849,7 +2945,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L1",
       "id": "compromise_min_eg_set",
-      "community": 7
+      "community": 8
     },
     {
       "label": "e6()",
@@ -2857,7 +2953,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_e6",
-      "community": 7
+      "community": 8
     },
     {
       "label": "eV()",
@@ -2865,7 +2961,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ev",
-      "community": 7
+      "community": 8
     },
     {
       "label": "e8()",
@@ -2873,7 +2969,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_e8",
-      "community": 7
+      "community": 8
     },
     {
       "label": "tf",
@@ -2881,7 +2977,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tf",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".constructor()",
@@ -2889,7 +2985,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tf_constructor",
-      "community": 7
+      "community": 8
     },
     {
       "label": "tb",
@@ -2897,7 +2993,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".constructor()",
@@ -2905,7 +3001,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb_constructor",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".add()",
@@ -2913,7 +3009,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb_add",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".get()",
@@ -2921,7 +3017,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb_get",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".remove()",
@@ -2929,7 +3025,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb_remove",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".merge()",
@@ -2937,7 +3033,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb_merge",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".stats()",
@@ -2945,7 +3041,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_tb_stats",
-      "community": 7
+      "community": 8
     },
     {
       "label": "t0()",
@@ -2953,7 +3049,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_t0",
-      "community": 7
+      "community": 8
     },
     {
       "label": "ar",
@@ -2961,7 +3057,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".constructor()",
@@ -2969,7 +3065,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_constructor",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".verbose()",
@@ -2977,7 +3073,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_verbose",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".isVerbose()",
@@ -2985,7 +3081,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_isverbose",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".addWords()",
@@ -2993,7 +3089,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_addwords",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".addConjugations()",
@@ -3001,7 +3097,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_addconjugations",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".addPlurals()",
@@ -3009,7 +3105,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_addplurals",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".addTags()",
@@ -3017,7 +3113,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_addtags",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".postProcess()",
@@ -3025,7 +3121,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_postprocess",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".stats()",
@@ -3033,7 +3129,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ar_stats",
-      "community": 7
+      "community": 8
     },
     {
       "label": "a0()",
@@ -3041,7 +3137,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_a0",
-      "community": 7
+      "community": 8
     },
     {
       "label": "nN()",
@@ -3049,7 +3145,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_nn",
-      "community": 7
+      "community": 8
     },
     {
       "label": "nF()",
@@ -3057,7 +3153,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_nf",
-      "community": 7
+      "community": 8
     },
     {
       "label": "nC()",
@@ -3065,7 +3161,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_nc",
-      "community": 7
+      "community": 8
     },
     {
       "label": "ip()",
@@ -3073,7 +3169,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_ip",
-      "community": 7
+      "community": 8
     },
     {
       "label": "im()",
@@ -3081,7 +3177,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_im",
-      "community": 7
+      "community": 8
     },
     {
       "label": "oR()",
@@ -3089,7 +3185,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_or",
-      "community": 7
+      "community": 8
     },
     {
       "label": "s0",
@@ -3097,7 +3193,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_s0",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".constructor()",
@@ -3105,7 +3201,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_s0_constructor",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".tagger()",
@@ -3113,7 +3209,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_s0_tagger",
-      "community": 7
+      "community": 8
     },
     {
       "label": ".pool()",
@@ -3121,7 +3217,7 @@
       "source_file": "assets\\js\\compromise.min.js",
       "source_location": "L2",
       "id": "compromise_min_s0_pool",
-      "community": 7
+      "community": 8
     },
     {
       "label": "cookieconsent.js",
@@ -3129,7 +3225,7 @@
       "source_file": "assets\\js\\cookieconsent.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsent_js",
-      "community": 84
+      "community": 85
     },
     {
       "label": "ga_ms()",
@@ -3137,7 +3233,7 @@
       "source_file": "assets\\js\\cookieconsent.js",
       "source_location": "L1",
       "id": "cookieconsent_ga_ms",
-      "community": 84
+      "community": 85
     },
     {
       "label": "cookieconsentrun.js",
@@ -3145,7 +3241,7 @@
       "source_file": "assets\\js\\cookieconsentrun.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsentrun_js",
-      "community": 137
+      "community": 138
     },
     {
       "label": "cookieconsentruna.js",
@@ -3153,7 +3249,7 @@
       "source_file": "assets\\js\\cookieconsentruna.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsentruna_js",
-      "community": 138
+      "community": 139
     },
     {
       "label": "datatables.input.js",
@@ -3161,7 +3257,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L1",
       "id": "assets_js_datatables_input_js",
-      "community": 50
+      "community": 51
     },
     {
       "label": "calcDisableClasses()",
@@ -3169,7 +3265,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L22",
       "id": "datatables_input_calcdisableclasses",
-      "community": 50
+      "community": 51
     },
     {
       "label": "calcCurrentPage()",
@@ -3177,7 +3273,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L43",
       "id": "datatables_input_calccurrentpage",
-      "community": 50
+      "community": 51
     },
     {
       "label": "calcPages()",
@@ -3185,7 +3281,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L47",
       "id": "datatables_input_calcpages",
-      "community": 50
+      "community": 51
     },
     {
       "label": "F-Z-M-ScoreChart.js",
@@ -3273,7 +3369,7 @@
       "source_file": "assets\\js\\GaugeChart.js",
       "source_location": "L1",
       "id": "assets_js_gaugechart_js",
-      "community": 85
+      "community": 86
     },
     {
       "label": "trendgauge()",
@@ -3281,7 +3377,7 @@
       "source_file": "assets\\js\\GaugeChart.js",
       "source_location": "L68",
       "id": "gaugechart_trendgauge",
-      "community": 85
+      "community": 86
     },
     {
       "label": "highcharts-theme.js",
@@ -4105,7 +4201,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1",
       "id": "assets_js_highstock_js",
-      "community": 51
+      "community": 52
     },
     {
       "label": "highstock()",
@@ -4113,7 +4209,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1",
       "id": "highstock_highstock",
-      "community": 51
+      "community": 52
     },
     {
       "label": "name()",
@@ -4121,7 +4217,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1138",
       "id": "highstock_name",
-      "community": 51
+      "community": 52
     },
     {
       "label": "getPlotBandPeriods()",
@@ -4129,7 +4225,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1174",
       "id": "highstock_getplotbandperiods",
-      "community": 51
+      "community": 52
     },
     {
       "label": "jquery-ui.min.js",
@@ -4265,7 +4361,7 @@
       "source_file": "assets\\js\\jquery.sparkline.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_sparkline_min_js",
-      "community": 139
+      "community": 140
     },
     {
       "label": "LanguageTimezone.js",
@@ -4273,7 +4369,7 @@
       "source_file": "assets\\js\\LanguageTimezone.js",
       "source_location": "L1",
       "id": "assets_js_languagetimezone_js",
-      "community": 86
+      "community": 87
     },
     {
       "label": "LanguageTimezone()",
@@ -4281,7 +4377,7 @@
       "source_file": "assets\\js\\LanguageTimezone.js",
       "source_location": "L1",
       "id": "languagetimezone_languagetimezone",
-      "community": 86
+      "community": 87
     },
     {
       "label": "MajorEvents.js",
@@ -4289,7 +4385,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L1",
       "id": "assets_js_majorevents_js",
-      "community": 64
+      "community": 65
     },
     {
       "label": "getHighstockMajorEvents()",
@@ -4297,7 +4393,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L1",
       "id": "majorevents_gethighstockmajorevents",
-      "community": 64
+      "community": 65
     },
     {
       "label": "applyHighstockMajorEventTheme()",
@@ -4305,7 +4401,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L768",
       "id": "majorevents_applyhighstockmajoreventtheme",
-      "community": 64
+      "community": 65
     },
     {
       "label": "moderation.js",
@@ -4465,7 +4561,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L1",
       "id": "assets_js_polarchart_comment_js",
-      "community": 43
+      "community": 44
     },
     {
       "label": "polarTheme()",
@@ -4473,7 +4569,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L2",
       "id": "polarchart_comment_polartheme",
-      "community": 43
+      "community": 44
     },
     {
       "label": "polarComment()",
@@ -4481,7 +4577,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L12",
       "id": "polarchart_comment_polarcomment",
-      "community": 43
+      "community": 44
     },
     {
       "label": "pchart()",
@@ -4489,7 +4585,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L284",
       "id": "polarchart_comment_pchart",
-      "community": 43
+      "community": 44
     },
     {
       "label": "setLabelEvent()",
@@ -4497,7 +4593,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L506",
       "id": "polarchart_comment_setlabelevent",
-      "community": 43
+      "community": 44
     },
     {
       "label": "price-display-page-hooks.js",
@@ -4633,7 +4729,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L1",
       "id": "assets_js_pricedeviation_js",
-      "community": 65
+      "community": 66
     },
     {
       "label": "priceDeviation()",
@@ -4641,7 +4737,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L1",
       "id": "pricedeviation_pricedeviation",
-      "community": 65
+      "community": 66
     },
     {
       "label": "findMovingMax()",
@@ -4649,7 +4745,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L666",
       "id": "pricedeviation_findmovingmax",
-      "community": 65
+      "community": 66
     },
     {
       "label": "pwabuilder-sw.js",
@@ -4657,7 +4753,7 @@
       "source_file": "assets\\js\\pwabuilder-sw.js",
       "source_location": "L1",
       "id": "assets_js_pwabuilder_sw_js",
-      "community": 140
+      "community": 141
     },
     {
       "label": "RangeChart.js",
@@ -4665,7 +4761,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L1",
       "id": "assets_js_rangechart_js",
-      "community": 52
+      "community": 53
     },
     {
       "label": "rangeChart()",
@@ -4673,7 +4769,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L1",
       "id": "rangechart_rangechart",
-      "community": 52
+      "community": 53
     },
     {
       "label": "registerRangeChartThemeRefresh()",
@@ -4681,7 +4777,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L373",
       "id": "rangechart_registerrangechartthemerefresh",
-      "community": 52
+      "community": 53
     },
     {
       "label": "destroyRangeChartByContainer()",
@@ -4689,7 +4785,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L393",
       "id": "rangechart_destroyrangechartbycontainer",
-      "community": 52
+      "community": 53
     },
     {
       "label": "schema-markup.js",
@@ -4985,7 +5081,7 @@
       "source_file": "assets\\js\\seasonality.js",
       "source_location": "L1",
       "id": "assets_js_seasonality_js",
-      "community": 87
+      "community": 88
     },
     {
       "label": "seasonalityChart()",
@@ -4993,7 +5089,7 @@
       "source_file": "assets\\js\\seasonality.js",
       "source_location": "L1",
       "id": "seasonality_seasonalitychart",
-      "community": 87
+      "community": 88
     },
     {
       "label": "sectorPerformance.js",
@@ -5153,7 +5249,7 @@
       "source_file": "assets\\js\\stockCompare.js",
       "source_location": "L1",
       "id": "assets_js_stockcompare_js",
-      "community": 88
+      "community": 89
     },
     {
       "label": "stockCompare()",
@@ -5161,7 +5257,7 @@
       "source_file": "assets\\js\\stockCompare.js",
       "source_location": "L1",
       "id": "stockcompare_stockcompare",
-      "community": 88
+      "community": 89
     },
     {
       "label": "TA.js",
@@ -5377,7 +5473,7 @@
       "source_file": "assets\\js\\Treemap.js",
       "source_location": "L1",
       "id": "assets_js_treemap_js",
-      "community": 89
+      "community": 90
     },
     {
       "label": "treemap()",
@@ -5385,7 +5481,7 @@
       "source_file": "assets\\js\\Treemap.js",
       "source_location": "L1",
       "id": "treemap_treemap",
-      "community": 89
+      "community": 90
     },
     {
       "label": "TSF.js",
@@ -5393,7 +5489,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L1",
       "id": "assets_js_tsf_js",
-      "community": 44
+      "community": 45
     },
     {
       "label": "TSFchart()",
@@ -5401,7 +5497,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L1",
       "id": "tsf_tsfchart",
-      "community": 44
+      "community": 45
     },
     {
       "label": "ema0()",
@@ -5409,7 +5505,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L380",
       "id": "tsf_ema0",
-      "community": 44
+      "community": 45
     },
     {
       "label": "tsfLookback()",
@@ -5417,7 +5513,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L403",
       "id": "tsf_tsflookback",
-      "community": 44
+      "community": 45
     },
     {
       "label": "tsf()",
@@ -5425,7 +5521,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L412",
       "id": "tsf_tsf",
-      "community": 44
+      "community": 45
     },
     {
       "label": "Utils.js",
@@ -5713,7 +5809,7 @@
       "source_file": "assets\\js\\yearlyTrendChart.js",
       "source_location": "L1",
       "id": "assets_js_yearlytrendchart_js",
-      "community": 90
+      "community": 91
     },
     {
       "label": "yearlyTrendChart()",
@@ -5721,7 +5817,7 @@
       "source_file": "assets\\js\\yearlyTrendChart.js",
       "source_location": "L1",
       "id": "yearlytrendchart_yearlytrendchart",
-      "community": 90
+      "community": 91
     },
     {
       "label": "econ-main.js",
@@ -6641,7 +6737,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_tool_main_js",
-      "community": 9
+      "community": 10
     },
     {
       "label": "pauseChart()",
@@ -6649,7 +6745,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_pausechart",
-      "community": 9
+      "community": 10
     },
     {
       "label": "timeframeBTN()",
@@ -6657,7 +6753,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_timeframebtn",
-      "community": 9
+      "community": 10
     },
     {
       "label": "stockcodeInputRED()",
@@ -6665,7 +6761,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_stockcodeinputred",
-      "community": 9
+      "community": 10
     },
     {
       "label": "periodBTN()",
@@ -6673,7 +6769,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_periodbtn",
-      "community": 9
+      "community": 10
     },
     {
       "label": "add_Days()",
@@ -6681,7 +6777,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_add_days",
-      "community": 9
+      "community": 10
     },
     {
       "label": "dateFormatStr()",
@@ -6689,7 +6785,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_dateformatstr",
-      "community": 9
+      "community": 10
     },
     {
       "label": "updateInputs()",
@@ -6697,7 +6793,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updateinputs",
-      "community": 9
+      "community": 10
     },
     {
       "label": "validate()",
@@ -6705,7 +6801,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_validate",
-      "community": 9
+      "community": 10
     },
     {
       "label": "race()",
@@ -6713,7 +6809,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_race",
-      "community": 9
+      "community": 10
     },
     {
       "label": "raceChart()",
@@ -6721,7 +6817,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_racechart",
-      "community": 9
+      "community": 10
     },
     {
       "label": "getSubtitle()",
@@ -6729,7 +6825,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_getsubtitle",
-      "community": 9
+      "community": 10
     },
     {
       "label": "stop()",
@@ -6737,7 +6833,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_stop",
-      "community": 9
+      "community": 10
     },
     {
       "label": "pause()",
@@ -6745,7 +6841,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_pause",
-      "community": 9
+      "community": 10
     },
     {
       "label": "update()",
@@ -6753,7 +6849,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_update",
-      "community": 9
+      "community": 10
     },
     {
       "label": "play()",
@@ -6761,7 +6857,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_play",
-      "community": 9
+      "community": 10
     },
     {
       "label": "restoreComposerSeries()",
@@ -6769,7 +6865,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_restorecomposerseries",
-      "community": 9
+      "community": 10
     },
     {
       "label": "updateResults()",
@@ -6777,7 +6873,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updateresults",
-      "community": 9
+      "community": 10
     },
     {
       "label": "showSuggestions()",
@@ -6785,7 +6881,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_showsuggestions",
-      "community": 9
+      "community": 10
     },
     {
       "label": "selectItem()",
@@ -6793,7 +6889,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_selectitem",
-      "community": 9
+      "community": 10
     },
     {
       "label": "loadScriptOnce()",
@@ -6801,7 +6897,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadscriptonce",
-      "community": 9
+      "community": 10
     },
     {
       "label": "loadStylesheetOnce()",
@@ -6809,7 +6905,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadstylesheetonce",
-      "community": 9
+      "community": 10
     },
     {
       "label": "loadComposerCatalog()",
@@ -6817,7 +6913,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadcomposercatalog",
-      "community": 9
+      "community": 10
     },
     {
       "label": "setComposerLoading()",
@@ -6825,7 +6921,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_setcomposerloading",
-      "community": 9
+      "community": 10
     },
     {
       "label": "ensureComposerReady()",
@@ -6833,7 +6929,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_ensurecomposerready",
-      "community": 9
+      "community": 10
     },
     {
       "label": "adjustComboBoxWidth()",
@@ -6841,7 +6937,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_adjustcomboboxwidth",
-      "community": 9
+      "community": 10
     },
     {
       "label": "updateDataSeriesList()",
@@ -6849,7 +6945,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatedataserieslist",
-      "community": 9
+      "community": 10
     },
     {
       "label": "getSeriesList()",
@@ -6857,7 +6953,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_getserieslist",
-      "community": 9
+      "community": 10
     },
     {
       "label": "fetchAjaxSeriesData()",
@@ -6865,7 +6961,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_fetchajaxseriesdata",
-      "community": 9
+      "community": 10
     },
     {
       "label": "initializeAutocomplete()",
@@ -6873,7 +6969,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_initializeautocomplete",
-      "community": 9
+      "community": 10
     },
     {
       "label": "clearChart()",
@@ -6881,7 +6977,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_clearchart",
-      "community": 9
+      "community": 10
     },
     {
       "label": "updateNavigatorToEarliestSeries()",
@@ -6889,7 +6985,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatenavigatortoearliestseries",
-      "community": 9
+      "community": 10
     },
     {
       "label": "updateHistory()",
@@ -6897,7 +6993,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatehistory",
-      "community": 9
+      "community": 10
     },
     {
       "label": "openTabHash()",
@@ -6905,7 +7001,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_opentabhash",
-      "community": 9
+      "community": 10
     },
     {
       "label": "highchartReflow()",
@@ -6913,7 +7009,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_highchartreflow",
-      "community": 9
+      "community": 10
     },
     {
       "label": "initializeControls()",
@@ -6921,7 +7017,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_initializecontrols",
-      "community": 9
+      "community": 10
     },
     {
       "label": "findNameByIdAndType()",
@@ -6929,7 +7025,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_findnamebyidandtype",
-      "community": 9
+      "community": 10
     },
     {
       "label": "createChart()",
@@ -6937,7 +7033,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_createchart",
-      "community": 9
+      "community": 10
     },
     {
       "label": "insertStepTransitions()",
@@ -6945,7 +7041,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_insertsteptransitions",
-      "community": 9
+      "community": 10
     },
     {
       "label": "showNotification()",
@@ -6953,7 +7049,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_shownotification",
-      "community": 9
+      "community": 10
     },
     {
       "label": "removeBadgeIfExpired()",
@@ -6961,7 +7057,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_removebadgeifexpired",
-      "community": 9
+      "community": 10
     },
     {
       "label": "tool-share.js",
@@ -8193,7 +8289,7 @@
       "source_file": "assets\\js\\stock-chart-engine\\pine-script-worker.js",
       "source_location": "L1",
       "id": "assets_js_stock_chart_engine_pine_script_worker_js",
-      "community": 141
+      "community": 142
     },
     {
       "label": "stock-chart-engine.js",
@@ -10473,7 +10569,7 @@
       "source_file": "components\\community-pulse.php",
       "source_location": "L1",
       "id": "components_community_pulse_php",
-      "community": 142
+      "community": 143
     }
   ],
   "links": [
@@ -10979,6 +11075,54 @@
       "_tgt": "account_sso_miq_sso_shared_secret",
       "source": "account_sso_miq_sso_shared_secret",
       "target": "account_sso_miq_sso_begin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_user_admin.php",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "account_user_admin_php",
+      "_tgt": "account_user_admin_miq_user_admin_h",
+      "source": "account_user_admin_php",
+      "target": "account_user_admin_miq_user_admin_h",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_user_admin.php",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "account_user_admin_php",
+      "_tgt": "account_user_admin_miq_user_admin_utc",
+      "source": "account_user_admin_php",
+      "target": "account_user_admin_miq_user_admin_utc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_user_admin.php",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "account_user_admin_php",
+      "_tgt": "account_user_admin_miq_user_admin_duration",
+      "source": "account_user_admin_php",
+      "target": "account_user_admin_miq_user_admin_duration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_user_admin.php",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "account_user_admin_php",
+      "_tgt": "account_user_admin_miq_user_admin_redirect",
+      "source": "account_user_admin_php",
+      "target": "account_user_admin_miq_user_admin_redirect",
       "confidence_score": 1.0
     },
     {
@@ -11672,6 +11816,78 @@
       "source_location": "L31",
       "weight": 1.0,
       "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_session_hash",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_session_hash",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_remove_current_session",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_remove_current_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_record_activity",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_record_activity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L105",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_release_expired_suspension",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_release_expired_suspension",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L133",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_access_error",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_access_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L147",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_require_active_user",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_require_active_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L156",
+      "weight": 1.0,
+      "_src": "account_auth_php",
       "_tgt": "auth_miq_account_current_user",
       "source": "account_auth_php",
       "target": "auth_miq_account_current_user",
@@ -11681,7 +11897,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L65",
+      "source_location": "L192",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_is_authenticated",
@@ -11693,7 +11909,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L70",
+      "source_location": "L197",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_is_moderator",
@@ -11705,7 +11921,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L85",
+      "source_location": "L212",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_is_admin",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_is_admin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L225",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_logout",
@@ -11717,7 +11945,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L99",
+      "source_location": "L240",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_login_user",
@@ -11729,7 +11957,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L107",
+      "source_location": "L251",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_normalize_email",
@@ -11741,7 +11969,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L113",
+      "source_location": "L257",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miqaccountdisplaynametakenexception",
@@ -11753,7 +11981,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L126",
+      "source_location": "L270",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miqaccountratelimitexception",
@@ -11765,7 +11993,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L131",
+      "source_location": "L275",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_clean_display_name",
@@ -11777,7 +12005,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L137",
+      "source_location": "L281",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_display_name",
@@ -11789,7 +12017,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L147",
+      "source_location": "L291",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_display_name_exists",
@@ -11801,7 +12029,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L162",
+      "source_location": "L306",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_display_name_with_suffix",
@@ -11813,7 +12041,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L168",
+      "source_location": "L312",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_display_name_suggestions",
@@ -11825,7 +12053,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L184",
+      "source_location": "L328",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_resolve_display_name",
@@ -11837,7 +12065,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L199",
+      "source_location": "L343",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_csrf_token",
@@ -11849,7 +12077,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L208",
+      "source_location": "L352",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_check_csrf",
@@ -11861,7 +12089,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L213",
+      "source_location": "L357",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_safe_return_to",
@@ -11873,7 +12101,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L222",
+      "source_location": "L366",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_flash",
@@ -11885,7 +12113,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L228",
+      "source_location": "L372",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_take_flash",
@@ -11897,7 +12125,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L236",
+      "source_location": "L380",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_hash_token",
@@ -11909,7 +12137,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L241",
+      "source_location": "L385",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_client_ip",
@@ -11921,7 +12149,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L247",
+      "source_location": "L391",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_rate_limit_key",
@@ -11933,7 +12161,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L252",
+      "source_location": "L396",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_rate_limit",
@@ -11945,7 +12173,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L325",
+      "source_location": "L469",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_require_rate_limit",
@@ -11957,7 +12185,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L333",
+      "source_location": "L477",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_email_rate_limit",
@@ -11969,7 +12197,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L351",
+      "source_location": "L495",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_send_mail",
@@ -11981,7 +12209,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L387",
+      "source_location": "L531",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_create_token",
@@ -11993,7 +12221,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L392",
+      "source_location": "L536",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_create_user",
@@ -12005,7 +12233,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L441",
+      "source_location": "L585",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_issue_email_token",
@@ -12017,7 +12245,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L456",
+      "source_location": "L600",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_google_identity",
@@ -12029,7 +12257,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L497",
+      "source_location": "L641",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_find_google_user",
@@ -12041,7 +12269,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L508",
+      "source_location": "L652",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_find_user_by_email",
@@ -12065,7 +12293,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L87",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "auth_miq_account_session_hash",
+      "_tgt": "auth_miq_account_start_session",
+      "source": "auth_miq_account_start_session",
+      "target": "auth_miq_account_session_hash",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "auth_miq_account_record_activity",
+      "_tgt": "auth_miq_account_start_session",
+      "source": "auth_miq_account_start_session",
+      "target": "auth_miq_account_record_activity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L227",
       "weight": 1.0,
       "_src": "auth_miq_account_logout",
       "_tgt": "auth_miq_account_start_session",
@@ -12077,7 +12329,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L101",
+      "source_location": "L242",
       "weight": 1.0,
       "_src": "auth_miq_account_login_user",
       "_tgt": "auth_miq_account_start_session",
@@ -12089,7 +12341,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L201",
+      "source_location": "L345",
       "weight": 1.0,
       "_src": "auth_miq_account_csrf_token",
       "_tgt": "auth_miq_account_start_session",
@@ -12101,7 +12353,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L224",
+      "source_location": "L368",
       "weight": 1.0,
       "_src": "auth_miq_account_flash",
       "_tgt": "auth_miq_account_start_session",
@@ -12113,7 +12365,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L230",
+      "source_location": "L374",
       "weight": 1.0,
       "_src": "auth_miq_account_take_flash",
       "_tgt": "auth_miq_account_start_session",
@@ -12125,7 +12377,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L36",
+      "source_location": "L161",
       "weight": 1.0,
       "_src": "auth_miq_account_current_user",
       "_tgt": "auth_miq_account_bootstrap",
@@ -12137,7 +12389,127 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L58",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "auth_miq_account_remove_current_session",
+      "_tgt": "auth_miq_account_session_hash",
+      "source": "auth_miq_account_session_hash",
+      "target": "auth_miq_account_remove_current_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "auth_miq_account_record_activity",
+      "_tgt": "auth_miq_account_session_hash",
+      "source": "auth_miq_account_session_hash",
+      "target": "auth_miq_account_record_activity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L228",
+      "weight": 1.0,
+      "_src": "auth_miq_account_logout",
+      "_tgt": "auth_miq_account_remove_current_session",
+      "source": "auth_miq_account_remove_current_session",
+      "target": "auth_miq_account_logout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L243",
+      "weight": 1.0,
+      "_src": "auth_miq_account_login_user",
+      "_tgt": "auth_miq_account_remove_current_session",
+      "source": "auth_miq_account_remove_current_session",
+      "target": "auth_miq_account_login_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_src": "auth_miq_account_record_activity",
+      "_tgt": "auth_miq_account_client_ip",
+      "source": "auth_miq_account_record_activity",
+      "target": "auth_miq_account_client_ip",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L188",
+      "weight": 1.0,
+      "_src": "auth_miq_account_current_user",
+      "_tgt": "auth_miq_account_record_activity",
+      "source": "auth_miq_account_record_activity",
+      "target": "auth_miq_account_current_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L248",
+      "weight": 1.0,
+      "_src": "auth_miq_account_login_user",
+      "_tgt": "auth_miq_account_record_activity",
+      "source": "auth_miq_account_record_activity",
+      "target": "auth_miq_account_login_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L149",
+      "weight": 1.0,
+      "_src": "auth_miq_account_require_active_user",
+      "_tgt": "auth_miq_account_release_expired_suspension",
+      "source": "auth_miq_account_release_expired_suspension",
+      "target": "auth_miq_account_require_active_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L182",
+      "weight": 1.0,
+      "_src": "auth_miq_account_current_user",
+      "_tgt": "auth_miq_account_release_expired_suspension",
+      "source": "auth_miq_account_release_expired_suspension",
+      "target": "auth_miq_account_current_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L151",
+      "weight": 1.0,
+      "_src": "auth_miq_account_require_active_user",
+      "_tgt": "auth_miq_account_access_error",
+      "source": "auth_miq_account_access_error",
+      "target": "auth_miq_account_require_active_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L184",
       "weight": 1.0,
       "_src": "auth_miq_account_current_user",
       "_tgt": "auth_miq_account_logout",
@@ -12149,7 +12521,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L67",
+      "source_location": "L194",
       "weight": 1.0,
       "_src": "auth_miq_account_is_authenticated",
       "_tgt": "auth_miq_account_current_user",
@@ -12161,7 +12533,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L72",
+      "source_location": "L199",
       "weight": 1.0,
       "_src": "auth_miq_account_is_moderator",
       "_tgt": "auth_miq_account_current_user",
@@ -12173,7 +12545,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L338",
+      "source_location": "L214",
+      "weight": 1.0,
+      "_src": "auth_miq_account_is_admin",
+      "_tgt": "auth_miq_account_current_user",
+      "source": "auth_miq_account_current_user",
+      "target": "auth_miq_account_is_admin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L204",
+      "weight": 1.0,
+      "_src": "auth_miq_account_is_moderator",
+      "_tgt": "auth_miq_account_is_admin",
+      "source": "auth_miq_account_is_moderator",
+      "target": "auth_miq_account_is_admin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L482",
       "weight": 1.0,
       "_src": "auth_miq_account_email_rate_limit",
       "_tgt": "auth_miq_account_normalize_email",
@@ -12185,7 +12581,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L394",
+      "source_location": "L538",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_normalize_email",
@@ -12197,7 +12593,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L491",
+      "source_location": "L635",
       "weight": 1.0,
       "_src": "auth_miq_account_google_identity",
       "_tgt": "auth_miq_account_normalize_email",
@@ -12209,7 +12605,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L514",
+      "source_location": "L658",
       "weight": 1.0,
       "_src": "auth_miq_account_find_user_by_email",
       "_tgt": "auth_miq_account_normalize_email",
@@ -12221,7 +12617,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L117",
+      "source_location": "L261",
       "weight": 1.0,
       "_src": "auth_miqaccountdisplaynametakenexception",
       "_tgt": "auth_miqaccountdisplaynametakenexception_construct",
@@ -12233,7 +12629,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L139",
+      "source_location": "L283",
       "weight": 1.0,
       "_src": "auth_miq_account_display_name",
       "_tgt": "auth_miq_account_clean_display_name",
@@ -12245,7 +12641,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L170",
+      "source_location": "L314",
       "weight": 1.0,
       "_src": "auth_miq_account_display_name_suggestions",
       "_tgt": "auth_miq_account_display_name",
@@ -12257,7 +12653,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L186",
+      "source_location": "L330",
       "weight": 1.0,
       "_src": "auth_miq_account_resolve_display_name",
       "_tgt": "auth_miq_account_display_name",
@@ -12269,7 +12665,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L492",
+      "source_location": "L636",
       "weight": 1.0,
       "_src": "auth_miq_account_google_identity",
       "_tgt": "auth_miq_account_display_name",
@@ -12281,7 +12677,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L174",
+      "source_location": "L318",
       "weight": 1.0,
       "_src": "auth_miq_account_display_name_suggestions",
       "_tgt": "auth_miq_account_display_name_exists",
@@ -12293,7 +12689,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L187",
+      "source_location": "L331",
       "weight": 1.0,
       "_src": "auth_miq_account_resolve_display_name",
       "_tgt": "auth_miq_account_display_name_exists",
@@ -12305,7 +12701,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L420",
+      "source_location": "L564",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_display_name_exists",
@@ -12317,7 +12713,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L173",
+      "source_location": "L317",
       "weight": 1.0,
       "_src": "auth_miq_account_display_name_suggestions",
       "_tgt": "auth_miq_account_display_name_with_suffix",
@@ -12329,7 +12725,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L191",
+      "source_location": "L335",
       "weight": 1.0,
       "_src": "auth_miq_account_resolve_display_name",
       "_tgt": "auth_miq_account_display_name_suggestions",
@@ -12341,7 +12737,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L421",
+      "source_location": "L565",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_display_name_suggestions",
@@ -12353,7 +12749,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L411",
+      "source_location": "L555",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_resolve_display_name",
@@ -12365,7 +12761,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L210",
+      "source_location": "L354",
       "weight": 1.0,
       "_src": "auth_miq_account_check_csrf",
       "_tgt": "auth_miq_account_csrf_token",
@@ -12377,7 +12773,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L451",
+      "source_location": "L595",
       "weight": 1.0,
       "_src": "auth_miq_account_issue_email_token",
       "_tgt": "auth_miq_account_hash_token",
@@ -12389,7 +12785,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L337",
+      "source_location": "L481",
       "weight": 1.0,
       "_src": "auth_miq_account_email_rate_limit",
       "_tgt": "auth_miq_account_client_ip",
@@ -12401,7 +12797,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L261",
+      "source_location": "L405",
       "weight": 1.0,
       "_src": "auth_miq_account_rate_limit",
       "_tgt": "auth_miq_account_rate_limit_key",
@@ -12413,7 +12809,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L355",
+      "source_location": "L499",
       "weight": 1.0,
       "_src": "auth_miq_account_send_mail",
       "_tgt": "auth_miq_account_rate_limit_key",
@@ -12425,7 +12821,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L328",
+      "source_location": "L472",
       "weight": 1.0,
       "_src": "auth_miq_account_require_rate_limit",
       "_tgt": "auth_miq_account_rate_limit",
@@ -12437,7 +12833,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L343",
+      "source_location": "L487",
       "weight": 1.0,
       "_src": "auth_miq_account_email_rate_limit",
       "_tgt": "auth_miq_account_rate_limit",
@@ -12449,7 +12845,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L354",
+      "source_location": "L498",
       "weight": 1.0,
       "_src": "auth_miq_account_send_mail",
       "_tgt": "auth_miq_account_email_rate_limit",
@@ -12461,7 +12857,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L443",
+      "source_location": "L587",
       "weight": 1.0,
       "_src": "auth_miq_account_issue_email_token",
       "_tgt": "auth_miq_account_create_token",
@@ -12893,7 +13289,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L68",
+      "source_location": "L69",
       "weight": 1.0,
       "_src": "account_db_php",
       "_tgt": "db_miq_account_query",
@@ -12905,7 +13301,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "_src": "account_db_php",
       "_tgt": "db_miq_account_fetch_all",
@@ -12917,7 +13313,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L106",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "account_db_php",
       "_tgt": "db_miq_account_fetch_one",
@@ -12929,7 +13325,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\db.php",
-      "source_location": "L70",
+      "source_location": "L71",
       "weight": 1.0,
       "_src": "db_miq_account_query",
       "_tgt": "db_miq_account_db",

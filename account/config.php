@@ -54,6 +54,8 @@ function miq_account_config()
         'email_from_name' => miq_account_env('ACCOUNT_EMAIL_FROM_NAME', '360MiQ'),
         'mailer_include' => miq_account_env('ACCOUNT_MAILER_INCLUDE', '/home2/aamiqcom/cronjobs/email.php'),
         'moderator_emails' => array_filter(array_map('trim', explode(',', miq_account_env('MIQ_MODERATOR_EMAILS', '')))),
+        'admin_emails' => array_filter(array_map('trim', explode(',', miq_account_env('MIQ_ADMIN_EMAILS', '')))),
+        'activity_write_interval' => max(60, (int) miq_account_env('MIQ_ACTIVITY_WRITE_INTERVAL', 900)),
         'debug' => filter_var(miq_account_env('MIQ_ACCOUNT_DEBUG', 'false'), FILTER_VALIDATE_BOOLEAN),
         'rate_limits' => array(
             'login_ip' => array('limit' => (int) miq_account_env('MIQ_RATE_LOGIN_IP_LIMIT', 20), 'window' => (int) miq_account_env('MIQ_RATE_LOGIN_IP_WINDOW', 900)),

@@ -84,6 +84,7 @@
               <a class="dropdown-item" href="workspace?tab=scripts"><i class="fas fa-code fa-fw"></i> Pine Scripts</a>
               <?php if (miq_community_enabled()): ?><a class="dropdown-item" href="community"><i class="fas fa-users fa-fw"></i> Community Ideas</a><?php endif; ?>
               <a class="dropdown-item" href="account_settings"><i class="fas fa-cog fa-fw"></i> Settings</a>
+              <?php if (miq_account_is_admin($miq_nav_user)): ?><a class="dropdown-item" href="account_user_admin"><i class="fas fa-user-shield fa-fw"></i> User Administration</a><?php endif; ?>
               <?php if (miq_community_enabled() && miq_account_is_moderator($miq_nav_user)): ?><a class="dropdown-item" href="community_moderation"><i class="fas fa-shield-alt fa-fw"></i> Moderation Queue</a><?php endif; ?>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="account_logout"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>

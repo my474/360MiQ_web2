@@ -92,10 +92,7 @@ function miq_account_process_google_login($credential)
         $user = miq_account_find_google_user($identity['provider_user_id']);
     }
 
-    if (!$user || $user['status'] !== 'active') {
-        throw new RuntimeException('This account is not available.');
-    }
-
+    $user = miq_account_require_active_user($user);
     miq_account_login_user($user['id'], $user['session_version']);
 }
 
@@ -144,9 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$user || !$user['password_hash'] || !password_verify((string) ($_POST['password'] ?? ''), $user['password_hash'])) {
                     throw new RuntimeException('The email or password is not correct.');
                 }
-                if ($user['status'] !== 'active') {
-                    throw new RuntimeException('This account is not available.');
-                }
+                $user = miq_account_require_active_user($user);
                 if (empty($user['email_verified_at'])) {
                     throw new RuntimeException('Please verify your email before signing in.');
                 }

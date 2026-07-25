@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hash = password_hash($new_password, defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT);
                 miq_account_query("UPDATE {$users} SET password_hash = ?, session_version = session_version + 1, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($hash, (int) $user['id']))->close();
                 $fresh = miq_account_find_user_by_email($user['email']);
-                miq_account_login_user($fresh['id'], $fresh['session_version']);
+                miq_account_login_user($fresh['id'], $fresh['session_version'], false);
                 $messages[] = 'Your password was changed.';
             } elseif ($action === 'google_link') {
                 $identity = miq_account_google_identity((string) ($_POST['credential'] ?? ''));
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="description" content="Manage your 360MiQ account, privacy, and workspace data." />
     <title>Account Settings - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/css/account.css">
-    <link rel="stylesheet" href="assets/css/workspace.css">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.3">
     <?php if (miq_account_config()['google_client_id'] !== ''): ?><script src="https://accounts.google.com/gsi/client" async defer></script><?php endif; ?>
 </head>
 <body>

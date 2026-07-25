@@ -28,6 +28,131 @@ function miq_account_bootstrap()
     }
 }
 
+function miq_account_session_hash()
+{
+    miq_account_start_session();
+    $session_id = session_id();
+    return $session_id === '' ? '' : hash('sha256', $session_id);
+}
+
+function miq_account_remove_current_session()
+{
+    $session_hash = miq_account_session_hash();
+    if ($session_hash === '') {
+        return;
+    }
+
+    try {
+        $sessions = miq_account_table('sessions');
+        miq_account_query("DELETE FROM {$sessions} WHERE session_hash = ?", 's', array($session_hash))->close();
+    } catch (Throwable $error) {
+        error_log('360MiQ session cleanup failure: ' . $error->getMessage());
+    }
+}
+
+function miq_account_record_activity($user_id, $force = false, $login = false)
+{
+    miq_account_start_session();
+    $user_id = (int) $user_id;
+    $interval = (int) miq_account_config()['activity_write_interval'];
+    $last_write = isset($_SESSION['miq_account_last_activity_write']) ? (int) $_SESSION['miq_account_last_activity_write'] : 0;
+    if (!$force && $last_write > 0 && time() - $last_write < $interval) {
+        return;
+    }
+    $_SESSION['miq_account_last_activity_write'] = time();
+
+    try {
+        $users = miq_account_table('users');
+        $sessions = miq_account_table('sessions');
+        $activity = miq_account_table('user_activity_daily');
+        $session_hash = miq_account_session_hash();
+        $user_agent = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500);
+        $ip_hash = hash('sha256', miq_account_client_ip());
+        $expires_at = gmdate('Y-m-d H:i:s', time() + (int) miq_account_config()['session_lifetime']);
+
+        if ($login) {
+            miq_account_query(
+                "UPDATE {$users} SET last_login_at = UTC_TIMESTAMP(), last_seen_at = UTC_TIMESTAMP(), login_count = login_count + 1 WHERE id = ?",
+                'i',
+                array($user_id)
+            )->close();
+        } else {
+            miq_account_query("UPDATE {$users} SET last_seen_at = UTC_TIMESTAMP() WHERE id = ?", 'i', array($user_id))->close();
+        }
+
+        miq_account_query(
+            "INSERT INTO {$activity} (user_id, activity_date, first_seen_at, last_seen_at, request_count) VALUES (?, UTC_DATE(), UTC_TIMESTAMP(), UTC_TIMESTAMP(), 1) ON DUPLICATE KEY UPDATE last_seen_at = UTC_TIMESTAMP(), request_count = request_count + 1",
+            'i',
+            array($user_id)
+        )->close();
+
+        if ($session_hash !== '') {
+            miq_account_query(
+                "INSERT INTO {$sessions} (user_id, session_hash, user_agent, ip_hash, last_seen_at, expires_at, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP(), ?, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), user_agent = VALUES(user_agent), ip_hash = VALUES(ip_hash), last_seen_at = UTC_TIMESTAMP(), expires_at = VALUES(expires_at)",
+                'issss',
+                array($user_id, $session_hash, $user_agent, $ip_hash, $expires_at)
+            )->close();
+        }
+
+        if ($login) {
+            miq_account_query("DELETE FROM {$sessions} WHERE expires_at < UTC_TIMESTAMP()")->close();
+        }
+    } catch (Throwable $error) {
+        error_log('360MiQ account activity failure: ' . $error->getMessage());
+    }
+}
+
+function miq_account_release_expired_suspension($user)
+{
+    if (!$user || ($user['status'] ?? '') !== 'suspended' || empty($user['suspended_until'])) {
+        return $user;
+    }
+    $until = strtotime($user['suspended_until'] . ' UTC');
+    if ($until === false || $until > time()) {
+        return $user;
+    }
+
+    $users = miq_account_table('users');
+    $statement = miq_account_query(
+        "UPDATE {$users} SET status = 'active', suspended_at = NULL, suspended_until = NULL, suspension_reason = NULL, suspended_by_user_id = NULL, updated_at = UTC_TIMESTAMP() WHERE id = ? AND status = 'suspended' AND suspended_until IS NOT NULL AND suspended_until <= UTC_TIMESTAMP()",
+        'i',
+        array((int) $user['id'])
+    );
+    $released = $statement->affected_rows > 0;
+    $statement->close();
+    if ($released) {
+        $user['status'] = 'active';
+        $user['suspended_at'] = null;
+        $user['suspended_until'] = null;
+        $user['suspension_reason'] = null;
+        $user['suspended_by_user_id'] = null;
+    }
+    return $user;
+}
+
+function miq_account_access_error($user)
+{
+    if ($user && ($user['status'] ?? '') === 'suspended') {
+        if (!empty($user['suspended_until'])) {
+            $until = strtotime($user['suspended_until'] . ' UTC');
+            if ($until !== false) {
+                return 'This account is suspended until ' . gmdate('Y-m-d H:i', $until) . ' UTC.';
+            }
+        }
+        return 'This account has been permanently blocked.';
+    }
+    return 'This account is not available.';
+}
+
+function miq_account_require_active_user($user)
+{
+    $user = miq_account_release_expired_suspension($user);
+    if (!$user || ($user['status'] ?? '') !== 'active') {
+        throw new RuntimeException(miq_account_access_error($user));
+    }
+    return $user;
+}
+
 function miq_account_current_user()
 {
     static $loaded = false;
@@ -46,7 +171,7 @@ function miq_account_current_user()
     try {
         $table = miq_account_table('users');
         $user = miq_account_fetch_one(miq_account_query(
-            "SELECT id, email, display_name, role, email_verified_at, status, session_version FROM {$table} WHERE id = ? LIMIT 1",
+            "SELECT id, email, display_name, avatar_url, role, email_verified_at, status, session_version, last_login_at, last_seen_at, login_count, suspended_at, suspended_until, suspension_reason, suspended_by_user_id FROM {$table} WHERE id = ? LIMIT 1",
             'i',
             array((int) $_SESSION['miq_account_user_id'])
         ));
@@ -54,11 +179,13 @@ function miq_account_current_user()
         $user = null;
     }
 
+    $user = miq_account_release_expired_suspension($user);
     if (!$user || $user['status'] !== 'active' || (int) $user['session_version'] !== (int) $_SESSION['miq_account_session_version']) {
         miq_account_logout(false);
         return null;
     }
 
+    miq_account_record_activity((int) $user['id']);
     return $user;
 }
 
@@ -74,7 +201,7 @@ function miq_account_is_moderator($user = null)
         return false;
     }
 
-    if (in_array($user['role'], array('moderator', 'admin'), true)) {
+    if (miq_account_is_admin($user) || $user['role'] === 'moderator') {
         return true;
     }
 
@@ -82,10 +209,24 @@ function miq_account_is_moderator($user = null)
     return in_array(strtolower($user['email']), array_map('strtolower', $emails), true);
 }
 
+function miq_account_is_admin($user = null)
+{
+    $user = $user ?: miq_account_current_user();
+    if (!$user) {
+        return false;
+    }
+    if ($user['role'] === 'admin') {
+        return true;
+    }
+    $emails = miq_account_config()['admin_emails'];
+    return in_array(strtolower($user['email']), array_map('strtolower', $emails), true);
+}
+
 function miq_account_logout($destroy_session = true)
 {
     miq_account_start_session();
-    unset($_SESSION['miq_account_user_id'], $_SESSION['miq_account_session_version']);
+    miq_account_remove_current_session();
+    unset($_SESSION['miq_account_user_id'], $_SESSION['miq_account_session_version'], $_SESSION['miq_account_last_activity_write']);
     if ($destroy_session) {
         $_SESSION = array();
         if (ini_get('session.use_cookies')) {
@@ -96,12 +237,15 @@ function miq_account_logout($destroy_session = true)
     }
 }
 
-function miq_account_login_user($user_id, $session_version)
+function miq_account_login_user($user_id, $session_version, $record_login = true)
 {
     miq_account_start_session();
+    miq_account_remove_current_session();
     session_regenerate_id(true);
     $_SESSION['miq_account_user_id'] = (int) $user_id;
     $_SESSION['miq_account_session_version'] = (int) $session_version;
+    unset($_SESSION['miq_account_last_activity_write']);
+    miq_account_record_activity((int) $user_id, true, (bool) $record_login);
 }
 
 function miq_account_normalize_email($email)
@@ -499,7 +643,7 @@ function miq_account_find_google_user($provider_user_id)
     $identities = miq_account_table('identities');
     $users = miq_account_table('users');
     return miq_account_fetch_one(miq_account_query(
-        "SELECT u.id, u.email, u.display_name, u.role, u.email_verified_at, u.status, u.session_version FROM {$users} u INNER JOIN {$identities} i ON i.user_id = u.id WHERE i.provider = 'google' AND i.provider_user_id = ? LIMIT 1",
+        "SELECT u.id, u.email, u.display_name, u.role, u.email_verified_at, u.status, u.session_version, u.suspended_at, u.suspended_until, u.suspension_reason, u.suspended_by_user_id FROM {$users} u INNER JOIN {$identities} i ON i.user_id = u.id WHERE i.provider = 'google' AND i.provider_user_id = ? LIMIT 1",
         's',
         array((string) $provider_user_id)
     ));
@@ -509,7 +653,7 @@ function miq_account_find_user_by_email($email)
 {
     $users = miq_account_table('users');
     return miq_account_fetch_one(miq_account_query(
-        "SELECT id, email, password_hash, display_name, role, status, email_verified_at, session_version FROM {$users} WHERE email = ? LIMIT 1",
+        "SELECT id, email, password_hash, display_name, role, status, email_verified_at, session_version, suspended_at, suspended_until, suspension_reason, suspended_by_user_id FROM {$users} WHERE email = ? LIMIT 1",
         's',
         array(miq_account_normalize_email($email))
     ));

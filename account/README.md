@@ -17,6 +17,7 @@ The main PHP site now has a first-party account/workspace layer. It is intention
 - Community Pulse voting on the homepage and stock and market pages.
 - Moderated community idea drafts, public idea feed, and logged-in user reporting.
 - Moderator dashboard with pending and reported-content queues, publish/reject/hide decisions, required adverse-action notes, and audit history.
+- Administrator dashboard with user search, 24-hour/7-day/30-day activity, saved-work counts, timed suspension, permanent blocking, session revocation, restoration, and an access-action audit trail.
 - Account settings, data export, Google linking, and account deletion.
 - Optional main-site-to-WordPress contributor SSO handoff.
 
@@ -28,6 +29,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
    - `migrations/20260725_add_rate_limits.sql`
    - `migrations/20260725_upgrade_chart_script_assets.sql`
    - `migrations/20260726_add_community_sentiment_history.sql`
+   - `migrations/20260726_add_user_activity_admin.sql`
 
    Apply the chart/script asset migration before deploying the matching PHP and JavaScript changes. It preserves existing chart layouts and Pine scripts while assigning stable asset keys and identifying the existing `Auto:*` chart records as per-symbol workspaces. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
 
@@ -38,8 +40,9 @@ Public browsing does not require an account. Saving, following, voting, submitti
 5. For Google login, create a production Web OAuth client in Google Cloud, configure the exact 360MiQ origin, set `GOOGLE_CLIENT_ID`, and enable the Google Identity Services client library. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
 6. Set `MIQ_ACCOUNT_DEBUG=false` in production.
 7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
+8. Grant your own account administrator access with `UPDATE miq_users SET role = 'admin' WHERE email = 'your-email@example.com';`. Alternatively, set `MIQ_ADMIN_EMAILS` to a comma-separated administrator allowlist. Only administrators can open `account_user_admin`.
 
-The chart and script quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, and `MIQ_MAX_ASSET_VERSIONS`.
+Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. The chart and script quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, and `MIQ_MAX_ASSET_VERSIONS`.
 
 ## WordPress SSO
 
@@ -69,7 +72,7 @@ The mu-plugin `blog/wp-content/mu-plugins/miq-main-site-sso.php` maps a main-sit
 - Keep Pine execution in the existing browser-safe restricted runtime.
 - Add SMTP delivery monitoring before relying on verification and reset email.
 - Add a scheduled cleanup for expired email, reset, and SSO tokens.
-- Run the included cleanup script daily from cron: `php /path/to/account/cleanup_rate_limits.php`. It removes rate-limit rows unused for two days.
+- Run the included cleanup script daily from cron: `php /path/to/account/cleanup_rate_limits.php`. It removes stale rate-limit rows, expired session records, and activity records older than 400 days, and releases expired timed suspensions.
 - Run `php /path/to/account/snapshot_community_sentiment.php` daily after midnight UTC. It persists the current rolling 30-day bullish/neutral/bearish counts for every active stock, market, and global context. The same job bounds storage by retaining 211 days of vote events and 400 days of daily snapshots.
 - Review the financial-content disclaimer, privacy notice, user-content terms, and moderation policy before publishing community content.
 

@@ -11,12 +11,22 @@ CREATE TABLE IF NOT EXISTS miq_users (
     status ENUM('active', 'suspended', 'deleted') NOT NULL DEFAULT 'active',
     email_verified_at DATETIME NULL,
     session_version INT UNSIGNED NOT NULL DEFAULT 1,
+    last_login_at DATETIME NULL,
+    last_seen_at DATETIME NULL,
+    login_count INT UNSIGNED NOT NULL DEFAULT 0,
+    suspended_at DATETIME NULL,
+    suspended_until DATETIME NULL,
+    suspension_reason VARCHAR(500) NULL,
+    suspended_by_user_id BIGINT UNSIGNED NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_users_email (email),
     UNIQUE KEY uq_miq_users_display_name (display_name),
-    KEY ix_miq_users_status (status)
+    KEY ix_miq_users_status (status),
+    KEY ix_miq_users_last_seen (last_seen_at),
+    KEY ix_miq_users_suspension (status, suspended_until),
+    CONSTRAINT fk_miq_users_suspender FOREIGN KEY (suspended_by_user_id) REFERENCES miq_users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_identities (
@@ -80,7 +90,38 @@ CREATE TABLE IF NOT EXISTS miq_sessions (
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_session_hash (session_hash),
     KEY ix_miq_session_user (user_id),
+    KEY ix_miq_session_last_seen (last_seen_at),
+    KEY ix_miq_session_expiry (expires_at),
     CONSTRAINT fk_miq_session_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS miq_user_activity_daily (
+    user_id BIGINT UNSIGNED NOT NULL,
+    activity_date DATE NOT NULL,
+    first_seen_at DATETIME NOT NULL,
+    last_seen_at DATETIME NOT NULL,
+    request_count INT UNSIGNED NOT NULL DEFAULT 1,
+    PRIMARY KEY (user_id, activity_date),
+    KEY ix_miq_activity_date (activity_date),
+    CONSTRAINT fk_miq_activity_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS miq_user_admin_actions (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    target_user_id BIGINT UNSIGNED NULL,
+    admin_user_id BIGINT UNSIGNED NULL,
+    target_email VARCHAR(254) NOT NULL,
+    target_display_name VARCHAR(80) NOT NULL,
+    action VARCHAR(32) NOT NULL,
+    reason VARCHAR(500) NULL,
+    suspended_until DATETIME NULL,
+    created_at DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    KEY ix_miq_user_admin_target (target_user_id, created_at),
+    KEY ix_miq_user_admin_actor (admin_user_id, created_at),
+    KEY ix_miq_user_admin_created (created_at),
+    CONSTRAINT fk_miq_user_admin_target FOREIGN KEY (target_user_id) REFERENCES miq_users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_miq_user_admin_actor FOREIGN KEY (admin_user_id) REFERENCES miq_users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_recent_searches (

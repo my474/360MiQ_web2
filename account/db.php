@@ -55,7 +55,8 @@ function miq_account_table($name)
         'pine_script_versions', 'watchlists', 'watchlist_items', 'community_ideas',
         'community_idea_revisions', 'community_votes', 'community_vote_events',
         'community_sentiment_daily', 'community_reports',
-        'moderation_actions', 'sso_tokens', 'rate_limits'
+        'moderation_actions', 'sso_tokens', 'rate_limits',
+        'user_activity_daily', 'user_admin_actions'
     );
 
     if (!in_array($name, $allowed, true)) {

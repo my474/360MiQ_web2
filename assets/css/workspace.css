@@ -6,7 +6,8 @@
 }
 
 html[data-theme="dark"] body.miq-community-body,
-html[data-theme="dark"] body.miq-moderation-body {
+html[data-theme="dark"] body.miq-moderation-body,
+html[data-theme="dark"] body.miq-user-admin-body {
     background-color: var(--bg-primary, #1a1a2e);
     color: var(--text-primary, #e8e8e8);
 }
@@ -653,6 +654,287 @@ html[data-theme="dark"] body.miq-moderation-body {
 .miq-audit-action-reject,
 .miq-audit-action-hide { color: #9d2e2e; border-color: rgba(157, 46, 46, .28); }
 
+.miq-user-admin-stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.miq-user-admin-stat {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid rgba(59, 153, 224, .25);
+    border-radius: 11px;
+    background: var(--card-bg, #fff);
+    box-shadow: 0 5px 16px rgba(31, 60, 85, .06);
+    color: inherit;
+    text-decoration: none;
+}
+
+.miq-user-admin-stat:hover,
+.miq-user-admin-stat:focus {
+    border-color: #3b99e0;
+    color: inherit;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.miq-user-admin-stat strong,
+.miq-user-admin-stat span {
+    display: block;
+}
+
+.miq-user-admin-stat strong {
+    color: #2384cc;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.miq-user-admin-stat span {
+    margin-top: 7px;
+    color: #667085;
+    font-size: 11px;
+}
+
+.miq-user-admin-stat.is-warning strong {
+    color: #b54708;
+}
+
+.miq-user-admin-page > .miq-workspace-panel {
+    margin-bottom: 18px;
+}
+
+.miq-user-admin-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.miq-user-admin-section-heading h2 {
+    margin: 4px 0 0;
+}
+
+.miq-user-admin-section-heading > span {
+    color: #667085;
+    font-size: 12px;
+}
+
+.miq-user-activity-chart {
+    display: grid;
+    grid-template-columns: repeat(30, minmax(5px, 1fr));
+    align-items: end;
+    gap: 5px;
+    height: 175px;
+    padding-top: 8px;
+}
+
+.miq-user-activity-day {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    min-width: 0;
+}
+
+.miq-user-activity-day span {
+    min-height: 2px;
+    border-radius: 4px 4px 1px 1px;
+    background: linear-gradient(180deg, #62b5f3, #2384cc);
+}
+
+.miq-user-activity-day small {
+    height: 18px;
+    padding-top: 4px;
+    overflow: hidden;
+    color: #8a94a6;
+    font-size: 8px;
+    text-align: center;
+}
+
+.miq-user-admin-filter {
+    display: grid;
+    grid-template-columns: minmax(220px, 2fr) minmax(190px, 1fr) auto auto;
+    align-items: end;
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.miq-user-admin-filter label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.miq-user-admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.miq-user-admin-table {
+    width: 100%;
+    min-width: 1040px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.miq-user-admin-table th,
+.miq-user-admin-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(138, 148, 166, .2);
+    text-align: left;
+    vertical-align: top;
+}
+
+.miq-user-admin-table th {
+    color: #667085;
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.miq-user-admin-table td > strong,
+.miq-user-admin-table td > a,
+.miq-user-admin-table td > small {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.miq-user-admin-table td > small,
+.miq-user-admin-table td small {
+    color: #667085;
+    font-size: 10px;
+}
+
+.miq-user-status {
+    display: inline-flex;
+    margin-bottom: 5px;
+    padding: 3px 8px;
+    border: 1px solid rgba(59, 153, 224, .28);
+    border-radius: 999px;
+    color: #245f8e;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.miq-user-status.is-active {
+    border-color: rgba(18, 143, 92, .3);
+    color: #087a4e;
+}
+
+.miq-user-status.is-suspended {
+    border-color: rgba(210, 71, 71, .32);
+    color: #a32d2d;
+}
+
+.miq-user-sanction-reason {
+    max-width: 220px;
+    overflow-wrap: anywhere;
+}
+
+.miq-user-admin-self {
+    color: #667085;
+    font-size: 11px;
+}
+
+.miq-user-admin-controls {
+    width: 245px;
+}
+
+.miq-user-admin-controls summary {
+    color: #2384cc;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.miq-user-admin-controls form {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid rgba(138, 148, 166, .22);
+    border-radius: 8px;
+    background: #fbfcfe;
+}
+
+.miq-user-admin-controls label {
+    margin: 0;
+    color: #667085;
+    font-size: 9px;
+}
+
+.miq-user-admin-controls .form-control {
+    height: auto;
+    margin-top: 3px;
+    padding: 6px 8px;
+    font-size: 10px;
+}
+
+.miq-user-admin-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 16px;
+}
+
+.miq-user-admin-pagination a {
+    min-width: 30px;
+    padding: 5px 8px;
+    border: 1px solid rgba(59, 153, 224, .28);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.miq-user-admin-pagination a.is-active {
+    background: #3b99e0;
+    color: #fff;
+}
+
+.miq-user-admin-audit {
+    display: grid;
+    gap: 10px;
+}
+
+.miq-user-admin-audit article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, .6fr);
+    gap: 10px 18px;
+    padding: 14px;
+    border: 1px solid rgba(138, 148, 166, .22);
+    border-radius: 9px;
+    background: #fbfcfe;
+}
+
+.miq-user-admin-audit article strong,
+.miq-user-admin-audit article small {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.miq-user-admin-audit article > div:nth-child(2) {
+    text-align: right;
+}
+
+.miq-user-admin-audit p {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding-top: 9px;
+    border-top: 1px solid rgba(138, 148, 166, .2);
+    overflow-wrap: anywhere;
+    font-size: 11px;
+    white-space: pre-wrap;
+}
+
 html[data-theme="dark"] .miq-workspace-heading p,
 html[data-theme="dark"] .miq-workspace-panel,
 html[data-theme="dark"] .miq-community-form-card,
@@ -675,7 +957,13 @@ html[data-theme="dark"] .miq-report-reporter small,
 html[data-theme="dark"] .miq-report-reporter span,
 html[data-theme="dark"] .miq-moderation-copy h4,
 html[data-theme="dark"] .miq-moderation-note small,
-html[data-theme="dark"] .miq-audit-row > div:nth-child(2) {
+html[data-theme="dark"] .miq-audit-row > div:nth-child(2),
+html[data-theme="dark"] .miq-user-admin-stat span,
+html[data-theme="dark"] .miq-user-admin-section-heading > span,
+html[data-theme="dark"] .miq-user-admin-table th,
+html[data-theme="dark"] .miq-user-admin-table td small,
+html[data-theme="dark"] .miq-user-admin-self,
+html[data-theme="dark"] .miq-user-admin-controls label {
     color: #c5c9d6;
 }
 
@@ -688,10 +976,40 @@ html[data-theme="dark"] .miq-community-list-card {
 
 html[data-theme="dark"] .miq-moderation-stat,
 html[data-theme="dark"] .miq-moderation-card,
-html[data-theme="dark"] .miq-audit-row {
+html[data-theme="dark"] .miq-audit-row,
+html[data-theme="dark"] .miq-user-admin-stat,
+html[data-theme="dark"] .miq-user-admin-audit article {
     background: #20213a;
     border-color: rgba(110, 168, 255, .3);
     color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-user-admin-controls form {
+    border-color: rgba(110, 168, 255, .24);
+    background: #252741;
+}
+
+html[data-theme="dark"] .miq-user-admin-page .form-control {
+    background: #2b2d47;
+    border-color: #59607d;
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-user-admin-page .form-control:focus {
+    background: #303250;
+    border-color: #6bb7ff;
+    color: #fff;
+    box-shadow: 0 0 0 .2rem rgba(107, 183, 255, .2);
+}
+
+html[data-theme="dark"] .miq-user-status.is-active {
+    border-color: rgba(120, 221, 177, .4);
+    color: #78ddb1;
+}
+
+html[data-theme="dark"] .miq-user-status.is-suspended {
+    border-color: rgba(255, 155, 155, .4);
+    color: #ff9b9b;
 }
 
 html[data-theme="dark"] .miq-moderation-stat:hover,
@@ -819,5 +1137,27 @@ html[data-theme="dark"] .miq-community-page input:-webkit-autofill {
 
     .miq-moderation-tabs .ml-auto {
         margin-left: 0 !important;
+    }
+
+    .miq-user-admin-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .miq-user-admin-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .miq-user-admin-section-heading,
+    .miq-user-admin-audit article {
+        align-items: flex-start;
+        grid-template-columns: 1fr;
+    }
+
+    .miq-user-admin-section-heading {
+        flex-direction: column;
+    }
+
+    .miq-user-admin-audit article > div:nth-child(2) {
+        text-align: left;
     }
 }

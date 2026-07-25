@@ -27,7 +27,7 @@ header('X-Robots-Tag: noindex, nofollow');
     <meta name="robots" content="noindex, nofollow">
     <title>Community Moderation - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/css/account.css?v=20260726.1">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.2">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.3">
 </head>
 <body class="miq-moderation-body">
 <?php $page = 'moderation'; include __DIR__ . '/header.php'; ?>

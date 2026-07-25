@@ -15,7 +15,7 @@ if (!$user) {
     <meta name="description" content="<?php echo $community_enabled ? 'Your saved charts, Pine scripts, searches, watchlists, and community ideas on 360MiQ.com.' : 'Your saved charts, Pine scripts, searches, and watchlists on 360MiQ.com.'; ?>" />
     <title>My Workspace - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/css/account.css">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260725.1">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.3">
 </head>
 <body data-community-enabled="<?php echo $community_enabled ? 'true' : 'false'; ?>">
 <?php $page = 'workspace'; include __DIR__ . '/header.php'; ?>
