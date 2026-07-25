@@ -19,7 +19,7 @@ $trend_subject = $context_code !== '' ? $context_code : 'Global market';
     <title>Community Ideas - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260726.3">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260726.4">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.2">
 </head>
 <body class="miq-community-body">

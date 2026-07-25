@@ -97,6 +97,11 @@
     margin-bottom: 0;
 }
 
+.miq-community-pulse-placement-stock {
+    padding-right: 0;
+    padding-left: 0;
+}
+
 .miq-community-pulse-placement-stock .miq-community-pulse {
     width: 100%;
     max-width: none;
