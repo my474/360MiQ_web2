@@ -1,5 +1,5 @@
 <?php $miq_nav_user = isset($miq_account_user) ? $miq_account_user : miq_account_current_user(); ?>
-<link rel="stylesheet" href="assets/css/account.css">
+<link rel="stylesheet" href="assets/css/account.css?v=20260725.2">
 <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar container not-selectable">
   <a class="navbar-brand" href="./"><img src="assets/img/Logo/360Logo.png" width="70" alt="360MiQ logo"></a>
   <span class="navbar-toggler collapsed navtitle" style="margin:0;padding:0">
@@ -79,12 +79,12 @@
               <span class="miq-account-avatar" aria-hidden="true"><i class="fas fa-user"></i></span><span class="miq-account-name"><?php echo htmlspecialchars($miq_nav_user['display_name'], ENT_QUOTES, 'UTF-8'); ?></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="miqAccountMenu">
-              <a class="dropdown-item" href="/workspace"><i class="fas fa-layer-group fa-fw"></i> My Workspace</a>
-              <a class="dropdown-item" href="/workspace?tab=charts"><i class="fas fa-chart-line fa-fw"></i> Saved Charts</a>
-              <a class="dropdown-item" href="/workspace?tab=scripts"><i class="fas fa-code fa-fw"></i> Pine Scripts</a>
-              <a class="dropdown-item" href="/community"><i class="fas fa-users fa-fw"></i> Community Ideas</a>
-              <a class="dropdown-item" href="account_settings"><i class="fas fa-cog fa-fw"></i> Account Settings</a>
-              <?php if (miq_account_is_moderator($miq_nav_user)): ?><a class="dropdown-item" href="/community_moderation"><i class="fas fa-shield-alt fa-fw"></i> Moderation Queue</a><?php endif; ?>
+              <a class="dropdown-item" href="workspace"><i class="fas fa-layer-group fa-fw"></i> My Workspace</a>
+              <a class="dropdown-item" href="workspace?tab=charts"><i class="fas fa-chart-line fa-fw"></i> Saved Charts</a>
+              <a class="dropdown-item" href="workspace?tab=scripts"><i class="fas fa-code fa-fw"></i> Pine Scripts</a>
+              <a class="dropdown-item" href="community"><i class="fas fa-users fa-fw"></i> Community Ideas</a>
+              <a class="dropdown-item" href="account_settings"><i class="fas fa-cog fa-fw"></i> Settings</a>
+              <?php if (miq_account_is_moderator($miq_nav_user)): ?><a class="dropdown-item" href="community_moderation"><i class="fas fa-shield-alt fa-fw"></i> Moderation Queue</a><?php endif; ?>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="account_logout"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>
             </div>
@@ -224,7 +224,7 @@ $(document).on('click', '.color-item', function(event) {
 
 <!-- Script -->
 <script src="https://code.jquery.com/jquery-migrate-3.0.0.min.js"></script>
-<script src="assets/js/account.js" defer></script>
+<script src="assets/js/account.js?v=20260725.1" defer></script>
 <!-- jQuery UI -->
 <link href='autocomplete/jquery-ui.min.css' rel='stylesheet' type='text/css'>
 <style>

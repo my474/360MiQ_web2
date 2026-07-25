@@ -9,8 +9,10 @@ The main PHP site now has a first-party account/workspace layer. It is intention
 - Secure PHP session cookie and CSRF token helpers.
 - Header account dropdown and private workspace page.
 - Recent-search syncing.
-- Advanced-chart layout autosave for logged-in users.
-- Pine script autosave through the existing chart layout engine.
+- Advanced-chart local autosave for everyone, plus conflict-safe account sync for logged-in users.
+- Named chart layouts with Save As, rename, duplicate, delete, explicit versions, and restore.
+- Pine scripts stored as first-class account assets with stable IDs, rename, duplicate, archive, delete, version history, restore, and source download.
+- Existing browser-local chart and Pine storage formats remain supported.
 - Watchlist storage and workspace display.
 - Community Pulse voting on every page through the shared footer.
 - Moderated community idea drafts and public idea feed.
@@ -22,13 +24,20 @@ Public browsing does not require an account. Saving, following, voting, submitti
 
 ## Deployment setup
 
-1. Apply `schema.sql` to the account database. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required. If the account schema was already imported, apply `migrations/20260725_add_rate_limits.sql`.
+1. For a new account database, apply `schema.sql`. For an existing account database, apply both migrations in this order:
+   - `migrations/20260725_add_rate_limits.sql`
+   - `migrations/20260725_upgrade_chart_script_assets.sql`
+
+   Apply the chart/script asset migration before deploying the matching PHP and JavaScript changes. It preserves existing chart layouts and Pine scripts while assigning stable asset keys and identifying the existing `Auto:*` chart records as per-symbol workspaces. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
+
    Existing installations must resolve any duplicate display names before adding `uq_miq_users_display_name` to the existing users table. Check them with `SELECT LOWER(display_name) AS normalized_name, COUNT(*) AS total FROM miq_users GROUP BY LOWER(display_name) HAVING COUNT(*) > 1;`, then run `ALTER TABLE miq_users ADD UNIQUE KEY uq_miq_users_display_name (display_name);` using the configured table prefix.
 2. Configure the dedicated account database include. Production defaults to `/home2/aamiqcom/php_script/mysql_vars_account.php`; `ACCOUNT_DB_INCLUDE` can override it. The repository template is `mysql_vars_account.php`; deploy it outside the web root, or provide `ACCOUNT_DB_HOST`, `ACCOUNT_DB_NAME`, `ACCOUNT_DB_USER`, `ACCOUNT_DB_PASSWORD`, and optional `ACCOUNT_DB_PORT`. Account code never falls back to the stock database.
 3. Set `MIQ_SITE_URL=https://360miq.com` and `ACCOUNT_EMAIL_FROM` to a sender that the host can deliver.
 4. Configure email delivery. Production defaults to `/home2/aamiqcom/cronjobs/email.php` through `ACCOUNT_MAILER_INCLUDE`; that file must define `email($subject, $body, $toEmail, $toName)` and keep the PHPMailer SMTP credentials outside this repository. If the configured helper is missing or fails, verification/reset delivery fails safely and is logged.
 5. For Google login, create a production Web OAuth client in Google Cloud, configure the exact 360MiQ origin, set `GOOGLE_CLIENT_ID`, and enable the Google Identity Services client library. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
 6. Set `MIQ_ACCOUNT_DEBUG=false` in production.
+
+The chart and script quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, and `MIQ_MAX_ASSET_VERSIONS`.
 
 ## WordPress SSO
 
@@ -74,6 +83,6 @@ Rate-limit failures fail closed and are logged without recording raw IP addresse
 
 ## API surface
 
-The browser-facing endpoint is `account_api.php`. It supports workspace reads, search/chart/script/idea saves, community pulse counts and votes, reports, and moderator actions. All write actions require the session CSRF token.
+The browser-facing endpoint is `account_api.php`. It supports workspace reads, search/chart/script/idea saves, community pulse counts and votes, reports, and moderator actions. Chart and script assets support paginated listing, exact loading, optimistic-revision conflict detection, rename, duplicate, delete/archive, version listing, and version restore. All write actions require the session CSRF token.
 
 The API is deliberately small so the existing PHP pages can adopt account-backed persistence incrementally without moving market-data endpoints into the account service.

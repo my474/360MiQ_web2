@@ -16,6 +16,10 @@
     var shareLayoutLoading = false;
     var sharedPreviewActive = false;
     var stockMetadataByCode = {};
+    var currentChartAsset = null;
+    var chartSyncState = null;
+    var pendingAccountScript = null;
+    var requestedAccountAssetHandled = false;
 
     function setAccountSyncStatus(message, isError) {
         var status = document.getElementById('toolStockChartAccountSyncStatus');
@@ -245,7 +249,7 @@
                 window.PineScriptRuntime.setBacktestEngine(window.PineBacktestEngine);
             })
             .then(function () {
-                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260718.41', 'StockChartEngine');
+                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260725.1', 'StockChartEngine');
             })
             .then(function () { return window.StockChartEngine; })
             .catch(function (error) {
@@ -268,7 +272,125 @@
         }
     }
 
-    function accountChartStorage(code) {
+    function chartLayoutId(code, asset) {
+        return asset && asset.kind === 'named' && asset.asset_key
+            ? 'saved-chart-' + asset.asset_key
+            : escapeLayoutId(code);
+    }
+
+    function chartLocalMetaKey(layoutId) {
+        return STOCK_CHART_STORAGE_PREFIX + ':sync:' + layoutId;
+    }
+
+    function loadChartLocalMeta(layoutId) {
+        try {
+            var parsed = JSON.parse(window.localStorage.getItem(chartLocalMetaKey(layoutId)) || 'null');
+            return parsed && typeof parsed === 'object' ? parsed : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function saveChartLocalMeta(layoutId, meta) {
+        try {
+            window.localStorage.setItem(chartLocalMetaKey(layoutId), JSON.stringify(meta || {}));
+        } catch (error) { /* local sync metadata is optional */ }
+    }
+
+    function updateCurrentChartLabel() {
+        var label = document.getElementById('toolStockChartAssetName');
+        if (!label) return;
+        label.textContent = currentChartAsset && currentChartAsset.name
+            ? currentChartAsset.name
+            : (currentCode ? 'Synced workspace: ' + currentCode : '');
+        label.setAttribute('data-chart-kind', currentChartAsset && currentChartAsset.kind || 'workspace');
+    }
+
+    function hideChartConflict() {
+        var panel = document.getElementById('toolStockChartConflict');
+        if (panel) panel.hidden = true;
+    }
+
+    function showChartConflict(serverChart) {
+        if (!chartSyncState) return;
+        chartSyncState.conflict = serverChart || null;
+        var panel = document.getElementById('toolStockChartConflict');
+        if (panel) panel.hidden = false;
+        setAccountSyncStatus('Sync conflict: this chart changed on another device.', true);
+    }
+
+    function persistChartSyncMeta(dirty) {
+        if (!chartSyncState) return;
+        saveChartLocalMeta(chartSyncState.layoutId, {
+            dirty: !!dirty,
+            asset: currentChartAsset ? {
+                id: currentChartAsset.id,
+                asset_key: currentChartAsset.asset_key,
+                name: currentChartAsset.name,
+                code: currentChartAsset.code,
+                kind: currentChartAsset.kind,
+                revision: currentChartAsset.revision,
+                updated_at: currentChartAsset.updated_at
+            } : null,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    function flushChartCloudSave() {
+        var sync = chartSyncState;
+        if (!sync || sync.stopped || sync.inFlight || sync.conflict || !sync.pendingDocument) return;
+        if (!window.MIQAccount || !window.MIQAccount.state || !window.MIQAccount.state.loggedIn) return;
+        var documentState = sync.pendingDocument;
+        sync.pendingDocument = null;
+        sync.inFlight = true;
+        var asset = currentChartAsset || {};
+        setAccountSyncStatus('Saving to your workspace…', false);
+        window.MIQAccount.saveChartLayout(sync.code, documentState, {
+            id: asset.id || undefined,
+            asset_key: asset.asset_key || sync.assetKey,
+            name: asset.name || ('Auto: ' + sync.code),
+            kind: asset.kind || 'workspace',
+            expected_revision: asset.revision || undefined,
+            autosave: true,
+            clientUpdatedAt: documentState.updatedAt || new Date().toISOString()
+        }).then(function (response) {
+            if (sync !== chartSyncState) return;
+            currentChartAsset = response && response.chart ? response.chart : currentChartAsset;
+            if (currentChartAsset && currentChartAsset.asset_key) sync.assetKey = currentChartAsset.asset_key;
+            sync.inFlight = false;
+            sync.retryDelay = 1500;
+            persistChartSyncMeta(!!sync.pendingDocument);
+            updateCurrentChartLabel();
+            setAccountSyncStatus(sync.pendingDocument ? 'Saving newer changes…' : 'Synced to your workspace', false);
+            if (sync.pendingDocument) flushChartCloudSave();
+        }).catch(function (error) {
+            if (sync !== chartSyncState) return;
+            sync.inFlight = false;
+            if (error && error.conflict) {
+                if (!sync.pendingDocument) sync.pendingDocument = documentState;
+                showChartConflict(error.body && error.body.chart);
+                persistChartSyncMeta(true);
+                return;
+            }
+            if (!sync.pendingDocument) sync.pendingDocument = documentState;
+            persistChartSyncMeta(true);
+            sync.retryDelay = Math.min(Math.max(1500, sync.retryDelay || 1500) * 2, 60000);
+            clearTimeout(sync.timer);
+            sync.timer = setTimeout(flushChartCloudSave, sync.retryDelay);
+            setAccountSyncStatus('Saved locally; account sync will retry automatically.', true);
+            console.warn('Account chart sync failed:', error.message);
+        });
+    }
+
+    function queueChartCloudSave(doc) {
+        if (!chartSyncState) return;
+        chartSyncState.pendingDocument = JSON.parse(JSON.stringify(doc));
+        persistChartSyncMeta(true);
+        clearTimeout(chartSyncState.timer);
+        chartSyncState.timer = setTimeout(flushChartCloudSave, 450);
+    }
+
+    function legacyAccountChartStorage(code) {
         var layoutId = escapeLayoutId(code);
         var localKey = STOCK_CHART_STORAGE_PREFIX + ':' + layoutId;
         function localLoad() {
@@ -311,7 +433,40 @@
         };
     }
 
-    function syncPineScripts(documentState) {
+    function accountChartStorageV2(code, asset, selectedLayoutId) {
+        var layoutId = selectedLayoutId || chartLayoutId(code, asset);
+        var localKey = STOCK_CHART_STORAGE_PREFIX + ':' + layoutId;
+        return {
+            load: function () {
+                try {
+                    var raw = window.localStorage.getItem(localKey);
+                    return raw ? JSON.parse(raw) : null;
+                } catch (error) {
+                    return null;
+                }
+            },
+            save: function (id, doc) {
+                var saved = false;
+                try {
+                    window.localStorage.setItem(localKey, JSON.stringify(doc));
+                    saved = true;
+                } catch (error) { /* local storage can be unavailable */ }
+                if (window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn) {
+                    if (!chartSyncState || !chartSyncState.suppressRemote) queueChartCloudSave(doc);
+                } else {
+                    setAccountSyncStatus('Sign in to sync this chart across devices', false);
+                }
+                return saved;
+            },
+            remove: function () {
+                try { window.localStorage.removeItem(localKey); } catch (error) { /* optional local cache */ }
+                try { window.localStorage.removeItem(chartLocalMetaKey(layoutId)); } catch (error) { /* optional metadata */ }
+                return true;
+            }
+        };
+    }
+
+    function legacySyncPineScripts(documentState) {
         if (!window.MIQAccount || !window.MIQAccount.state || !window.MIQAccount.state.loggedIn || !documentState || !Array.isArray(documentState.indicators)) return;
         documentState.indicators.forEach(function (indicator) {
             if (!indicator || indicator.type !== 'PINE_SCRIPT' || !indicator.inputs || !indicator.inputs.code) return;
@@ -326,11 +481,13 @@
         });
     }
 
-    function updateHistory(code) {
+    function updateHistory(code, asset) {
         if (!code) return;
         var url = new URL(window.location.origin + window.location.pathname);
         url.searchParams.set('stockcode', code);
         url.searchParams.set('tab', '3');
+        if (asset && asset.kind === 'named' && asset.id) url.searchParams.set('chart_id', asset.id);
+        else url.searchParams.delete('chart_id');
         window.history.replaceState(null, '', url.toString());
     }
 
@@ -614,8 +771,27 @@
         options = options || {};
         var container = document.getElementById('toolStockChart');
         if (!container || !window.StockChartEngine) return;
+        if (chartSyncState) {
+            chartSyncState.stopped = true;
+            clearTimeout(chartSyncState.timer);
+        }
+        currentChartAsset = options.accountChart || null;
         setAccountSyncStatus(window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? 'Account sync enabled' : 'Sign in to sync this chart across devices', false);
-        var layoutId = escapeLayoutId(code);
+        hideChartConflict();
+        var layoutId = chartLayoutId(code, currentChartAsset);
+        var syncMeta = loadChartLocalMeta(layoutId);
+        chartSyncState = {
+            code: code,
+            layoutId: layoutId,
+            assetKey: currentChartAsset && currentChartAsset.asset_key || syncMeta && syncMeta.asset && syncMeta.asset.asset_key || (window.MIQAccount && window.MIQAccount.makeAssetKey ? window.MIQAccount.makeAssetKey() : ''),
+            inFlight: false,
+            pendingDocument: null,
+            conflict: null,
+            timer: null,
+            retryDelay: 1500,
+            suppressRemote: false,
+            stopped: false
+        };
         var shouldLoadStoredLayout = options.load !== false;
         var layoutExisted = (shouldLoadStoredLayout && hasStoredLayout(layoutId)) || !!options.document;
         var carriedRelativeStrength = options.preserveRelativeStrength === false ? [] : relativeStrengthSnapshots(stockChart);
@@ -627,7 +803,7 @@
             interval: 'daily',
             data: bars,
             layoutId: layoutId,
-            storage: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? accountChartStorage(code) : undefined,
+            storage: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? accountChartStorageV2(code, currentChartAsset, layoutId) : undefined,
             storagePrefix: STOCK_CHART_STORAGE_PREFIX,
             load: shouldLoadStoredLayout,
             autosave: options.autosave !== false,
@@ -641,13 +817,10 @@
             },
             onRecentStockSelect: function (stock) {
                 if (stock && stock.code) loadStockChart(stock.code, stock);
-            }
+            },
+            onPineAccountSave: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? saveLinkedPineScript : null,
+            onPineAccountLoad: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? loadLinkedPineScript : null
         });
-        if (stockChart.on && window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn) {
-            stockChart.on('save', function (event) {
-                syncPineScripts(event && event.document ? event.document : stockChart.serialize());
-            });
-        }
         applyStockMetadata(stockChart, code, options.symbolInfo);
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         restoreRelativeStrengthSnapshots(stockChart, carriedRelativeStrength);
@@ -658,6 +831,8 @@
             });
         }
         if (options.resetHistory && stockChart.resetHistory) stockChart.resetHistory();
+        updateCurrentChartLabel();
+        updateHistory(code, currentChartAsset);
         setTimeout(function () {
             if (stockChart && stockChart.resize) stockChart.resize();
         }, 0);
@@ -697,7 +872,8 @@
         setStatus('Shared chart preview. Click Save Layout to replace your saved ' + code + ' layout.', false);
     }
 
-    function loadStockChart(rawCode, metadata) {
+    function loadStockChart(rawCode, metadata, options) {
+        options = options || {};
         var code = normalizeCode(rawCode);
         var isNewSymbol = code !== currentCode;
         var previousVisibleDateRange = isNewSymbol ? visibleDateRangeForChart(stockChart) : null;
@@ -714,7 +890,7 @@
         }
 
         currentCode = code;
-        updateHistory(code);
+        updateHistory(code, options.accountChart || null);
         setStatus('Loading ' + code + '...', false);
 
         var requestId = ++dataSerial;
@@ -724,20 +900,38 @@
             return Promise.all([
                 requestBars(code),
                 requestStockMetadata(code),
-                window.MIQAccount && window.MIQAccount.preloadChartLayout ? window.MIQAccount.preloadChartLayout(code) : Promise.resolve(null)
+                options.accountChart
+                    ? Promise.resolve(options.accountChart)
+                    : (window.MIQAccount && window.MIQAccount.getChart ? window.MIQAccount.getChart({ code: code }).catch(function () { return null; }) : Promise.resolve(null))
             ]).then(function (results) {
                 if (requestId !== dataSerial) return;
                 var payload = results[0];
                 symbolInfo = rememberStockMetadata(results[1] || symbolInfo, code);
-                var accountLayout = results[2] || null;
+                var accountChart = results[2] || null;
+                var selectedLayoutId = chartLayoutId(code, accountChart);
+                var localMeta = loadChartLocalMeta(selectedLayoutId);
+                var localLayout = null;
+                try {
+                    localLayout = JSON.parse(window.localStorage.getItem(STOCK_CHART_STORAGE_PREFIX + ':' + selectedLayoutId) || 'null');
+                } catch (error) { localLayout = null; }
+                var localDirty = !!(localLayout && localMeta && localMeta.dirty);
+                var initialConflict = !!(localDirty && accountChart && localMeta.asset && Number(localMeta.asset.revision || 0) !== Number(accountChart.revision || 0));
+                var accountLayout = localDirty ? localLayout : (accountChart && accountChart.layout || null);
                 renderChart(code, payload.bars, {
                     symbolInfo: symbolInfo,
                     resetHistory: isNewSymbol,
                     visibleRange: previousVisibleDateRange,
-                    document: accountLayout || undefined
+                    document: accountLayout || undefined,
+                    accountChart: accountChart
                 });
+                if (initialConflict) showChartConflict(accountChart);
+                else if (localDirty) {
+                    queueChartCloudSave(localLayout);
+                    setAccountSyncStatus('Restored local changes; syncing to your workspace…', false);
+                }
                 recordRecentStock(code, symbolInfo);
                 setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
+                if (pendingAccountScript) openPendingAccountScript();
             });
         }).catch(function (error) {
             if (requestId !== dataSerial) return;
@@ -787,6 +981,193 @@
         sharedPreviewActive = false;
         setSharedSaveVisible(false);
         setStatus('Shared layout saved for ' + currentCode + '.', false);
+    }
+
+    function setSaveAsFormVisible(visible) {
+        var form = document.getElementById('toolStockChartSaveAsForm');
+        if (!form) return;
+        form.hidden = !visible;
+        if (visible) {
+            var input = document.getElementById('toolStockChartSaveAsName');
+            if (input) {
+                input.value = currentCode ? currentCode + ' chart' : '';
+                input.focus();
+                input.select();
+            }
+        }
+    }
+
+    function saveCurrentAsNamed(name) {
+        if (!stockChart || !window.MIQAccount || !window.MIQAccount.state.loggedIn) {
+            return Promise.reject(new Error('Sign in to save named charts.'));
+        }
+        name = String(name || '').trim();
+        if (!name) return Promise.reject(new Error('Enter a chart name.'));
+        var documentState = stockChart.serialize();
+        setAccountSyncStatus('Saving named chart…', false);
+        return window.MIQAccount.saveChartLayout(currentCode, documentState, {
+            asset_key: window.MIQAccount.makeAssetKey(),
+            name: name,
+            kind: 'named',
+            autosave: false,
+            create_version: true,
+            clientUpdatedAt: documentState.updatedAt || new Date().toISOString()
+        }).then(function (response) {
+            var asset = response.chart || null;
+            if (asset) {
+                asset.layout = documentState;
+                setSaveAsFormVisible(false);
+                return loadStockChart(currentCode, stockMetadataForCode(currentCode), { accountChart: asset });
+            }
+            return null;
+        });
+    }
+
+    function createCurrentChartVersion() {
+        if (!stockChart || !window.MIQAccount || !window.MIQAccount.state.loggedIn) return;
+        var documentState = stockChart.serialize();
+        var asset = currentChartAsset || {};
+        setAccountSyncStatus('Creating chart version…', false);
+        window.MIQAccount.saveChartLayout(currentCode, documentState, {
+            id: asset.id || undefined,
+            asset_key: asset.asset_key || (chartSyncState && chartSyncState.assetKey),
+            name: asset.name || ('Auto: ' + currentCode),
+            kind: asset.kind || 'workspace',
+            expected_revision: asset.revision || undefined,
+            autosave: false,
+            create_version: true,
+            clientUpdatedAt: documentState.updatedAt || new Date().toISOString()
+        }).then(function (response) {
+            currentChartAsset = response.chart || currentChartAsset;
+            if (chartSyncState) chartSyncState.pendingDocument = null;
+            persistChartSyncMeta(false);
+            updateCurrentChartLabel();
+            setAccountSyncStatus('Chart version created', false);
+        }).catch(function (error) {
+            if (error.conflict) showChartConflict(error.body && error.body.chart);
+            else setAccountSyncStatus(error.message, true);
+        });
+    }
+
+    function useServerConflictChart() {
+        if (!chartSyncState || !chartSyncState.conflict || !window.MIQAccount) return Promise.resolve();
+        var serverSummary = chartSyncState.conflict;
+        return window.MIQAccount.getChart({ id: serverSummary.id }).then(function (serverChart) {
+            if (!serverChart || !serverChart.layout || !stockChart) throw new Error('The server chart is no longer available.');
+            currentChartAsset = serverChart;
+            chartSyncState.conflict = null;
+            chartSyncState.pendingDocument = null;
+            chartSyncState.suppressRemote = true;
+            try {
+                stockChart.importLayout(serverChart.layout);
+                stockChart.save();
+                clearTimeout(stockChart.autosaveTimer);
+                stockChart.autosaveTimer = null;
+            } finally {
+                chartSyncState.suppressRemote = false;
+            }
+            persistChartSyncMeta(false);
+            hideChartConflict();
+            updateCurrentChartLabel();
+            setAccountSyncStatus('Using the server version', false);
+        }).catch(function (error) {
+            setAccountSyncStatus(error.message, true);
+        });
+    }
+
+    function keepLocalConflictChart() {
+        if (!chartSyncState || !chartSyncState.conflict) return;
+        var serverChart = chartSyncState.conflict;
+        currentChartAsset = Object.assign({}, currentChartAsset || {}, serverChart);
+        chartSyncState.conflict = null;
+        hideChartConflict();
+        if (!chartSyncState.pendingDocument && stockChart) chartSyncState.pendingDocument = stockChart.serialize();
+        flushChartCloudSave();
+    }
+
+    function saveBothConflictCharts() {
+        if (!chartSyncState || !chartSyncState.conflict || !stockChart) return;
+        var localDocument = stockChart.serialize();
+        var name = currentCode + ' conflict copy ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
+        window.MIQAccount.saveChartLayout(currentCode, localDocument, {
+            asset_key: window.MIQAccount.makeAssetKey(),
+            name: name,
+            kind: 'named',
+            autosave: false,
+            create_version: true,
+            clientUpdatedAt: localDocument.updatedAt || new Date().toISOString()
+        }).then(function () {
+            return useServerConflictChart();
+        }).catch(function (error) {
+            setAccountSyncStatus(error.message, true);
+        });
+    }
+
+    function saveLinkedPineScript(detail) {
+        if (!detail || !window.MIQAccount || !window.MIQAccount.state.loggedIn) return Promise.resolve(null);
+        var accountScript = detail.accountScript || {};
+        return window.MIQAccount.saveScript({
+            id: accountScript.id || undefined,
+            asset_key: accountScript.asset_key || undefined,
+            expected_revision: accountScript.revision || undefined,
+            name: detail.title || 'Untitled script',
+            code: currentCode,
+            source_code: detail.code || '',
+            status: 'draft',
+            create_version: !!detail.createVersion
+        }).then(function (response) {
+            var saved = response.script || null;
+            if (saved && stockChart && stockChart.setPineEditorAccountScript) {
+                stockChart.setPineEditorAccountScript(saved);
+            }
+            setAccountSyncStatus('Pine script saved to My Scripts', false);
+            return saved;
+        }).catch(function (error) {
+            setAccountSyncStatus(error.message, true);
+            throw error;
+        });
+    }
+
+    function loadLinkedPineScript(reference) {
+        if (!reference || !reference.id || !window.MIQAccount) return Promise.resolve(null);
+        return window.MIQAccount.getScript({ id: reference.id });
+    }
+
+    function openPendingAccountScript() {
+        if (!pendingAccountScript || !stockChart || !stockChart.openPineScriptEditor) return false;
+        var script = pendingAccountScript;
+        pendingAccountScript = null;
+        stockChart.openPineScriptEditor({
+            title: script.name,
+            code: script.source_code,
+            accountScript: {
+                id: script.id,
+                asset_key: script.asset_key,
+                revision: script.revision,
+                name: script.name
+            }
+        });
+        return true;
+    }
+
+    function loadRequestedAccountAsset() {
+        var params = new URLSearchParams(window.location.search);
+        var chartId = Number(params.get('chart_id') || 0);
+        var scriptId = Number(params.get('script_id') || 0);
+        if (!window.MIQAccount || !window.MIQAccount.state.loggedIn || (!chartId && !scriptId)) return false;
+        if (chartId) {
+            window.MIQAccount.getChart({ id: chartId }).then(function (chart) {
+                if (!chart) throw new Error('Saved chart not found.');
+                loadStockChart(chart.code, null, { accountChart: chart });
+            }).catch(function (error) { setStatus(error.message, true); });
+            return true;
+        }
+        window.MIQAccount.getScript({ id: scriptId }).then(function (script) {
+            if (!script) throw new Error('Pine script not found.');
+            pendingAccountScript = script;
+            loadStockChart(script.code || initialCode());
+        }).catch(function (error) { setStatus(error.message, true); });
+        return true;
     }
 
     function preloadEngine() {
@@ -897,6 +1278,10 @@
             loadSharedChart(sharePayload);
             return;
         }
+        if (!requestedAccountAssetHandled) {
+            requestedAccountAssetHandled = true;
+            if (loadRequestedAccountAsset()) return;
+        }
         var code = normalizeCode(document.getElementById('toolStockChartCode').value || initialCode());
         if (!stockChart || code !== currentCode) loadStockChart(code);
         else if (stockChart.resize) setTimeout(function () { stockChart.resize(); }, 0);
@@ -942,6 +1327,28 @@
         if (saveSharedButton) {
             saveSharedButton.addEventListener('click', saveSharedLayout);
         }
+        var saveAsButton = document.getElementById('toolStockChartSaveAs');
+        if (saveAsButton) saveAsButton.addEventListener('click', function () { setSaveAsFormVisible(true); });
+        var saveAsCancel = document.getElementById('toolStockChartSaveAsCancel');
+        if (saveAsCancel) saveAsCancel.addEventListener('click', function () { setSaveAsFormVisible(false); });
+        var saveAsForm = document.getElementById('toolStockChartSaveAsForm');
+        if (saveAsForm) {
+            saveAsForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                var nameField = document.getElementById('toolStockChartSaveAsName');
+                saveCurrentAsNamed(nameField && nameField.value).catch(function (error) {
+                    setAccountSyncStatus(error.message, true);
+                });
+            });
+        }
+        var versionButton = document.getElementById('toolStockChartCreateVersion');
+        if (versionButton) versionButton.addEventListener('click', createCurrentChartVersion);
+        var keepLocalButton = document.getElementById('toolStockChartConflictKeepLocal');
+        if (keepLocalButton) keepLocalButton.addEventListener('click', keepLocalConflictChart);
+        var useServerButton = document.getElementById('toolStockChartConflictUseServer');
+        if (useServerButton) useServerButton.addEventListener('click', useServerConflictChart);
+        var saveBothButton = document.getElementById('toolStockChartConflictSaveBoth');
+        if (saveBothButton) saveBothButton.addEventListener('click', saveBothConflictCharts);
 
         var stockChartTabShown = false;
         $('.nav-tabs a[href="#tab-3"]').on('shown.bs.tab', function () {

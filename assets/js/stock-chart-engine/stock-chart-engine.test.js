@@ -372,6 +372,7 @@ documentElement.setAttribute('data-theme', 'light');
 
 const data = StockChartEngine.createDemoData(90);
 const recentStockSelections = [];
+const pineAccountSaves = [];
 const demoCandleStyles = data.slice(1).reduce((counts, bar, index) => {
   const previousClose = data[index].close;
   if (bar.close >= bar.open && bar.close >= previousClose) counts.greenHollow += 1;
@@ -393,6 +394,13 @@ const chart = new StockChartEngine.Chart('#chart', {
   recentStocks: [{ code: 'SPY', name_en: 'SPDR S&P 500 ETF Trust' }],
   onRecentStockSelect(stock) {
     recentStockSelections.push(stock);
+  },
+  onPineAccountSave(detail) {
+    pineAccountSaves.push(detail);
+    return Promise.resolve({ id: 42, asset_key: '11111111-1111-4111-8111-111111111111', revision: 3, name: detail.title });
+  },
+  onPineAccountLoad() {
+    return Promise.resolve(null);
   }
 });
 assert.strictEqual(chart.autosaveTimer, null);
@@ -1121,6 +1129,13 @@ const pineIndicatorId = chart.addIndicator('PINE_SCRIPT', {
   placement: 'new',
   inputs: { code: pineSource, title: 'RSI Average' }
 });
+assert.strictEqual(chart.linkPineIndicatorToAccountScript(pineIndicatorId, {
+  id: 42,
+  asset_key: '11111111-1111-4111-8111-111111111111',
+  revision: 2,
+  name: 'RSI Average'
+}), true);
+assert.strictEqual(chart.serialize().indicators.find((indicator) => indicator.id === pineIndicatorId).accountScript.id, 42);
 assert.ok(chart.indicatorResults[pineIndicatorId]);
 assert.strictEqual(chart.indicatorResults[pineIndicatorId].error, null);
 assert.ok(chart.indicatorResults[pineIndicatorId].outputs.plot1.length > 0);
@@ -1202,6 +1217,10 @@ assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-pine-recent-menu'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="load-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('Load Pine Script from your device (Ctrl/Cmd+O)'));
 assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="save-pine"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('>Download</button>'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="save-account-pine"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="version-account-pine"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-action="load-account-pine"'));
 assert.ok(chart.settingsPopup.innerHTML.includes('accept=".pine,.txt,text/plain"'));
 const recentPineCode = 'indicator("Recent")\nplot(close)';
 chart.rememberRecentPineScript('Recent test', recentPineCode);

@@ -30,10 +30,28 @@
             var body = {};
             try { body = text ? JSON.parse(text) : {}; } catch (error) { body = {}; }
             if (!response.ok || body.error) {
-                throw new Error(body.error || 'The account request could not be completed.');
+                var requestError = new Error(body.error || 'The account request could not be completed.');
+                requestError.status = response.status;
+                requestError.body = body;
+                requestError.conflict = !!body.conflict;
+                throw requestError;
             }
             return body;
         });
+    }
+
+    function makeAssetKey() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+        var values = new Uint8Array(16);
+        if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+            window.crypto.getRandomValues(values);
+        } else {
+            for (var index = 0; index < values.length; index += 1) values[index] = Math.floor(Math.random() * 256);
+        }
+        values[6] = (values[6] & 15) | 64;
+        values[8] = (values[8] & 63) | 128;
+        var hex = Array.prototype.map.call(values, function (value) { return ('0' + value.toString(16)).slice(-2); }).join('');
+        return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
     }
 
     function localSearches() {
@@ -66,26 +84,55 @@
         return jsonRequest('save_search', item).catch(function () { return item; });
     }
 
-    function saveChartLayout(code, layout, name) {
+    function saveChartLayout(code, layout, nameOrOptions) {
         if (!state.loggedIn) return Promise.resolve({ saved: false, reason: 'login_required' });
-        return jsonRequest('save_chart', {
+        var options = typeof nameOrOptions === 'object' && nameOrOptions ? nameOrOptions : { name: nameOrOptions };
+        var payload = {
             code: String(code || '').trim().toUpperCase(),
-            name: name || ('Auto: ' + String(code || '').trim().toUpperCase()),
+            name: options.name || ('Auto: ' + String(code || '').trim().toUpperCase()),
             layout: layout,
-            autosave: true
+            autosave: options.autosave !== false,
+            kind: options.kind || (options.autosave === false ? 'named' : 'workspace'),
+            client_updated_at: options.clientUpdatedAt || new Date().toISOString()
+        };
+        ['id', 'asset_key', 'expected_revision', 'visibility', 'create_version'].forEach(function (key) {
+            if (options[key] !== undefined && options[key] !== null && options[key] !== '') payload[key] = options[key];
+        });
+        return jsonRequest('save_chart', payload);
+    }
+
+    function getChart(criteria) {
+        if (!state.loggedIn) return Promise.resolve(null);
+        criteria = criteria || {};
+        return jsonRequest('get_chart', criteria, 'GET').then(function (body) {
+            return body.chart || null;
         });
     }
 
     function preloadChartLayout(code) {
-        if (!state.loggedIn) return Promise.resolve(null);
-        return jsonRequest('get_chart', { code: String(code || '').trim().toUpperCase() }, 'GET').then(function (body) {
-            return body.chart ? body.chart.layout : null;
+        return getChart({ code: String(code || '').trim().toUpperCase() }).then(function (chart) {
+            return chart ? chart.layout : null;
         }).catch(function () { return null; });
     }
 
     function saveScript(script) {
         if (!state.loggedIn) return Promise.resolve({ saved: false, reason: 'login_required' });
-        return jsonRequest('save_script', script || {});
+        script = Object.assign({}, script || {});
+        if (!script.asset_key && !script.id) script.asset_key = makeAssetKey();
+        if (!script.client_updated_at) script.client_updated_at = new Date().toISOString();
+        return jsonRequest('save_script', script);
+    }
+
+    function getScript(criteria) {
+        if (!state.loggedIn) return Promise.resolve(null);
+        return jsonRequest('get_script', criteria || {}, 'GET').then(function (body) {
+            return body.script || null;
+        });
+    }
+
+    function accountAction(action, payload, method) {
+        if (!state.loggedIn) return Promise.reject(new Error('Sign in is required.'));
+        return jsonRequest(action, payload || {}, method || 'POST');
     }
 
     function saveIdea(idea, submit) {
@@ -173,10 +220,14 @@
     window.MIQAccount = {
         state: state,
         request: jsonRequest,
+        action: accountAction,
+        makeAssetKey: makeAssetKey,
         saveSearch: saveSearch,
         saveChartLayout: saveChartLayout,
+        getChart: getChart,
         preloadChartLayout: preloadChartLayout,
         saveScript: saveScript,
+        getScript: getScript,
         saveIdea: saveIdea,
         localSearches: localSearches
     };

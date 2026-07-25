@@ -49,6 +49,106 @@ function miq_api_clean_text($value, $max)
     return substr($value, 0, $max);
 }
 
+function miq_api_asset_key($value = '')
+{
+    $value = strtolower(trim((string) $value));
+    if (preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/', $value)) {
+        return $value;
+    }
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+    $hex = bin2hex($bytes);
+    return substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-' . substr($hex, 16, 4) . '-' . substr($hex, 20);
+}
+
+function miq_api_existing_asset_key($value)
+{
+    $value = strtolower(trim((string) $value));
+    return preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/', $value) ? $value : '';
+}
+
+function miq_api_client_datetime($value)
+{
+    $timestamp = strtotime((string) $value);
+    return $timestamp ? gmdate('Y-m-d H:i:s', $timestamp) : null;
+}
+
+function miq_api_page()
+{
+    return max(1, (int) ($_GET['page'] ?? 1));
+}
+
+function miq_api_limit($default = 50, $maximum = 100)
+{
+    $limit = (int) ($_GET['limit'] ?? $default);
+    return max(1, min($maximum, $limit));
+}
+
+function miq_api_layout_json($layout)
+{
+    if (is_string($layout)) {
+        $decoded = json_decode($layout, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+        $layout_json = json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    } elseif (is_array($layout) || is_object($layout)) {
+        $layout_json = json_encode($layout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    } else {
+        return null;
+    }
+    if (!$layout_json || strlen($layout_json) > miq_account_config()['max_chart_bytes']) {
+        return null;
+    }
+    return $layout_json;
+}
+
+function miq_api_chart_payload($chart, $include_layout = false)
+{
+    if (!$chart) return null;
+    $chart['id'] = (int) $chart['id'];
+    $chart['revision'] = (int) $chart['revision'];
+    if ($include_layout && array_key_exists('layout_json', $chart)) {
+        $chart['layout'] = json_decode($chart['layout_json'], true);
+    }
+    unset($chart['layout_json']);
+    return $chart;
+}
+
+function miq_api_script_payload($script, $include_source = false)
+{
+    if (!$script) return null;
+    $script['id'] = (int) $script['id'];
+    $script['revision'] = (int) $script['revision'];
+    if (!$include_source) unset($script['source_code']);
+    return $script;
+}
+
+function miq_api_count_rows($table, $user_id, $extra_sql = '', $types = '', $params = array())
+{
+    $query_types = 'i' . $types;
+    $query_params = array_merge(array($user_id), $params);
+    $row = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$table} WHERE user_id = ? {$extra_sql}", $query_types, $query_params));
+    return (int) ($row['total'] ?? 0);
+}
+
+function miq_api_trim_versions($table, $asset_column, $asset_id)
+{
+    $limit = max(1, (int) miq_account_config()['max_asset_versions']);
+    $rows = miq_account_fetch_all(miq_account_query(
+        "SELECT id FROM {$table} WHERE {$asset_column} = ? ORDER BY revision DESC, id DESC LIMIT 1000",
+        'i',
+        array($asset_id)
+    ));
+    if (count($rows) <= $limit) return;
+    $delete_ids = array_slice(array_map(function ($row) { return (int) $row['id']; }, $rows), $limit);
+    foreach (array_chunk($delete_ids, 50) as $chunk) {
+        $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+        miq_account_query("DELETE FROM {$table} WHERE id IN ({$placeholders})", str_repeat('i', count($chunk)), $chunk)->close();
+    }
+}
+
 function miq_api_counts($context_type, $context_key)
 {
     $votes = miq_account_table('community_votes');
@@ -81,10 +181,17 @@ function miq_api_workspace($user)
     }
     return array(
         'searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC LIMIT 20", 'i', array($user_id))),
-        'charts' => miq_account_fetch_all(miq_account_query("SELECT id, name, code, visibility, revision, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id))),
-        'scripts' => miq_account_fetch_all(miq_account_query("SELECT id, name, code, visibility, revision, status, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id))),
+        'charts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
+        'scripts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
         'ideas' => miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, status, visibility, updated_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id))),
         'watchlists' => $lists,
+        'counts' => array(
+            'charts' => miq_api_count_rows($charts, $user_id),
+            'scripts' => miq_api_count_rows($scripts, $user_id),
+            'searches' => miq_api_count_rows($searches, $user_id),
+            'ideas' => miq_api_count_rows($ideas, $user_id),
+            'watchlists' => count($lists),
+        ),
     );
 }
 
@@ -164,78 +271,438 @@ try {
         miq_api_json(array('saved' => true));
     }
 
-    if ($action === 'get_chart') {
-        $code = miq_api_clean_code($_GET['code'] ?? '');
+    if ($action === 'list_charts') {
         $charts = miq_account_table('saved_charts');
-        $chart = miq_account_fetch_one(miq_account_query(
-            "SELECT id, name, code, layout_json, visibility, revision, updated_at FROM {$charts} WHERE user_id = ? AND code = ? ORDER BY CASE WHEN name LIKE 'Auto:%' THEN 0 ELSE 1 END, updated_at DESC LIMIT 1",
-            'is',
-            array($user_id, $code)
-        ));
-        if ($chart) {
-            $chart['layout'] = json_decode($chart['layout_json'], true);
-            unset($chart['layout_json']);
+        $page = miq_api_page();
+        $limit = miq_api_limit();
+        $offset = ($page - 1) * $limit;
+        $kind = in_array(($_GET['kind'] ?? ''), array('workspace', 'named'), true) ? $_GET['kind'] : '';
+        $search = miq_api_clean_text($_GET['search'] ?? '', 120);
+        $where = "user_id = ?";
+        $types = 'i';
+        $params = array($user_id);
+        if ($kind !== '') {
+            $where .= " AND kind = ?";
+            $types .= 's';
+            $params[] = $kind;
         }
-        miq_api_json(array('chart' => $chart ?: null));
+        if ($search !== '') {
+            $where .= " AND (name LIKE ? OR code LIKE ?)";
+            $types .= 'ss';
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . strtoupper($search) . '%';
+        }
+        $total_row = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$charts} WHERE {$where}", $types, $params));
+        $rows = miq_account_fetch_all(miq_account_query(
+            "SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, created_at, updated_at FROM {$charts} WHERE {$where} ORDER BY updated_at DESC LIMIT {$limit} OFFSET {$offset}",
+            $types,
+            $params
+        ));
+        miq_api_json(array('charts' => array_map(function ($row) { return miq_api_chart_payload($row); }, $rows), 'page' => $page, 'limit' => $limit, 'total' => (int) ($total_row['total'] ?? 0)));
+    }
+
+    if ($action === 'get_chart') {
+        $charts = miq_account_table('saved_charts');
+        $chart_id = (int) ($_GET['id'] ?? 0);
+        $asset_key = miq_api_existing_asset_key($_GET['asset_key'] ?? '');
+        $code = miq_api_clean_code($_GET['code'] ?? '');
+        if ($chart_id > 0) {
+            $chart = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        } elseif ($asset_key !== '') {
+            $chart = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE asset_key = ? AND user_id = ? LIMIT 1", 'si', array($asset_key, $user_id)));
+        } elseif ($code !== '') {
+            $chart = miq_account_fetch_one(miq_account_query(
+                "SELECT * FROM {$charts} WHERE user_id = ? AND code = ? ORDER BY CASE WHEN kind = 'workspace' OR name LIKE 'Auto:%' THEN 0 ELSE 1 END, updated_at DESC LIMIT 1",
+                'is',
+                array($user_id, $code)
+            ));
+        } else {
+            $chart = null;
+        }
+        miq_api_json(array('chart' => miq_api_chart_payload($chart, true)));
     }
 
     if ($action === 'save_chart') {
-        $code = miq_api_clean_code($body['code'] ?? '');
-        $name = miq_api_clean_text($body['name'] ?? ('Auto: ' . $code), 120);
-        $layout = isset($body['layout']) ? $body['layout'] : null;
-        $layout_json = is_string($layout) ? $layout : json_encode($layout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        if ($code === '' || !$layout_json || strlen($layout_json) > miq_account_config()['max_chart_bytes']) {
-            miq_api_json(array('error' => 'This chart layout is invalid or too large.'), 422);
-        }
         $charts = miq_account_table('saved_charts');
         $versions = miq_account_table('chart_versions');
-        $existing = miq_account_fetch_one(miq_account_query(
-            "SELECT id, revision FROM {$charts} WHERE user_id = ? AND code = ? AND name = ? LIMIT 1",
-            'iss',
-            array($user_id, $code, $name)
-        ));
-        if ($existing) {
-            $revision = (int) $existing['revision'] + 1;
-            miq_account_query("UPDATE {$charts} SET layout_json = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($layout_json, $revision, (int) $existing['id'], $user_id))->close();
-            if (empty($body['autosave'])) {
-                miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array((int) $existing['id'], $user_id, $revision, $layout_json))->close();
-            }
-            miq_api_json(array('saved' => true, 'id' => (int) $existing['id'], 'revision' => $revision));
+        $code = miq_api_clean_code($body['code'] ?? '');
+        $kind = in_array(($body['kind'] ?? ''), array('workspace', 'named'), true)
+            ? $body['kind']
+            : (!empty($body['autosave']) ? 'workspace' : 'named');
+        $name = miq_api_clean_text($body['name'] ?? ($kind === 'workspace' ? ('Auto: ' . $code) : $code . ' chart'), 120);
+        $layout_json = miq_api_layout_json($body['layout'] ?? null);
+        if ($code === '' || $name === '' || !$layout_json) {
+            miq_api_json(array('error' => 'This chart layout is invalid or too large.'), 422);
         }
-        $statement = miq_account_query("INSERT INTO {$charts} (user_id, name, code, layout_json, visibility, revision, created_at, updated_at) VALUES (?, ?, ?, ?, 'private', 1, UTC_TIMESTAMP(), UTC_TIMESTAMP())", 'isss', array($user_id, $name, $code, $layout_json));
-        $id = (int) miq_account_db()->insert_id;
+        $chart_id = (int) ($body['id'] ?? 0);
+        $asset_key = miq_api_existing_asset_key($body['asset_key'] ?? '');
+        $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+        $client_updated_at = miq_api_client_datetime($body['client_updated_at'] ?? '');
+        $visibility = in_array(($body['visibility'] ?? ''), array('private', 'unlisted', 'public'), true) ? $body['visibility'] : 'private';
+        $existing = null;
+        if ($chart_id > 0) {
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        } elseif ($asset_key !== '') {
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE asset_key = ? AND user_id = ? LIMIT 1", 'si', array($asset_key, $user_id)));
+        } elseif ($kind === 'workspace') {
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE user_id = ? AND code = ? AND (kind = 'workspace' OR name LIKE 'Auto:%') ORDER BY updated_at DESC LIMIT 1", 'is', array($user_id, $code)));
+        } else {
+            // Backward compatibility for named clients that predate stable asset keys.
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE user_id = ? AND code = ? AND name = ? LIMIT 1", 'iss', array($user_id, $code, $name)));
+        }
+        if ($existing) {
+            $chart_id = (int) $existing['id'];
+            if ($expected_revision > 0 && $expected_revision !== (int) $existing['revision']) {
+                miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($existing)), 409);
+            }
+            $revision = (int) $existing['revision'] + 1;
+            if ($expected_revision > 0) {
+                $statement = miq_account_query(
+                    "UPDATE {$charts} SET name = ?, code = ?, kind = ?, layout_json = ?, visibility = ?, revision = ?, last_client_updated_at = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?",
+                    'sssssisiii',
+                    array($name, $code, $kind, $layout_json, $visibility, $revision, $client_updated_at, $chart_id, $user_id, $expected_revision)
+                );
+                $affected = $statement->affected_rows;
+                $statement->close();
+                if ($affected !== 1) {
+                    $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+                    miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($current)), 409);
+                }
+            } else {
+                miq_account_query(
+                    "UPDATE {$charts} SET name = ?, code = ?, kind = ?, layout_json = ?, visibility = ?, revision = ?, last_client_updated_at = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                    'sssssisii',
+                    array($name, $code, $kind, $layout_json, $visibility, $revision, $client_updated_at, $chart_id, $user_id)
+                )->close();
+            }
+            if (!empty($body['create_version']) || empty($body['autosave'])) {
+                miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($chart_id, $user_id, $revision, $layout_json))->close();
+                miq_api_trim_versions($versions, 'chart_id', $chart_id);
+            }
+        } else {
+            if (miq_api_count_rows($charts, $user_id) >= miq_account_config()['max_chart_count']) {
+                miq_api_json(array('error' => 'Your chart storage limit has been reached.'), 422);
+            }
+            if ($kind === 'named' && miq_api_count_rows($charts, $user_id, "AND kind = 'named'") >= miq_account_config()['max_named_chart_count']) {
+                miq_api_json(array('error' => 'Your named chart limit has been reached.'), 422);
+            }
+            $asset_key = $asset_key !== '' ? $asset_key : miq_api_asset_key();
+            $statement = miq_account_query(
+                "INSERT INTO {$charts} (user_id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                'isssssss',
+                array($user_id, $asset_key, $name, $code, $kind, $layout_json, $visibility, $client_updated_at)
+            );
+            $chart_id = (int) miq_account_db()->insert_id;
+            $statement->close();
+            $revision = 1;
+            if ($kind === 'named' || !empty($body['create_version'])) {
+                miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($chart_id, $user_id, $layout_json))->close();
+            }
+        }
+        $saved_chart = miq_account_fetch_one(miq_account_query("SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, created_at, updated_at FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        miq_api_json(array('saved' => true, 'chart' => miq_api_chart_payload($saved_chart), 'id' => $chart_id, 'revision' => $revision));
+    }
+
+    if ($action === 'rename_chart') {
+        $charts = miq_account_table('saved_charts');
+        $chart_id = (int) ($body['id'] ?? 0);
+        $name = miq_api_clean_text($body['name'] ?? '', 120);
+        $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+        $chart = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        if (!$chart) miq_api_json(array('error' => 'Chart not found.'), 404);
+        if ($name === '') miq_api_json(array('error' => 'A chart name is required.'), 422);
+        if ($expected_revision > 0 && $expected_revision !== (int) $chart['revision']) miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($chart)), 409);
+        $revision = (int) $chart['revision'] + 1;
+        $statement = $expected_revision > 0
+            ? miq_account_query("UPDATE {$charts} SET name = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($name, $revision, $chart_id, $user_id, $expected_revision))
+            : miq_account_query("UPDATE {$charts} SET name = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($name, $revision, $chart_id, $user_id));
+        $renamed = $statement->affected_rows === 1;
         $statement->close();
-        miq_api_json(array('saved' => true, 'id' => $id, 'revision' => 1));
+        if (!$renamed) {
+            $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+            miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($current)), 409);
+        }
+        miq_api_json(array('saved' => true, 'id' => $chart_id, 'name' => $name, 'revision' => $revision));
+    }
+
+    if ($action === 'duplicate_chart') {
+        $charts = miq_account_table('saved_charts');
+        $versions = miq_account_table('chart_versions');
+        $chart_id = (int) ($body['id'] ?? 0);
+        $chart = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        if (!$chart) miq_api_json(array('error' => 'Chart not found.'), 404);
+        if (miq_api_count_rows($charts, $user_id) >= miq_account_config()['max_chart_count'] || miq_api_count_rows($charts, $user_id, "AND kind = 'named'") >= miq_account_config()['max_named_chart_count']) {
+            miq_api_json(array('error' => 'Your named chart limit has been reached.'), 422);
+        }
+        $name = miq_api_clean_text($body['name'] ?? ('Copy of ' . $chart['name']), 120);
+        $asset_key = miq_api_asset_key();
+        $statement = miq_account_query(
+            "INSERT INTO {$charts} (user_id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, 'named', ?, 'private', 1, NULL, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+            'issss',
+            array($user_id, $asset_key, $name, $chart['code'], $chart['layout_json'])
+        );
+        $new_id = (int) miq_account_db()->insert_id;
+        $statement->close();
+        miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($new_id, $user_id, $chart['layout_json']))->close();
+        miq_api_json(array('saved' => true, 'id' => $new_id, 'asset_key' => $asset_key, 'revision' => 1));
+    }
+
+    if ($action === 'delete_chart') {
+        $chart_id = (int) ($body['id'] ?? 0);
+        $charts = miq_account_table('saved_charts');
+        $statement = miq_account_query("DELETE FROM {$charts} WHERE id = ? AND user_id = ?", 'ii', array($chart_id, $user_id));
+        $deleted = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$deleted) miq_api_json(array('error' => 'Chart not found.'), 404);
+        miq_api_json(array('deleted' => true, 'id' => $chart_id));
+    }
+
+    if ($action === 'list_chart_versions') {
+        $chart_id = (int) ($_GET['id'] ?? 0);
+        $charts = miq_account_table('saved_charts');
+        $versions = miq_account_table('chart_versions');
+        $owned = miq_account_fetch_one(miq_account_query("SELECT id FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        if (!$owned) miq_api_json(array('error' => 'Chart not found.'), 404);
+        $rows = miq_account_fetch_all(miq_account_query("SELECT id, revision, created_at FROM {$versions} WHERE chart_id = ? AND user_id = ? ORDER BY revision DESC LIMIT 100", 'ii', array($chart_id, $user_id)));
+        miq_api_json(array('versions' => $rows));
+    }
+
+    if ($action === 'restore_chart_version') {
+        $chart_id = (int) ($body['id'] ?? 0);
+        $version_id = (int) ($body['version_id'] ?? 0);
+        $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+        $charts = miq_account_table('saved_charts');
+        $versions = miq_account_table('chart_versions');
+        $chart = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+        $version = miq_account_fetch_one(miq_account_query("SELECT * FROM {$versions} WHERE id = ? AND chart_id = ? AND user_id = ? LIMIT 1", 'iii', array($version_id, $chart_id, $user_id)));
+        if (!$chart || !$version) miq_api_json(array('error' => 'Chart version not found.'), 404);
+        if ($expected_revision > 0 && $expected_revision !== (int) $chart['revision']) miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($chart)), 409);
+        $revision = (int) $chart['revision'] + 1;
+        $statement = $expected_revision > 0
+            ? miq_account_query("UPDATE {$charts} SET layout_json = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($version['layout_json'], $revision, $chart_id, $user_id, $expected_revision))
+            : miq_account_query("UPDATE {$charts} SET layout_json = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($version['layout_json'], $revision, $chart_id, $user_id));
+        $restored = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$restored) {
+            $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+            miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($current)), 409);
+        }
+        miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($chart_id, $user_id, $revision, $version['layout_json']))->close();
+        miq_api_trim_versions($versions, 'chart_id', $chart_id);
+        miq_api_json(array('saved' => true, 'id' => $chart_id, 'revision' => $revision, 'layout' => json_decode($version['layout_json'], true)));
+    }
+
+    if ($action === 'list_scripts') {
+        $scripts = miq_account_table('pine_scripts');
+        $page = miq_api_page();
+        $limit = miq_api_limit();
+        $offset = ($page - 1) * $limit;
+        $status = in_array(($_GET['status'] ?? ''), array('draft', 'published', 'archived'), true) ? $_GET['status'] : '';
+        $search = miq_api_clean_text($_GET['search'] ?? '', 120);
+        $where = "user_id = ?";
+        $types = 'i';
+        $params = array($user_id);
+        if ($status !== '') {
+            $where .= " AND status = ?";
+            $types .= 's';
+            $params[] = $status;
+        }
+        if ($search !== '') {
+            $where .= " AND (name LIKE ? OR code LIKE ?)";
+            $types .= 'ss';
+            $params[] = '%' . $search . '%';
+            $params[] = '%' . strtoupper($search) . '%';
+        }
+        $total_row = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$scripts} WHERE {$where}", $types, $params));
+        $rows = miq_account_fetch_all(miq_account_query(
+            "SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, created_at, updated_at FROM {$scripts} WHERE {$where} ORDER BY updated_at DESC LIMIT {$limit} OFFSET {$offset}",
+            $types,
+            $params
+        ));
+        miq_api_json(array('scripts' => array_map(function ($row) { return miq_api_script_payload($row); }, $rows), 'page' => $page, 'limit' => $limit, 'total' => (int) ($total_row['total'] ?? 0)));
+    }
+
+    if ($action === 'get_script') {
+        $scripts = miq_account_table('pine_scripts');
+        $script_id = (int) ($_GET['id'] ?? 0);
+        $asset_key = miq_api_existing_asset_key($_GET['asset_key'] ?? '');
+        if ($script_id > 0) {
+            $script = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        } elseif ($asset_key !== '') {
+            $script = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE asset_key = ? AND user_id = ? LIMIT 1", 'si', array($asset_key, $user_id)));
+        } else {
+            $script = null;
+        }
+        miq_api_json(array('script' => miq_api_script_payload($script, true)));
     }
 
     if ($action === 'save_script') {
-        $name = miq_api_clean_text($body['name'] ?? 'Untitled script', 120);
-        $source = (string) ($body['source_code'] ?? '');
-        if ($source === '' || strlen($source) > miq_account_config()['max_script_chars']) {
-            miq_api_json(array('error' => 'This Pine script is empty or too large.'), 422);
-        }
         $scripts = miq_account_table('pine_scripts');
         $versions = miq_account_table('pine_script_versions');
+        $name = miq_api_clean_text($body['name'] ?? 'Untitled script', 120);
+        $source = (string) ($body['source_code'] ?? '');
+        $code = miq_api_clean_code($body['code'] ?? '');
+        $status = in_array(($body['status'] ?? ''), array('draft', 'published', 'archived'), true) ? $body['status'] : (!empty($body['publish']) ? 'published' : 'draft');
+        $visibility = in_array(($body['visibility'] ?? ''), array('private', 'unlisted', 'public'), true) ? $body['visibility'] : ($status === 'published' ? 'public' : 'private');
+        if ($name === '' || trim($source) === '' || strlen($source) > miq_account_config()['max_script_chars']) {
+            miq_api_json(array('error' => 'This Pine script is empty or too large.'), 422);
+        }
         $script_id = (int) ($body['id'] ?? 0);
+        $asset_key = miq_api_existing_asset_key($body['asset_key'] ?? '');
+        $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+        $client_updated_at = miq_api_client_datetime($body['client_updated_at'] ?? '');
+        $existing = null;
         if ($script_id > 0) {
-            $existing = miq_account_fetch_one(miq_account_query("SELECT id, revision FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
-        } else {
-            $existing = miq_account_fetch_one(miq_account_query("SELECT id, revision FROM {$scripts} WHERE user_id = ? AND name = ? AND code = ? LIMIT 1", 'iss', array($user_id, $name, miq_api_clean_code($body['code'] ?? ''))));
-            if ($existing) $script_id = (int) $existing['id'];
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        } elseif ($asset_key !== '') {
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE asset_key = ? AND user_id = ? LIMIT 1", 'si', array($asset_key, $user_id)));
+        } elseif ($asset_key === '' || !empty($body['legacy_match'])) {
+            // Preserve the pre-asset-key API contract for cached/older clients.
+            $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE user_id = ? AND name = ? AND code = ? LIMIT 1", 'iss', array($user_id, $name, $code)));
         }
         if ($existing) {
+            $script_id = (int) $existing['id'];
+            if ($expected_revision > 0 && $expected_revision !== (int) $existing['revision']) {
+                miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($existing)), 409);
+            }
             $revision = (int) $existing['revision'] + 1;
-            miq_account_query("UPDATE {$scripts} SET name = ?, code = ?, source_code = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'sssiii', array($name, miq_api_clean_code($body['code'] ?? ''), $source, $revision, $script_id, $user_id))->close();
+            if ($expected_revision > 0) {
+                $statement = miq_account_query(
+                    "UPDATE {$scripts} SET name = ?, code = ?, source_code = ?, visibility = ?, status = ?, revision = ?, last_client_updated_at = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?",
+                    'sssssisiii',
+                    array($name, $code, $source, $visibility, $status, $revision, $client_updated_at, $script_id, $user_id, $expected_revision)
+                );
+                $affected = $statement->affected_rows;
+                $statement->close();
+                if ($affected !== 1) {
+                    $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+                    miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($current)), 409);
+                }
+            } else {
+                miq_account_query(
+                    "UPDATE {$scripts} SET name = ?, code = ?, source_code = ?, visibility = ?, status = ?, revision = ?, last_client_updated_at = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                    'sssssisii',
+                    array($name, $code, $source, $visibility, $status, $revision, $client_updated_at, $script_id, $user_id)
+                )->close();
+            }
             if (!empty($body['create_version']) || !empty($body['publish'])) {
                 miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($script_id, $user_id, $revision, $source))->close();
+                miq_api_trim_versions($versions, 'script_id', $script_id);
             }
         } else {
-            $statement = miq_account_query("INSERT INTO {$scripts} (user_id, name, code, source_code, visibility, revision, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'private', 1, 'draft', UTC_TIMESTAMP(), UTC_TIMESTAMP())", 'isss', array($user_id, $name, miq_api_clean_code($body['code'] ?? ''), $source));
+            if (miq_api_count_rows($scripts, $user_id) >= miq_account_config()['max_script_count']) {
+                miq_api_json(array('error' => 'Your Pine script storage limit has been reached.'), 422);
+            }
+            $asset_key = $asset_key !== '' ? $asset_key : miq_api_asset_key();
+            $statement = miq_account_query(
+                "INSERT INTO {$scripts} (user_id, asset_key, name, code, source_code, visibility, revision, status, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                'isssssss',
+                array($user_id, $asset_key, $name, $code, $source, $visibility, $status, $client_updated_at)
+            );
             $script_id = (int) miq_account_db()->insert_id;
             $statement->close();
             $revision = 1;
+            if (!empty($body['create_version']) || !empty($body['publish'])) {
+                miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($script_id, $user_id, $source))->close();
+            }
         }
-        miq_api_json(array('saved' => true, 'id' => $script_id, 'revision' => $revision));
+        $saved_script = miq_account_fetch_one(miq_account_query("SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, created_at, updated_at FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        miq_api_json(array('saved' => true, 'script' => miq_api_script_payload($saved_script), 'id' => $script_id, 'revision' => $revision));
+    }
+
+    if ($action === 'rename_script') {
+        $scripts = miq_account_table('pine_scripts');
+        $script_id = (int) ($body['id'] ?? 0);
+        $name = miq_api_clean_text($body['name'] ?? '', 120);
+        $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+        $script = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        if (!$script) miq_api_json(array('error' => 'Pine script not found.'), 404);
+        if ($name === '') miq_api_json(array('error' => 'A script name is required.'), 422);
+        if ($expected_revision > 0 && $expected_revision !== (int) $script['revision']) miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($script)), 409);
+        $revision = (int) $script['revision'] + 1;
+        $statement = $expected_revision > 0
+            ? miq_account_query("UPDATE {$scripts} SET name = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($name, $revision, $script_id, $user_id, $expected_revision))
+            : miq_account_query("UPDATE {$scripts} SET name = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($name, $revision, $script_id, $user_id));
+        $renamed = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$renamed) {
+            $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+            miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($current)), 409);
+        }
+        miq_api_json(array('saved' => true, 'id' => $script_id, 'name' => $name, 'revision' => $revision));
+    }
+
+    if ($action === 'duplicate_script') {
+        $scripts = miq_account_table('pine_scripts');
+        $versions = miq_account_table('pine_script_versions');
+        $script_id = (int) ($body['id'] ?? 0);
+        $script = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        if (!$script) miq_api_json(array('error' => 'Pine script not found.'), 404);
+        if (miq_api_count_rows($scripts, $user_id) >= miq_account_config()['max_script_count']) miq_api_json(array('error' => 'Your Pine script storage limit has been reached.'), 422);
+        $name = miq_api_clean_text($body['name'] ?? ('Copy of ' . $script['name']), 120);
+        $asset_key = miq_api_asset_key();
+        $statement = miq_account_query(
+            "INSERT INTO {$scripts} (user_id, asset_key, name, code, source_code, visibility, revision, status, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'private', 1, 'draft', NULL, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+            'issss',
+            array($user_id, $asset_key, $name, $script['code'], $script['source_code'])
+        );
+        $new_id = (int) miq_account_db()->insert_id;
+        $statement->close();
+        miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($new_id, $user_id, $script['source_code']))->close();
+        miq_api_json(array('saved' => true, 'id' => $new_id, 'asset_key' => $asset_key, 'revision' => 1));
+    }
+
+    if ($action === 'archive_script' || $action === 'unarchive_script' || $action === 'delete_script') {
+        $script_id = (int) ($body['id'] ?? 0);
+        $scripts = miq_account_table('pine_scripts');
+        if ($action === 'archive_script' || $action === 'unarchive_script') {
+            $status = $action === 'archive_script' ? 'archived' : 'draft';
+            $statement = miq_account_query("UPDATE {$scripts} SET status = ?, visibility = 'private', updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'sii', array($status, $script_id, $user_id));
+            $changed = $statement->affected_rows === 1;
+            $statement->close();
+            if (!$changed) miq_api_json(array('error' => 'Pine script not found.'), 404);
+            miq_api_json(array('archived' => $status === 'archived', 'id' => $script_id, 'status' => $status));
+        }
+        $statement = miq_account_query("DELETE FROM {$scripts} WHERE id = ? AND user_id = ?", 'ii', array($script_id, $user_id));
+        $deleted = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$deleted) miq_api_json(array('error' => 'Pine script not found.'), 404);
+        miq_api_json(array('deleted' => true, 'id' => $script_id));
+    }
+
+    if ($action === 'list_script_versions') {
+        $script_id = (int) ($_GET['id'] ?? 0);
+        $scripts = miq_account_table('pine_scripts');
+        $versions = miq_account_table('pine_script_versions');
+        $owned = miq_account_fetch_one(miq_account_query("SELECT id FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        if (!$owned) miq_api_json(array('error' => 'Pine script not found.'), 404);
+        $rows = miq_account_fetch_all(miq_account_query("SELECT id, revision, created_at FROM {$versions} WHERE script_id = ? AND user_id = ? ORDER BY revision DESC LIMIT 100", 'ii', array($script_id, $user_id)));
+        miq_api_json(array('versions' => $rows));
+    }
+
+    if ($action === 'restore_script_version') {
+        $script_id = (int) ($body['id'] ?? 0);
+        $version_id = (int) ($body['version_id'] ?? 0);
+        $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+        $scripts = miq_account_table('pine_scripts');
+        $versions = miq_account_table('pine_script_versions');
+        $script = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+        $version = miq_account_fetch_one(miq_account_query("SELECT * FROM {$versions} WHERE id = ? AND script_id = ? AND user_id = ? LIMIT 1", 'iii', array($version_id, $script_id, $user_id)));
+        if (!$script || !$version) miq_api_json(array('error' => 'Pine script version not found.'), 404);
+        if ($expected_revision > 0 && $expected_revision !== (int) $script['revision']) miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($script)), 409);
+        $revision = (int) $script['revision'] + 1;
+        $statement = $expected_revision > 0
+            ? miq_account_query("UPDATE {$scripts} SET source_code = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($version['source_code'], $revision, $script_id, $user_id, $expected_revision))
+            : miq_account_query("UPDATE {$scripts} SET source_code = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($version['source_code'], $revision, $script_id, $user_id));
+        $restored = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$restored) {
+            $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+            miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($current)), 409);
+        }
+        miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($script_id, $user_id, $revision, $version['source_code']))->close();
+        miq_api_trim_versions($versions, 'script_id', $script_id);
+        miq_api_json(array('saved' => true, 'id' => $script_id, 'revision' => $revision, 'source_code' => $version['source_code']));
     }
 
     if ($action === 'save_idea') {

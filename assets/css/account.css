@@ -34,7 +34,12 @@
     .miq-account-avatar {
         width: 1.5rem;
         height: 1.5rem;
+        margin-right: 0;
         font-size: .8rem;
+    }
+
+    .miq-account-name {
+        display: none;
     }
 }
 

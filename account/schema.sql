@@ -99,8 +99,10 @@ CREATE TABLE IF NOT EXISTS miq_recent_searches (
 CREATE TABLE IF NOT EXISTS miq_saved_charts (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
+    asset_key CHAR(36) NOT NULL,
     name VARCHAR(120) NOT NULL,
     code VARCHAR(40) NOT NULL,
+    kind ENUM('workspace', 'named') NOT NULL DEFAULT 'named',
     layout_json MEDIUMTEXT NOT NULL,
     visibility ENUM('private', 'unlisted', 'public') NOT NULL DEFAULT 'private',
     revision INT UNSIGNED NOT NULL DEFAULT 1,
@@ -108,7 +110,9 @@ CREATE TABLE IF NOT EXISTS miq_saved_charts (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
+    UNIQUE KEY uq_miq_chart_asset (user_id, asset_key),
     KEY ix_miq_chart_user_time (user_id, updated_at),
+    KEY ix_miq_chart_workspace (user_id, kind, code),
     KEY ix_miq_chart_public (visibility, updated_at),
     CONSTRAINT fk_miq_chart_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -130,15 +134,18 @@ CREATE TABLE IF NOT EXISTS miq_chart_versions (
 CREATE TABLE IF NOT EXISTS miq_pine_scripts (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
+    asset_key CHAR(36) NOT NULL,
     name VARCHAR(120) NOT NULL,
     code VARCHAR(40) NULL,
     source_code MEDIUMTEXT NOT NULL,
     visibility ENUM('private', 'unlisted', 'public') NOT NULL DEFAULT 'private',
     revision INT UNSIGNED NOT NULL DEFAULT 1,
     status ENUM('draft', 'published', 'archived') NOT NULL DEFAULT 'draft',
+    last_client_updated_at DATETIME NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
+    UNIQUE KEY uq_miq_script_asset (user_id, asset_key),
     KEY ix_miq_script_user_time (user_id, updated_at),
     KEY ix_miq_script_public (visibility, status, updated_at),
     CONSTRAINT fk_miq_script_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE

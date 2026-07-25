@@ -16,8 +16,8 @@ $payload = array(
     'exported_at' => gmdate('c'),
     'profile' => array('email' => $user['email'], 'display_name' => $user['display_name'], 'created_role' => $user['role']),
     'recent_searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC", 'i', array($user_id))),
-    'saved_charts' => miq_account_fetch_all(miq_account_query("SELECT name, code, layout_json, visibility, revision, created_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
-    'pine_scripts' => miq_account_fetch_all(miq_account_query("SELECT name, code, source_code, visibility, revision, status, created_at, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
+    'saved_charts' => miq_account_fetch_all(miq_account_query("SELECT asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
+    'pine_scripts' => miq_account_fetch_all(miq_account_query("SELECT asset_key, name, code, source_code, visibility, revision, status, last_client_updated_at, created_at, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
     'watchlists' => miq_account_fetch_all(miq_account_query("SELECT id, name, created_at, updated_at FROM {$watchlists} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
     'community_ideas' => miq_account_fetch_all(miq_account_query("SELECT code, title, direction, timeframe, thesis, catalyst, risk, disclosure, status, visibility, created_at, updated_at, published_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
 );

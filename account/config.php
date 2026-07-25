@@ -58,6 +58,10 @@ function miq_account_config()
         ),
         'max_chart_bytes' => (int) miq_account_env('MIQ_MAX_CHART_BYTES', 1000000),
         'max_script_chars' => (int) miq_account_env('MIQ_MAX_SCRIPT_CHARS', 100000),
+        'max_chart_count' => (int) miq_account_env('MIQ_MAX_CHART_COUNT', 250),
+        'max_named_chart_count' => (int) miq_account_env('MIQ_MAX_NAMED_CHART_COUNT', 100),
+        'max_script_count' => (int) miq_account_env('MIQ_MAX_SCRIPT_COUNT', 200),
+        'max_asset_versions' => (int) miq_account_env('MIQ_MAX_ASSET_VERSIONS', 20),
     );
 
     if ($config['table_prefix'] === '') {

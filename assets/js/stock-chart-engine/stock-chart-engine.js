@@ -2372,6 +2372,9 @@
     this.pineWindowInteraction = null;
     this.pineRunGlow = null;
     this.pineRunGlowFrame = null;
+    this.pineEditorAccountScript = null;
+    this.pendingPineEditorOptions = null;
+    this.availablePineAccountScript = null;
     this.pineEditorSettings = { fontSize: 13, wordWrap: false, suggestions: true };
     try {
       var savedPineEditorSettings = typeof localStorage !== 'undefined' && localStorage.getItem('sce-pine-editor-settings');
@@ -3823,6 +3826,7 @@
       visible: options.visible !== false,
       zIndex: options.zIndex || this.document.indicators.length + 1
     };
+    if (options.accountScript) indicator.accountScript = clone(options.accountScript);
     this.document.indicators.push(indicator);
     this.compute();
     this.draw();
@@ -4037,12 +4041,45 @@
     return null;
   };
 
+  Chart.prototype.openPineScriptEditor = function (options) {
+    options = options || {};
+    this.pendingPineEditorOptions = clone(options);
+    this.openPineScriptPopup(options.indicatorId || null, options.pointer);
+    return true;
+  };
+
+  Chart.prototype.setPineEditorAccountScript = function (script) {
+    this.pineEditorAccountScript = script ? clone(script) : null;
+    var indicatorId = this.settingsPopup && this.settingsPopup.dataset ? this.settingsPopup.dataset.indicatorId : null;
+    if (indicatorId && script) this.linkPineIndicatorToAccountScript(indicatorId, script);
+    return this.pineEditorAccountScript;
+  };
+
+  Chart.prototype.linkPineIndicatorToAccountScript = function (indicatorId, script) {
+    var indicator = this.document.indicators.filter(function (item) {
+      return item.id === indicatorId && item.type === 'PINE_SCRIPT';
+    })[0];
+    if (!indicator || !script) return false;
+    indicator.accountScript = {
+      id: Number(script.id) || null,
+      asset_key: script.asset_key || '',
+      revision: Number(script.revision) || 0,
+      name: script.name || indicator.inputs && indicator.inputs.title || 'Pine Script'
+    };
+    this.pineEditorAccountScript = clone(indicator.accountScript);
+    this.emitChange('pine:account-link', { indicatorId: indicatorId, accountScript: clone(indicator.accountScript) });
+    return true;
+  };
+
   Chart.prototype.openPineScriptPopup = function (indicatorId, pointer) {
+    var editorOptions = this.pendingPineEditorOptions || {};
+    this.pendingPineEditorOptions = null;
     var indicator = indicatorId ? this.document.indicators.filter(function (item) {
       return item.id === indicatorId && item.type === 'PINE_SCRIPT';
     })[0] : null;
-    var code = indicator && indicator.inputs && indicator.inputs.code || Indicators.PINE_SCRIPT.defaultInputs.code;
-    var title = indicator && indicator.inputs && indicator.inputs.title || 'Custom Pine';
+    var code = editorOptions.code || indicator && indicator.inputs && indicator.inputs.code || Indicators.PINE_SCRIPT.defaultInputs.code;
+    var title = editorOptions.title || indicator && indicator.inputs && indicator.inputs.title || 'Custom Pine';
+    this.pineEditorAccountScript = clone(editorOptions.accountScript || indicator && indicator.accountScript || null);
     var inputControls = '';
     var runtime = pineRuntime();
     if (runtime && typeof runtime.run === 'function') {
@@ -4141,7 +4178,10 @@
       '<div class="sce-settings-actions" data-sce-pine-actions>',
       '<button type="button" data-sce-popup-action="remove" data-sce-pine-remove title="Remove Pine indicator"', indicator ? '' : ' hidden', '>Remove</button>',
       '<button type="button" data-sce-popup-action="load-pine" title="Load Pine Script from your device (Ctrl/Cmd+O)">Load</button>',
-      '<button type="button" data-sce-popup-action="save-pine" title="Save Pine Script to your device (Ctrl/Cmd+S)">Save</button>',
+      '<button type="button" data-sce-popup-action="save-pine" title="Download Pine Script to your device (Ctrl/Cmd+S)">Download</button>',
+      typeof this.options.onPineAccountSave === 'function' ? '<button type="button" data-sce-popup-action="save-account-pine" title="Save this script to My Pine Scripts">Save to My Scripts</button>' : '',
+      typeof this.options.onPineAccountSave === 'function' ? '<button type="button" data-sce-popup-action="version-account-pine" title="Save this script and create a restorable version">Create version</button>' : '',
+      typeof this.options.onPineAccountLoad === 'function' ? '<button type="button" data-sce-popup-action="load-account-pine" data-sce-pine-account-update hidden title="Load the newest saved account revision into this editor">Load latest saved</button>' : '',
       '<button type="button" data-sce-popup-action="run-pine" title="Run Pine Script (Ctrl/Cmd+Enter)">Run</button>',
       '</div>',
       '<input type="file" data-sce-pine-file-input accept=".pine,.txt,text/plain" hidden>',
@@ -4163,6 +4203,7 @@
     this.savePineWindowSettings();
     var field = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
     if (field && field.focus) field.focus();
+    this.checkPineAccountUpdate();
   };
 
   Chart.prototype.setPineRemoveButtonVisible = function (visible) {
@@ -5509,6 +5550,81 @@
     this.savePineWindowSettings();
   };
 
+  Chart.prototype.checkPineAccountUpdate = function () {
+    var self = this;
+    var linked = this.pineEditorAccountScript;
+    this.availablePineAccountScript = null;
+    if (!linked || !linked.id || typeof this.options.onPineAccountLoad !== 'function') return Promise.resolve(null);
+    return Promise.resolve(this.options.onPineAccountLoad(clone(linked))).then(function (script) {
+      if (!script || !self.settingsPopup || self.settingsPopup.dataset.mode !== 'pine-script') return null;
+      var button = self.settingsPopup.querySelector('[data-sce-pine-account-update]');
+      var status = self.settingsPopup.querySelector('[data-sce-pine-status]');
+      if (Number(script.revision || 0) > Number(linked.revision || 0)) {
+        self.availablePineAccountScript = clone(script);
+        if (button) button.hidden = false;
+        if (status) {
+          status.hidden = false;
+          status.textContent = 'A newer My Scripts revision is available. Load it to review; it will not run automatically.';
+        }
+      } else if (button) {
+        button.hidden = true;
+      }
+      return script;
+    }).catch(function () { return null; });
+  };
+
+  Chart.prototype.loadPineAccountUpdate = function () {
+    var script = this.availablePineAccountScript;
+    if (!script || !this.settingsPopup) return false;
+    var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
+    var button = this.settingsPopup.querySelector('[data-sce-pine-account-update]');
+    if (!codeField) return false;
+    codeField.value = script.source_code || '';
+    if (titleField) titleField.value = script.name || titleField.value;
+    this.pineEditorAccountScript = clone(script);
+    this.availablePineAccountScript = null;
+    if (button) button.hidden = true;
+    this.refreshPineEditorView();
+    this.resetPineEditorHistory();
+    this.refreshPineScriptInputs();
+    if (status) {
+      status.hidden = false;
+      status.textContent = 'Latest saved revision loaded. Review it, then click Run.';
+    }
+    return true;
+  };
+
+  Chart.prototype.savePineScriptToAccount = function (createVersion) {
+    if (!this.settingsPopup || typeof this.options.onPineAccountSave !== 'function') return Promise.resolve(null);
+    var codeField = this.settingsPopup.querySelector('[data-sce-pine-field="code"]');
+    var titleField = this.settingsPopup.querySelector('[data-sce-pine-field="title"]');
+    var status = this.settingsPopup.querySelector('[data-sce-pine-status]');
+    var indicatorId = this.settingsPopup.dataset.indicatorId || null;
+    if (!codeField || !String(codeField.value || '').trim()) return Promise.resolve(null);
+    if (status) {
+      status.hidden = false;
+      status.textContent = createVersion ? 'Creating script version…' : 'Saving to My Pine Scripts…';
+    }
+    var self = this;
+    return Promise.resolve(this.options.onPineAccountSave({
+      indicatorId: indicatorId,
+      title: titleField && titleField.value || 'Untitled script',
+      code: codeField.value,
+      accountScript: clone(this.pineEditorAccountScript || null),
+      createVersion: !!createVersion
+    })).then(function (script) {
+      if (script) self.setPineEditorAccountScript(script);
+      if (status) status.textContent = createVersion ? 'Script version created.' : 'Saved to My Pine Scripts.';
+      return script;
+    }).catch(function (error) {
+      if (status) status.textContent = error && error.message ? error.message : 'Could not save this script.';
+      if (error && error.conflict) self.checkPineAccountUpdate();
+      return null;
+    });
+  };
+
   Chart.prototype.bindPineScriptPopup = function () {
     var self = this;
     this.settingsPopup.onclick = function (event) {
@@ -5602,6 +5718,9 @@
       if (action === 'close') self.closeIndicatorSettingsPopup();
       if (action === 'run-pine') self.applyPineScriptPopup();
       if (action === 'save-pine') self.savePineScriptToFile();
+      if (action === 'save-account-pine') self.savePineScriptToAccount(false);
+      if (action === 'version-account-pine') self.savePineScriptToAccount(true);
+      if (action === 'load-account-pine') self.loadPineAccountUpdate();
       if (action === 'load-pine') {
         self.openPineScriptFilePicker();
       }
@@ -5728,10 +5847,12 @@
           paneId: paneId,
           inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings }
         });
+        if (this.pineEditorAccountScript) this.linkPineIndicatorToAccountScript(indicatorId, this.pineEditorAccountScript);
       } else {
         indicatorId = this.addIndicator('PINE_SCRIPT', {
           placement: preview.metadata.overlay ? 'source' : 'new',
-          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings }
+          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings },
+          accountScript: this.pineEditorAccountScript
         });
       }
       if (indicatorId) this.settingsPopup.dataset.indicatorId = indicatorId;

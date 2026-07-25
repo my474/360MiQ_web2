@@ -816,6 +816,66 @@ select optgroup {
   margin-left: auto;
 }
 
+.stock-chart-account-tools {
+  align-items: center;
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stock-chart-account-tools .btn {
+  height: 36px;
+  min-width: 0;
+}
+
+.stock-chart-asset-name {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  margin-right: auto;
+}
+
+.stock-chart-asset-name[data-chart-kind="named"]::before {
+  content: "Saved chart · ";
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stock-chart-save-as-form {
+  align-items: center;
+  display: flex;
+  flex: 1 1 100%;
+  gap: 8px;
+}
+
+.stock-chart-save-as-form[hidden],
+.stock-chart-conflict[hidden] {
+  display: none;
+}
+
+.stock-chart-save-as-form .form-control {
+  flex: 1 1 240px;
+  height: 38px;
+}
+
+.stock-chart-conflict {
+  align-items: center;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 6px;
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+}
+
+.stock-chart-conflict strong {
+  color: #9a3412;
+  margin-right: auto;
+}
+
 .stock-chart-status.is-error {
   color: #dc2626;
 }
@@ -986,6 +1046,23 @@ select optgroup {
 
 [data-theme="dark"] .stock-chart-status.is-error {
   color: #fca5a5;
+}
+
+[data-theme="dark"] .stock-chart-asset-name {
+  color: #dbeafe;
+}
+
+[data-theme="dark"] .stock-chart-asset-name[data-chart-kind="named"]::before {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .stock-chart-conflict {
+  background: #431407;
+  border-color: #c2410c;
+}
+
+[data-theme="dark"] .stock-chart-conflict strong {
+  color: #fed7aa;
 }
 
 @media (max-width: 767.98px) {
@@ -1177,6 +1254,25 @@ select optgroup {
                                         </div>
                                         <button id="toolStockChartLoad" class="btn btn-primary" type="button"><i class="fas fa-search"></i> Load Chart</button>
                                         <button id="toolStockChartSaveShared" class="btn btn-outline-primary stock-chart-save-shared" type="button" hidden>Save Layout</button>
+                                        <?php if ($miq_account_user): ?>
+                                        <div class="stock-chart-account-tools" aria-label="Account chart actions">
+                                            <span id="toolStockChartAssetName" class="stock-chart-asset-name"></span>
+                                            <button id="toolStockChartSaveAs" class="btn btn-outline-primary btn-sm" type="button">Save as…</button>
+                                            <button id="toolStockChartCreateVersion" class="btn btn-outline-secondary btn-sm" type="button">Create version</button>
+                                        </div>
+                                        <form id="toolStockChartSaveAsForm" class="stock-chart-save-as-form" hidden>
+                                            <label class="sr-only" for="toolStockChartSaveAsName">Chart name</label>
+                                            <input id="toolStockChartSaveAsName" class="form-control" type="text" maxlength="120" placeholder="Chart name" required>
+                                            <button class="btn btn-primary btn-sm" type="submit">Save named chart</button>
+                                            <button id="toolStockChartSaveAsCancel" class="btn btn-outline-secondary btn-sm" type="button">Cancel</button>
+                                        </form>
+                                        <div id="toolStockChartConflict" class="stock-chart-conflict" hidden>
+                                            <strong>This chart changed on another device.</strong>
+                                            <button id="toolStockChartConflictKeepLocal" class="btn btn-outline-primary btn-sm" type="button">Keep local</button>
+                                            <button id="toolStockChartConflictUseServer" class="btn btn-outline-primary btn-sm" type="button">Use server</button>
+                                            <button id="toolStockChartConflictSaveBoth" class="btn btn-outline-primary btn-sm" type="button">Save both</button>
+                                        </div>
+                                        <?php endif; ?>
                                         <div id="toolStockChartStatus" class="stock-chart-status" aria-live="polite"></div>
                                         <div id="toolStockChartAccountSyncStatus" class="miq-chart-sync-status" aria-live="polite"></div>
                                     </div>
@@ -1232,8 +1328,8 @@ window.__TOOL_PAGE_CONFIG = {
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
 <script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
-<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260718.41"></script>
-<script src="assets/js/pages/tool-stock-chart.js?v=20260717.1"></script>
+<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260725.1"></script>
+<script src="assets/js/pages/tool-stock-chart.js?v=20260725.1"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var note = document.getElementById('advancedChartNote');
