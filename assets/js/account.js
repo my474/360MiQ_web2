@@ -342,7 +342,7 @@
             googleButtonMode = mode;
         }
 
-        var buttonTheme = googleButtonIsDark() ? 'filled_black' : 'outline';
+        var buttonTheme = googleButtonIsDark() ? 'filled_blue' : 'outline';
         Array.prototype.forEach.call(targets, function (target) {
             while (target.firstChild) target.removeChild(target.firstChild);
             window.google.accounts.id.renderButton(target, {

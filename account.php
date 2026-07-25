@@ -8,8 +8,8 @@ $display_name_suggestions = array();
 $register_display_name = '';
 $register_email = '';
 $account_feature_summary = miq_community_enabled()
-    ? 'charts, Pine scripts, searches, watchlists, and community ideas'
-    : 'charts, Pine scripts, searches, and watchlists';
+    ? 'charts, Pine scripts, searches, and community ideas'
+    : 'charts, Pine scripts, and searches';
 
 function miq_account_redirect($path)
 {

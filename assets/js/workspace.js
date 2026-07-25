@@ -7,6 +7,7 @@
     var communityEnabled = !document.body || document.body.getAttribute('data-community-enabled') !== 'false';
     var activeTab = new URLSearchParams(window.location.search).get('tab') || 'overview';
     if (!communityEnabled && activeTab === 'ideas') activeTab = 'overview';
+    if (activeTab === 'watchlists') activeTab = 'overview';
     var chartsState = { items: [], page: 0, total: 0, search: '', kind: '', loading: false };
     var scriptsState = { items: [], page: 0, total: 0, search: '', status: '', loading: false };
 
@@ -42,8 +43,7 @@
         var panels = [
             panel('Saved charts', '<p>' + Number(counts.charts == null ? workspace.charts.length : counts.charts) + ' chart(s)</p><a href="workspace?tab=charts">Manage saved charts</a>'),
             panel('Pine scripts', '<p>' + Number(counts.scripts == null ? workspace.scripts.length : counts.scripts) + ' script(s)</p><a href="workspace?tab=scripts">Manage Pine scripts</a>'),
-            panel('Recent searches', '<p>' + Number(counts.searches == null ? workspace.searches.length : counts.searches) + ' recent search(es)</p><a href="workspace?tab=searches">Open search history</a>'),
-            panel('Watchlists', '<p>' + Number(counts.watchlists == null ? workspace.watchlists.length : counts.watchlists) + ' watchlist(s)</p><a href="workspace?tab=watchlists">Open watchlists</a>')
+            panel('Recent searches', '<p>' + Number(counts.searches == null ? workspace.searches.length : counts.searches) + ' recent search(es)</p><a href="workspace?tab=searches">Open search history</a>')
         ];
         if (communityEnabled) {
             panels.push(panel('Community ideas', '<p>' + Number(counts.ideas == null ? workspace.ideas.length : counts.ideas) + ' idea(s)</p><a href="community">Open community ideas</a>'));
