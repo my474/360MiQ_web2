@@ -7,6 +7,9 @@ $errors = array();
 $display_name_suggestions = array();
 $register_display_name = '';
 $register_email = '';
+$account_feature_summary = miq_community_enabled()
+    ? 'charts, Pine scripts, searches, watchlists, and community ideas'
+    : 'charts, Pine scripts, searches, and watchlists';
 
 function miq_account_redirect($path)
 {
@@ -212,7 +215,7 @@ if ($current_user && $view !== 'reset') {
 <head>
     <?php include __DIR__ . '/meta.php'; ?>
     <meta property="og:title" content="Account - 360MiQ.com" />
-    <meta name="description" content="Sign in to save charts, Pine scripts, watchlists, and community ideas on 360MiQ.com." />
+    <meta name="description" content="Sign in to save <?php echo htmlspecialchars($account_feature_summary, ENT_QUOTES, 'UTF-8'); ?> on 360MiQ.com." />
     <title>Account - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -237,7 +240,7 @@ if ($current_user && $view !== 'reset') {
         <div class="miq-account-intro">
             <span class="miq-account-kicker">360MiQ Workspace</span>
             <h1><?php echo $view === 'register' ? 'Create your account' : ($view === 'reset' ? 'Reset your password' : 'Sign in to your workspace'); ?></h1>
-            <p>Save charts, Pine scripts, searches, watchlists, and community ideas across devices.</p>
+            <p>Save <?php echo htmlspecialchars($account_feature_summary, ENT_QUOTES, 'UTF-8'); ?> across devices.</p>
         </div>
 
         <?php if ($flash): ?><div class="alert alert-<?php echo htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>

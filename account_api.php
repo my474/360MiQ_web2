@@ -244,10 +244,16 @@ function miq_api_workspace($user)
     $user_id = (int) $user['id'];
     $charts = miq_account_table('saved_charts');
     $scripts = miq_account_table('pine_scripts');
-    $ideas = miq_account_table('community_ideas');
     $searches = miq_account_table('recent_searches');
     $watchlists = miq_account_table('watchlists');
     $watchlist_items = miq_account_table('watchlist_items');
+    $idea_rows = array();
+    $idea_count = 0;
+    if (miq_community_enabled()) {
+        $ideas = miq_account_table('community_ideas');
+        $idea_rows = miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, status, visibility, updated_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id)));
+        $idea_count = miq_api_count_rows($ideas, $user_id);
+    }
     $lists = miq_account_fetch_all(miq_account_query("SELECT id, name, created_at, updated_at FROM {$watchlists} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 20", 'i', array($user_id)));
     foreach ($lists as $index => $list) {
         $lists[$index]['items'] = miq_account_fetch_all(miq_account_query("SELECT code, sort_order FROM {$watchlist_items} WHERE watchlist_id = ? AND user_id = ? ORDER BY sort_order, code", 'ii', array((int) $list['id'], $user_id)));
@@ -256,13 +262,13 @@ function miq_api_workspace($user)
         'searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC LIMIT 20", 'i', array($user_id))),
         'charts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
         'scripts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
-        'ideas' => miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, status, visibility, updated_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id))),
+        'ideas' => $idea_rows,
         'watchlists' => $lists,
         'counts' => array(
             'charts' => miq_api_count_rows($charts, $user_id),
             'scripts' => miq_api_count_rows($scripts, $user_id),
             'searches' => miq_api_count_rows($searches, $user_id),
-            'ideas' => miq_api_count_rows($ideas, $user_id),
+            'ideas' => $idea_count,
             'watchlists' => count($lists),
         ),
     );
@@ -270,6 +276,13 @@ function miq_api_workspace($user)
 
 $body = miq_api_body();
 $action = isset($_GET['action']) ? (string) $_GET['action'] : (isset($body['action']) ? (string) $body['action'] : '');
+$community_actions = array(
+    'pulse', 'pulse_trend', 'public_ideas', 'save_idea', 'vote', 'report_idea',
+    'moderation_dashboard', 'moderation_queue', 'moderate_idea', 'moderate_report'
+);
+if (!miq_community_enabled() && in_array($action, $community_actions, true)) {
+    miq_api_json(array('error' => 'Community features are currently unavailable.'), 404);
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     miq_api_require_post_csrf($body);
 }

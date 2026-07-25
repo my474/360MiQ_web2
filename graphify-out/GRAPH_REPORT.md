@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-07-26)
 
 ## Corpus Check
-- 143 files · ~751,815 words
+- 143 files · ~752,072 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1308 nodes · 2380 edges · 143 communities detected
+- 1309 nodes · 2382 edges · 143 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -364,24 +364,24 @@ Cohesion: 0.5
 Nodes (0): 
 
 ### Community 48 - "Community 48"
+Cohesion: 0.83
+Nodes (3): miq_account_config(), miq_account_env(), miq_community_enabled()
+
+### Community 49 - "Community 49"
 Cohesion: 0.67
 Nodes (2): bubble(), findLineByLeastSquares()
 
-### Community 49 - "Community 49"
+### Community 50 - "Community 50"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 50 - "Community 50"
+### Community 51 - "Community 51"
 Cohesion: 0.83
 Nodes (3): getPlotBandPeriods(), highstock(), name()
 
-### Community 51 - "Community 51"
+### Community 52 - "Community 52"
 Cohesion: 0.83
 Nodes (3): destroyRangeChartByContainer(), rangeChart(), registerRangeChartThemeRefresh()
-
-### Community 52 - "Community 52"
-Cohesion: 0.67
-Nodes (0): 
 
 ### Community 53 - "Community 53"
 Cohesion: 0.67
@@ -420,8 +420,8 @@ Cohesion: 0.67
 Nodes (0): 
 
 ### Community 62 - "Community 62"
-Cohesion: 1.0
-Nodes (2): miq_account_config(), miq_account_env()
+Cohesion: 0.67
+Nodes (0):
 
 ### Community 63 - "Community 63"
 Cohesion: 1.0

@@ -1062,9 +1062,11 @@ function adsBlocked(callback){
 
 </div></div></div>
 </section>
-    <div class="container miq-community-pulse-placement miq-community-pulse-placement-stock">
-        <?php include __DIR__ . '/components/community-pulse.php'; ?>
-    </div>
+    <?php if (miq_community_enabled()): ?>
+        <div class="container miq-community-pulse-placement miq-community-pulse-placement-stock">
+            <?php include __DIR__ . '/components/community-pulse.php'; ?>
+        </div>
+    <?php endif; ?>
     <!--div id="featuredpost" class="card clean-card text-center container" style="padding: 0;margin-bottom:16px;display:none">
         <div class="card-header"><h2>Recent Analysis</h2></div>
         <div class=" text-center container" style="margin: 70px 0 0;padding-right:0;padding-left:0">

@@ -14,7 +14,7 @@ The main PHP site now has a first-party account/workspace layer. It is intention
 - Pine scripts stored as first-class account assets with stable IDs, rename, duplicate, archive, delete, version history, restore, and source download.
 - Existing browser-local chart and Pine storage formats remain supported.
 - Watchlist storage and workspace display.
-- Community Pulse voting on every page through the shared footer.
+- Community Pulse voting on the homepage and stock and market pages.
 - Moderated community idea drafts, public idea feed, and logged-in user reporting.
 - Moderator dashboard with pending and reported-content queues, publish/reject/hide decisions, required adverse-action notes, and audit history.
 - Account settings, data export, Google linking, and account deletion.
@@ -37,6 +37,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
 4. Configure email delivery. Production defaults to `/home2/aamiqcom/cronjobs/email.php` through `ACCOUNT_MAILER_INCLUDE`; that file must define `email($subject, $body, $toEmail, $toName)` and keep the PHPMailer SMTP credentials outside this repository. If the configured helper is missing or fails, verification/reset delivery fails safely and is logged.
 5. For Google login, create a production Web OAuth client in Google Cloud, configure the exact 360MiQ origin, set `GOOGLE_CLIENT_ID`, and enable the Google Identity Services client library. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
 6. Set `MIQ_ACCOUNT_DEBUG=false` in production.
+7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
 
 The chart and script quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, and `MIQ_MAX_ASSET_VERSIONS`.
 

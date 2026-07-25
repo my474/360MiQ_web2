@@ -17,6 +17,16 @@ function miq_account_env($name, $default = '')
     return ($value === false || $value === '') ? $default : $value;
 }
 
+function miq_community_enabled()
+{
+    $enabled = filter_var(
+        miq_account_env('MIQ_COMMUNITY_ENABLED', 'true'),
+        FILTER_VALIDATE_BOOLEAN,
+        FILTER_NULL_ON_FAILURE
+    );
+    return $enabled === null ? true : $enabled;
+}
+
 function miq_account_config()
 {
     static $config = null;

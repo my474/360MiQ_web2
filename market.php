@@ -614,9 +614,11 @@ function adsBlocked(callback){
 
             <div class="container" style="padding: 30px 0px 0px;">
                 <div id="indicatorCard" style="margin: 70px 0 0;text-align:center;font-size:1.7rem;font-weight:500"><?php echo $exchangeName." "; ?>Market Indicators</div>
-                <div class="miq-community-pulse-placement">
-                    <?php include __DIR__ . '/components/community-pulse.php'; ?>
-                </div>
+                <?php if (miq_community_enabled()): ?>
+                    <div class="miq-community-pulse-placement">
+                        <?php include __DIR__ . '/components/community-pulse.php'; ?>
+                    </div>
+                <?php endif; ?>
                 <div class="card clean-card text-center container" style="padding-right:0;padding-left:0">
                     <div class="panel panel-default" style="margin: 5px 0 0;">
                         <ul class="nav nav-tabs panel-heading not-selectable">

@@ -1,5 +1,12 @@
 <?php
 require_once __DIR__ . '/account/bootstrap.php';
+if (!miq_community_enabled()) {
+    http_response_code(404);
+    $_GET['err'] = '404';
+    require __DIR__ . '/error.php';
+    exit;
+}
+
 $user = miq_account_current_user();
 $context_code = strtoupper(trim(isset($_GET['code']) ? $_GET['code'] : ''));
 $trend_context_type = $context_code !== '' ? 'stock' : 'site';

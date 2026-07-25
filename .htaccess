@@ -2,6 +2,9 @@
     AddHandler application/x-httpd-ea-php73 .php .php7 .phtml
 </IfModule>
 
+# Set to false to hide and disable Community Pulse and Community Ideas.
+SetEnv MIQ_COMMUNITY_ENABLED true
+
 Options -Indexes
 
 Redirect 301 /tools /tool

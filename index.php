@@ -487,6 +487,7 @@ function adsBlocked(callback){
     </div>
 </div>
 
+<?php if (miq_community_enabled()): ?>
 <div class="miq-community-pulse-placement">
     <?php
     $miq_pulse_featured = true;
@@ -494,6 +495,7 @@ function adsBlocked(callback){
     unset($miq_pulse_featured);
     ?>
 </div>
+<?php endif; ?>
 
 <p></p>
 <style>

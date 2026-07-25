@@ -11,7 +11,7 @@
                     <li><a href="econ?country=US">Econ - US</a></li>
                     <li><a href="econ?country=HK">Econ - HK</a></li>
                     <li><a href="tool">Tool</a></li>
-                    <li><a href="community">Community Ideas</a></li>
+                    <?php if (miq_community_enabled()): ?><li><a href="community">Community Ideas</a></li><?php endif; ?>
                     <li><a href="/blog">Analysis</a></li>
                     <li><a href="writeforus">Write for Us&nbsp;<i class="fa-solid fa-pen-clip" title="Analysis Contributor Login/Register&#10;&#10;Free Sign-up for Everyone!"></i></a></li>
                     <li><a href="https://rapidapi.com/mchanlg/api/360miq1/" target="_blank">Data API<sub>&emsp13;by&nbsp;RapidAPI</sub></a></li>

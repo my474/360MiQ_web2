@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../account/config.php';
+if (!miq_community_enabled()) {
+    return;
+}
+
 $miq_pulse_context_type = isset($miq_account_context_type) ? $miq_account_context_type : 'site';
 $miq_pulse_context_key = isset($miq_account_context_key) && $miq_account_context_key !== '' ? $miq_account_context_key : 'site';
 if (!in_array($miq_pulse_context_type, array('stock', 'market'), true)) {

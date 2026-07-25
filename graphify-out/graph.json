@@ -23,7 +23,7 @@
       "label": "miq_account_redirect()",
       "file_type": "code",
       "source_file": "account.php",
-      "source_location": "L11",
+      "source_location": "L14",
       "id": "account_miq_account_redirect",
       "community": 35
     },
@@ -31,7 +31,7 @@
       "label": "miq_account_token_link()",
       "file_type": "code",
       "source_file": "account.php",
-      "source_location": "L17",
+      "source_location": "L20",
       "id": "account_miq_account_token_link",
       "community": 35
     },
@@ -39,7 +39,7 @@
       "label": "miq_account_process_verification()",
       "file_type": "code",
       "source_file": "account.php",
-      "source_location": "L23",
+      "source_location": "L26",
       "id": "account_miq_account_process_verification",
       "community": 35
     },
@@ -47,7 +47,7 @@
       "label": "miq_account_process_email_registration()",
       "file_type": "code",
       "source_file": "account.php",
-      "source_location": "L47",
+      "source_location": "L50",
       "id": "account_miq_account_process_email_registration",
       "community": 35
     },
@@ -55,7 +55,7 @@
       "label": "miq_account_process_google_login()",
       "file_type": "code",
       "source_file": "account.php",
-      "source_location": "L71",
+      "source_location": "L74",
       "id": "account_miq_account_process_google_login",
       "community": 35
     },
@@ -417,7 +417,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L1",
       "id": "db_chatbot_php",
-      "community": 52
+      "community": 53
     },
     {
       "label": "calculateChanges()",
@@ -425,7 +425,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L294",
       "id": "db_chatbot_calculatechanges",
-      "community": 52
+      "community": 53
     },
     {
       "label": "endsWith()",
@@ -433,7 +433,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L442",
       "id": "db_chatbot_endswith",
-      "community": 52
+      "community": 53
     },
     {
       "label": "db_econ_get.php",
@@ -441,7 +441,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L1",
       "id": "db_econ_get_php",
-      "community": 53
+      "community": 54
     },
     {
       "label": "datestrFormat()",
@@ -449,7 +449,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L138",
       "id": "db_econ_get_datestrformat",
-      "community": 53
+      "community": 54
     },
     {
       "label": "sma()",
@@ -457,7 +457,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L166",
       "id": "db_econ_get_sma",
-      "community": 53
+      "community": 54
     },
     {
       "label": "db_fa_get.php",
@@ -465,7 +465,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L1",
       "id": "db_fa_get_php",
-      "community": 54
+      "community": 55
     },
     {
       "label": "endsWith()",
@@ -473,7 +473,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L545",
       "id": "db_fa_get_endswith",
-      "community": 54
+      "community": 55
     },
     {
       "label": "daycount()",
@@ -481,7 +481,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L549",
       "id": "db_fa_get_daycount",
-      "community": 54
+      "community": 55
     },
     {
       "label": "db_featuredblogpost_get.php",
@@ -569,7 +569,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L1",
       "id": "db_market_get_php",
-      "community": 55
+      "community": 56
     },
     {
       "label": "datestrFormat()",
@@ -577,7 +577,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L291",
       "id": "db_market_get_datestrformat",
-      "community": 55
+      "community": 56
     },
     {
       "label": "sma()",
@@ -585,7 +585,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L319",
       "id": "db_market_get_sma",
-      "community": 55
+      "community": 56
     },
     {
       "label": "db_market_trendgauge_get.php",
@@ -609,7 +609,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L1",
       "id": "db_pbband_get_php",
-      "community": 56
+      "community": 57
     },
     {
       "label": "endsWith()",
@@ -617,7 +617,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L235",
       "id": "db_pbband_get_endswith",
-      "community": 56
+      "community": 57
     },
     {
       "label": "daycount()",
@@ -625,7 +625,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L239",
       "id": "db_pbband_get_daycount",
-      "community": 56
+      "community": 57
     },
     {
       "label": "db_peers_get.php",
@@ -721,7 +721,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L1",
       "id": "db_stockquote_get_php",
-      "community": 57
+      "community": 58
     },
     {
       "label": "datestrFormat()",
@@ -729,7 +729,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L234",
       "id": "db_stockquote_get_datestrformat",
-      "community": 57
+      "community": 58
     },
     {
       "label": "endsWith()",
@@ -737,7 +737,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L263",
       "id": "db_stockquote_get_endswith",
-      "community": 57
+      "community": 58
     },
     {
       "label": "db_SurpriseIndex_get.php",
@@ -761,7 +761,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L1",
       "id": "db_top10_get_php",
-      "community": 58
+      "community": 59
     },
     {
       "label": "datestrFormat()",
@@ -769,7 +769,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L217",
       "id": "db_top10_get_datestrformat",
-      "community": 58
+      "community": 59
     },
     {
       "label": "endsWith()",
@@ -777,7 +777,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L246",
       "id": "db_top10_get_endswith",
-      "community": 58
+      "community": 59
     },
     {
       "label": "db_top10_get1.php",
@@ -785,7 +785,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L1",
       "id": "db_top10_get1_php",
-      "community": 59
+      "community": 60
     },
     {
       "label": "datestrFormat()",
@@ -793,7 +793,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L178",
       "id": "db_top10_get1_datestrformat",
-      "community": 59
+      "community": 60
     },
     {
       "label": "endsWith()",
@@ -801,7 +801,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L207",
       "id": "db_top10_get1_endswith",
-      "community": 59
+      "community": 60
     },
     {
       "label": "db_top10_name_get.php",
@@ -1137,7 +1137,7 @@
       "source_file": "ollama.php",
       "source_location": "L1",
       "id": "ollama_php",
-      "community": 60
+      "community": 61
     },
     {
       "label": "updateQueueCounter()",
@@ -1145,7 +1145,7 @@
       "source_file": "ollama.php",
       "source_location": "L22",
       "id": "ollama_updatequeuecounter",
-      "community": 60
+      "community": 61
     },
     {
       "label": "logQueueInfo()",
@@ -1153,7 +1153,7 @@
       "source_file": "ollama.php",
       "source_location": "L30",
       "id": "ollama_logqueueinfo",
-      "community": 60
+      "community": 61
     },
     {
       "label": "privacypolicy.php",
@@ -1233,7 +1233,7 @@
       "source_file": "stock_json.php",
       "source_location": "L1",
       "id": "stock_json_php",
-      "community": 61
+      "community": 62
     },
     {
       "label": "cleanName()",
@@ -1241,7 +1241,7 @@
       "source_file": "stock_json.php",
       "source_location": "L11",
       "id": "stock_json_cleanname",
-      "community": 61
+      "community": 62
     },
     {
       "label": "cleanChinese()",
@@ -1249,7 +1249,7 @@
       "source_file": "stock_json.php",
       "source_location": "L66",
       "id": "stock_json_cleanchinese",
-      "community": 61
+      "community": 62
     },
     {
       "label": "terms.php",
@@ -1697,7 +1697,7 @@
       "source_file": "account\\config.php",
       "source_location": "L1",
       "id": "account_config_php",
-      "community": 62
+      "community": 48
     },
     {
       "label": "miq_account_env()",
@@ -1705,15 +1705,23 @@
       "source_file": "account\\config.php",
       "source_location": "L14",
       "id": "config_miq_account_env",
-      "community": 62
+      "community": 48
+    },
+    {
+      "label": "miq_community_enabled()",
+      "file_type": "code",
+      "source_file": "account\\config.php",
+      "source_location": "L20",
+      "id": "config_miq_community_enabled",
+      "community": 48
     },
     {
       "label": "miq_account_config()",
       "file_type": "code",
       "source_file": "account\\config.php",
-      "source_location": "L20",
+      "source_location": "L30",
       "id": "config_miq_account_config",
-      "community": 62
+      "community": 48
     },
     {
       "label": "db.php",
@@ -2689,7 +2697,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L1",
       "id": "assets_js_bubble_js",
-      "community": 48
+      "community": 49
     },
     {
       "label": "bubble()",
@@ -2697,7 +2705,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L1",
       "id": "bubble_bubble",
-      "community": 48
+      "community": 49
     },
     {
       "label": "bubbleData()",
@@ -2705,7 +2713,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L726",
       "id": "bubble_bubbledata",
-      "community": 48
+      "community": 49
     },
     {
       "label": "findLineByLeastSquares()",
@@ -2713,7 +2721,7 @@
       "source_file": "assets\\js\\Bubble.js",
       "source_location": "L917",
       "id": "bubble_findlinebyleastsquares",
-      "community": 48
+      "community": 49
     },
     {
       "label": "CCASS.js",
@@ -3153,7 +3161,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L1",
       "id": "assets_js_datatables_input_js",
-      "community": 49
+      "community": 50
     },
     {
       "label": "calcDisableClasses()",
@@ -3161,7 +3169,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L22",
       "id": "datatables_input_calcdisableclasses",
-      "community": 49
+      "community": 50
     },
     {
       "label": "calcCurrentPage()",
@@ -3169,7 +3177,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L43",
       "id": "datatables_input_calccurrentpage",
-      "community": 49
+      "community": 50
     },
     {
       "label": "calcPages()",
@@ -3177,7 +3185,7 @@
       "source_file": "assets\\js\\datatables.input.js",
       "source_location": "L47",
       "id": "datatables_input_calcpages",
-      "community": 49
+      "community": 50
     },
     {
       "label": "F-Z-M-ScoreChart.js",
@@ -4097,7 +4105,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1",
       "id": "assets_js_highstock_js",
-      "community": 50
+      "community": 51
     },
     {
       "label": "highstock()",
@@ -4105,7 +4113,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1",
       "id": "highstock_highstock",
-      "community": 50
+      "community": 51
     },
     {
       "label": "name()",
@@ -4113,7 +4121,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1138",
       "id": "highstock_name",
-      "community": 50
+      "community": 51
     },
     {
       "label": "getPlotBandPeriods()",
@@ -4121,7 +4129,7 @@
       "source_file": "assets\\js\\Highstock.js",
       "source_location": "L1174",
       "id": "highstock_getplotbandperiods",
-      "community": 50
+      "community": 51
     },
     {
       "label": "jquery-ui.min.js",
@@ -4657,7 +4665,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L1",
       "id": "assets_js_rangechart_js",
-      "community": 51
+      "community": 52
     },
     {
       "label": "rangeChart()",
@@ -4665,7 +4673,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L1",
       "id": "rangechart_rangechart",
-      "community": 51
+      "community": 52
     },
     {
       "label": "registerRangeChartThemeRefresh()",
@@ -4673,7 +4681,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L373",
       "id": "rangechart_registerrangechartthemerefresh",
-      "community": 51
+      "community": 52
     },
     {
       "label": "destroyRangeChartByContainer()",
@@ -4681,7 +4689,7 @@
       "source_file": "assets\\js\\RangeChart.js",
       "source_location": "L393",
       "id": "rangechart_destroyrangechartbycontainer",
-      "community": 51
+      "community": 52
     },
     {
       "label": "schema-markup.js",
@@ -5535,7 +5543,7 @@
       "label": "escapeHtml()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L11",
+      "source_location": "L13",
       "id": "workspace_escapehtml",
       "community": 15
     },
@@ -5543,7 +5551,7 @@
       "label": "showStatus()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L17",
+      "source_location": "L19",
       "id": "workspace_showstatus",
       "community": 15
     },
@@ -5551,7 +5559,7 @@
       "label": "panel()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L24",
+      "source_location": "L26",
       "id": "workspace_panel",
       "community": 15
     },
@@ -5559,7 +5567,7 @@
       "label": "humanDate()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L28",
+      "source_location": "L30",
       "id": "workspace_humandate",
       "community": 15
     },
@@ -5567,7 +5575,7 @@
       "label": "assetMeta()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L34",
+      "source_location": "L36",
       "id": "workspace_assetmeta",
       "community": 15
     },
@@ -5575,7 +5583,7 @@
       "label": "renderOverview()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L38",
+      "source_location": "L40",
       "id": "workspace_renderoverview",
       "community": 15
     },
@@ -5583,7 +5591,7 @@
       "label": "chartRow()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L50",
+      "source_location": "L55",
       "id": "workspace_chartrow",
       "community": 15
     },
@@ -5591,7 +5599,7 @@
       "label": "renderCharts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L66",
+      "source_location": "L71",
       "id": "workspace_rendercharts",
       "community": 15
     },
@@ -5599,7 +5607,7 @@
       "label": "scriptRow()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L73",
+      "source_location": "L78",
       "id": "workspace_scriptrow",
       "community": 15
     },
@@ -5607,7 +5615,7 @@
       "label": "renderScripts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L94",
+      "source_location": "L99",
       "id": "workspace_renderscripts",
       "community": 15
     },
@@ -5615,7 +5623,7 @@
       "label": "renderSimpleList()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L101",
+      "source_location": "L106",
       "id": "workspace_rendersimplelist",
       "community": 15
     },
@@ -5623,7 +5631,7 @@
       "label": "render()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L106",
+      "source_location": "L111",
       "id": "workspace_render",
       "community": 15
     },
@@ -5631,7 +5639,7 @@
       "label": "loadCharts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L128",
+      "source_location": "L134",
       "id": "workspace_loadcharts",
       "community": 15
     },
@@ -5639,7 +5647,7 @@
       "label": "loadScripts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L148",
+      "source_location": "L154",
       "id": "workspace_loadscripts",
       "community": 15
     },
@@ -5647,7 +5655,7 @@
       "label": "refreshWorkspaceAndTab()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L168",
+      "source_location": "L174",
       "id": "workspace_refreshworkspaceandtab",
       "community": 15
     },
@@ -5655,7 +5663,7 @@
       "label": "closestAsset()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L179",
+      "source_location": "L185",
       "id": "workspace_closestasset",
       "community": 15
     },
@@ -5663,7 +5671,7 @@
       "label": "renderVersions()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L183",
+      "source_location": "L189",
       "id": "workspace_renderversions",
       "community": 15
     },
@@ -5671,7 +5679,7 @@
       "label": "downloadText()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L194",
+      "source_location": "L200",
       "id": "workspace_downloadtext",
       "community": 15
     },
@@ -5679,7 +5687,7 @@
       "label": "safeFileName()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L205",
+      "source_location": "L211",
       "id": "workspace_safefilename",
       "community": 15
     },
@@ -5687,7 +5695,7 @@
       "label": "importRecentScripts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L209",
+      "source_location": "L215",
       "id": "workspace_importrecentscripts",
       "community": 15
     },
@@ -5695,7 +5703,7 @@
       "label": "load()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L305",
+      "source_location": "L311",
       "id": "workspace_load",
       "community": 15
     },
@@ -10473,7 +10481,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
-      "source_location": "L11",
+      "source_location": "L14",
       "weight": 1.0,
       "_src": "account_php",
       "_tgt": "account_miq_account_redirect",
@@ -10485,7 +10493,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
-      "source_location": "L17",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "account_php",
       "_tgt": "account_miq_account_token_link",
@@ -10497,7 +10505,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
-      "source_location": "L23",
+      "source_location": "L26",
       "weight": 1.0,
       "_src": "account_php",
       "_tgt": "account_miq_account_process_verification",
@@ -10509,7 +10517,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
-      "source_location": "L47",
+      "source_location": "L50",
       "weight": 1.0,
       "_src": "account_php",
       "_tgt": "account_miq_account_process_email_registration",
@@ -10521,7 +10529,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
-      "source_location": "L71",
+      "source_location": "L74",
       "weight": 1.0,
       "_src": "account_php",
       "_tgt": "account_miq_account_process_google_login",
@@ -10533,7 +10541,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
-      "source_location": "L59",
+      "source_location": "L62",
       "weight": 1.0,
       "_src": "account_miq_account_process_email_registration",
       "_tgt": "account_miq_account_token_link",
@@ -10917,7 +10925,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_api.php",
-      "source_location": "L262",
+      "source_location": "L255",
       "weight": 1.0,
       "_src": "account_api_miq_api_workspace",
       "_tgt": "account_api_miq_api_count_rows",
@@ -12816,6 +12824,18 @@
       "source_location": "L20",
       "weight": 1.0,
       "_src": "account_config_php",
+      "_tgt": "config_miq_community_enabled",
+      "source": "account_config_php",
+      "target": "config_miq_community_enabled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\config.php",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "account_config_php",
       "_tgt": "config_miq_account_config",
       "source": "account_config_php",
       "target": "config_miq_account_config",
@@ -12825,7 +12845,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\config.php",
-      "source_location": "L29",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "config_miq_community_enabled",
+      "_tgt": "config_miq_account_env",
+      "source": "config_miq_account_env",
+      "target": "config_miq_community_enabled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\config.php",
+      "source_location": "L39",
       "weight": 1.0,
       "_src": "config_miq_account_config",
       "_tgt": "config_miq_account_env",
@@ -23601,7 +23633,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L11",
+      "source_location": "L13",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_escapehtml",
@@ -23613,7 +23645,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L17",
+      "source_location": "L19",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_showstatus",
@@ -23625,7 +23657,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L24",
+      "source_location": "L26",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_panel",
@@ -23637,7 +23669,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_humandate",
@@ -23649,7 +23681,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L34",
+      "source_location": "L36",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_assetmeta",
@@ -23661,7 +23693,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L38",
+      "source_location": "L40",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_renderoverview",
@@ -23673,7 +23705,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L50",
+      "source_location": "L55",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_chartrow",
@@ -23685,7 +23717,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L66",
+      "source_location": "L71",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_rendercharts",
@@ -23697,7 +23729,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L73",
+      "source_location": "L78",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_scriptrow",
@@ -23709,7 +23741,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L94",
+      "source_location": "L99",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_renderscripts",
@@ -23721,7 +23753,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L101",
+      "source_location": "L106",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_rendersimplelist",
@@ -23733,7 +23765,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L106",
+      "source_location": "L111",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_render",
@@ -23745,7 +23777,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L128",
+      "source_location": "L134",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_loadcharts",
@@ -23757,7 +23789,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L148",
+      "source_location": "L154",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_loadscripts",
@@ -23769,7 +23801,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L168",
+      "source_location": "L174",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_refreshworkspaceandtab",
@@ -23781,7 +23813,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L179",
+      "source_location": "L185",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_closestasset",
@@ -23793,7 +23825,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L183",
+      "source_location": "L189",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_renderversions",
@@ -23805,7 +23837,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L194",
+      "source_location": "L200",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_downloadtext",
@@ -23817,7 +23849,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L205",
+      "source_location": "L211",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_safefilename",
@@ -23829,7 +23861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L209",
+      "source_location": "L215",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_importrecentscripts",
@@ -23841,7 +23873,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L305",
+      "source_location": "L311",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_load",
@@ -23853,7 +23885,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0,
       "_src": "workspace_panel",
       "_tgt": "workspace_escapehtml",
@@ -23865,7 +23897,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L53",
+      "source_location": "L58",
       "weight": 1.0,
       "_src": "workspace_chartrow",
       "_tgt": "workspace_escapehtml",
@@ -23877,7 +23909,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L67",
+      "source_location": "L72",
       "weight": 1.0,
       "_src": "workspace_rendercharts",
       "_tgt": "workspace_escapehtml",
@@ -23889,7 +23921,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L77",
+      "source_location": "L82",
       "weight": 1.0,
       "_src": "workspace_scriptrow",
       "_tgt": "workspace_escapehtml",
@@ -23901,7 +23933,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L95",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "workspace_renderscripts",
       "_tgt": "workspace_escapehtml",
@@ -23913,7 +23945,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L112",
+      "source_location": "L118",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_escapehtml",
@@ -23925,7 +23957,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L190",
+      "source_location": "L196",
       "weight": 1.0,
       "_src": "workspace_renderversions",
       "_tgt": "workspace_escapehtml",
@@ -23937,7 +23969,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L314",
+      "source_location": "L320",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_escapehtml",
@@ -23949,7 +23981,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L144",
+      "source_location": "L150",
       "weight": 1.0,
       "_src": "workspace_loadcharts",
       "_tgt": "workspace_showstatus",
@@ -23961,7 +23993,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L164",
+      "source_location": "L170",
       "weight": 1.0,
       "_src": "workspace_loadscripts",
       "_tgt": "workspace_showstatus",
@@ -23973,7 +24005,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L169",
+      "source_location": "L175",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_showstatus",
@@ -23985,7 +24017,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L213",
+      "source_location": "L219",
       "weight": 1.0,
       "_src": "workspace_importrecentscripts",
       "_tgt": "workspace_showstatus",
@@ -23997,7 +24029,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L315",
+      "source_location": "L321",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_showstatus",
@@ -24009,7 +24041,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L41",
+      "source_location": "L43",
       "weight": 1.0,
       "_src": "workspace_renderoverview",
       "_tgt": "workspace_panel",
@@ -24021,7 +24053,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L70",
+      "source_location": "L75",
       "weight": 1.0,
       "_src": "workspace_rendercharts",
       "_tgt": "workspace_panel",
@@ -24033,7 +24065,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L98",
+      "source_location": "L103",
       "weight": 1.0,
       "_src": "workspace_renderscripts",
       "_tgt": "workspace_panel",
@@ -24045,7 +24077,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L102",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "workspace_rendersimplelist",
       "_tgt": "workspace_panel",
@@ -24057,7 +24089,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L55",
+      "source_location": "L60",
       "weight": 1.0,
       "_src": "workspace_chartrow",
       "_tgt": "workspace_humandate",
@@ -24069,7 +24101,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L79",
+      "source_location": "L84",
       "weight": 1.0,
       "_src": "workspace_scriptrow",
       "_tgt": "workspace_humandate",
@@ -24081,7 +24113,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L112",
+      "source_location": "L118",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_humandate",
@@ -24093,7 +24125,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L190",
+      "source_location": "L196",
       "weight": 1.0,
       "_src": "workspace_renderversions",
       "_tgt": "workspace_humandate",
@@ -24105,7 +24137,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L55",
+      "source_location": "L60",
       "weight": 1.0,
       "_src": "workspace_chartrow",
       "_tgt": "workspace_assetmeta",
@@ -24117,7 +24149,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L79",
+      "source_location": "L84",
       "weight": 1.0,
       "_src": "workspace_scriptrow",
       "_tgt": "workspace_assetmeta",
@@ -24129,7 +24161,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L112",
+      "source_location": "L118",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_assetmeta",
@@ -24141,7 +24173,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L122",
+      "source_location": "L128",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_renderoverview",
@@ -24153,7 +24185,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L108",
+      "source_location": "L114",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_rendercharts",
@@ -24165,7 +24197,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L109",
+      "source_location": "L115",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_renderscripts",
@@ -24177,7 +24209,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L111",
+      "source_location": "L117",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_rendersimplelist",
@@ -24189,7 +24221,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L141",
+      "source_location": "L147",
       "weight": 1.0,
       "_src": "workspace_loadcharts",
       "_tgt": "workspace_render",
@@ -24201,7 +24233,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L161",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "workspace_loadscripts",
       "_tgt": "workspace_render",
@@ -24213,7 +24245,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L174",
+      "source_location": "L180",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_render",
@@ -24225,7 +24257,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L311",
+      "source_location": "L317",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_render",
@@ -24237,7 +24269,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L172",
+      "source_location": "L178",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_loadcharts",
@@ -24249,7 +24281,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L309",
+      "source_location": "L315",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_loadcharts",
@@ -24261,7 +24293,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L173",
+      "source_location": "L179",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_loadscripts",
@@ -24273,7 +24305,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L310",
+      "source_location": "L316",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_loadscripts",
@@ -24285,7 +24317,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L230",
+      "source_location": "L236",
       "weight": 1.0,
       "_src": "workspace_importrecentscripts",
       "_tgt": "workspace_refreshworkspaceandtab",
