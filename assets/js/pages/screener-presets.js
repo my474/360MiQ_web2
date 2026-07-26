@@ -209,7 +209,7 @@
         elements.name.disabled = busy || !ready;
         elements.load.disabled = busy || !ready || !hasSelected;
         elements.save.disabled = busy || !ready;
-        elements.update.disabled = busy || !ready || !hasSelected;
+        elements.update.disabled = busy || !ready;
         elements.duplicate.disabled = busy || !ready || !hasSelected;
         elements.makeDefault.disabled = busy || !ready || !hasSelected || selected.is_default;
         elements.remove.disabled = busy || !ready || !hasSelected;
@@ -391,8 +391,12 @@
 
     function handleUpdate() {
         var selected = selectedPreset();
+        if (!selected) {
+            handleSaveNew();
+            return;
+        }
         var config = requireCurrentConfig();
-        if (!selected || !config) return;
+        if (!config) return;
         var name = cleanName();
         if (!name) {
             setStatus('Enter a name for this preset.', 'error');

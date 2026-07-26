@@ -1949,7 +1949,7 @@ window.__SCREENER_PAGE_CONFIG = {
 </script>
 <script src="assets/js/pages/screener-main.js?v=20260710.1"></script>
 <script src="assets/js/pages/screener-share.js?v=20260709.1"></script>
-<script src="assets/js/pages/screener-presets.js?v=20260726.3"></script>
+<script src="assets/js/pages/screener-presets.js?v=20260726.4"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260709.1"></script>
 
             <div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
