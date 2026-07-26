@@ -293,7 +293,7 @@
             return;
         }
         if (nameExists(name, '')) {
-            setStatus('A preset with that name already exists. Select it and use Update.', 'error');
+            setStatus('A preset with that name already exists. Select it and use Save.', 'error');
             return;
         }
         var now = new Date().toISOString();
