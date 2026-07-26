@@ -49,7 +49,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
 7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
 8. Grant your own account administrator access with `UPDATE miq_users SET role = 'admin' WHERE email = 'your-email@example.com';`. Alternatively, set `MIQ_ADMIN_EMAILS` to a comma-separated administrator allowlist. Only administrators can open `account_user_admin`.
 
-Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. The chart and script quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, and `MIQ_MAX_ASSET_VERSIONS`.
+Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. Chart and Pine quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, `MIQ_MAX_ASSET_VERSIONS`, and `MIQ_MAX_ASSET_STORAGE_BYTES`. The combined chart/Pine current-and-version storage default is 50 MB per user.
 
 ## WordPress SSO
 
@@ -90,6 +90,7 @@ The account layer stores only a SHA-256 hash of each IP/email key. Defaults are 
 - Registration: 5 attempts per IP and 3 per email per hour.
 - Password reset: 10 requests per IP and 3 per email per hour.
 - Verification/reset email delivery: 12 per IP per hour, 3 per recipient per hour, and one message per recipient per 60 seconds.
+- Chart/Pine writes: 600 per account per hour; explicit versions: 60 per account per hour.
 - Community pulse: 30 vote submissions or changes per account per hour.
 - Community reports: 10 report submissions per account per hour, with duplicate open reports blocked.
 

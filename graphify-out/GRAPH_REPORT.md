@@ -1,13 +1,13 @@
-# Graph Report - .  (2026-07-26)
+﻿# Graph Report - .  (2026-07-26)
 
 ## Corpus Check
-- 151 files · ~770,845 words
+- 151 files Â· ~774,186 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1431 nodes · 2703 edges · 151 communities detected
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
-- Token cost: 0 input · 0 output
+- 1445 nodes Â· 2737 edges Â· 151 communities detected
+- Extraction: 100% EXTRACTED Â· 0% INFERRED Â· 0% AMBIGUOUS
+- Token cost: 0 input Â· 0 output
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Community 0|Community 0]]
@@ -163,13 +163,13 @@
 - [[_COMMUNITY_Community 150|Community 150]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `run()` - 30 edges
-2. `createNamespaces()` - 27 edges
+1. `runUnsafe()` - 32 edges
+2. `createNamespaces()` - 31 edges
 3. `loadStockChart()` - 24 edges
 4. `escapeHtml()` - 23 edges
 5. `valueAt()` - 23 edges
-6. `renderChart()` - 21 edges
-7. `asNumber()` - 21 edges
+6. `renderChart()` - 22 edges
+7. `asNumber()` - 22 edges
 8. `render()` - 17 edges
 9. `FakeElement` - 17 edges
 10. `themeHighchartsAxisAccents()` - 16 edges
@@ -181,15 +181,15 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.02
-Nodes (177): addPoint(), aggregateBars(), approximateTextWidth(), boundsFromRect(), Chart(), chartPeriodButtonsHtml(), chartPeriodLabel(), chartTypeIconSvg() (+169 more)
+Nodes (178): addPoint(), aggregateBars(), approximateTextWidth(), boundsFromRect(), Chart(), chartPeriodButtonsHtml(), chartPeriodLabel(), chartTypeIconSvg() (+170 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.08
-Nodes (67): accountChartPreferences(), accountChartStorageV2(), ajaxTextFromCandidates(), applySharedLayout(), applyStockMetadata(), applyVisibleDateRange(), barDateKey(), chartLayoutId() (+59 more)
+Nodes (69): accountChartPreferences(), accountChartStorageV2(), ajaxTextFromCandidates(), applySharedLayout(), applyStockMetadata(), applyVisibleDateRange(), barDateKey(), chartLayoutId() (+61 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.1
-Nodes (55): adaptiveEma(), addUtcMonths(), aggregateSecurityBars(), alignSecuritySeries(), argumentMap(), asNumber(), barCloseTimestamp(), baseSeries() (+47 more)
+Nodes (59): adaptiveEma(), addUtcMonths(), aggregateSecurityBars(), alignSecuritySeries(), argumentMap(), asNumber(), barCloseTimestamp(), baseSeries() (+51 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.09
@@ -236,8 +236,8 @@ Cohesion: 0.19
 Nodes (32): absoluteUrl(), asNumber(), chartDatasets(), cleanText(), cleanValue(), codeFromLink(), currentGraph(), dateString() (+24 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.09
-Nodes (14): miq_api_body(), miq_api_clean_text(), miq_api_count_rows(), miq_api_json(), miq_api_pulse_context(), miq_api_pulse_timeframe(), miq_api_record_moderation_action(), miq_api_require_moderator() (+6 more)
+Cohesion: 0.08
+Nodes (17): miq_api_asset_storage_bytes(), miq_api_body(), miq_api_clean_text(), miq_api_count_rows(), miq_api_enforce_asset_storage(), miq_api_json(), miq_api_pulse_context(), miq_api_pulse_timeframe() (+9 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.13
@@ -785,7 +785,7 @@ Nodes (0):
 
 ## Knowledge Gaps
 - **1 isolated node(s):** `MiqAccountRateLimitException`
-  These have ≤1 connection - possible missing edges or undocumented components.
+  These have â‰¤1 connection - possible missing edges or undocumented components.
 - **Thin community `Community 71`** (2 nodes): `endsWith()`, `db_adv_get2.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 72`** (2 nodes): `endsWith()`, `db_api_get.php`

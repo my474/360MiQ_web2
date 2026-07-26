@@ -4,6 +4,7 @@
     var STOCK_CHART_STORAGE_PREFIX = '360miq-tool-stock-chart';
     var RECENT_STOCKS_STORAGE_KEY = STOCK_CHART_STORAGE_PREFIX + ':recent-stocks';
     var RECENT_STOCKS_LIMIT = 12;
+    var MAX_SHARE_HASH_LENGTH = 20000;
     var activeAutocompleteRequest = null;
     var autocompleteSerial = 0;
     var activeDataRequest = null;
@@ -140,14 +141,62 @@
         return String(value || '').trim();
     }
 
+    function marketProfile(exchange, code) {
+        var normalizedExchange = cleanMetadataText(exchange).toUpperCase().replace(/\s+/g, '');
+        var normalizedCode = normalizeCode(code);
+        var profiles = {
+            NYSE: { timezone: 'America/New_York', currency: 'USD', session: 'regular', symbolType: 'stock' },
+            NASDAQ: { timezone: 'America/New_York', currency: 'USD', session: 'regular', symbolType: 'stock' },
+            NYSEARCA: { timezone: 'America/New_York', currency: 'USD', session: 'regular', symbolType: 'fund' },
+            LSE: { timezone: 'Europe/London', currency: 'GBP', session: 'regular', symbolType: 'stock' },
+            TSX: { timezone: 'America/Toronto', currency: 'CAD', session: 'regular', symbolType: 'stock' },
+            ASX: { timezone: 'Australia/Sydney', currency: 'AUD', session: 'regular', symbolType: 'stock' },
+            NSE: { timezone: 'Asia/Kolkata', currency: 'INR', session: 'regular', symbolType: 'stock' },
+            TYO: { timezone: 'Asia/Tokyo', currency: 'JPY', session: 'regular', symbolType: 'stock' },
+            HKEX: { timezone: 'Asia/Hong_Kong', currency: 'HKD', session: 'regular', symbolType: 'stock' },
+            SHSE: { timezone: 'Asia/Shanghai', currency: 'CNY', session: 'regular', symbolType: 'stock' },
+            SHG: { timezone: 'Asia/Shanghai', currency: 'CNY', session: 'regular', symbolType: 'stock' },
+            SZSE: { timezone: 'Asia/Shanghai', currency: 'CNY', session: 'regular', symbolType: 'stock' }
+        };
+        var inferredExchange = normalizedExchange;
+        if (!inferredExchange) {
+            if (/\.HK$/.test(normalizedCode)) inferredExchange = 'HKEX';
+            else if (/\.(L|LSE)$/.test(normalizedCode)) inferredExchange = 'LSE';
+            else if (/\.(TO|TSX)$/.test(normalizedCode)) inferredExchange = 'TSX';
+            else if (/\.(AX|ASX)$/.test(normalizedCode)) inferredExchange = 'ASX';
+            else if (/\.(NS|NSE)$/.test(normalizedCode)) inferredExchange = 'NSE';
+            else if (/\.(T|TYO)$/.test(normalizedCode)) inferredExchange = 'TYO';
+            else if (/\.(SS|SH)$/.test(normalizedCode)) inferredExchange = 'SHSE';
+            else if (/\.SZ$/.test(normalizedCode)) inferredExchange = 'SZSE';
+        }
+        return Object.assign({
+            exchange: cleanMetadataText(exchange),
+            timezone: '',
+            currency: '',
+            basecurrency: '',
+            session: '',
+            symbolType: '',
+            pointvalue: undefined
+        }, profiles[inferredExchange] || {});
+    }
+
     function stockMetadataFromSource(source, fallbackCode) {
         source = source || {};
         var code = normalizeCode(source.code || source.symbol || source.value || fallbackCode || '');
-        return {
+        var profile = marketProfile(source.exchange || source.exchange_from_TXT || '', code);
+        return Object.assign(profile, {
             code: code,
             name_en: cleanMetadataText(source.name_en || source.englishName || source.name || ''),
-            name_tc: cleanMetadataText(source.name_tc || source.chineseName || source.name_cn || source.name_sc || '')
-        };
+            name_tc: cleanMetadataText(source.name_tc || source.chineseName || source.name_cn || source.name_sc || ''),
+            exchange: cleanMetadataText(source.exchange || source.exchange_from_TXT || profile.exchange),
+            timezone: cleanMetadataText(source.timezone || source.tz || profile.timezone),
+            currency: cleanMetadataText(source.currency || profile.currency),
+            basecurrency: cleanMetadataText(source.basecurrency || profile.basecurrency),
+            session: cleanMetadataText(source.session || profile.session),
+            symbolType: cleanMetadataText(source.symbolType || source.type || profile.symbolType),
+            pointvalue: Number(source.pointvalue || profile.pointvalue) || undefined,
+            mintick: Number(source.mintick || source.tick_size || 0) || undefined
+        });
     }
 
     function rememberStockMetadata(source, fallbackCode) {
@@ -157,7 +206,15 @@
         stockMetadataByCode[metadata.code] = {
             code: metadata.code,
             name_en: metadata.name_en || existing.name_en || '',
-            name_tc: metadata.name_tc || existing.name_tc || ''
+            name_tc: metadata.name_tc || existing.name_tc || '',
+            exchange: metadata.exchange || existing.exchange || '',
+            timezone: metadata.timezone || existing.timezone || 'UTC',
+            currency: metadata.currency || existing.currency || '',
+            basecurrency: metadata.basecurrency || existing.basecurrency || '',
+            session: metadata.session || existing.session || 'regular',
+            symbolType: metadata.symbolType || existing.symbolType || 'stock',
+            pointvalue: Number(metadata.pointvalue || existing.pointvalue) || 1,
+            mintick: Number(metadata.mintick || existing.mintick) || undefined
         };
         return stockMetadataByCode[metadata.code];
     }
@@ -169,7 +226,15 @@
         return {
             code: normalizedCode,
             name_en: incoming.name_en || cached.name_en || '',
-            name_tc: incoming.name_tc || cached.name_tc || ''
+            name_tc: incoming.name_tc || cached.name_tc || '',
+            exchange: incoming.exchange || cached.exchange || '',
+            timezone: incoming.timezone || cached.timezone || 'UTC',
+            currency: incoming.currency || cached.currency || '',
+            basecurrency: incoming.basecurrency || cached.basecurrency || '',
+            session: incoming.session || cached.session || 'regular',
+            symbolType: incoming.symbolType || cached.symbolType || 'stock',
+            pointvalue: Number(incoming.pointvalue || cached.pointvalue) || 1,
+            mintick: Number(incoming.mintick || cached.mintick) || undefined
         };
     }
 
@@ -250,13 +315,13 @@
 
         engineReadyPromise = loadScript('data-tool-stock-chart-backtest', 'assets/js/stock-chart-engine/pine-backtest-engine.js?v=20260718.5', 'PineBacktestEngine')
             .then(function () {
-                return loadScript('data-tool-stock-chart-runtime', 'assets/js/stock-chart-engine/pine-script-runtime.js?v=20260718.9', 'PineScriptRuntime');
+                return loadScript('data-tool-stock-chart-runtime', 'assets/js/stock-chart-engine/pine-script-runtime.js?v=20260726.1', 'PineScriptRuntime');
             })
             .then(function () {
                 window.PineScriptRuntime.setBacktestEngine(window.PineBacktestEngine);
             })
             .then(function () {
-                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260725.1', 'StockChartEngine');
+                return loadScript('data-tool-stock-chart-engine', 'assets/js/stock-chart-engine/stock-chart-engine.js?v=20260726.1', 'StockChartEngine');
             })
             .then(function () { return window.StockChartEngine; })
             .catch(function (error) {
@@ -326,32 +391,37 @@
         setAccountSyncStatus('Sync conflict: this chart changed on another device.', true);
     }
 
-    function persistChartSyncMeta(dirty) {
-        if (!chartSyncState) return;
-        saveChartLocalMeta(chartSyncState.layoutId, {
+    function persistChartSyncMetaFor(sync, asset, dirty) {
+        if (!sync) return;
+        saveChartLocalMeta(sync.layoutId, {
             dirty: !!dirty,
-            asset: currentChartAsset ? {
-                id: currentChartAsset.id,
-                asset_key: currentChartAsset.asset_key,
-                name: currentChartAsset.name,
-                code: currentChartAsset.code,
-                kind: currentChartAsset.kind,
-                revision: currentChartAsset.revision,
-                updated_at: currentChartAsset.updated_at
+            asset: asset ? {
+                id: asset.id,
+                asset_key: asset.asset_key,
+                name: asset.name,
+                code: asset.code,
+                kind: asset.kind,
+                revision: asset.revision,
+                updated_at: asset.updated_at
             } : null,
             updatedAt: new Date().toISOString()
         });
     }
 
-    function flushChartCloudSave() {
-        var sync = chartSyncState;
-        if (!sync || sync.stopped || sync.inFlight || sync.conflict || !sync.pendingDocument) return;
+    function persistChartSyncMeta(dirty) {
+        if (!chartSyncState) return;
+        persistChartSyncMetaFor(chartSyncState, chartSyncState.asset || currentChartAsset, dirty);
+    }
+
+    function flushChartCloudSave(targetSync) {
+        var sync = targetSync || chartSyncState;
+        if (!sync || sync.inFlight || sync.conflict || !sync.pendingDocument) return;
         if (!window.MIQAccount || !window.MIQAccount.state || !window.MIQAccount.state.loggedIn) return;
         var documentState = sync.pendingDocument;
         sync.pendingDocument = null;
         sync.inFlight = true;
-        var asset = currentChartAsset || {};
-        setAccountSyncStatus('Saving to your workspace…', false);
+        var asset = sync.asset || {};
+        if (sync === chartSyncState) setAccountSyncStatus('Saving to your workspace…', false);
         window.MIQAccount.saveChartLayout(sync.code, documentState, {
             id: asset.id || undefined,
             asset_key: asset.asset_key || sync.assetKey,
@@ -361,30 +431,32 @@
             autosave: true,
             clientUpdatedAt: documentState.updatedAt || new Date().toISOString()
         }).then(function (response) {
-            if (sync !== chartSyncState) return;
-            currentChartAsset = response && response.chart ? response.chart : currentChartAsset;
-            if (currentChartAsset && currentChartAsset.asset_key) sync.assetKey = currentChartAsset.asset_key;
+            sync.asset = response && response.chart ? response.chart : sync.asset;
+            if (sync.asset && sync.asset.asset_key) sync.assetKey = sync.asset.asset_key;
             sync.inFlight = false;
             sync.retryDelay = 1500;
-            persistChartSyncMeta(!!sync.pendingDocument);
-            updateCurrentChartLabel();
-            setAccountSyncStatus(sync.pendingDocument ? 'Saving newer changes…' : 'Synced to your workspace', false);
-            if (sync.pendingDocument) flushChartCloudSave();
+            persistChartSyncMetaFor(sync, sync.asset, !!sync.pendingDocument);
+            if (sync === chartSyncState) {
+                currentChartAsset = sync.asset || currentChartAsset;
+                updateCurrentChartLabel();
+                setAccountSyncStatus(sync.pendingDocument ? 'Saving newer changes…' : 'Synced to your workspace', false);
+            }
+            if (sync.pendingDocument) flushChartCloudSave(sync);
         }).catch(function (error) {
-            if (sync !== chartSyncState) return;
             sync.inFlight = false;
             if (error && error.conflict) {
                 if (!sync.pendingDocument) sync.pendingDocument = documentState;
-                showChartConflict(error.body && error.body.chart);
-                persistChartSyncMeta(true);
+                sync.conflict = error.body && error.body.chart || null;
+                persistChartSyncMetaFor(sync, sync.asset, true);
+                if (sync === chartSyncState) showChartConflict(sync.conflict);
                 return;
             }
             if (!sync.pendingDocument) sync.pendingDocument = documentState;
-            persistChartSyncMeta(true);
+            persistChartSyncMetaFor(sync, sync.asset, true);
             sync.retryDelay = Math.min(Math.max(1500, sync.retryDelay || 1500) * 2, 60000);
             clearTimeout(sync.timer);
-            sync.timer = setTimeout(flushChartCloudSave, sync.retryDelay);
-            setAccountSyncStatus('Saved locally; account sync will retry automatically.', true);
+            sync.timer = setTimeout(function () { flushChartCloudSave(sync); }, sync.retryDelay);
+            if (sync === chartSyncState) setAccountSyncStatus('Saved locally; account sync will retry automatically.', true);
             console.warn('Account chart sync failed:', error.message);
         });
     }
@@ -394,7 +466,8 @@
         chartSyncState.pendingDocument = JSON.parse(JSON.stringify(doc));
         persistChartSyncMeta(true);
         clearTimeout(chartSyncState.timer);
-        chartSyncState.timer = setTimeout(flushChartCloudSave, 450);
+        var sync = chartSyncState;
+        chartSyncState.timer = setTimeout(function () { flushChartCloudSave(sync); }, 450);
     }
 
     function legacyAccountChartStorage(code) {
@@ -473,21 +546,6 @@
         };
     }
 
-    function legacySyncPineScripts(documentState) {
-        if (!window.MIQAccount || !window.MIQAccount.state || !window.MIQAccount.state.loggedIn || !documentState || !Array.isArray(documentState.indicators)) return;
-        documentState.indicators.forEach(function (indicator) {
-            if (!indicator || indicator.type !== 'PINE_SCRIPT' || !indicator.inputs || !indicator.inputs.code) return;
-            window.MIQAccount.saveScript({
-                name: indicator.title || indicator.inputs.title || 'Pine Script',
-                code: currentCode,
-                source_code: indicator.inputs.code,
-                autosave: true
-            }).catch(function (error) {
-                console.warn('Account Pine script sync failed:', error.message);
-            });
-        });
-    }
-
     function updateHistory(code, asset) {
         if (!code) return;
         var url = new URL(window.location.origin + window.location.pathname);
@@ -510,6 +568,10 @@
         var marker = '#sce-layout=';
         var hash = window.location.hash || '';
         if (hash.indexOf(marker) !== 0) return false;
+        if (hash.length > MAX_SHARE_HASH_LENGTH) {
+            console.error('The stock chart share URL exceeds the supported size.');
+            return false;
+        }
         try {
             shareLayoutPayload = JSON.parse(decodeURIComponent(hash.substring(marker.length)));
         } catch (error) {
@@ -524,15 +586,54 @@
         return normalizeCode(doc && doc.symbol || 'SPY');
     }
 
-    function layoutWithoutEmbeddedData(payload) {
+    function sharedLayoutHasPine(payload) {
+        var doc = payload && (payload.document || payload.chart || payload);
+        return !!(doc && Array.isArray(doc.indicators) && doc.indicators.some(function (indicator) {
+            return indicator && indicator.type === 'PINE_SCRIPT';
+        }));
+    }
+
+    function layoutWithoutEmbeddedData(payload, includePine) {
         var copy = JSON.parse(JSON.stringify(payload || {}));
         delete copy.data;
+        var doc = copy.document || copy.chart || copy;
+        if (doc && Array.isArray(doc.indicators)) {
+            doc.indicators.forEach(function (indicator) {
+                if (indicator && indicator.type === 'PINE_SCRIPT') delete indicator.accountScript;
+            });
+        }
+        if (!includePine && doc && Array.isArray(doc.indicators)) {
+            var removed = {};
+            doc.indicators.forEach(function (indicator) {
+                if (indicator && indicator.type === 'PINE_SCRIPT' && indicator.id) removed[indicator.id] = true;
+            });
+            var changed = true;
+            while (changed) {
+                changed = false;
+                doc.indicators.forEach(function (indicator) {
+                    var source = indicator && indicator.source;
+                    if (indicator && indicator.id && source && source.kind === 'indicator' && removed[source.indicatorId] && !removed[indicator.id]) {
+                        removed[indicator.id] = true;
+                        changed = true;
+                    }
+                });
+            }
+            doc.indicators = doc.indicators.filter(function (indicator) {
+                return !(indicator && removed[indicator.id]);
+            });
+            if (Array.isArray(doc.drawings)) {
+                doc.drawings = doc.drawings.filter(function (drawing) {
+                    return !(drawing && drawing.ownerStudyId && removed[drawing.ownerStudyId]);
+                });
+            }
+        }
         return copy;
     }
 
     function endpointCandidates(file) {
-        var candidates = [file, '/' + file];
-        if (window.location.pathname.slice(-1) === '/') candidates.unshift('../' + file);
+        var candidates = [file];
+        var pathParts = window.location.pathname.split('/').filter(Boolean);
+        if (window.location.pathname.slice(-1) === '/' && pathParts.length > 1) candidates.unshift('../' + file);
         return candidates.filter(function (candidate, index) {
             return candidates.indexOf(candidate) === index;
         });
@@ -679,41 +780,6 @@
         return bars;
     }
 
-    function parseCloseHistoryResult(result) {
-        var bars = [];
-        var previousDate = '';
-        var previousName = '';
-        var previousClose = null;
-
-        String(result || '').split(/\r?\n|\r/).forEach(function (line) {
-            if (!line || line.indexOf(',') < 0) return;
-            if ((line.match(/,/g) || []).length === 1) line = ',' + line;
-
-            var row = line.split(',');
-            if (row.length !== 3) return;
-            if (row[0] !== '') previousName = row[0];
-            else row[0] = previousName;
-
-            var date = decodeStockDate(row[1], previousDate);
-            var close = Number(row[2]);
-            if (!date || !Number.isFinite(close)) return;
-
-            var open = previousClose === null ? close : previousClose;
-            bars.push({
-                time: date,
-                open: open,
-                high: Math.max(open, close),
-                low: Math.min(open, close),
-                close: close,
-                volume: 0
-            });
-            previousDate = date.substring(0, 10);
-            previousClose = close;
-        });
-
-        return bars;
-    }
-
     function requestBars(code) {
         return ajaxTextFromCandidates('db_stockquote_get.php', {
             type: 'get',
@@ -723,17 +789,6 @@
             var bars = parseStockQuoteResult(response.result);
             if (!bars.length) throw new Error('OHLC history was empty for ' + code + '.');
             return { bars: bars, isFallback: false };
-        }).catch(function (primaryError) {
-            console.warn(primaryError);
-            return ajaxTextFromCandidates('db_top10_get.php', {
-                type: 'get',
-                data: { data: code, isIEX: '1' },
-                timeout: 20000
-            }).then(function (response) {
-                var bars = parseCloseHistoryResult(response.result);
-                if (!bars.length) throw new Error('Close history was empty for ' + code + '.');
-                return { bars: bars, isFallback: true };
-            });
         });
     }
 
@@ -778,9 +833,11 @@
         options = options || {};
         var container = document.getElementById('toolStockChart');
         if (!container || !window.StockChartEngine) return;
+        if (stockChart && stockChart.flushAutosave) stockChart.flushAutosave();
         if (chartSyncState) {
             chartSyncState.stopped = true;
             clearTimeout(chartSyncState.timer);
+            if (chartSyncState.pendingDocument && !chartSyncState.inFlight) flushChartCloudSave(chartSyncState);
         }
         currentChartAsset = options.accountChart || null;
         setAccountSyncStatus(window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? 'Account sync enabled' : 'Sign in to sync this chart across devices', false);
@@ -797,7 +854,8 @@
             timer: null,
             retryDelay: 1500,
             suppressRemote: false,
-            stopped: false
+            stopped: false,
+            asset: currentChartAsset
         };
         var shouldLoadStoredLayout = options.load !== false;
         var layoutExisted = (shouldLoadStoredLayout && hasStoredLayout(layoutId)) || !!options.document;
@@ -852,16 +910,17 @@
         }, 0);
     }
 
-    function applySharedLayout(code, payload, bars, metadata) {
-        var savedLayoutExists = hasStoredLayout(escapeLayoutId(code));
+    function applySharedLayout(code, payload, bars, metadata, accountChart, includePine) {
+        var savedLayoutExists = hasStoredLayout(chartLayoutId(code, accountChart)) || !!accountChart;
         renderChart(code, bars, {
             load: false,
             autosave: false,
             skipStarterStudies: true,
             preserveRelativeStrength: false,
-            symbolInfo: metadata
+            symbolInfo: metadata,
+            accountChart: accountChart || null
         });
-        stockChart.importLayout(layoutWithoutEmbeddedData(payload));
+        stockChart.importLayout(layoutWithoutEmbeddedData(payload, includePine));
         applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo);
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
@@ -871,19 +930,14 @@
             });
         }
         recordRecentStock(code, metadata || payload && payload.document && payload.document.symbolInfo);
-        if (!savedLayoutExists) {
-            stockChart.options.autosave = true;
-            stockChart.document.settings.autosave = true;
-            stockChart.save();
-            stockChart.scheduleAutosave();
-            sharedPreviewActive = false;
-            setSharedSaveVisible(false);
-            setStatus('Shared layout saved for ' + code + '.', false);
-            return;
-        }
         sharedPreviewActive = true;
         setSharedSaveVisible(true);
-        setStatus('Shared chart preview. Click Save Layout to replace your saved ' + code + ' layout.', false);
+        setStatus(
+            'Shared chart preview' +
+            (sharedLayoutHasPine(payload) && !includePine ? ' (Pine scripts omitted).' : '.') +
+            ' Click Save Layout to ' + (savedLayoutExists ? 'replace your saved ' : 'save this ') + code + ' layout.',
+            false
+        );
     }
 
     function loadStockChart(rawCode, metadata, options) {
@@ -944,7 +998,7 @@
                     setAccountSyncStatus('Restored local changes; syncing to your workspace…', false);
                 }
                 recordRecentStock(code, symbolInfo);
-                setStatus(code + ' loaded: ' + payload.bars.length + ' bars' + (payload.isFallback ? ' (close history fallback).' : '.'), false);
+                setStatus(code + ' loaded: ' + payload.bars.length + ' OHLCV bars.', false);
                 if (pendingAccountScript) openPendingAccountScript();
             });
         }).catch(function (error) {
@@ -964,15 +1018,25 @@
         shareLayoutApplied = true;
         shareLayoutLoading = true;
         setStatus('Loading shared chart...', false);
+        var includePine = false;
+        if (sharedLayoutHasPine(payload)) {
+            includePine = typeof window.confirm === 'function' && window.confirm(
+                'This shared chart contains Pine Script source code. Run the shared scripts in the protected Pine runtime?\n\nChoose Cancel to open the chart without Pine scripts.'
+            );
+        }
 
         ensureEngineReady().then(function () {
             return Promise.all([
                 requestBars(code),
-                requestStockMetadata(code)
+                requestStockMetadata(code),
+                window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn && window.MIQAccount.getChart
+                    ? window.MIQAccount.getChart({ code: code }).catch(function () { return null; })
+                    : Promise.resolve(null)
             ]).then(function (results) {
                 var response = results[0];
                 var metadata = results[1];
-                applySharedLayout(code, payload, response.bars, metadata);
+                var accountChart = results[2] || null;
+                applySharedLayout(code, payload, response.bars, metadata, accountChart, includePine);
                 shareLayoutLoading = false;
                 return null;
             });
@@ -991,7 +1055,6 @@
         stockChart.options.autosave = true;
         stockChart.document.settings.autosave = true;
         stockChart.save();
-        stockChart.scheduleAutosave();
         sharedPreviewActive = false;
         setSharedSaveVisible(false);
         setStatus('Shared layout saved for ' + currentCode + '.', false);
@@ -1053,7 +1116,11 @@
             clientUpdatedAt: documentState.updatedAt || new Date().toISOString()
         }).then(function (response) {
             currentChartAsset = response.chart || currentChartAsset;
-            if (chartSyncState) chartSyncState.pendingDocument = null;
+            if (chartSyncState) {
+                chartSyncState.asset = currentChartAsset;
+                chartSyncState.assetKey = currentChartAsset && currentChartAsset.asset_key || chartSyncState.assetKey;
+                chartSyncState.pendingDocument = null;
+            }
             persistChartSyncMeta(false);
             updateCurrentChartLabel();
             setAccountSyncStatus('Chart version created', false);
@@ -1069,6 +1136,8 @@
         return window.MIQAccount.getChart({ id: serverSummary.id }).then(function (serverChart) {
             if (!serverChart || !serverChart.layout || !stockChart) throw new Error('The server chart is no longer available.');
             currentChartAsset = serverChart;
+            chartSyncState.asset = serverChart;
+            chartSyncState.assetKey = serverChart.asset_key || chartSyncState.assetKey;
             chartSyncState.conflict = null;
             chartSyncState.pendingDocument = null;
             chartSyncState.suppressRemote = true;
@@ -1093,6 +1162,8 @@
         if (!chartSyncState || !chartSyncState.conflict) return;
         var serverChart = chartSyncState.conflict;
         currentChartAsset = Object.assign({}, currentChartAsset || {}, serverChart);
+        chartSyncState.asset = currentChartAsset;
+        chartSyncState.assetKey = currentChartAsset.asset_key || chartSyncState.assetKey;
         chartSyncState.conflict = null;
         hideChartConflict();
         if (!chartSyncState.pendingDocument && stockChart) chartSyncState.pendingDocument = stockChart.serialize();
@@ -1382,4 +1453,8 @@
     window.ToolStockChart = {
         load: loadStockChart
     };
+
+    window.addEventListener('pagehide', function () {
+        if (stockChart && stockChart.flushAutosave) stockChart.flushAutosave();
+    });
 }());

@@ -126,6 +126,15 @@ function miq_api_existing_asset_key($value)
     return preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/', $value) ? $value : '';
 }
 
+function miq_api_workspace_asset_key($user_id, $code)
+{
+    $hex = hash('sha256', 'workspace' . "\0" . (int) $user_id . "\0" . strtoupper((string) $code));
+    $hex[12] = '5';
+    $variant = hexdec($hex[16]);
+    $hex[16] = dechex(($variant & 0x3) | 0x8);
+    return substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-' . substr($hex, 16, 4) . '-' . substr($hex, 20, 12);
+}
+
 function miq_api_client_datetime($value)
 {
     $timestamp = strtotime((string) $value);
@@ -295,6 +304,74 @@ function miq_api_trim_versions($table, $asset_column, $asset_id)
     foreach (array_chunk($delete_ids, 50) as $chunk) {
         $placeholders = implode(',', array_fill(0, count($chunk), '?'));
         miq_account_query("DELETE FROM {$table} WHERE id IN ({$placeholders})", str_repeat('i', count($chunk)), $chunk)->close();
+    }
+}
+
+function miq_api_require_asset_write($user_id, $creates_version = false)
+{
+    $limits = miq_account_config()['rate_limits'];
+    $write = $limits['asset_write_user'];
+    if (!miq_account_rate_limit('asset_write_user', (string) $user_id, $write['limit'], $write['window'])) {
+        miq_api_json(array('error' => 'Too many chart or Pine saves. Please wait and try again.'), 429);
+    }
+    if ($creates_version) {
+        $version = $limits['asset_version_user'];
+        if (!miq_account_rate_limit('asset_version_user', (string) $user_id, $version['limit'], $version['window'])) {
+            miq_api_json(array('error' => 'Too many explicit versions were created. Please wait and try again.'), 429);
+        }
+    }
+}
+
+function miq_api_asset_storage_bytes($user_id)
+{
+    $sources = array(
+        array(miq_account_table('saved_charts'), 'layout_json'),
+        array(miq_account_table('chart_versions'), 'layout_json'),
+        array(miq_account_table('pine_scripts'), 'source_code'),
+        array(miq_account_table('pine_script_versions'), 'source_code'),
+    );
+    $total = 0;
+    foreach ($sources as $source) {
+        $row = miq_account_fetch_one(miq_account_query(
+            "SELECT COALESCE(SUM(OCTET_LENGTH({$source[1]})), 0) AS total FROM {$source[0]} WHERE user_id = ?",
+            'i',
+            array($user_id)
+        ));
+        $total += (int) ($row['total'] ?? 0);
+    }
+    return $total;
+}
+
+function miq_api_version_storage_delta($table, $asset_column, $asset_id, $content_column, $new_bytes)
+{
+    if ($asset_id <= 0) return max(0, (int) $new_bytes);
+    $limit = max(1, (int) miq_account_config()['max_asset_versions']);
+    $row = miq_account_fetch_one(miq_account_query(
+        "SELECT COUNT(*) AS total FROM {$table} WHERE {$asset_column} = ?",
+        'i',
+        array($asset_id)
+    ));
+    $delete_count = max(0, ((int) ($row['total'] ?? 0)) + 1 - $limit);
+    if ($delete_count === 0) return max(0, (int) $new_bytes);
+    $oldest = miq_account_fetch_one(miq_account_query(
+        "SELECT COALESCE(SUM(content_bytes), 0) AS total FROM (SELECT OCTET_LENGTH({$content_column}) AS content_bytes FROM {$table} WHERE {$asset_column} = ? ORDER BY revision ASC, id ASC LIMIT {$delete_count}) AS oldest_versions",
+        'i',
+        array($asset_id)
+    ));
+    return (int) $new_bytes - (int) ($oldest['total'] ?? 0);
+}
+
+function miq_api_enforce_asset_storage($user_id, $delta_bytes)
+{
+    if ($delta_bytes <= 0) return;
+    $maximum = max(1000000, (int) miq_account_config()['max_asset_storage_bytes']);
+    $current = miq_api_asset_storage_bytes($user_id);
+    if ($current + $delta_bytes > $maximum) {
+        miq_api_json(array(
+            'error' => 'Your chart and Pine storage limit has been reached.',
+            'storage_bytes' => $current,
+            'storage_limit_bytes' => $maximum,
+        ), 422);
     }
 }
 
@@ -1217,18 +1294,35 @@ try {
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
         } elseif ($asset_key !== '') {
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE asset_key = ? AND user_id = ? LIMIT 1", 'si', array($asset_key, $user_id)));
-        } elseif ($kind === 'workspace') {
+        }
+        if (!$existing && $kind === 'workspace') {
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE user_id = ? AND code = ? AND (kind = 'workspace' OR name LIKE 'Auto:%') ORDER BY updated_at DESC LIMIT 1", 'is', array($user_id, $code)));
-        } else {
+        } elseif (!$existing && $asset_key === '') {
             // Backward compatibility for named clients that predate stable asset keys.
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE user_id = ? AND code = ? AND name = ? LIMIT 1", 'iss', array($user_id, $code, $name)));
         }
+        if (!$existing && miq_api_count_rows($charts, $user_id) >= miq_account_config()['max_chart_count']) {
+            miq_api_json(array('error' => 'Your chart storage limit has been reached.'), 422);
+        }
+        if (!$existing && $kind === 'named' && miq_api_count_rows($charts, $user_id, "AND kind = 'named'") >= miq_account_config()['max_named_chart_count']) {
+            miq_api_json(array('error' => 'Your named chart limit has been reached.'), 422);
+        }
+        $will_create_version = $existing
+            ? (!empty($body['create_version']) || empty($body['autosave']))
+            : ($kind === 'named' || !empty($body['create_version']));
+        miq_api_require_asset_write($user_id, $will_create_version);
+        $storage_delta = strlen($layout_json) - ($existing ? strlen((string) $existing['layout_json']) : 0);
+        if ($will_create_version) {
+            $storage_delta += miq_api_version_storage_delta($versions, 'chart_id', $existing ? (int) $existing['id'] : 0, 'layout_json', strlen($layout_json));
+        }
+        miq_api_enforce_asset_storage($user_id, $storage_delta);
         $db = miq_account_db();
         $db->begin_transaction();
         try {
         if ($existing) {
             $chart_id = (int) $existing['id'];
             if ($expected_revision > 0 && $expected_revision !== (int) $existing['revision']) {
+                $db->rollback();
                 miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($existing)), 409);
             }
             $revision = (int) $existing['revision'] + 1;
@@ -1242,6 +1336,7 @@ try {
                 $statement->close();
                 if ($affected !== 1) {
                     $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+                    $db->rollback();
                     miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($current)), 409);
                 }
             } else {
@@ -1251,28 +1346,36 @@ try {
                     array($name, $code, $kind, $layout_json, $visibility, $revision, $client_updated_at, $chart_id, $user_id)
                 )->close();
             }
-            if (!empty($body['create_version']) || empty($body['autosave'])) {
+            if ($will_create_version) {
                 miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($chart_id, $user_id, $revision, $layout_json))->close();
                 miq_api_trim_versions($versions, 'chart_id', $chart_id);
             }
         } else {
-            if (miq_api_count_rows($charts, $user_id) >= miq_account_config()['max_chart_count']) {
-                miq_api_json(array('error' => 'Your chart storage limit has been reached.'), 422);
+            $asset_key = $kind === 'workspace'
+                ? miq_api_workspace_asset_key($user_id, $code)
+                : ($asset_key !== '' ? $asset_key : miq_api_asset_key());
+            if ($kind === 'workspace') {
+                $statement = miq_account_query(
+                    "INSERT INTO {$charts} (user_id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, 'workspace', ?, ?, 1, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), name = VALUES(name), code = VALUES(code), kind = 'workspace', layout_json = VALUES(layout_json), visibility = VALUES(visibility), revision = revision + 1, last_client_updated_at = VALUES(last_client_updated_at), updated_at = UTC_TIMESTAMP()",
+                    'issssss',
+                    array($user_id, $asset_key, $name, $code, $layout_json, $visibility, $client_updated_at)
+                );
+                $chart_id = (int) miq_account_db()->insert_id;
+                $statement->close();
+                $saved_workspace = miq_account_fetch_one(miq_account_query("SELECT revision FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+                $revision = (int) ($saved_workspace['revision'] ?? 1);
+            } else {
+                $statement = miq_account_query(
+                    "INSERT INTO {$charts} (user_id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                    'isssssss',
+                    array($user_id, $asset_key, $name, $code, $kind, $layout_json, $visibility, $client_updated_at)
+                );
+                $chart_id = (int) miq_account_db()->insert_id;
+                $statement->close();
+                $revision = 1;
             }
-            if ($kind === 'named' && miq_api_count_rows($charts, $user_id, "AND kind = 'named'") >= miq_account_config()['max_named_chart_count']) {
-                miq_api_json(array('error' => 'Your named chart limit has been reached.'), 422);
-            }
-            $asset_key = $asset_key !== '' ? $asset_key : miq_api_asset_key();
-            $statement = miq_account_query(
-                "INSERT INTO {$charts} (user_id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
-                'isssssss',
-                array($user_id, $asset_key, $name, $code, $kind, $layout_json, $visibility, $client_updated_at)
-            );
-            $chart_id = (int) miq_account_db()->insert_id;
-            $statement->close();
-            $revision = 1;
-            if ($kind === 'named' || !empty($body['create_version'])) {
-                miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($chart_id, $user_id, $layout_json))->close();
+            if ($will_create_version) {
+                miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($chart_id, $user_id, $revision, $layout_json))->close();
             }
         }
         $db->commit();
@@ -1317,6 +1420,8 @@ try {
         }
         $name = miq_api_clean_text($body['name'] ?? ('Copy of ' . $chart['name']), 120);
         $asset_key = miq_api_asset_key();
+        miq_api_require_asset_write($user_id, true);
+        miq_api_enforce_asset_storage($user_id, strlen((string) $chart['layout_json']) * 2);
         $db = miq_account_db();
         $db->begin_transaction();
         try {
@@ -1366,6 +1471,10 @@ try {
         $version = miq_account_fetch_one(miq_account_query("SELECT * FROM {$versions} WHERE id = ? AND chart_id = ? AND user_id = ? LIMIT 1", 'iii', array($version_id, $chart_id, $user_id)));
         if (!$chart || !$version) miq_api_json(array('error' => 'Chart version not found.'), 404);
         if ($expected_revision > 0 && $expected_revision !== (int) $chart['revision']) miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($chart)), 409);
+        miq_api_require_asset_write($user_id, true);
+        $storage_delta = strlen((string) $version['layout_json']) - strlen((string) $chart['layout_json']);
+        $storage_delta += miq_api_version_storage_delta($versions, 'chart_id', $chart_id, 'layout_json', strlen((string) $version['layout_json']));
+        miq_api_enforce_asset_storage($user_id, $storage_delta);
         $revision = (int) $chart['revision'] + 1;
         $db = miq_account_db();
         $db->begin_transaction();
@@ -1377,6 +1486,7 @@ try {
         $statement->close();
         if (!$restored) {
             $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+            $db->rollback();
             miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($current)), 409);
         }
         miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($chart_id, $user_id, $revision, $version['layout_json']))->close();
@@ -1457,12 +1567,23 @@ try {
             // Preserve the pre-asset-key API contract for cached/older clients.
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE user_id = ? AND name = ? AND code = ? LIMIT 1", 'iss', array($user_id, $name, $code)));
         }
+        if (!$existing && miq_api_count_rows($scripts, $user_id) >= miq_account_config()['max_script_count']) {
+            miq_api_json(array('error' => 'Your Pine script storage limit has been reached.'), 422);
+        }
+        $will_create_version = !empty($body['create_version']) || !empty($body['publish']);
+        miq_api_require_asset_write($user_id, $will_create_version);
+        $storage_delta = strlen($source) - ($existing ? strlen((string) $existing['source_code']) : 0);
+        if ($will_create_version) {
+            $storage_delta += miq_api_version_storage_delta($versions, 'script_id', $existing ? (int) $existing['id'] : 0, 'source_code', strlen($source));
+        }
+        miq_api_enforce_asset_storage($user_id, $storage_delta);
         $db = miq_account_db();
         $db->begin_transaction();
         try {
         if ($existing) {
             $script_id = (int) $existing['id'];
             if ($expected_revision > 0 && $expected_revision !== (int) $existing['revision']) {
+                $db->rollback();
                 miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($existing)), 409);
             }
             $revision = (int) $existing['revision'] + 1;
@@ -1476,6 +1597,7 @@ try {
                 $statement->close();
                 if ($affected !== 1) {
                     $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+                    $db->rollback();
                     miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($current)), 409);
                 }
             } else {
@@ -1485,14 +1607,11 @@ try {
                     array($name, $code, $source, $visibility, $status, $revision, $client_updated_at, $script_id, $user_id)
                 )->close();
             }
-            if (!empty($body['create_version']) || !empty($body['publish'])) {
+            if ($will_create_version) {
                 miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($script_id, $user_id, $revision, $source))->close();
                 miq_api_trim_versions($versions, 'script_id', $script_id);
             }
         } else {
-            if (miq_api_count_rows($scripts, $user_id) >= miq_account_config()['max_script_count']) {
-                miq_api_json(array('error' => 'Your Pine script storage limit has been reached.'), 422);
-            }
             $asset_key = $asset_key !== '' ? $asset_key : miq_api_asset_key();
             $statement = miq_account_query(
                 "INSERT INTO {$scripts} (user_id, asset_key, name, code, source_code, visibility, revision, status, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
@@ -1502,7 +1621,7 @@ try {
             $script_id = (int) miq_account_db()->insert_id;
             $statement->close();
             $revision = 1;
-            if (!empty($body['create_version']) || !empty($body['publish'])) {
+            if ($will_create_version) {
                 miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($script_id, $user_id, $source))->close();
             }
         }
@@ -1546,6 +1665,8 @@ try {
         if (miq_api_count_rows($scripts, $user_id) >= miq_account_config()['max_script_count']) miq_api_json(array('error' => 'Your Pine script storage limit has been reached.'), 422);
         $name = miq_api_clean_text($body['name'] ?? ('Copy of ' . $script['name']), 120);
         $asset_key = miq_api_asset_key();
+        miq_api_require_asset_write($user_id, true);
+        miq_api_enforce_asset_storage($user_id, strlen((string) $script['source_code']) * 2);
         $db = miq_account_db();
         $db->begin_transaction();
         try {
@@ -1570,11 +1691,23 @@ try {
         $scripts = miq_account_table('pine_scripts');
         if ($action === 'archive_script' || $action === 'unarchive_script') {
             $status = $action === 'archive_script' ? 'archived' : 'draft';
-            $statement = miq_account_query("UPDATE {$scripts} SET status = ?, visibility = 'private', updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'sii', array($status, $script_id, $user_id));
+            $expected_revision = max(0, (int) ($body['expected_revision'] ?? 0));
+            $script = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+            if (!$script) miq_api_json(array('error' => 'Pine script not found.'), 404);
+            if ($expected_revision > 0 && $expected_revision !== (int) $script['revision']) {
+                miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($script)), 409);
+            }
+            $revision = (int) $script['revision'] + 1;
+            $statement = $expected_revision > 0
+                ? miq_account_query("UPDATE {$scripts} SET status = ?, visibility = 'private', revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($status, $revision, $script_id, $user_id, $expected_revision))
+                : miq_account_query("UPDATE {$scripts} SET status = ?, visibility = 'private', revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($status, $revision, $script_id, $user_id));
             $changed = $statement->affected_rows === 1;
             $statement->close();
-            if (!$changed) miq_api_json(array('error' => 'Pine script not found.'), 404);
-            miq_api_json(array('archived' => $status === 'archived', 'id' => $script_id, 'status' => $status));
+            if (!$changed) {
+                $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+                miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($current)), 409);
+            }
+            miq_api_json(array('archived' => $status === 'archived', 'id' => $script_id, 'status' => $status, 'revision' => $revision));
         }
         $statement = miq_account_query("DELETE FROM {$scripts} WHERE id = ? AND user_id = ?", 'ii', array($script_id, $user_id));
         $deleted = $statement->affected_rows === 1;
@@ -1603,6 +1736,10 @@ try {
         $version = miq_account_fetch_one(miq_account_query("SELECT * FROM {$versions} WHERE id = ? AND script_id = ? AND user_id = ? LIMIT 1", 'iii', array($version_id, $script_id, $user_id)));
         if (!$script || !$version) miq_api_json(array('error' => 'Pine script version not found.'), 404);
         if ($expected_revision > 0 && $expected_revision !== (int) $script['revision']) miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($script)), 409);
+        miq_api_require_asset_write($user_id, true);
+        $storage_delta = strlen((string) $version['source_code']) - strlen((string) $script['source_code']);
+        $storage_delta += miq_api_version_storage_delta($versions, 'script_id', $script_id, 'source_code', strlen((string) $version['source_code']));
+        miq_api_enforce_asset_storage($user_id, $storage_delta);
         $revision = (int) $script['revision'] + 1;
         $db = miq_account_db();
         $db->begin_transaction();
@@ -1614,6 +1751,7 @@ try {
         $statement->close();
         if (!$restored) {
             $current = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+            $db->rollback();
             miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($current)), 409);
         }
         miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($script_id, $user_id, $revision, $version['source_code']))->close();

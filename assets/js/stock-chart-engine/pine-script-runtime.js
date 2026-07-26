@@ -14,13 +14,20 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '0.4.1';
-  var MAX_SOURCE_LENGTH = 120000;
+  var VERSION = '0.4.2';
+  var MAX_SOURCE_LENGTH = 100000;
   var MAX_PLOTS = 64;
   var MAX_LOOPS = 1000;
   var MAX_FUNCTION_DEPTH = 32;
   var MAX_SECURITY_REQUESTS = 32;
   var MAX_OPERATIONS = 500000;
+  var MAX_COLLECTION_SIZE = 10000;
+  var MAX_MATRIX_DIMENSION = 32;
+  var MAX_MATRIX_CELLS = 4096;
+  var MAX_TABLE_CELLS = 2500;
+  var MAX_DRAWINGS = 1000;
+  var MAX_REGEX_PATTERN_LENGTH = 256;
+  var MAX_REGEX_INPUT_LENGTH = 4096;
   var COMPILE_CACHE_LIMIT = 32;
   var compileCache = Object.create(null);
   var compileCacheKeys = [];
@@ -32,6 +39,34 @@
     activeBudget.used += amount || 1;
     if (activeBudget.used > activeBudget.max) {
       throw new PineError('The script exceeded the maximum execution budget of ' + activeBudget.max + ' operations.', line || 1, 1);
+    }
+  }
+
+  function boundedSize(value, maximum, label) {
+    var size = Math.max(0, Math.floor(asNumber(value)) || 0);
+    if (size > maximum) throw new PineError(label + ' exceeds the maximum size of ' + maximum + '.');
+    return size;
+  }
+
+  function ensureArrayCapacity(value, additional) {
+    var size = Array.isArray(value) ? value.length : 0;
+    if (size + Math.max(0, additional || 0) > MAX_COLLECTION_SIZE) {
+      throw new PineError('Array exceeds the maximum size of ' + MAX_COLLECTION_SIZE + '.');
+    }
+  }
+
+  function safeRegex(pattern) {
+    pattern = String(pattern == null ? '' : pattern);
+    if (pattern.length > MAX_REGEX_PATTERN_LENGTH) {
+      throw new PineError('Regular expression exceeds the maximum length of ' + MAX_REGEX_PATTERN_LENGTH + '.');
+    }
+    if (/\\[1-9]|\(\?/.test(pattern) || /\([^)]*\)[+*{]/.test(pattern) || /(?:\.\*|\.\+).*(?:\.\*|\.\+)/.test(pattern) || /[+*?}][+*?{]/.test(pattern)) {
+      throw new PineError('Regular expression uses an unsafe construct.');
+    }
+    try {
+      return new RegExp(pattern);
+    } catch (error) {
+      throw new PineError('Invalid regular expression.');
     }
   }
 
@@ -1302,39 +1337,68 @@
       replace: function (args) { return stringSeries(args[0], function (value) { var from = String(args[1] == null ? '' : args[1]); return value.replace(from, String(args[2] == null ? '' : args[2])); }); },
       replace_all: function (args) { return stringSeries(args[0], function (value) { var from = String(args[1] == null ? '' : args[1]); return from ? value.split(from).join(String(args[2] == null ? '' : args[2])) : value; }); },
       substring: function (args) { return stringSeries(args[0], function (value) { return value.substring(Math.max(0, Math.floor(asNumber(args[1])) || 0), args[2] == null ? value.length : Math.max(0, Math.floor(asNumber(args[2])) || 0)); }); },
-      split: function (args) { return String(args[0] == null ? '' : args[0]).split(String(args[1] == null ? '' : args[1])); },
+      split: function (args) {
+        var value = String(args[0] == null ? '' : args[0]);
+        if (value.length > MAX_REGEX_INPUT_LENGTH) throw new PineError('String exceeds the maximum split length of ' + MAX_REGEX_INPUT_LENGTH + '.');
+        var result = value.split(String(args[1] == null ? '' : args[1]));
+        ensureArrayCapacity(result, 0);
+        consumeBudget(result.length);
+        return result;
+      },
       format: function (args) { var template = String(args[0] == null ? '' : args[0]); return template.replace(/\{(\d+)\}/g, function (match, index) { return args[Number(index) + 1] == null ? '' : String(args[Number(index) + 1]); }); },
       format_time: function (args) { var date = new Date(Number(args[1])); return Number.isFinite(date.getTime()) ? date.toISOString() : ''; },
       tonumber: function (args) { return stringSeries(args[0], function (value) { var parsed = Number(value); return Number.isFinite(parsed) ? parsed : NaN; }); },
       tostring: function (args) { return stringSeries(args[0], function (value) { return value; }); },
       trim: function (args) { return stringSeries(args[0], function (value) { return value.trim(); }); },
       pos: function (args) { return stringSeries(args[0], function (value) { return value.indexOf(String(args[1] == null ? '' : args[1])); }); },
-      match: function (args) { return stringSeries(args[0], function (value) { var match = value.match(new RegExp(String(args[1] || ''))); return match ? match[0] : ''; }); }
+      match: function (args) {
+        var expression = safeRegex(args[1]);
+        return stringSeries(args[0], function (value) {
+          if (value.length > MAX_REGEX_INPUT_LENGTH) throw new PineError('String exceeds the maximum regular-expression input length of ' + MAX_REGEX_INPUT_LENGTH + '.');
+          consumeBudget(Math.max(1, Math.ceil(value.length / 16)));
+          var match = value.match(expression);
+          return match ? match[0] : '';
+        });
+      }
     };
-    function arrayValues(value) { return Array.isArray(value) ? value : []; }
+    function arrayValues(value) {
+      var result = Array.isArray(value) ? value : [];
+      ensureArrayCapacity(result, 0);
+      return result;
+    }
     function numericArray(value) { return arrayValues(value).map(asNumber).filter(Number.isFinite); }
     var array = {
-      new: function (args) { var size = Math.max(0, Math.floor(asNumber(args[0])) || 0); var initial = args[1]; return Array.apply(null, Array(size)).map(function () { return initial; }); },
-      from: function (args) { return Array.prototype.slice.call(args); },
+      new: function (args) { var size = boundedSize(args[0], MAX_COLLECTION_SIZE, 'Array'); var initial = args[1]; consumeBudget(size); return Array.apply(null, Array(size)).map(function () { return initial; }); },
+      from: function (args) { ensureArrayCapacity(args, 0); consumeBudget(args.length); return Array.prototype.slice.call(args); },
       size: function (args) { return arrayValues(args[0]).length; },
       get: function (args) { return arrayValues(args[0])[Math.max(0, Math.floor(asNumber(args[1])) || 0)]; },
-      set: function (args) { if (Array.isArray(args[0])) args[0][Math.max(0, Math.floor(asNumber(args[1])) || 0)] = args[2]; return args[0]; },
-      push: function (args) { if (Array.isArray(args[0])) args[0].push(args[1]); return args[0]; },
+      set: function (args) { if (Array.isArray(args[0])) { var index = Math.max(0, Math.floor(asNumber(args[1])) || 0); ensureArrayCapacity(args[0], Math.max(0, index + 1 - args[0].length)); args[0][index] = args[2]; } return args[0]; },
+      push: function (args) { if (Array.isArray(args[0])) { ensureArrayCapacity(args[0], 1); args[0].push(args[1]); } return args[0]; },
       pop: function (args) { return Array.isArray(args[0]) ? args[0].pop() : NaN; },
       shift: function (args) { return Array.isArray(args[0]) ? args[0].shift() : NaN; },
-      unshift: function (args) { if (Array.isArray(args[0])) args[0].unshift(args[1]); return args[0]; },
-      insert: function (args) { if (Array.isArray(args[0])) args[0].splice(Math.max(0, Math.floor(asNumber(args[1])) || 0), 0, args[2]); return args[0]; },
+      unshift: function (args) { if (Array.isArray(args[0])) { ensureArrayCapacity(args[0], 1); args[0].unshift(args[1]); } return args[0]; },
+      insert: function (args) { if (Array.isArray(args[0])) { ensureArrayCapacity(args[0], 1); args[0].splice(Math.max(0, Math.floor(asNumber(args[1])) || 0), 0, args[2]); } return args[0]; },
       remove: function (args) { return Array.isArray(args[0]) ? args[0].splice(Math.max(0, Math.floor(asNumber(args[1])) || 0), 1)[0] : NaN; },
       clear: function (args) { if (Array.isArray(args[0])) args[0].length = 0; return args[0]; },
       copy: function (args) { return arrayValues(args[0]).slice(); },
       sort: function (args) { if (Array.isArray(args[0])) args[0].sort(function (a, b) { return asNumber(a) - asNumber(b); }); return args[0]; },
       reverse: function (args) { if (Array.isArray(args[0])) args[0].reverse(); return args[0]; },
       slice: function (args) { return arrayValues(args[0]).slice(Math.max(0, Math.floor(asNumber(args[1])) || 0), args[2] == null ? undefined : Math.max(0, Math.floor(asNumber(args[2])) || 0)); },
-      concat: function (args) { return arrayValues(args[0]).concat(arrayValues(args[1])); },
+      concat: function (args) { var left = arrayValues(args[0]); var right = arrayValues(args[1]); ensureArrayCapacity(left, right.length); consumeBudget(right.length); return left.concat(right); },
       binary_search: function (args) { var values = arrayValues(args[0]); var target = args[1]; return values.indexOf(target); },
       binary_search_leftmost: function (args) { return arrayValues(args[0]).findIndex(function (value) { return value >= args[1]; }); },
       binary_search_rightmost: function (args) { var values = arrayValues(args[0]); for (var i = values.length - 1; i >= 0; i -= 1) if (values[i] <= args[1]) return i; return -1; },
-      range: function (args) { var start = Math.floor(asNumber(args[0])) || 0; var end = Math.floor(asNumber(args[1])) || 0; var step = args[2] == null ? 1 : Math.floor(asNumber(args[2])) || 1; var result = []; for (var value = start; step > 0 ? value < end : value > end; value += step) result.push(value); return result; },
+      range: function (args) {
+        var start = Math.floor(asNumber(args[0])) || 0;
+        var end = Math.floor(asNumber(args[1])) || 0;
+        var step = args[2] == null ? 1 : Math.floor(asNumber(args[2])) || 1;
+        var requested = step > 0 && end > start ? Math.ceil((end - start) / step) : step < 0 && end < start ? Math.ceil((start - end) / Math.abs(step)) : 0;
+        boundedSize(requested, MAX_COLLECTION_SIZE, 'Array range');
+        consumeBudget(requested);
+        var result = [];
+        for (var value = start; step > 0 ? value < end : value > end; value += step) result.push(value);
+        return result;
+      },
       avg: function (args) { var values = numericArray(args[0]); return values.length ? values.reduce(function (a, b) { return a + b; }, 0) / values.length : NaN; },
       covariance: function (args) { var left = numericArray(args[0]); var right = numericArray(args[1]); var length = Math.min(left.length, right.length); if (!length) return NaN; var lm = left.slice(0, length).reduce(function (a, b) { return a + b; }, 0) / length; var rm = right.slice(0, length).reduce(function (a, b) { return a + b; }, 0) / length; return left.slice(0, length).reduce(function (sum, value, index) { return sum + (value - lm) * (right[index] - rm); }, 0) / length; },
       max: function (args) { return numericArray(args[0]).reduce(function (a, b) { return Math.max(a, b); }, -Infinity); },
@@ -1363,7 +1427,13 @@
       join: function (args) { return arrayValues(args[0]).join(String(args[1] == null ? ',' : args[1])); }
     };
     ['float', 'int', 'bool', 'string', 'color'].forEach(function (type) { array['new_' + type] = array.new; });
-    function matrixShape(value) { return Array.isArray(value) ? { rows: value.length, columns: value.length && Array.isArray(value[0]) ? value[0].length : 0 } : { rows: 0, columns: 0 }; }
+    function matrixShape(value) {
+      var shape = Array.isArray(value) ? { rows: value.length, columns: value.length && Array.isArray(value[0]) ? value[0].length : 0 } : { rows: 0, columns: 0 };
+      if (shape.rows > MAX_MATRIX_DIMENSION || shape.columns > MAX_MATRIX_DIMENSION || shape.rows * shape.columns > MAX_MATRIX_CELLS) {
+        throw new PineError('Matrix exceeds the maximum dimensions of ' + MAX_MATRIX_DIMENSION + ' x ' + MAX_MATRIX_DIMENSION + '.');
+      }
+      return shape;
+    }
     function numericMatrix(value) {
       var shape = matrixShape(value);
       if (!shape.rows || !shape.columns) return null;
@@ -1568,7 +1638,14 @@
       return multiplyNumericMatrices(gramInverse, transposed);
     }
     var matrix = {
-      new: function (args) { var rows = Math.max(0, Math.floor(asNumber(args[0])) || 0); var columns = Math.max(0, Math.floor(asNumber(args[1])) || 0); var initial = args[2]; return Array.apply(null, Array(rows)).map(function () { return Array.apply(null, Array(columns)).map(function () { return initial; }); }); },
+      new: function (args) {
+        var rows = boundedSize(args[0], MAX_MATRIX_DIMENSION, 'Matrix rows');
+        var columns = boundedSize(args[1], MAX_MATRIX_DIMENSION, 'Matrix columns');
+        if (rows * columns > MAX_MATRIX_CELLS) throw new PineError('Matrix exceeds the maximum of ' + MAX_MATRIX_CELLS + ' cells.');
+        consumeBudget(rows * columns);
+        var initial = args[2];
+        return Array.apply(null, Array(rows)).map(function () { return Array.apply(null, Array(columns)).map(function () { return initial; }); });
+      },
       rows: function (args) { return matrixShape(args[0]).rows; },
       columns: function (args) { return matrixShape(args[0]).columns; },
       get: function (args) { return args[0] && args[0][Math.floor(asNumber(args[1]))] ? args[0][Math.floor(asNumber(args[1]))][Math.floor(asNumber(args[2]))] : NaN; },
@@ -1577,7 +1654,7 @@
       sub: function (args) { return matrixBinary(args[0], args[1], function (a, b) { return asNumber(a) - asNumber(b); }); },
       mult: function (args) { return matrixBinary(args[0], args[1], function (a, b) { return asNumber(a) * asNumber(b); }); },
       transpose: function (args) { var shape = matrixShape(args[0]); var result = []; for (var column = 0; column < shape.columns; column += 1) { result[column] = []; for (var row = 0; row < shape.rows; row += 1) result[column][row] = args[0][row][column]; } return result; },
-      reshape: function (args) { var flat = [].concat.apply([], args[0] || []); return matrix.new([args[1], args[2], null]).map(function (row, rowIndex) { return row.map(function (value, columnIndex) { return flat[rowIndex * Number(args[2]) + columnIndex]; }); }); },
+      reshape: function (args) { matrixShape(args[0]); var flat = [].concat.apply([], args[0] || []); return matrix.new([args[1], args[2], null]).map(function (row, rowIndex) { return row.map(function (value, columnIndex) { return flat[rowIndex * Number(args[2]) + columnIndex]; }); }); },
       fill: function (args) { var shape = matrixShape(args[0]); for (var row = 0; row < shape.rows; row += 1) for (var column = 0; column < shape.columns; column += 1) args[0][row][column] = args[1]; return args[0]; },
       copy: function (args) { return (args[0] || []).map(function (row) { return row.slice(); }); },
       sort: function (args) { return (args[0] || []).slice().sort(function (a, b) { return array.sum([a]) - array.sum([b]); }); },
@@ -1597,18 +1674,28 @@
     };
     function matrixBinary(left, right, mapper) { var rows = Math.min((left || []).length, (right || []).length); var result = []; for (var row = 0; row < rows; row += 1) { var columns = Math.min((left[row] || []).length, (right[row] || []).length); result[row] = []; for (var column = 0; column < columns; column += 1) result[row][column] = mapper(left[row][column], right[row][column]); } return result; }
     ['float', 'int', 'bool', 'string'].forEach(function (type) { matrix['new_' + type] = matrix.new; });
-    function createMap() { return { __pineMap: true, data: Object.create(null) }; }
+    function createMap() { return { __pineMap: true, data: Object.create(null), size: 0 }; }
     var map = {
       new: function () { return createMap(); },
-      size: function (args) { return args[0] && args[0].__pineMap ? Object.keys(args[0].data).length : 0; },
-      put: function (args) { if (args[0] && args[0].__pineMap) args[0].data[String(args[1])] = args[2]; return args[0]; },
+      size: function (args) { return args[0] && args[0].__pineMap ? Number(args[0].size) || 0 : 0; },
+      put: function (args) {
+        if (args[0] && args[0].__pineMap) {
+          var key = String(args[1]);
+          if (!Object.prototype.hasOwnProperty.call(args[0].data, key)) {
+            if (args[0].size >= MAX_COLLECTION_SIZE) throw new PineError('Map exceeds the maximum size of ' + MAX_COLLECTION_SIZE + '.');
+            args[0].size += 1;
+          }
+          args[0].data[key] = args[2];
+        }
+        return args[0];
+      },
       get: function (args) { return args[0] && args[0].__pineMap ? args[0].data[String(args[1])] : NaN; },
-      remove: function (args) { if (args[0] && args[0].__pineMap) { var key = String(args[1]); var value = args[0].data[key]; delete args[0].data[key]; return value; } return NaN; },
-      clear: function (args) { if (args[0] && args[0].__pineMap) args[0].data = Object.create(null); return args[0]; },
+      remove: function (args) { if (args[0] && args[0].__pineMap) { var key = String(args[1]); var exists = Object.prototype.hasOwnProperty.call(args[0].data, key); var value = args[0].data[key]; delete args[0].data[key]; if (exists) args[0].size = Math.max(0, args[0].size - 1); return value; } return NaN; },
+      clear: function (args) { if (args[0] && args[0].__pineMap) { args[0].data = Object.create(null); args[0].size = 0; } return args[0]; },
       contains: function (args) { return !!(args[0] && args[0].__pineMap && Object.prototype.hasOwnProperty.call(args[0].data, String(args[1]))); },
       keys: function (args) { return args[0] && args[0].__pineMap ? Object.keys(args[0].data) : []; },
       values: function (args) { return args[0] && args[0].__pineMap ? Object.keys(args[0].data).map(function (key) { return args[0].data[key]; }) : []; },
-      copy: function (args) { var copy = createMap(); if (args[0] && args[0].__pineMap) Object.keys(args[0].data).forEach(function (key) { copy.data[key] = args[0].data[key]; }); return copy; }
+      copy: function (args) { var copy = createMap(); if (args[0] && args[0].__pineMap) { Object.keys(args[0].data).forEach(function (key) { copy.data[key] = args[0].data[key]; }); copy.size = args[0].size; } return copy; }
     };
     var plotStyles = {
       style_line: 'line', style_histogram: 'histogram', style_columns: 'histogram', style_area: 'area',
@@ -1821,7 +1908,7 @@
     return compiled;
   }
 
-  function run(compiledOrSource, bars, options) {
+  function runUnsafe(compiledOrSource, bars, options) {
     options = options || {};
     bars = Array.isArray(bars) ? bars : [];
     var onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
@@ -1889,20 +1976,97 @@
     var genericInput = function (args) { return registerInput('string', args, ''); };
     Object.keys(inputNamespace).forEach(function (key) { genericInput[key] = inputNamespace[key]; });
     env.input = genericInput;
-    function timeSeriesMapper(mapper, source) { return mapSeries(source || env.time, function (value) { var date = new Date(Number(value)); return Number.isFinite(date.getTime()) ? mapper(date) : NaN; }); }
+    var exchangeTimezone = String(options.timezone || 'UTC');
+    var timezoneFormatters = Object.create(null);
+    function timezoneParts(value, timezone) {
+      var date = new Date(Number(value));
+      if (!Number.isFinite(date.getTime())) return null;
+      timezone = String(timezone || exchangeTimezone || 'UTC');
+      var requestedTimezone = timezone;
+      var formatter = timezoneFormatters[timezone];
+      if (!formatter) {
+        try {
+          formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hourCycle: 'h23',
+            weekday: 'short'
+          });
+        } catch (error) {
+          timezone = 'UTC';
+          formatter = timezoneFormatters[timezone] || new Intl.DateTimeFormat('en-US', {
+            timeZone: 'UTC',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hourCycle: 'h23',
+            weekday: 'short'
+          });
+        }
+        timezoneFormatters[timezone] = formatter;
+        timezoneFormatters[requestedTimezone] = formatter;
+      }
+      var result = {};
+      formatter.formatToParts(date).forEach(function (part) {
+        if (part.type !== 'literal') result[part.type] = part.value;
+      });
+      var weekdays = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+      return {
+        year: Number(result.year),
+        month: Number(result.month),
+        day: Number(result.day),
+        hour: Number(result.hour) % 24,
+        minute: Number(result.minute),
+        second: Number(result.second),
+        weekday: weekdays[result.weekday] || NaN
+      };
+    }
+    function timeSeriesMapper(mapper, source, timezone) {
+      return mapSeries(source || env.time, function (value) {
+        var parts = timezoneParts(value, timezone);
+        return parts ? mapper(parts) : NaN;
+      });
+    }
+    function zonedTimestamp(timezone, year, month, day, hour, minute, second) {
+      var desired = Date.UTC(year, month - 1, day, hour || 0, minute || 0, second || 0);
+      var candidate = desired;
+      for (var iteration = 0; iteration < 4; iteration += 1) {
+        var parts = timezoneParts(candidate, timezone);
+        if (!parts) return NaN;
+        var represented = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+        var adjustment = desired - represented;
+        candidate += adjustment;
+        if (!adjustment) break;
+      }
+      return candidate;
+    }
     env.timestamp = function (args) {
-      if (args.length >= 3) return Date.UTC(Number(args[0]), Number(args[1]) - 1, Number(args[2]), Number(args[3] || 0), Number(args[4] || 0), Number(args[5] || 0));
+      var timezone = exchangeTimezone;
+      var offset = 0;
+      if (typeof args[0] === 'string' && args.length >= 4) {
+        timezone = args[0];
+        offset = 1;
+      }
+      if (args.length - offset >= 3) return zonedTimestamp(timezone, Number(args[offset]), Number(args[offset + 1]), Number(args[offset + 2]), Number(args[offset + 3] || 0), Number(args[offset + 4] || 0), Number(args[offset + 5] || 0));
       var parsed = Date.parse(String(args[0] || ''));
       return Number.isFinite(parsed) ? parsed : NaN;
     };
-    env.dayofmonth = function (args) { return timeSeriesMapper(function (date) { return date.getUTCDate(); }, args[0]); };
-    env.dayofweek = function (args) { return timeSeriesMapper(function (date) { return date.getUTCDay() || 7; }, args[0]); };
-    env.hour = function (args) { return timeSeriesMapper(function (date) { return date.getUTCHours(); }, args[0]); };
-    env.minute = function (args) { return timeSeriesMapper(function (date) { return date.getUTCMinutes(); }, args[0]); };
-    env.month = function (args) { return timeSeriesMapper(function (date) { return date.getUTCMonth() + 1; }, args[0]); };
-    env.second = function (args) { return timeSeriesMapper(function (date) { return date.getUTCSeconds(); }, args[0]); };
-    env.year = function (args) { return timeSeriesMapper(function (date) { return date.getUTCFullYear(); }, args[0]); };
-    env.weekofyear = function (args) { return timeSeriesMapper(function (date) { var start = new Date(Date.UTC(date.getUTCFullYear(), 0, 1)); return Math.ceil((((date - start) / 86400000) + start.getUTCDay() + 1) / 7); }, args[0]); };
+    env.dayofmonth = function (args) { return timeSeriesMapper(function (parts) { return parts.day; }, args[0], args[1]); };
+    env.dayofweek = function (args) { return timeSeriesMapper(function (parts) { return parts.weekday; }, args[0], args[1]); };
+    env.hour = function (args) { return timeSeriesMapper(function (parts) { return parts.hour; }, args[0], args[1]); };
+    env.minute = function (args) { return timeSeriesMapper(function (parts) { return parts.minute; }, args[0], args[1]); };
+    env.month = function (args) { return timeSeriesMapper(function (parts) { return parts.month; }, args[0], args[1]); };
+    env.second = function (args) { return timeSeriesMapper(function (parts) { return parts.second; }, args[0], args[1]); };
+    env.year = function (args) { return timeSeriesMapper(function (parts) { return parts.year; }, args[0], args[1]); };
+    env.weekofyear = function (args) { return timeSeriesMapper(function (parts) { var start = Date.UTC(parts.year, 0, 1); var current = Date.UTC(parts.year, parts.month - 1, parts.day); return Math.ceil(((current - start) / 86400000 + new Date(start).getUTCDay() + 1) / 7); }, args[0], args[1]); };
     env.last_bar_index = Math.max(0, bars.length - 1);
     env.last_bar_time = bars.length ? pineTimestamp(securityTime(bars[bars.length - 1], bars.length - 1)) : NaN;
     env.timenow = Date.now();
@@ -1910,7 +2074,7 @@
       basecurrency: String(options.basecurrency || ''), currency: String(options.currency || ''), description: String(options.description || options.symbol || ''),
       main_tickerid: String(options.symbol || ''), mintick: Number(options.mintick) || 0.01, pointvalue: Number(options.pointvalue) || 1,
       prefix: String(options.symbol || '').split(':')[0] || '', root: String(options.symbol || '').split(':').pop() || '', session: String(options.session || 'regular'),
-      ticker: String(options.symbol || '').split(':').pop() || '', tickerid: String(options.symbol || ''), timezone: String(options.timezone || 'UTC'), type: String(options.symbolType || 'stock')
+      ticker: String(options.symbol || '').split(':').pop() || '', tickerid: String(options.symbol || ''), timezone: exchangeTimezone, type: String(options.symbolType || 'stock')
     };
     var timeframeName = chartTimeframe.toUpperCase();
     env.timeframe = {
@@ -2266,35 +2430,37 @@
         new PineSeries(function (index) { if (index < 1) return NaN; var pivot = (env.high.get(index - 1) + env.low.get(index - 1) + env.close.get(index - 1)) / 3; return 2 * pivot - env.high.get(index - 1); })
       ];
     };
-    namespaces.ta.obv = new PineSeries(function (index) {
-      var total = 0;
-      for (var cursor = 1; cursor <= index; cursor += 1) {
-        var current = asNumber(env.close.get(cursor));
-        var previous = asNumber(env.close.get(cursor - 1));
-        var volume = asNumber(env.volume.get(cursor));
-        if (![current, previous, volume].every(Number.isFinite)) return NaN;
-        total += current > previous ? volume : current < previous ? -volume : 0;
-      }
-      return total;
+    var obvSeries = new PineSeries(function (index) {
+      if (index < 1) return 0;
+      var current = asNumber(env.close.get(index));
+      var previous = asNumber(env.close.get(index - 1));
+      var volume = asNumber(env.volume.get(index));
+      var previousTotal = asNumber(obvSeries.get(index - 1));
+      if (![current, previous, volume, previousTotal].every(Number.isFinite)) return NaN;
+      return previousTotal + (current > previous ? volume : current < previous ? -volume : 0);
     }, 'obv');
-    namespaces.ta.accdist = new PineSeries(function (index) {
-      var total = 0;
-      for (var cursor = 0; cursor <= index; cursor += 1) {
-        var high = asNumber(env.high.get(cursor));
-        var low = asNumber(env.low.get(cursor));
-        var close = asNumber(env.close.get(cursor));
-        var volume = asNumber(env.volume.get(cursor));
-        if (![high, low, close, volume].every(Number.isFinite)) return NaN;
-        total += high === low ? 0 : ((2 * close - low - high) / (high - low)) * volume;
-      }
-      return total;
+    namespaces.ta.obv = obvSeries;
+    var accdistSeries = new PineSeries(function (index) {
+      var high = asNumber(env.high.get(index));
+      var low = asNumber(env.low.get(index));
+      var close = asNumber(env.close.get(index));
+      var volume = asNumber(env.volume.get(index));
+      var previousTotal = index > 0 ? asNumber(accdistSeries.get(index - 1)) : 0;
+      if (![high, low, close, volume, previousTotal].every(Number.isFinite)) return NaN;
+      return previousTotal + (high === low ? 0 : ((2 * close - low - high) / (high - low)) * volume);
     }, 'accdist');
+    namespaces.ta.accdist = accdistSeries;
     var metadata = { title: options.title || 'Pine Script', overlay: false, shorttitle: null };
     var plots = [];
     var shapePlots = [];
     var fills = [];
     var backgrounds = [];
     var pineDrawings = [];
+    function addPineDrawing(drawing) {
+      if (pineDrawings.length >= MAX_DRAWINGS) throw new PineError('The script exceeded the maximum of ' + MAX_DRAWINGS + ' drawings.');
+      pineDrawings.push(drawing);
+      return drawing;
+    }
     var levels = [];
     var alertConditions = [];
     var warnings = [];
@@ -2822,7 +2988,7 @@
       return args[position] == null ? fallback : args[position];
     }
     function labelNewFunction(args) {
-      pineDrawings.push({
+      addPineDrawing({
         type: 'label',
         x: asNumber(drawingArgument(args, 'x', 0, 0, bars.length - 1)),
         y: asNumber(drawingArgument(args, 'y', 1, 0, NaN)),
@@ -2835,7 +3001,7 @@
       return pineDrawings[pineDrawings.length - 1];
     }
     function lineNewFunction(args) {
-      pineDrawings.push({
+      addPineDrawing({
         type: 'line',
         x1: asNumber(drawingArgument(args, 'x1', 0, 0, 0)),
         y1: asNumber(drawingArgument(args, 'y1', 1, 0, NaN)),
@@ -2850,7 +3016,7 @@
       return pineDrawings[pineDrawings.length - 1];
     }
     function boxNewFunction(args) {
-      pineDrawings.push({
+      addPineDrawing({
         type: 'box',
         left: asNumber(drawingArgument(args, 'left', 0, 0, 0)),
         top: asNumber(drawingArgument(args, 'top', 1, 0, NaN)),
@@ -2888,7 +3054,7 @@
     env.plotbar = function (args) { return candlePlotFunction(args, true); };
     env.barcolor = barColorFunction;
     function removeDrawing(args) { var drawing = args[0]; var drawingIndex = pineDrawings.indexOf(drawing); if (drawingIndex !== -1) pineDrawings.splice(drawingIndex, 1); return true; }
-    function copyDrawing(args) { var original = args[0]; var copy = original && typeof original === 'object' ? mergeObject(original) : original; if (copy && typeof copy === 'object') pineDrawings.push(copy); return copy; }
+    function copyDrawing(args) { var original = args[0]; var copy = original && typeof original === 'object' ? mergeObject(original) : original; if (copy && typeof copy === 'object') addPineDrawing(copy); return copy; }
     function mergeObject(value) { var copy = {}; Object.keys(value || {}).forEach(function (key) { copy[key] = value[key]; }); return copy; }
     function objectGetter(property) { return function (args) { return args[0] && args[0][property]; }; }
     function objectSetter(property) { return function (args) { if (args[0] && typeof args[0] === 'object') args[0][property] = valueAt(args[1], Math.max(0, bars.length - 1)); return args[0]; }; }
@@ -2905,19 +3071,24 @@
     }
     env.line = { new: lineNewFunction, delete: removeDrawing, copy: copyDrawing, get_x1: objectGetter('x1'), get_x2: objectGetter('x2'), get_y1: objectGetter('y1'), get_y2: objectGetter('y2'), get_price: function (args) { var line = args[0]; var x = asNumber(valueAt(args[1], Math.max(0, bars.length - 1))); if (!line || line.x1 === line.x2) return line ? line.y1 : NaN; return line.y1 + (line.y2 - line.y1) * (x - line.x1) / (line.x2 - line.x1); }, set_x1: objectSetter('x1'), set_x2: objectSetter('x2'), set_y1: objectSetter('y1'), set_y2: objectSetter('y2'), set_xy1: function (args) { if (args[0]) { args[0].x1 = valueAt(args[1], Math.max(0, bars.length - 1)); args[0].y1 = valueAt(args[2], Math.max(0, bars.length - 1)); } return args[0]; }, set_xy2: function (args) { if (args[0]) { args[0].x2 = valueAt(args[1], Math.max(0, bars.length - 1)); args[0].y2 = valueAt(args[2], Math.max(0, bars.length - 1)); } return args[0]; }, set_first_point: function (args) { return setLinePoint(args, true); }, set_second_point: function (args) { return setLinePoint(args, false); }, set_xloc: function (args) { if (args[0]) { args[0].x1 = valueAt(args[1], Math.max(0, bars.length - 1)); args[0].x2 = valueAt(args[2], Math.max(0, bars.length - 1)); args[0].xloc = args[3]; } return args[0]; }, set_color: objectSetter('color'), set_style: objectSetter('style'), set_width: objectSetter('width'), set_extend: objectSetter('extend'), get_xloc: objectGetter('xloc'), get_extend: objectGetter('extend') };
     env.box = { new: boxNewFunction, delete: removeDrawing, copy: copyDrawing, get_left: objectGetter('left'), get_top: objectGetter('top'), get_right: objectGetter('right'), get_bottom: objectGetter('bottom'), set_left: objectSetter('left'), set_top: objectSetter('top'), set_right: objectSetter('right'), set_bottom: objectSetter('bottom'), set_bgcolor: objectSetter('background'), set_border_color: objectSetter('borderColor'), set_border_style: objectSetter('borderStyle'), set_border_width: objectSetter('borderWidth'), set_text: objectSetter('text'), set_text_color: objectSetter('textColor'), set_text_size: objectSetter('textSize'), set_text_halign: objectSetter('textHalign'), set_text_valign: objectSetter('textValign') };
-    env.linefill = { new: function (args) { var fill = { type: 'linefill', line1: args[0], line2: args[1], color: args[2] || '#2563eb' }; pineDrawings.push(fill); return fill; }, delete: removeDrawing, get_line1: objectGetter('line1'), get_line2: objectGetter('line2'), set_color: objectSetter('color') };
-    env.polyline = { new: function (args) { var polyline = { type: 'polyline', points: args[0] || [], curved: !!(args.named && args.named.curved != null ? args.named.curved : args[1]), closed: !!(args.named && args.named.closed != null ? args.named.closed : args[2]), xloc: args.named && args.named.xloc || args[3] || 'bar_index', color: args.named && args.named.line_color || args[4] || '#2563eb', fillColor: args.named && args.named.fill_color || args[5] || null, style: args.named && args.named.line_style || args[6] || 'solid', width: args.named && args.named.line_width || args[7] || 2 }; pineDrawings.push(polyline); return polyline; }, delete: removeDrawing, copy: copyDrawing };
+    env.linefill = { new: function (args) { var fill = { type: 'linefill', line1: args[0], line2: args[1], color: args[2] || '#2563eb' }; return addPineDrawing(fill); }, delete: removeDrawing, get_line1: objectGetter('line1'), get_line2: objectGetter('line2'), set_color: objectSetter('color') };
+    env.polyline = { new: function (args) { var points = Array.isArray(args[0]) ? args[0] : []; ensureArrayCapacity(points, 0); var polyline = { type: 'polyline', points: points.slice(), curved: !!(args.named && args.named.curved != null ? args.named.curved : args[1]), closed: !!(args.named && args.named.closed != null ? args.named.closed : args[2]), xloc: args.named && args.named.xloc || args[3] || 'bar_index', color: args.named && args.named.line_color || args[4] || '#2563eb', fillColor: args.named && args.named.fill_color || args[5] || null, style: args.named && args.named.line_style || args[6] || 'solid', width: args.named && args.named.line_width || args[7] || 2 }; return addPineDrawing(polyline); }, delete: removeDrawing, copy: copyDrawing };
     function tableCell(table, column, row) {
       if (!table || !table.cells) return null;
+      column = Math.floor(asNumber(column));
+      row = Math.floor(asNumber(row));
+      if (!Number.isFinite(column) || !Number.isFinite(row) || column < 0 || row < 0 || column >= table.columns || row >= table.rows) return null;
       var key = String(column) + ':' + String(row);
       if (!table.cells[key]) table.cells[key] = {};
       return table.cells[key];
     }
     env.table = {
       new: function (args) {
-        var table = { type: 'table', position: args[0], columns: Math.max(1, Number(args[1]) || 1), rows: Math.max(1, Number(args[2]) || 1), bgcolor: drawingArgumentValue(args, 'bgcolor', 3, null), frameColor: drawingArgumentValue(args, 'frame_color', 4, null), frameWidth: Number(drawingArgumentValue(args, 'frame_width', 5, 1)) || 1, borderColor: drawingArgumentValue(args, 'border_color', 6, null), borderWidth: Number(drawingArgumentValue(args, 'border_width', 7, 1)) || 1, cells: {} };
-        pineDrawings.push(table);
-        return table;
+        var columns = Math.max(1, Math.floor(Number(args[1])) || 1);
+        var rows = Math.max(1, Math.floor(Number(args[2])) || 1);
+        if (columns * rows > MAX_TABLE_CELLS) throw new PineError('Table exceeds the maximum of ' + MAX_TABLE_CELLS + ' cells.');
+        var table = { type: 'table', position: args[0], columns: columns, rows: rows, bgcolor: drawingArgumentValue(args, 'bgcolor', 3, null), frameColor: drawingArgumentValue(args, 'frame_color', 4, null), frameWidth: Number(drawingArgumentValue(args, 'frame_width', 5, 1)) || 1, borderColor: drawingArgumentValue(args, 'border_color', 6, null), borderWidth: Number(drawingArgumentValue(args, 'border_width', 7, 1)) || 1, cells: {} };
+        return addPineDrawing(table);
       },
       cell: function (args) {
         var cell = tableCell(args[0], args[1], args[2]);
@@ -2943,7 +3114,10 @@
         if (!args[0]) return args[0];
         if (args[1] == null || args[2] == null || args[3] == null || args[4] == null) { args[0].cells = {}; return args[0]; }
         var startColumn = Math.max(0, Math.floor(asNumber(args[1])) || 0); var startRow = Math.max(0, Math.floor(asNumber(args[2])) || 0);
-        var endColumn = Math.max(startColumn, Math.floor(asNumber(args[3])) || startColumn); var endRow = Math.max(startRow, Math.floor(asNumber(args[4])) || startRow);
+        var endColumn = Math.min(args[0].columns - 1, Math.max(startColumn, Math.floor(asNumber(args[3])) || startColumn)); var endRow = Math.min(args[0].rows - 1, Math.max(startRow, Math.floor(asNumber(args[4])) || startRow));
+        startColumn = Math.min(startColumn, args[0].columns - 1);
+        startRow = Math.min(startRow, args[0].rows - 1);
+        consumeBudget(Math.max(0, endColumn - startColumn + 1) * Math.max(0, endRow - startRow + 1));
         for (var column = startColumn; column <= endColumn; column += 1) for (var row = startRow; row <= endRow; row += 1) delete args[0].cells[String(column) + ':' + String(row)];
         return args[0];
       },
@@ -3318,6 +3492,14 @@
     return result;
   }
 
+  function run(compiledOrSource, bars, options) {
+    try {
+      return runUnsafe(compiledOrSource, bars, options);
+    } finally {
+      activeBudget = null;
+    }
+  }
+
   function runInWorker(message) {
     try {
       var workerOptions = {};
@@ -3358,6 +3540,13 @@
       maxFunctionDepth: MAX_FUNCTION_DEPTH,
       maxSecurityRequests: MAX_SECURITY_REQUESTS,
       maxOperations: MAX_OPERATIONS,
+      maxCollectionSize: MAX_COLLECTION_SIZE,
+      maxMatrixDimension: MAX_MATRIX_DIMENSION,
+      maxMatrixCells: MAX_MATRIX_CELLS,
+      maxTableCells: MAX_TABLE_CELLS,
+      maxDrawings: MAX_DRAWINGS,
+      maxRegexPatternLength: MAX_REGEX_PATTERN_LENGTH,
+      maxRegexInputLength: MAX_REGEX_INPUT_LENGTH,
       compileCacheSize: COMPILE_CACHE_LIMIT
     }
   };

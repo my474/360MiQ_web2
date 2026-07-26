@@ -733,9 +733,11 @@
         } else if (action === 'duplicate-script') {
             window.MIQAccount.action('duplicate_script', { id: scriptId }).then(function () { return refreshWorkspaceAndTab('Script duplicated.'); }).catch(function (error) { showStatus(error.message, 'danger'); });
         } else if (action === 'archive-script') {
-            window.MIQAccount.action('archive_script', { id: scriptId }).then(function () { return refreshWorkspaceAndTab('Script archived.'); }).catch(function (error) { showStatus(error.message, 'danger'); });
+            var archiveAsset = scriptsState.items.filter(function (item) { return Number(item.id) === scriptId; })[0];
+            window.MIQAccount.action('archive_script', { id: scriptId, expected_revision: archiveAsset && archiveAsset.revision }).then(function () { return refreshWorkspaceAndTab('Script archived.'); }).catch(function (error) { showStatus(error.message, 'danger'); });
         } else if (action === 'unarchive-script') {
-            window.MIQAccount.action('unarchive_script', { id: scriptId }).then(function () { return refreshWorkspaceAndTab('Script returned to drafts.'); }).catch(function (error) { showStatus(error.message, 'danger'); });
+            var unarchiveAsset = scriptsState.items.filter(function (item) { return Number(item.id) === scriptId; })[0];
+            window.MIQAccount.action('unarchive_script', { id: scriptId, expected_revision: unarchiveAsset && unarchiveAsset.revision }).then(function () { return refreshWorkspaceAndTab('Script returned to drafts.'); }).catch(function (error) { showStatus(error.message, 'danger'); });
         } else if (action === 'delete-script') {
             if (window.confirm('Delete this Pine script and its versions?')) window.MIQAccount.action('delete_script', { id: scriptId }).then(function () { return refreshWorkspaceAndTab('Script deleted.'); }).catch(function (error) { showStatus(error.message, 'danger'); });
         } else if (action === 'download-script') {

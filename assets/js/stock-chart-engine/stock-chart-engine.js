@@ -15,6 +15,9 @@
   var VERSION = '0.1.0';
   var SCHEMA_VERSION = 1;
   var DEFAULT_STORE_PREFIX = '360miq-stock-chart';
+  var MAX_LAYOUT_PANES = 24;
+  var MAX_LAYOUT_INDICATORS = 100;
+  var MAX_LAYOUT_DRAWINGS = 2000;
   var DEFAULT_SERIES_COLOR_ORDER = [
     '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#059669',
     '#dc2626', '#4f46e5', '#65a30d', '#ea580c', '#0f766e', '#9333ea',
@@ -149,7 +152,15 @@
     return {
       code: String(info.code || info.symbol || fallbackSymbol || '').trim(),
       name_en: String(info.name_en || info.englishName || info.name || '').trim(),
-      name_tc: String(info.name_tc || info.chineseName || info.chinese || '').trim()
+      name_tc: String(info.name_tc || info.chineseName || info.chinese || '').trim(),
+      exchange: String(info.exchange || '').trim(),
+      timezone: String(info.timezone || info.tz || 'UTC').trim() || 'UTC',
+      currency: String(info.currency || '').trim(),
+      basecurrency: String(info.basecurrency || '').trim(),
+      session: String(info.session || 'regular').trim() || 'regular',
+      symbolType: String(info.symbolType || info.type || 'stock').trim() || 'stock',
+      pointvalue: Math.max(0, toNumber(info.pointvalue, 1)),
+      mintick: Math.max(0, toNumber(info.mintick, 0))
     };
   }
 
@@ -1238,6 +1249,12 @@
         symbol: context.symbol || '',
         mintick: context.mintick,
         description: context.description || '',
+        timezone: context.timezone || 'UTC',
+        currency: context.currency || '',
+        basecurrency: context.basecurrency || '',
+        session: context.session || 'regular',
+        symbolType: context.symbolType || 'stock',
+        pointvalue: context.pointvalue || 1,
         backtestLowerTimeframeBars: context.backtestLowerTimeframeBars || null,
         backtestLowerTimeframe: context.backtestLowerTimeframe || null,
         backtestDailyEodMagnifier: context.backtestDailyEodMagnifier === true,
@@ -2180,17 +2197,27 @@
     migrated.schemaVersion = SCHEMA_VERSION;
     migrated.symbolInfo = normalizeSymbolInfo(migrated.symbolInfo, migrated.symbol);
     if (!migrated.symbolInfo.code) migrated.symbolInfo.code = String(migrated.symbol || '').trim();
-    migrated.panes = migrated.panes && migrated.panes.length ? migrated.panes : createDefaultDocument().panes;
+    migrated.panes = Array.isArray(migrated.panes) && migrated.panes.length
+      ? migrated.panes.slice(0, MAX_LAYOUT_PANES)
+      : createDefaultDocument().panes;
+    if (!migrated.panes.some(function (pane) { return pane && pane.id === 'price'; })) {
+      migrated.panes.unshift(createDefaultDocument().panes[0]);
+      migrated.panes = migrated.panes.slice(0, MAX_LAYOUT_PANES);
+    }
     migrated.panes.forEach(function (pane) {
       pane.scaleMode = normalizeScaleMode(pane.scaleMode);
       pane.manualRange = normalizeManualRange(pane.manualRange);
       pane.height = Math.max(80, toNumber(pane.height, pane.type === 'price' ? 420 : 180));
     });
-    migrated.indicators = migrated.indicators || [];
+    migrated.indicators = Array.isArray(migrated.indicators)
+      ? migrated.indicators.slice(0, MAX_LAYOUT_INDICATORS)
+      : [];
     migrated.indicators.forEach(function (indicator) {
       indicator.source = normalizeIndicatorSource(indicator.source);
     });
-    migrated.drawings = migrated.drawings || [];
+    migrated.drawings = Array.isArray(migrated.drawings)
+      ? migrated.drawings.slice(0, MAX_LAYOUT_DRAWINGS)
+      : [];
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
     migrated.settings.period = normalizePeriod(savedPeriod || migrated.settings.period || migrated.interval);
@@ -2216,10 +2243,10 @@
   };
 
   LocalStorageAdapter.prototype.load = function (layoutId) {
-    if (typeof localStorage === 'undefined') return null;
-    var raw = localStorage.getItem(this.key(layoutId));
-    if (!raw) return null;
     try {
+      if (typeof localStorage === 'undefined') return null;
+      var raw = localStorage.getItem(this.key(layoutId));
+      if (!raw) return null;
       return migrateDocument(JSON.parse(raw));
     } catch (error) {
       return null;
@@ -2228,14 +2255,22 @@
 
   LocalStorageAdapter.prototype.save = function (layoutId, doc) {
     if (typeof localStorage === 'undefined') return false;
-    localStorage.setItem(this.key(layoutId), JSON.stringify(doc));
-    return true;
+    try {
+      localStorage.setItem(this.key(layoutId), JSON.stringify(doc));
+      return true;
+    } catch (error) {
+      return false;
+    }
   };
 
   LocalStorageAdapter.prototype.remove = function (layoutId) {
-    if (typeof localStorage === 'undefined') return false;
-    localStorage.removeItem(this.key(layoutId));
-    return true;
+    try {
+      if (typeof localStorage === 'undefined') return false;
+      localStorage.removeItem(this.key(layoutId));
+      return true;
+    } catch (error) {
+      return false;
+    }
   };
 
   function topoSortIndicators(indicators) {
@@ -2271,6 +2306,12 @@
       symbol: computeOptions.symbol || '',
       description: computeOptions.description || '',
       mintick: computeOptions.mintick,
+      timezone: computeOptions.timezone || 'UTC',
+      currency: computeOptions.currency || '',
+      basecurrency: computeOptions.basecurrency || '',
+      session: computeOptions.session || 'regular',
+      symbolType: computeOptions.symbolType || 'stock',
+      pointvalue: computeOptions.pointvalue || 1,
       backtestLowerTimeframeBars: computeOptions.backtestLowerTimeframeBars || null,
       backtestLowerTimeframe: computeOptions.backtestLowerTimeframe || null,
       backtestDailyEodMagnifier: computeOptions.backtestDailyEodMagnifier === true,
@@ -2280,7 +2321,10 @@
     topoSortIndicators(indicators).forEach(function (indicator) {
       var definition = Indicators[indicator.type];
       if (!definition) return;
-      context.indicatorResults[indicator.id] = definition.compute(context, indicator);
+      var precomputed = computeOptions.precomputedPine && computeOptions.precomputedPine[indicator.id];
+      context.indicatorResults[indicator.id] = indicator.type === 'PINE_SCRIPT' && precomputed
+        ? pineIndicatorResultFromRuntime(indicator, precomputed)
+        : definition.compute(context, indicator);
     });
     return context.indicatorResults;
   }
@@ -2414,7 +2458,6 @@
     this.bindDom();
     this.compute();
     this.resize();
-    this.scheduleAutosave();
   }
 
   Chart.prototype.initDom = function () {
@@ -2821,6 +2864,7 @@
   };
 
   Chart.prototype.destroy = function () {
+    this.flushAutosave();
     this.destroyed = true;
     this.setFullBrowserMode(false);
     if (this.pineRunGlowFrame != null && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
@@ -3082,9 +3126,15 @@
   };
 
   Chart.prototype.save = function () {
-    var saved = this.storage.save(this.layoutId, this.serialize());
-    this.events.emit('save', { saved: saved, document: this.serialize() });
-    return saved;
+    var documentState = this.serialize();
+    try {
+      var saved = this.storage.save(this.layoutId, documentState);
+      this.events.emit('save', { saved: saved, document: documentState });
+      return saved;
+    } catch (error) {
+      this.events.emit('save:error', { error: error, document: documentState });
+      return false;
+    }
   };
 
   Chart.prototype.exportImage = function (options) {
@@ -3136,6 +3186,38 @@
     return dataUrl;
   };
 
+  function documentForExport(documentState, options) {
+    options = options || {};
+    var exported = clone(documentState);
+    var removed = {};
+    (exported.indicators || []).forEach(function (indicator) {
+      if (indicator && indicator.type === 'PINE_SCRIPT') {
+        delete indicator.accountScript;
+        if (options.includePineSource === false && indicator.id) removed[indicator.id] = true;
+      }
+    });
+    if (options.includePineSource === false) {
+      var changed = true;
+      while (changed) {
+        changed = false;
+        (exported.indicators || []).forEach(function (indicator) {
+          var source = indicator && indicator.source;
+          if (indicator && indicator.id && source && source.kind === 'indicator' && removed[source.indicatorId] && !removed[indicator.id]) {
+            removed[indicator.id] = true;
+            changed = true;
+          }
+        });
+      }
+      exported.indicators = (exported.indicators || []).filter(function (indicator) {
+        return !(indicator && removed[indicator.id]);
+      });
+      exported.drawings = (exported.drawings || []).filter(function (drawing) {
+        return !(drawing && drawing.ownerStudyId && removed[drawing.ownerStudyId]);
+      });
+    }
+    return exported;
+  }
+
   Chart.prototype.exportLayout = function (options) {
     options = options || {};
     var layout = {
@@ -3143,7 +3225,7 @@
       version: VERSION,
       schemaVersion: SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
-      document: this.serialize()
+      document: documentForExport(this.serialize(), options)
     };
     if (options.includeData === true) layout.data = clone(this.sourceBars);
     return layout;
@@ -3204,7 +3286,7 @@
   };
 
   Chart.prototype.createShareUrl = function (options) {
-    options = options || {};
+    options = merge({ includePineSource: false }, options || {});
     var baseUrl = options.baseUrl;
     if (!baseUrl && typeof window !== 'undefined' && window.location) {
       baseUrl = window.location.href.split('#')[0];
@@ -3241,6 +3323,22 @@
       url: this.createShareUrl(merge({ includeData: false, maxLength: options.maxLength || 16000 }, options)),
       includeData: false
     };
+  };
+
+  Chart.prototype.hasPineScripts = function () {
+    return !!(this.document && Array.isArray(this.document.indicators) && this.document.indicators.some(function (indicator) {
+      return indicator && indicator.type === 'PINE_SCRIPT';
+    }));
+  };
+
+  Chart.prototype.shareOptions = function () {
+    var includePineSource = false;
+    if (this.hasPineScripts() && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+      includePineSource = window.confirm(
+        'This chart contains Pine Script source code.\n\nChoose OK to include and disclose the Pine source in the share URL. Choose Cancel to share the chart without Pine scripts.'
+      );
+    }
+    return { includePineSource: includePineSource };
   };
 
   Chart.prototype.copyBestShareUrl = function (options) {
@@ -3287,8 +3385,9 @@
     var self = this;
     this.setShareStatus('Working...');
     if (action === 'share-chart') {
-      this.shareChart().then(function (result) {
-        self.setShareStatus(result.copied ? 'Share URL copied.' : 'Chart shared.');
+      var shareOptions = this.shareOptions();
+      this.shareChart(shareOptions).then(function (result) {
+        self.setShareStatus((result.copied ? 'Share URL copied' : 'Chart shared') + (shareOptions.includePineSource ? ' with Pine source.' : ' without Pine source.'));
       }).catch(function (error) {
         if (error && error.name === 'AbortError') {
           self.setShareStatus('');
@@ -3299,8 +3398,9 @@
       return;
     }
     if (action === 'copy-share-url') {
-      this.copyBestShareUrl().then(function () {
-        self.setShareStatus('Share URL copied.');
+      var copyOptions = this.shareOptions();
+      this.copyBestShareUrl(copyOptions).then(function () {
+        self.setShareStatus('Share URL copied' + (copyOptions.includePineSource ? ' with Pine source.' : ' without Pine source.'));
       }).catch(function (error) {
         self.setShareStatus(error.message || 'Could not copy share URL.');
       });
@@ -3403,6 +3503,14 @@
     this.fitContent();
     this.updateToolbar();
     this.emitChange('data', { barCount: this.bars.length, sourceBarCount: this.sourceBars.length });
+  };
+
+  Chart.prototype.flushAutosave = function () {
+    if (!this.autosaveTimer) return false;
+    clearTimeout(this.autosaveTimer);
+    this.autosaveTimer = null;
+    if (this.options.autosave === false || this.document.settings.autosave === false || this.destroyed) return false;
+    return this.save();
   };
 
   Chart.prototype.refreshComparisonBars = function () {
@@ -3828,7 +3936,9 @@
     };
     if (options.accountScript) indicator.accountScript = clone(options.accountScript);
     this.document.indicators.push(indicator);
-    this.compute();
+    var precomputedPine = type === 'PINE_SCRIPT' && options.runtimeResult ? {} : null;
+    if (precomputedPine) precomputedPine[id] = options.runtimeResult;
+    this.compute(precomputedPine);
     this.draw();
     this.emitChange('indicator:add', indicator);
     if (type === 'RELATIVE_STRENGTH') {
@@ -4013,7 +4123,9 @@
       indicator.styles = merge({}, indicator.styles || {}, sanitizeIndicatorStyles(settings.styles));
     }
     this.assignIndicatorSeriesStyles(indicator.styles);
-    this.compute();
+    var precomputedPine = indicator.type === 'PINE_SCRIPT' && settings.runtimeResult ? {} : null;
+    if (precomputedPine) precomputedPine[indicator.id] = settings.runtimeResult;
+    this.compute(precomputedPine);
     this.draw();
     this.emitChange('indicator:settings', indicator);
     return true;
@@ -4071,6 +4183,24 @@
     return true;
   };
 
+  Chart.prototype.pineRuntimeOptions = function (extra) {
+    var symbolInfo = this.options.symbolInfo || {};
+    return merge({
+      timeframe: this.document.interval || '1D',
+      symbol: this.options.symbol || this.document.symbol || '',
+      mintick: this.options.mintick || symbolInfo.mintick,
+      description: symbolInfo.name_en || symbolInfo.description || '',
+      timezone: symbolInfo.timezone || 'UTC',
+      currency: symbolInfo.currency || '',
+      basecurrency: symbolInfo.basecurrency || '',
+      session: symbolInfo.session || 'regular',
+      symbolType: symbolInfo.symbolType || 'stock',
+      pointvalue: symbolInfo.pointvalue || 1,
+      security: this.comparisonSourceBars || this.comparisonBars || {},
+      requestData: this.options.requestData || {}
+    }, extra || {});
+  };
+
   Chart.prototype.openPineScriptPopup = function (indicatorId, pointer) {
     var editorOptions = this.pendingPineEditorOptions || {};
     this.pendingPineEditorOptions = null;
@@ -4084,10 +4214,10 @@
     var runtime = pineRuntime();
     if (runtime && typeof runtime.run === 'function') {
       try {
-        var preview = runtime.run(code, this.bars, {
+        var preview = runtime.run(code, this.bars, this.pineRuntimeOptions({
           title: title,
           inputs: indicator && indicator.inputs && indicator.inputs.pineValues || {}
-        });
+        }));
         inputControls = this.pineInputControlsHtml(preview.inputs || []);
       } catch (error) {
         inputControls = '<div class="sce-pine-status">Enter a valid script to see its inputs.</div>';
@@ -5234,10 +5364,10 @@
     var inputContainer = this.settingsPopup.querySelector('[data-sce-pine-inputs]');
     if (!runtime || typeof runtime.run !== 'function' || !codeField || !inputContainer) return;
     try {
-      var preview = runtime.run(codeField.value, this.bars, {
+      var preview = runtime.run(codeField.value, this.bars, this.pineRuntimeOptions({
         title: titleField && titleField.value,
         inputs: {}
-      });
+      }));
       inputContainer.innerHTML = this.pineInputControlsHtml(preview.inputs || []);
     } catch (error) {
       inputContainer.innerHTML = '<div class="sce-pine-status">Enter a valid script to see its inputs.</div>';
@@ -5824,15 +5954,14 @@
       })[0];
       var backtestSettings = merge({}, Indicators.PINE_SCRIPT.defaultInputs.backtest, existingForBacktest && existingForBacktest.inputs && existingForBacktest.inputs.backtest || {});
       var backtestExecutionData = this.getPineBacktestExecutionData();
-      var preview = runtime.run(compiled, this.bars, {
+      var preview = runtime.run(compiled, this.bars, this.pineRuntimeOptions({
         title: titleField && titleField.value,
         inputs: pineValues,
         backtest: backtestSettings,
-        timeframe: this.document.interval || '1D',
         backtestLowerTimeframeBars: backtestExecutionData.bars,
         backtestLowerTimeframe: backtestExecutionData.timeframe,
         backtestDailyEodMagnifier: backtestExecutionData.dailyEodMagnifier
-      });
+      }));
       if (indicatorId) {
         var existingIndicator = this.document.indicators.filter(function (indicator) {
           return indicator.id === indicatorId && indicator.type === 'PINE_SCRIPT';
@@ -5845,14 +5974,16 @@
         }
         this.updateIndicatorSettings(indicatorId, {
           paneId: paneId,
-          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings }
+          inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings },
+          runtimeResult: preview
         });
         if (this.pineEditorAccountScript) this.linkPineIndicatorToAccountScript(indicatorId, this.pineEditorAccountScript);
       } else {
         indicatorId = this.addIndicator('PINE_SCRIPT', {
           placement: preview.metadata.overlay ? 'source' : 'new',
           inputs: { code: codeField.value, title: titleField && titleField.value || preview.metadata.title, pineValues: pineValues, backtest: backtestSettings },
-          accountScript: this.pineEditorAccountScript
+          accountScript: this.pineEditorAccountScript,
+          runtimeResult: preview
         });
       }
       if (indicatorId) this.settingsPopup.dataset.indicatorId = indicatorId;
@@ -7177,12 +7308,12 @@
   };
 
   Chart.prototype.ensurePineWorker = function () {
-    if (this.pineWorker || this.pineWorkerDisabled || this.options.pineWorker === false) return this.pineWorker;
+    if (this.pineWorker || this.pineWorkerDisabled || this.options.pineWorker !== true) return this.pineWorker;
     if (!this.document.indicators.some(function (indicator) { return indicator.type === 'PINE_SCRIPT'; })) return null;
     var WorkerConstructor = pineWorkerConstructor();
     if (!WorkerConstructor) return null;
     try {
-      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260719.1';
+      var workerUrl = this.options.pineWorkerUrl || 'assets/js/stock-chart-engine/pine-script-worker.js?v=20260726.1';
       this.pineWorker = new WorkerConstructor(workerUrl);
       this.pineWorker.onmessage = this.pineWorkerMessageListener;
       this.pineWorker.onerror = this.pineWorkerErrorListener;
@@ -7195,6 +7326,14 @@
   };
 
   Chart.prototype.queuePineWorkerComputations = function () {
+    if (this.pineWorker && Object.keys(this.pineWorkerRequests).length) {
+      this.pineWorker.onmessage = null;
+      this.pineWorker.onerror = null;
+      if (typeof this.pineWorker.terminate === 'function') this.pineWorker.terminate();
+      this.pineWorker = null;
+      this.pineWorkerRequests = {};
+      this.pineWorkerProgress = {};
+    }
     var worker = this.ensurePineWorker();
     if (!worker || typeof worker.postMessage !== 'function') return;
     var revision = this.pineComputeRevision;
@@ -7228,8 +7367,14 @@
             requestData: clone(self.options.requestData || {}),
             timeframe: self.document.interval || '1D',
             symbol: self.options.symbol || self.document.symbol || '',
-            mintick: self.options.mintick,
+            mintick: self.options.mintick || self.options.symbolInfo && self.options.symbolInfo.mintick,
             description: self.options.symbolInfo && (self.options.symbolInfo.name_en || self.options.symbolInfo.description) || '',
+            timezone: self.options.symbolInfo && self.options.symbolInfo.timezone || 'UTC',
+            currency: self.options.symbolInfo && self.options.symbolInfo.currency || '',
+            basecurrency: self.options.symbolInfo && self.options.symbolInfo.basecurrency || '',
+            session: self.options.symbolInfo && self.options.symbolInfo.session || 'regular',
+            symbolType: self.options.symbolInfo && self.options.symbolInfo.symbolType || 'stock',
+            pointvalue: self.options.symbolInfo && self.options.symbolInfo.pointvalue || 1,
             backtestLowerTimeframeBars: clone(backtestExecutionData.bars || null),
             backtestLowerTimeframe: backtestExecutionData.timeframe,
             backtestDailyEodMagnifier: backtestExecutionData.dailyEodMagnifier,
@@ -7342,17 +7487,24 @@
     return { bars: null, timeframe: null, dailyEodMagnifier: false };
   };
 
-  Chart.prototype.compute = function () {
+  Chart.prototype.compute = function (precomputedPine) {
     this.pineComputeRevision += 1;
     var backtestExecutionData = this.getPineBacktestExecutionData();
     this.indicatorResults = computeIndicatorGraph(this.bars, this.document.indicators, this.comparisonBars, this.comparisonSourceBars, this.document.interval, {
       symbol: this.options.symbol || this.document.symbol || '',
       description: this.options.symbolInfo && (this.options.symbolInfo.name_en || this.options.symbolInfo.description) || '',
-      mintick: this.options.mintick,
+      mintick: this.options.mintick || this.options.symbolInfo && this.options.symbolInfo.mintick,
+      timezone: this.options.symbolInfo && this.options.symbolInfo.timezone || 'UTC',
+      currency: this.options.symbolInfo && this.options.symbolInfo.currency || '',
+      basecurrency: this.options.symbolInfo && this.options.symbolInfo.basecurrency || '',
+      session: this.options.symbolInfo && this.options.symbolInfo.session || 'regular',
+      symbolType: this.options.symbolInfo && this.options.symbolInfo.symbolType || 'stock',
+      pointvalue: this.options.symbolInfo && this.options.symbolInfo.pointvalue || 1,
       backtestLowerTimeframeBars: backtestExecutionData.bars,
       backtestLowerTimeframe: backtestExecutionData.timeframe,
       backtestDailyEodMagnifier: backtestExecutionData.dailyEodMagnifier,
-      requestData: this.options.requestData || {}
+      requestData: this.options.requestData || {},
+      precomputedPine: precomputedPine || null
     });
     this.updateStrategyTester();
     this.queuePineSecurityLoads();

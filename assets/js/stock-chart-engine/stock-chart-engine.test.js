@@ -1104,6 +1104,35 @@ delete global.self;
 assert.ok(workerProgressMessages.some((message) => message.type === 'progress' && message.requestId === 'progress-test'));
 assert.ok(PineScriptRuntime.limits.maxOperations >= 100000);
 assert.ok(PineScriptRuntime.limits.compileCacheSize >= 16);
+assert.strictEqual(PineScriptRuntime.limits.maxSourceLength, 100000);
+assert.strictEqual(PineScriptRuntime.limits.maxCollectionSize, 10000);
+assert.strictEqual(PineScriptRuntime.limits.maxMatrixDimension, 32);
+assert.throws(() => PineScriptRuntime.run(`indicator("Oversized array")
+values = array.new_float(10001, 0)
+plot(close)`, data), /Array exceeds the maximum size/);
+assert.throws(() => PineScriptRuntime.run(`indicator("Oversized matrix")
+values = matrix.new_float(33, 1, 0)
+plot(close)`, data), /Matrix rows exceeds the maximum size/);
+assert.throws(() => PineScriptRuntime.run(`indicator("Unsafe regex")
+matched = str.match("aaaaaaaaaaaaaaaa", "(a+)+")
+plot(close)`, data), /unsafe construct/);
+const timezoneBars = [
+  { time: Date.UTC(2026, 6, 26, 1, 0, 0) / 1000, open: 10, high: 12, low: 9, close: 11, volume: 100 }
+];
+const timezonePreview = PineScriptRuntime.run(`indicator("Exchange timezone")
+plot(hour(time), title="Hour")
+plot(dayofmonth(time), title="Day")`, timezoneBars, { timezone: 'Asia/Hong_Kong' });
+assert.strictEqual(timezonePreview.outputs.plot1[0].value, 9);
+assert.strictEqual(timezonePreview.outputs.plot2[0].value, 26);
+const cumulativePreview = PineScriptRuntime.run(`indicator("Cumulative volume")
+plot(ta.obv, title="OBV")
+plot(ta.accdist, title="ADL")`, [
+  { time: 1, open: 10, high: 11, low: 9, close: 10, volume: 100 },
+  { time: 2, open: 10, high: 11, low: 9, close: 11, volume: 200 },
+  { time: 3, open: 11, high: 11, low: 9, close: 10, volume: 300 }
+]);
+assert.deepStrictEqual(cumulativePreview.outputs.plot1.map((point) => point.value), [0, 200, -100]);
+assert.deepStrictEqual(cumulativePreview.outputs.plot2.map((point) => point.value), [0, 200, 200]);
 const blockFunctionPreview = PineScriptRuntime.run(`indicator("Block function")
 signal(source) =>
     doubled = source * 2
@@ -3296,6 +3325,79 @@ const layoutOnlyPayload = JSON.parse(decodeURIComponent(layoutOnlyShareUrl.split
 assert.strictEqual(layoutOnlyPayload.type, 'stock-chart-engine-layout');
 assert.ok(layoutOnlyPayload.document.drawings.length > 0);
 assert.strictEqual(Object.prototype.hasOwnProperty.call(layoutOnlyPayload, 'data'), false);
+assert.strictEqual(layoutOnlyPayload.document.indicators.some((indicator) => indicator.type === 'PINE_SCRIPT'), false);
+
+const precomputedChart = new StockChartEngine.Chart('#chart', {
+  data,
+  symbol: 'PRECOMPUTED',
+  interval: '1D',
+  load: false,
+  autosave: false,
+  pineWorker: false
+});
+const precomputedResult = PineScriptRuntime.run(pineSource, data);
+const originalRuntimeRun = PineScriptRuntime.run;
+let precomputedRunCount = 0;
+PineScriptRuntime.run = function () {
+  precomputedRunCount += 1;
+  return originalRuntimeRun.apply(PineScriptRuntime, arguments);
+};
+const precomputedIndicatorId = precomputedChart.addIndicator('PINE_SCRIPT', {
+  placement: 'new',
+  inputs: { code: pineSource, title: 'Precomputed Pine' },
+  runtimeResult: precomputedResult
+});
+PineScriptRuntime.run = originalRuntimeRun;
+assert.strictEqual(precomputedRunCount, 0);
+assert.ok(precomputedChart.indicatorResults[precomputedIndicatorId].outputs.plot1.length > 0);
+precomputedChart.linkPineIndicatorToAccountScript(precomputedIndicatorId, {
+  id: 77,
+  asset_key: '22222222-2222-4222-8222-222222222222',
+  revision: 4,
+  name: 'Private account script'
+});
+const defaultPineShareUrl = precomputedChart.createShareUrl({ baseUrl: 'https://example.test/chart.html', maxLength: 100000 });
+const defaultPineSharePayload = JSON.parse(decodeURIComponent(defaultPineShareUrl.split('#sce-layout=')[1]));
+assert.strictEqual(defaultPineSharePayload.document.indicators.some((indicator) => indicator.type === 'PINE_SCRIPT'), false);
+const pineSharePayload = precomputedChart.exportLayout({ includeData: false, includePineSource: true });
+const pineShareIndicators = pineSharePayload.document.indicators.filter((indicator) => indicator.type === 'PINE_SCRIPT');
+assert.ok(pineShareIndicators.length > 0);
+assert.ok(pineShareIndicators.every((indicator) => !Object.prototype.hasOwnProperty.call(indicator, 'accountScript')));
+precomputedChart.destroy();
+
+let autosaveWrites = 0;
+const autosaveChart = new StockChartEngine.Chart('#chart', {
+  data,
+  symbol: 'AUTOSAVE',
+  interval: '1D',
+  load: false,
+  autosave: true,
+  storage: {
+    load() { return null; },
+    save() { autosaveWrites += 1; return true; },
+    remove() { return true; }
+  }
+});
+assert.strictEqual(autosaveWrites, 0);
+assert.strictEqual(autosaveChart.autosaveTimer, null);
+autosaveChart.addDrawing('text', [{ time: data[data.length - 1].time, value: data[data.length - 1].close }], { paneId: 'price', text: 'Flush me' });
+assert.ok(autosaveChart.autosaveTimer);
+assert.strictEqual(autosaveChart.flushAutosave(), true);
+assert.strictEqual(autosaveWrites, 1);
+assert.strictEqual(autosaveChart.autosaveTimer, null);
+autosaveChart.destroy();
+
+const unavailableStorage = new StockChartEngine.LocalStorageAdapter('blocked');
+const workingLocalStorage = global.localStorage;
+global.localStorage = {
+  getItem() { throw new Error('blocked'); },
+  setItem() { throw new Error('blocked'); },
+  removeItem() { throw new Error('blocked'); }
+};
+assert.strictEqual(unavailableStorage.load('layout'), null);
+assert.strictEqual(unavailableStorage.save('layout', {}), false);
+assert.strictEqual(unavailableStorage.remove('layout'), false);
+global.localStorage = workingLocalStorage;
 
 chart.destroy();
 
@@ -3305,7 +3407,8 @@ const workerChart = new StockChartEngine.Chart('#chart', {
   symbol: 'WORKER_TEST',
   interval: '1D',
   load: false,
-  autosave: false
+  autosave: false,
+  pineWorker: true
 });
 const workerIndicatorId = workerChart.addIndicator('PINE_SCRIPT', {
   placement: 'new',
