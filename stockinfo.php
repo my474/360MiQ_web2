@@ -285,7 +285,7 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <link rel="stylesheet" href="assets/css/inlinehelp.css">
     <link rel="stylesheet" href="assets/css/help-tip2.css">
     <link rel="stylesheet" href="assets/css/toggleSwitch.css">
-    <link rel="stylesheet" href="assets/css/stock-account-tools.css?v=20260726.1">
+    <link rel="stylesheet" href="assets/css/stock-account-tools.css?v=20260726.2">
     <!--script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script-->
     <!--script defer data-cfasync="false" src="assets/js/bot-detector.js"-->
     <script>
@@ -1063,7 +1063,7 @@ function adsBlocked(callback){
 
 </div></div></div>
 </section>
-    <div class="container">
+    <div class="container miq-stock-tools-placement">
         <?php include __DIR__ . '/components/stock-account-tools.php'; ?>
     </div>
     <?php if (miq_community_enabled()): ?>
