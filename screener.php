@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <link rel="stylesheet" href="assets/css/inlinehelp2.css">
+    <link rel="stylesheet" href="assets/css/screener-presets.css?v=20260726.1">
 
 <style>
 .dataTables_filter {
@@ -621,6 +622,35 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
     opacity: 1;
 }
 </style>
+<section id="miq-screener-presets" class="miq-screener-presets container" aria-labelledby="miq-screener-presets-title">
+    <div class="miq-screener-presets__intro">
+        <div>
+            <span class="miq-screener-presets__eyebrow">Saved screens</span>
+            <h2 id="miq-screener-presets-title">Screener presets</h2>
+        </div>
+        <p id="miq-screener-preset-status" class="miq-screener-presets__status" role="status" aria-live="polite">Loading presets…</p>
+    </div>
+    <div class="miq-screener-presets__controls">
+        <label class="miq-screener-presets__field miq-screener-presets__field--select">
+            <span>Saved preset</span>
+            <select id="miq-screener-preset-select" disabled>
+                <option value="">No saved presets</option>
+            </select>
+        </label>
+        <label class="miq-screener-presets__field miq-screener-presets__field--name">
+            <span>Preset name</span>
+            <input id="miq-screener-preset-name" type="text" maxlength="120" autocomplete="off" placeholder="e.g. US value stocks" disabled>
+        </label>
+        <div class="miq-screener-presets__actions" aria-label="Screener preset actions">
+            <button id="miq-screener-preset-load" class="btn miq-preset-btn" type="button" disabled>Load</button>
+            <button id="miq-screener-preset-save" class="btn miq-preset-btn miq-preset-btn--primary" type="button" disabled>Save new</button>
+            <button id="miq-screener-preset-update" class="btn miq-preset-btn" type="button" disabled>Update</button>
+            <button id="miq-screener-preset-duplicate" class="btn miq-preset-btn" type="button" disabled>Duplicate</button>
+            <button id="miq-screener-preset-default" class="btn miq-preset-btn" type="button" disabled>Make default</button>
+            <button id="miq-screener-preset-delete" class="btn miq-preset-btn miq-preset-btn--danger" type="button" disabled>Delete</button>
+        </div>
+    </div>
+</section>
 <div id="screenerrule" class="card clean-card text-center container" style="padding: 0;">
             <!--<div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">
                 <div>
@@ -1919,6 +1949,7 @@ window.__SCREENER_PAGE_CONFIG = {
 </script>
 <script src="assets/js/pages/screener-main.js?v=20260710.1"></script>
 <script src="assets/js/pages/screener-share.js?v=20260709.1"></script>
+<script src="assets/js/pages/screener-presets.js?v=20260726.1"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260709.1"></script>
 
             <div class="container" style="padding: 0px 15px 0px;margin: 10px 0 0 0;">

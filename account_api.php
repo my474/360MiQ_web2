@@ -141,6 +141,97 @@ function miq_api_layout_json($layout)
     return $layout_json;
 }
 
+function miq_api_screener_config($config)
+{
+    if (is_string($config)) {
+        $config = json_decode($config, true);
+    }
+    if (!is_array($config)) {
+        return null;
+    }
+
+    $allowed_filters = array(
+        'market', 'sector', 'industry', 'marketcap', 'polar_ta', 'polar_va',
+        'polar_fa', 'polar_trendgauge', 'channel_pos', 'channel_trend',
+        'pe_stdev', 'pe_trend', 'pb_stdev', 'pb_trend', 'fscore', 'zscore',
+        'mscore', 'ma10', 'ma20', 'ma50', 'ma100', 'ma200', 'ma250',
+        'rsi14d', 'rsi14w', 'macdd', 'macdw', 'highlow', 'volume'
+    );
+    $allowed_markets = array(
+        'NYSE + NASDAQ', 'NYSE', 'NASDAQ', 'NYSEARCA', 'LSE', 'ASX',
+        'TSX', 'NSE', 'TYO', 'HKEX', 'SHSE', 'SZSE'
+    );
+    $source_filters = isset($config['filters']) && is_array($config['filters']) ? $config['filters'] : array();
+    $filters = array();
+    foreach ($allowed_filters as $filter_name) {
+        if (!array_key_exists($filter_name, $source_filters) || !is_scalar($source_filters[$filter_name])) {
+            continue;
+        }
+        $filter_value = preg_replace('/[\x00-\x1F\x7F]/u', '', trim((string) $source_filters[$filter_name]));
+        $filter_value = miq_api_clean_text($filter_value, 160);
+        if ($filter_value !== '') {
+            $filters[$filter_name] = $filter_value;
+        }
+    }
+    if (!isset($filters['market']) || !in_array($filters['market'], $allowed_markets, true)) {
+        return null;
+    }
+
+    $source_table = isset($config['table']) && is_array($config['table']) ? $config['table'] : array();
+    $order = array();
+    if (isset($source_table['order']) && is_array($source_table['order'])) {
+        foreach (array_slice($source_table['order'], 0, 3) as $sort) {
+            if (!is_array($sort) || count($sort) < 2) continue;
+            $column = (int) $sort[0];
+            $direction = strtolower((string) $sort[1]);
+            if ($column < 0 || $column > 39 || !in_array($direction, array('asc', 'desc'), true)) continue;
+            $order[] = array($column, $direction);
+        }
+    }
+    if (!$order) {
+        $order = array(array(3, 'desc'));
+    }
+
+    $page_length = (int) ($source_table['pageLength'] ?? 30);
+    if (!in_array($page_length, array(30, 60, 100, 200), true)) {
+        $page_length = 30;
+    }
+    $columns = array();
+    if (isset($source_table['columns']) && is_array($source_table['columns'])) {
+        foreach (array_slice($source_table['columns'], 0, 40) as $visible) {
+            $columns[] = (bool) $visible;
+        }
+    }
+
+    $normalized = array(
+        'version' => 1,
+        'filters' => $filters,
+        'table' => array(
+            'order' => $order,
+            'pageLength' => $page_length,
+            'columns' => $columns,
+        ),
+    );
+    $encoded = json_encode($normalized, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    return $encoded && strlen($encoded) <= 32768 ? $normalized : null;
+}
+
+function miq_api_screener_preset_payload($preset)
+{
+    if (!$preset) return null;
+    return array(
+        'id' => (int) $preset['id'],
+        'client_key' => $preset['client_key'],
+        'name' => $preset['name'],
+        'config' => json_decode($preset['config_json'], true),
+        'is_default' => (bool) $preset['is_default'],
+        'revision' => (int) $preset['revision'],
+        'client_updated_at' => $preset['client_updated_at'],
+        'created_at' => $preset['created_at'],
+        'updated_at' => $preset['updated_at'],
+    );
+}
+
 function miq_api_chart_payload($chart, $include_layout = false)
 {
     if (!$chart) return null;
@@ -245,6 +336,7 @@ function miq_api_workspace($user)
     $charts = miq_account_table('saved_charts');
     $scripts = miq_account_table('pine_scripts');
     $searches = miq_account_table('recent_searches');
+    $screener_presets = miq_account_table('screener_presets');
     $watchlists = miq_account_table('watchlists');
     $watchlist_items = miq_account_table('watchlist_items');
     $idea_rows = array();
@@ -262,12 +354,14 @@ function miq_api_workspace($user)
         'searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC LIMIT 20", 'i', array($user_id))),
         'charts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
         'scripts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
+        'screener_presets' => miq_account_fetch_all(miq_account_query("SELECT client_key, name, is_default, revision, updated_at FROM {$screener_presets} WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC LIMIT 50", 'i', array($user_id))),
         'ideas' => $idea_rows,
         'watchlists' => $lists,
         'counts' => array(
             'charts' => miq_api_count_rows($charts, $user_id),
             'scripts' => miq_api_count_rows($scripts, $user_id),
             'searches' => miq_api_count_rows($searches, $user_id),
+            'screener_presets' => miq_api_count_rows($screener_presets, $user_id),
             'ideas' => $idea_count,
             'watchlists' => count($lists),
         ),
@@ -336,6 +430,141 @@ try {
 
     if ($action === 'workspace') {
         miq_api_json(array('workspace' => miq_api_workspace($user)));
+    }
+
+    if ($action === 'list_screener_presets') {
+        $presets = miq_account_table('screener_presets');
+        $rows = miq_account_fetch_all(miq_account_query(
+            "SELECT id, client_key, name, config_json, is_default, revision, client_updated_at, created_at, updated_at FROM {$presets} WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC, id DESC",
+            'i',
+            array($user_id)
+        ));
+        miq_api_json(array(
+            'presets' => array_map('miq_api_screener_preset_payload', $rows),
+            'limit' => max(1, (int) miq_account_config()['max_screener_preset_count']),
+        ));
+    }
+
+    if ($action === 'save_screener_preset') {
+        $presets = miq_account_table('screener_presets');
+        $name = miq_api_clean_text($body['name'] ?? '', 120);
+        $config = miq_api_screener_config($body['config'] ?? null);
+        if ($name === '' || !$config) {
+            miq_api_json(array('error' => 'A preset name and a valid completed screen are required.'), 422);
+        }
+        $config_json = json_encode($config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $client_key = miq_api_existing_asset_key($body['client_key'] ?? '');
+        if ($client_key === '') {
+            $client_key = miq_api_asset_key();
+        }
+        $client_updated_at = miq_api_client_datetime($body['client_updated_at'] ?? '') ?: gmdate('Y-m-d H:i:s');
+        $existing = miq_account_fetch_one(miq_account_query(
+            "SELECT * FROM {$presets} WHERE user_id = ? AND client_key = ? LIMIT 1",
+            'is',
+            array($user_id, $client_key)
+        ));
+        $duplicate = miq_account_fetch_one(miq_account_query(
+            "SELECT id FROM {$presets} WHERE user_id = ? AND name = ? LIMIT 1",
+            'is',
+            array($user_id, $name)
+        ));
+        if ($duplicate && (!$existing || (int) $duplicate['id'] !== (int) $existing['id'])) {
+            miq_api_json(array('error' => 'A screener preset with that name already exists.'), 409);
+        }
+        if (!$existing && miq_api_count_rows($presets, $user_id) >= max(1, (int) miq_account_config()['max_screener_preset_count'])) {
+            miq_api_json(array('error' => 'You have reached the screener preset limit.'), 422);
+        }
+
+        $make_default = !empty($body['make_default']) || (!$existing && miq_api_count_rows($presets, $user_id) === 0);
+        $is_default = ($make_default || ($existing && !empty($existing['is_default']))) ? 1 : 0;
+        $revision = $existing ? ((int) $existing['revision'] + 1) : 1;
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            if ($make_default) {
+                miq_account_query("UPDATE {$presets} SET is_default = 0 WHERE user_id = ?", 'i', array($user_id))->close();
+            }
+            if ($existing) {
+                miq_account_query(
+                    "UPDATE {$presets} SET name = ?, config_json = ?, is_default = ?, revision = ?, client_updated_at = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                    'ssiisii',
+                    array($name, $config_json, $is_default, $revision, $client_updated_at, (int) $existing['id'], $user_id)
+                )->close();
+                $preset_id = (int) $existing['id'];
+            } else {
+                $statement = miq_account_query(
+                    "INSERT INTO {$presets} (user_id, client_key, name, config_json, is_default, revision, client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                    'isssiis',
+                    array($user_id, $client_key, $name, $config_json, $is_default, $revision, $client_updated_at)
+                );
+                $preset_id = (int) $db->insert_id;
+                $statement->close();
+            }
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        $saved = miq_account_fetch_one(miq_account_query(
+            "SELECT id, client_key, name, config_json, is_default, revision, client_updated_at, created_at, updated_at FROM {$presets} WHERE id = ? AND user_id = ? LIMIT 1",
+            'ii',
+            array($preset_id, $user_id)
+        ));
+        miq_api_json(array('saved' => true, 'preset' => miq_api_screener_preset_payload($saved)));
+    }
+
+    if ($action === 'set_default_screener_preset') {
+        $presets = miq_account_table('screener_presets');
+        $client_key = miq_api_existing_asset_key($body['client_key'] ?? '');
+        if ($client_key === '') miq_api_json(array('error' => 'Choose a screener preset.'), 422);
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            $owned = miq_account_fetch_one(miq_account_query(
+                "SELECT id FROM {$presets} WHERE user_id = ? AND client_key = ? LIMIT 1 FOR UPDATE",
+                'is',
+                array($user_id, $client_key)
+            ));
+            if (!$owned) {
+                $db->rollback();
+                miq_api_json(array('error' => 'Screener preset not found.'), 404);
+            }
+            miq_account_query("UPDATE {$presets} SET is_default = 0 WHERE user_id = ?", 'i', array($user_id))->close();
+            miq_account_query("UPDATE {$presets} SET is_default = 1, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'ii', array((int) $owned['id'], $user_id))->close();
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        miq_api_json(array('saved' => true, 'client_key' => $client_key));
+    }
+
+    if ($action === 'delete_screener_preset') {
+        $presets = miq_account_table('screener_presets');
+        $client_key = miq_api_existing_asset_key($body['client_key'] ?? '');
+        if ($client_key === '') miq_api_json(array('error' => 'Choose a screener preset.'), 422);
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            $existing = miq_account_fetch_one(miq_account_query(
+                "SELECT id, is_default FROM {$presets} WHERE user_id = ? AND client_key = ? LIMIT 1 FOR UPDATE",
+                'is',
+                array($user_id, $client_key)
+            ));
+            if (!$existing) {
+                $db->rollback();
+                miq_api_json(array('error' => 'Screener preset not found.'), 404);
+            }
+            miq_account_query("DELETE FROM {$presets} WHERE id = ? AND user_id = ?", 'ii', array((int) $existing['id'], $user_id))->close();
+            if (!empty($existing['is_default'])) {
+                miq_account_query("UPDATE {$presets} SET is_default = 1 WHERE user_id = ? ORDER BY updated_at DESC, id DESC LIMIT 1", 'i', array($user_id))->close();
+            }
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        miq_api_json(array('deleted' => true, 'client_key' => $client_key));
     }
 
     if ($action === 'create_watchlist') {

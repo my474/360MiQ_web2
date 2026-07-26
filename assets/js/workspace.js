@@ -43,6 +43,7 @@
         var panels = [
             panel('Saved charts', '<p>' + Number(counts.charts == null ? workspace.charts.length : counts.charts) + ' chart(s)</p><a href="workspace?tab=charts">Manage saved charts</a>'),
             panel('Pine scripts', '<p>' + Number(counts.scripts == null ? workspace.scripts.length : counts.scripts) + ' script(s)</p><a href="workspace?tab=scripts">Manage Pine scripts</a>'),
+            panel('Screener presets', '<p>' + Number(counts.screener_presets == null ? (workspace.screener_presets || []).length : counts.screener_presets) + ' preset(s)</p><a href="workspace?tab=presets">Open saved screens</a>'),
             panel('Recent searches', '<p>' + Number(counts.searches == null ? workspace.searches.length : counts.searches) + ' recent search(es)</p><a href="workspace?tab=searches">Open search history</a>')
         ];
         if (communityEnabled) {
@@ -113,7 +114,13 @@
         if (!communityEnabled && tab === 'ideas') tab = 'overview';
         if (tab === 'charts') content.innerHTML = renderCharts();
         else if (tab === 'scripts') content.innerHTML = renderScripts();
-        else if (tab === 'searches') {
+        else if (tab === 'presets') {
+            content.innerHTML = renderSimpleList('Screener presets', workspace.screener_presets, function (item) {
+                return '<a href="screener?preset=' + encodeURIComponent(item.client_key) + '"><strong>' + escapeHtml(item.name) + '</strong></a>' +
+                    (item.is_default === true || item.is_default === 1 || item.is_default === '1' ? '<span class="miq-asset-badge">Default</span>' : '') +
+                    assetMeta(['revision ' + Number(item.revision || 1), 'updated ' + humanDate(item.updated_at)]);
+            });
+        } else if (tab === 'searches') {
             content.innerHTML = renderSimpleList('Recent searches', workspace.searches, function (item) {
                 return '<a href="stockinfo?code=' + encodeURIComponent(item.code) + '">' + escapeHtml(item.code) + '</a>' + assetMeta([item.display_name || item.exchange || '', humanDate(item.searched_at)]);
             });

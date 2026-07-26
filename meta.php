@@ -122,6 +122,7 @@ if ($miq_account_context_type === 'stock') {
 }
 $miq_account_client_state = array(
     'loggedIn' => (bool) $miq_account_user,
+    'userId' => $miq_account_user ? (int) $miq_account_user['id'] : null,
     'displayName' => $miq_account_user ? $miq_account_user['display_name'] : null,
     'role' => $miq_account_user ? $miq_account_user['role'] : null,
     'csrfToken' => miq_account_csrf_token(),

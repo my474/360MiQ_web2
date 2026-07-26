@@ -56,7 +56,7 @@ function miq_account_table($name)
         'community_idea_revisions', 'community_votes', 'community_vote_events',
         'community_sentiment_daily', 'community_reports',
         'moderation_actions', 'sso_tokens', 'rate_limits',
-        'user_activity_daily', 'user_admin_actions'
+        'user_activity_daily', 'user_admin_actions', 'screener_presets'
     );
 
     if (!in_array($name, $allowed, true)) {

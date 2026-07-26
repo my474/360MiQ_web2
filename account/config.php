@@ -75,6 +75,7 @@ function miq_account_config()
         'max_chart_count' => (int) miq_account_env('MIQ_MAX_CHART_COUNT', 250),
         'max_named_chart_count' => (int) miq_account_env('MIQ_MAX_NAMED_CHART_COUNT', 100),
         'max_script_count' => (int) miq_account_env('MIQ_MAX_SCRIPT_COUNT', 200),
+        'max_screener_preset_count' => (int) miq_account_env('MIQ_MAX_SCREENER_PRESET_COUNT', 50),
         'max_asset_versions' => (int) miq_account_env('MIQ_MAX_ASSET_VERSIONS', 20),
     );
 
