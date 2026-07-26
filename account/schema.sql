@@ -1,8 +1,9 @@
 -- 360MiQ main-site account/workspace schema.
 -- Replace `miq_` with MIQ_ACCOUNT_TABLE_PREFIX when deploying.
--- Foreign keys are intentionally omitted because the restricted Bluehost
--- account user has no REFERENCES grant. Ordered lifecycle cleanup is handled
--- by account/lifecycle.php; indexed ownership columns preserve performance.
+-- Foreign keys are intentionally omitted from this portable baseline.
+-- Databases whose account user has REFERENCES may apply the optional
+-- migrations/20260726_add_foreign_keys.sql after every other migration.
+-- Ordered lifecycle cleanup remains in account/lifecycle.php as defense in depth.
 
 CREATE TABLE IF NOT EXISTS miq_users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
