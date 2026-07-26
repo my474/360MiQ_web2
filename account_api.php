@@ -330,6 +330,80 @@ function miq_api_record_moderation_action($moderator_user_id, $idea_id, $action,
     )->close();
 }
 
+function miq_api_watchlists($user_id)
+{
+    $watchlists = miq_account_table('watchlists');
+    $watchlist_items = miq_account_table('watchlist_items');
+    $lists = miq_account_fetch_all(miq_account_query(
+        "SELECT id, name, created_at, updated_at FROM {$watchlists} WHERE user_id = ? ORDER BY updated_at DESC, id DESC LIMIT 20",
+        'i',
+        array((int) $user_id)
+    ));
+    foreach ($lists as $index => $list) {
+        $lists[$index]['items'] = miq_account_fetch_all(miq_account_query(
+            "SELECT id, code, sort_order, created_at FROM {$watchlist_items} WHERE watchlist_id = ? AND user_id = ? ORDER BY sort_order, id",
+            'ii',
+            array((int) $list['id'], (int) $user_id)
+        ));
+    }
+    return $lists;
+}
+
+function miq_api_workspace_optional($callback, $fallback)
+{
+    try {
+        return $callback();
+    } catch (Throwable $error) {
+        error_log('360MiQ optional workspace feature unavailable: ' . $error->getMessage());
+        return $fallback;
+    }
+}
+
+function miq_api_annotate_public_ideas($rows, $viewer_user_id)
+{
+    if (!$rows) {
+        return array();
+    }
+    $ids = array_map(function ($row) {
+        return (int) $row['id'];
+    }, $rows);
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $types = str_repeat('i', count($ids));
+    $reply_counts = array();
+    $bookmarked = array();
+    try {
+        $replies = miq_account_table('community_replies');
+        $count_rows = miq_account_fetch_all(miq_account_query(
+            "SELECT idea_id, COUNT(*) AS total FROM {$replies} WHERE status = 'published' AND idea_id IN ({$placeholders}) GROUP BY idea_id",
+            $types,
+            $ids
+        ));
+        foreach ($count_rows as $count_row) {
+            $reply_counts[(int) $count_row['idea_id']] = (int) $count_row['total'];
+        }
+        if ((int) $viewer_user_id > 0) {
+            $bookmarks = miq_account_table('community_bookmarks');
+            $bookmark_params = array_merge(array((int) $viewer_user_id), $ids);
+            $bookmark_rows = miq_account_fetch_all(miq_account_query(
+                "SELECT idea_id FROM {$bookmarks} WHERE user_id = ? AND idea_id IN ({$placeholders})",
+                'i' . $types,
+                $bookmark_params
+            ));
+            foreach ($bookmark_rows as $bookmark_row) {
+                $bookmarked[(int) $bookmark_row['idea_id']] = true;
+            }
+        }
+    } catch (Throwable $error) {
+        error_log('360MiQ community annotation unavailable: ' . $error->getMessage());
+    }
+    foreach ($rows as $index => $row) {
+        $idea_id = (int) $row['id'];
+        $rows[$index]['reply_count'] = $reply_counts[$idea_id] ?? 0;
+        $rows[$index]['bookmarked'] = !empty($bookmarked[$idea_id]);
+    }
+    return $rows;
+}
+
 function miq_api_workspace($user)
 {
     $user_id = (int) $user['id'];
@@ -337,8 +411,6 @@ function miq_api_workspace($user)
     $scripts = miq_account_table('pine_scripts');
     $searches = miq_account_table('recent_searches');
     $screener_presets = miq_account_table('screener_presets');
-    $watchlists = miq_account_table('watchlists');
-    $watchlist_items = miq_account_table('watchlist_items');
     $idea_rows = array();
     $idea_count = 0;
     if (miq_community_enabled()) {
@@ -346,9 +418,79 @@ function miq_api_workspace($user)
         $idea_rows = miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, status, visibility, updated_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id)));
         $idea_count = miq_api_count_rows($ideas, $user_id);
     }
-    $lists = miq_account_fetch_all(miq_account_query("SELECT id, name, created_at, updated_at FROM {$watchlists} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 20", 'i', array($user_id)));
-    foreach ($lists as $index => $list) {
-        $lists[$index]['items'] = miq_account_fetch_all(miq_account_query("SELECT code, sort_order FROM {$watchlist_items} WHERE watchlist_id = ? AND user_id = ? ORDER BY sort_order, code", 'ii', array((int) $list['id'], $user_id)));
+    $lists = miq_api_watchlists($user_id);
+    $watchlist_codes = array();
+    foreach ($lists as $list) {
+        foreach ($list['items'] as $item) {
+            $watchlist_codes[] = $item['code'];
+        }
+    }
+    $alerts = miq_api_workspace_optional(function () use ($user_id) {
+        $table = miq_account_table('price_alerts');
+        return miq_account_fetch_all(miq_account_query(
+            "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$table} WHERE user_id = ? ORDER BY FIELD(status, 'triggered', 'active', 'disabled'), updated_at DESC LIMIT 100",
+            'i',
+            array($user_id)
+        ));
+    }, array());
+    foreach ($alerts as $alert) {
+        if ($alert['status'] === 'active') {
+            $watchlist_codes[] = $alert['code'];
+        }
+    }
+    $quotes = array();
+    try {
+        $quotes = miq_stock_quotes($watchlist_codes);
+        miq_account_evaluate_price_alerts($quotes, $user_id);
+        if ($alerts) {
+            $alerts_table = miq_account_table('price_alerts');
+            $alerts = miq_account_fetch_all(miq_account_query(
+                "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$alerts_table} WHERE user_id = ? ORDER BY FIELD(status, 'triggered', 'active', 'disabled'), updated_at DESC LIMIT 100",
+                'i',
+                array($user_id)
+            ));
+        }
+    } catch (Throwable $error) {
+        error_log('360MiQ workspace quote failure: ' . $error->getMessage());
+    }
+    $notes = miq_api_workspace_optional(function () use ($user_id, $charts, $scripts) {
+        $table = miq_account_table('research_notes');
+        return miq_account_fetch_all(miq_account_query(
+            "SELECT n.id, n.stock_code, n.chart_id, n.script_id, n.title, n.body, n.created_at, n.updated_at, c.name AS chart_name, s.name AS script_name FROM {$table} n LEFT JOIN {$charts} c ON c.id = n.chart_id AND c.user_id = n.user_id LEFT JOIN {$scripts} s ON s.id = n.script_id AND s.user_id = n.user_id WHERE n.user_id = ? ORDER BY n.updated_at DESC LIMIT 100",
+            'i',
+            array($user_id)
+        ));
+    }, array());
+    $notifications = miq_api_workspace_optional(function () use ($user_id) {
+        $table = miq_account_table('notifications');
+        $community_filter = miq_community_enabled() ? '' : " AND notification_type NOT LIKE 'community_%'";
+        return miq_account_fetch_all(miq_account_query(
+            "SELECT id, notification_type, title, message, link_url, read_at, created_at FROM {$table} WHERE user_id = ?{$community_filter} ORDER BY created_at DESC LIMIT 100",
+            'i',
+            array($user_id)
+        ));
+    }, array());
+    $bookmarks = array();
+    if (miq_community_enabled()) {
+        $bookmarks = miq_api_workspace_optional(function () use ($user_id) {
+            $table = miq_account_table('community_bookmarks');
+            $ideas = miq_account_table('community_ideas');
+            return miq_account_fetch_all(miq_account_query(
+                "SELECT b.idea_id, b.created_at AS bookmarked_at, i.code, i.title, i.direction, i.timeframe, i.updated_at FROM {$table} b INNER JOIN {$ideas} i ON i.id = b.idea_id WHERE b.user_id = ? AND i.status = 'published' AND i.visibility = 'public' ORDER BY b.created_at DESC LIMIT 100",
+                'i',
+                array($user_id)
+            ));
+        }, array());
+    }
+    $watchlist_item_count = 0;
+    foreach ($lists as $list) {
+        $watchlist_item_count += count($list['items']);
+    }
+    $active_alert_count = 0;
+    foreach ($alerts as $alert) {
+        if ($alert['status'] === 'active') {
+            $active_alert_count += 1;
+        }
     }
     return array(
         'searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC LIMIT 20", 'i', array($user_id))),
@@ -357,6 +499,12 @@ function miq_api_workspace($user)
         'screener_presets' => miq_account_fetch_all(miq_account_query("SELECT client_key, name, is_default, revision, updated_at FROM {$screener_presets} WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC LIMIT 50", 'i', array($user_id))),
         'ideas' => $idea_rows,
         'watchlists' => $lists,
+        'watchlist_quotes' => $quotes,
+        'notes' => $notes,
+        'alerts' => $alerts,
+        'preferences' => miq_account_user_preferences($user_id),
+        'notifications' => $notifications,
+        'bookmarks' => $bookmarks,
         'counts' => array(
             'charts' => miq_api_count_rows($charts, $user_id),
             'scripts' => miq_api_count_rows($scripts, $user_id),
@@ -364,6 +512,12 @@ function miq_api_workspace($user)
             'screener_presets' => miq_api_count_rows($screener_presets, $user_id),
             'ideas' => $idea_count,
             'watchlists' => count($lists),
+            'watchlist_items' => $watchlist_item_count,
+            'notes' => count($notes),
+            'alerts' => count($alerts),
+            'active_alerts' => $active_alert_count,
+            'notifications_unread' => miq_account_unread_notification_count($user_id),
+            'bookmarks' => count($bookmarks),
         ),
     );
 }
@@ -371,7 +525,8 @@ function miq_api_workspace($user)
 $body = miq_api_body();
 $action = isset($_GET['action']) ? (string) $_GET['action'] : (isset($body['action']) ? (string) $body['action'] : '');
 $community_actions = array(
-    'pulse', 'pulse_trend', 'public_ideas', 'save_idea', 'vote', 'report_idea',
+    'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'save_idea', 'vote',
+    'report_idea', 'bookmark_idea', 'save_idea_reply', 'delete_idea_reply',
     'moderation_dashboard', 'moderation_queue', 'moderate_idea', 'moderate_report'
 );
 if (!miq_community_enabled() && in_array($action, $community_actions, true)) {
@@ -404,12 +559,39 @@ try {
         $context_key = miq_api_clean_code($_GET['context_key'] ?? '');
         $ideas = miq_account_table('community_ideas');
         $idea_id = (int) ($_GET['idea_id'] ?? 0);
+        $viewer = miq_account_current_user();
         if ($idea_id > 0) {
             $rows = miq_account_fetch_all(miq_account_query("SELECT i.id, i.code, i.title, i.direction, i.timeframe, i.thesis, i.catalyst, i.risk, i.disclosure, i.published_at, u.display_name FROM {$ideas} i INNER JOIN " . miq_account_table('users') . " u ON u.id = i.user_id WHERE i.id = ? AND i.status = 'published' AND i.visibility = 'public' LIMIT 1", 'i', array($idea_id)));
         } else {
             $rows = miq_account_fetch_all(miq_account_query("SELECT i.id, i.code, i.title, i.direction, i.timeframe, i.thesis, i.catalyst, i.risk, i.disclosure, i.published_at, u.display_name FROM {$ideas} i INNER JOIN " . miq_account_table('users') . " u ON u.id = i.user_id WHERE i.status = 'published' AND i.visibility = 'public' AND (? = '' OR i.code = ?) ORDER BY i.published_at DESC LIMIT 40", 'ss', array($context_key, $context_key)));
         }
-        miq_api_json(array('ideas' => $rows));
+        miq_api_json(array('ideas' => miq_api_annotate_public_ideas($rows, $viewer ? (int) $viewer['id'] : 0)));
+    }
+
+    if ($action === 'list_idea_replies') {
+        $idea_id = (int) ($_GET['idea_id'] ?? 0);
+        $ideas = miq_account_table('community_ideas');
+        $idea = miq_account_fetch_one(miq_account_query(
+            "SELECT id FROM {$ideas} WHERE id = ? AND status = 'published' AND visibility = 'public' LIMIT 1",
+            'i',
+            array($idea_id)
+        ));
+        if (!$idea) {
+            miq_api_json(array('error' => 'Published idea not found.'), 404);
+        }
+        $replies = miq_account_table('community_replies');
+        $users = miq_account_table('users');
+        $rows = miq_account_fetch_all(miq_account_query(
+            "SELECT r.id, r.idea_id, r.user_id, r.parent_reply_id, r.body, r.created_at, r.updated_at, u.display_name FROM {$replies} r INNER JOIN {$users} u ON u.id = r.user_id WHERE r.idea_id = ? AND r.status = 'published' ORDER BY r.created_at, r.id LIMIT 200",
+            'i',
+            array($idea_id)
+        ));
+        $viewer = miq_account_current_user();
+        foreach ($rows as $index => $row) {
+            $rows[$index]['can_delete'] = $viewer && ((int) $viewer['id'] === (int) $row['user_id'] || miq_account_is_moderator($viewer));
+            unset($rows[$index]['user_id']);
+        }
+        miq_api_json(array('replies' => $rows));
     }
 
     $user = miq_api_user();
@@ -430,6 +612,212 @@ try {
 
     if ($action === 'workspace') {
         miq_api_json(array('workspace' => miq_api_workspace($user)));
+    }
+
+    if ($action === 'get_preferences') {
+        miq_api_json(array('preferences' => miq_account_user_preferences($user_id)));
+    }
+
+    if ($action === 'save_preferences') {
+        $preferences = miq_account_save_preferences($user_id, $body);
+        miq_api_json(array('saved' => true, 'preferences' => $preferences));
+    }
+
+    if ($action === 'list_notes') {
+        $notes = miq_account_table('research_notes');
+        $charts = miq_account_table('saved_charts');
+        $scripts = miq_account_table('pine_scripts');
+        $code = miq_api_clean_code($_GET['code'] ?? '');
+        $chart_id = (int) ($_GET['chart_id'] ?? 0);
+        $script_id = (int) ($_GET['script_id'] ?? 0);
+        $where = 'n.user_id = ?';
+        $types = 'i';
+        $params = array($user_id);
+        if ($code !== '') {
+            $where .= ' AND n.stock_code = ?';
+            $types .= 's';
+            $params[] = $code;
+        }
+        if ($chart_id > 0) {
+            $where .= ' AND n.chart_id = ?';
+            $types .= 'i';
+            $params[] = $chart_id;
+        }
+        if ($script_id > 0) {
+            $where .= ' AND n.script_id = ?';
+            $types .= 'i';
+            $params[] = $script_id;
+        }
+        $rows = miq_account_fetch_all(miq_account_query(
+            "SELECT n.id, n.stock_code, n.chart_id, n.script_id, n.title, n.body, n.created_at, n.updated_at, c.name AS chart_name, s.name AS script_name FROM {$notes} n LEFT JOIN {$charts} c ON c.id = n.chart_id AND c.user_id = n.user_id LEFT JOIN {$scripts} s ON s.id = n.script_id AND s.user_id = n.user_id WHERE {$where} ORDER BY n.updated_at DESC LIMIT 200",
+            $types,
+            $params
+        ));
+        miq_api_json(array('notes' => $rows));
+    }
+
+    if ($action === 'save_note') {
+        $notes = miq_account_table('research_notes');
+        $charts = miq_account_table('saved_charts');
+        $scripts = miq_account_table('pine_scripts');
+        $note_id = (int) ($body['id'] ?? 0);
+        $stock_code = miq_api_clean_code($body['stock_code'] ?? '');
+        $chart_id = (int) ($body['chart_id'] ?? 0);
+        $script_id = (int) ($body['script_id'] ?? 0);
+        $title = miq_api_clean_text($body['title'] ?? '', 160);
+        $note_body = miq_api_clean_text($body['body'] ?? '', 20000);
+        if ($title === '' || $note_body === '') {
+            miq_api_json(array('error' => 'A note title and note text are required.'), 422);
+        }
+        if ($stock_code === '' && $chart_id <= 0 && $script_id <= 0) {
+            miq_api_json(array('error' => 'Link the note to a stock, saved chart, or Pine script.'), 422);
+        }
+        if ($chart_id > 0) {
+            $owned_chart = miq_account_fetch_one(miq_account_query("SELECT id FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
+            if (!$owned_chart) miq_api_json(array('error' => 'Saved chart not found.'), 404);
+        }
+        if ($script_id > 0) {
+            $owned_script = miq_account_fetch_one(miq_account_query("SELECT id FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
+            if (!$owned_script) miq_api_json(array('error' => 'Pine script not found.'), 404);
+        }
+        if ($note_id > 0) {
+            $owned_note = miq_account_fetch_one(miq_account_query(
+                "SELECT id FROM {$notes} WHERE id = ? AND user_id = ? LIMIT 1",
+                'ii',
+                array($note_id, $user_id)
+            ));
+            if (!$owned_note) miq_api_json(array('error' => 'Research note not found.'), 404);
+            $statement = miq_account_query(
+                "UPDATE {$notes} SET stock_code = ?, chart_id = ?, script_id = ?, title = ?, body = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                'siissii',
+                array($stock_code !== '' ? $stock_code : null, $chart_id ?: null, $script_id ?: null, $title, $note_body, $note_id, $user_id)
+            );
+            $statement->close();
+        } else {
+            if (miq_api_count_rows($notes, $user_id) >= miq_account_config()['max_note_count']) {
+                miq_api_json(array('error' => 'Your research note limit has been reached.'), 422);
+            }
+            $statement = miq_account_query(
+                "INSERT INTO {$notes} (user_id, stock_code, chart_id, script_id, title, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                'isiiss',
+                array($user_id, $stock_code !== '' ? $stock_code : null, $chart_id ?: null, $script_id ?: null, $title, $note_body)
+            );
+            $note_id = (int) miq_account_db()->insert_id;
+            $statement->close();
+        }
+        $row = miq_account_fetch_one(miq_account_query(
+            "SELECT id, stock_code, chart_id, script_id, title, body, created_at, updated_at FROM {$notes} WHERE id = ? AND user_id = ? LIMIT 1",
+            'ii',
+            array($note_id, $user_id)
+        ));
+        miq_api_json(array('saved' => true, 'note' => $row));
+    }
+
+    if ($action === 'delete_note') {
+        $note_id = (int) ($body['id'] ?? 0);
+        $notes = miq_account_table('research_notes');
+        $statement = miq_account_query("DELETE FROM {$notes} WHERE id = ? AND user_id = ?", 'ii', array($note_id, $user_id));
+        $deleted = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$deleted) miq_api_json(array('error' => 'Research note not found.'), 404);
+        miq_api_json(array('deleted' => true, 'id' => $note_id));
+    }
+
+    if ($action === 'list_alerts') {
+        $alerts = miq_account_table('price_alerts');
+        $rows = miq_account_fetch_all(miq_account_query(
+            "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$alerts} WHERE user_id = ? ORDER BY FIELD(status, 'triggered', 'active', 'disabled'), updated_at DESC LIMIT 200",
+            'i',
+            array($user_id)
+        ));
+        miq_api_json(array('alerts' => $rows));
+    }
+
+    if ($action === 'save_alert') {
+        $alerts = miq_account_table('price_alerts');
+        $alert_id = (int) ($body['id'] ?? 0);
+        $code = miq_api_clean_code($body['code'] ?? '');
+        $condition = in_array(($body['condition_type'] ?? ''), array('above', 'below'), true) ? $body['condition_type'] : '';
+        $target = (float) ($body['target_price'] ?? 0);
+        if ($code === '' || $condition === '' || !is_finite($target) || $target <= 0 || $target > 1000000000000) {
+            miq_api_json(array('error' => 'Choose a stock, an above/below condition, and a valid target price.'), 422);
+        }
+        $alert_quote = miq_stock_quotes(array($code));
+        if (!$alert_quote) {
+            miq_api_json(array('error' => 'That stock code does not have a current quote.'), 422);
+        }
+        if ($alert_id > 0) {
+            $owned_alert = miq_account_fetch_one(miq_account_query(
+                "SELECT id FROM {$alerts} WHERE id = ? AND user_id = ? LIMIT 1",
+                'ii',
+                array($alert_id, $user_id)
+            ));
+            if (!$owned_alert) miq_api_json(array('error' => 'Price alert not found.'), 404);
+            $statement = miq_account_query(
+                "UPDATE {$alerts} SET code = ?, condition_type = ?, target_price = ?, status = 'active', triggered_at = NULL, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                'ssdii',
+                array($code, $condition, $target, $alert_id, $user_id)
+            );
+            $statement->close();
+        } else {
+            if (miq_api_count_rows($alerts, $user_id) >= miq_account_config()['max_alert_count']) {
+                miq_api_json(array('error' => 'Your price alert limit has been reached.'), 422);
+            }
+            $statement = miq_account_query(
+                "INSERT INTO {$alerts} (user_id, code, condition_type, target_price, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'active', UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                'issd',
+                array($user_id, $code, $condition, $target)
+            );
+            $alert_id = (int) miq_account_db()->insert_id;
+            $statement->close();
+        }
+        miq_account_evaluate_price_alerts($alert_quote, $user_id);
+        $row = miq_account_fetch_one(miq_account_query(
+            "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$alerts} WHERE id = ? AND user_id = ? LIMIT 1",
+            'ii',
+            array($alert_id, $user_id)
+        ));
+        miq_api_json(array('saved' => true, 'alert' => $row));
+    }
+
+    if ($action === 'set_alert_status') {
+        $alert_id = (int) ($body['id'] ?? 0);
+        $status = ($body['status'] ?? '') === 'active' ? 'active' : 'disabled';
+        $alerts = miq_account_table('price_alerts');
+        $owned_alert = miq_account_fetch_one(miq_account_query(
+            "SELECT id FROM {$alerts} WHERE id = ? AND user_id = ? LIMIT 1",
+            'ii',
+            array($alert_id, $user_id)
+        ));
+        if (!$owned_alert) miq_api_json(array('error' => 'Price alert not found.'), 404);
+        $statement = miq_account_query(
+            "UPDATE {$alerts} SET status = ?, triggered_at = CASE WHEN ? = 'active' THEN NULL ELSE triggered_at END, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+            'ssii',
+            array($status, $status, $alert_id, $user_id)
+        );
+        $statement->close();
+        miq_api_json(array('saved' => true, 'id' => $alert_id, 'status' => $status));
+    }
+
+    if ($action === 'delete_alert') {
+        $alert_id = (int) ($body['id'] ?? 0);
+        $alerts = miq_account_table('price_alerts');
+        $statement = miq_account_query("DELETE FROM {$alerts} WHERE id = ? AND user_id = ?", 'ii', array($alert_id, $user_id));
+        $deleted = $statement->affected_rows === 1;
+        $statement->close();
+        if (!$deleted) miq_api_json(array('error' => 'Price alert not found.'), 404);
+        miq_api_json(array('deleted' => true, 'id' => $alert_id));
+    }
+
+    if ($action === 'mark_notification_read') {
+        $notification_id = (int) ($body['id'] ?? 0);
+        $notifications = miq_account_table('notifications');
+        if ($notification_id > 0) {
+            miq_account_query("UPDATE {$notifications} SET read_at = COALESCE(read_at, UTC_TIMESTAMP()) WHERE id = ? AND user_id = ?", 'ii', array($notification_id, $user_id))->close();
+        } else {
+            miq_account_query("UPDATE {$notifications} SET read_at = UTC_TIMESTAMP() WHERE user_id = ? AND read_at IS NULL", 'i', array($user_id))->close();
+        }
+        miq_api_json(array('saved' => true, 'unread' => miq_account_unread_notification_count($user_id)));
     }
 
     if ($action === 'list_screener_presets') {
@@ -567,14 +955,89 @@ try {
         miq_api_json(array('deleted' => true, 'client_key' => $client_key));
     }
 
+    if ($action === 'list_watchlists' || $action === 'watchlist_state') {
+        $lists = miq_api_watchlists($user_id);
+        $codes = array();
+        foreach ($lists as $list) {
+            foreach ($list['items'] as $item) {
+                $codes[] = $item['code'];
+            }
+        }
+        $requested_code = miq_api_clean_code($_GET['code'] ?? '');
+        if ($requested_code !== '') {
+            $codes[] = $requested_code;
+        }
+        $quotes = array();
+        try {
+            $quotes = miq_stock_quotes($codes);
+            miq_account_evaluate_price_alerts($quotes, $user_id);
+        } catch (Throwable $error) {
+            error_log('360MiQ watchlist quote failure: ' . $error->getMessage());
+        }
+        $payload = array('watchlists' => $lists, 'quotes' => $quotes);
+        if ($action === 'watchlist_state') {
+            $notes = miq_account_table('research_notes');
+            $alerts = miq_account_table('price_alerts');
+            $payload['code'] = $requested_code;
+            $payload['notes'] = $requested_code === '' ? array() : miq_account_fetch_all(miq_account_query(
+                "SELECT id, stock_code, chart_id, script_id, title, body, created_at, updated_at FROM {$notes} WHERE user_id = ? AND stock_code = ? ORDER BY updated_at DESC LIMIT 20",
+                'is',
+                array($user_id, $requested_code)
+            ));
+            $payload['alerts'] = $requested_code === '' ? array() : miq_account_fetch_all(miq_account_query(
+                "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$alerts} WHERE user_id = ? AND code = ? ORDER BY updated_at DESC LIMIT 20",
+                'is',
+                array($user_id, $requested_code)
+            ));
+        }
+        miq_api_json($payload);
+    }
+
     if ($action === 'create_watchlist') {
         $name = miq_api_clean_text($body['name'] ?? 'My Watchlist', 120);
         if ($name === '') miq_api_json(array('error' => 'A watchlist name is required.'), 422);
         $watchlists = miq_account_table('watchlists');
+        if (miq_api_count_rows($watchlists, $user_id) >= miq_account_config()['max_watchlist_count']) {
+            miq_api_json(array('error' => 'Your watchlist limit has been reached.'), 422);
+        }
+        $duplicate = miq_account_fetch_one(miq_account_query("SELECT id FROM {$watchlists} WHERE user_id = ? AND name = ? LIMIT 1", 'is', array($user_id, $name)));
+        if ($duplicate) miq_api_json(array('error' => 'A watchlist with that name already exists.'), 409);
         $statement = miq_account_query("INSERT INTO {$watchlists} (user_id, name, created_at, updated_at) VALUES (?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())", 'is', array($user_id, $name));
         $id = (int) miq_account_db()->insert_id;
         $statement->close();
-        miq_api_json(array('saved' => true, 'id' => $id));
+        miq_api_json(array('saved' => true, 'id' => $id, 'watchlists' => miq_api_watchlists($user_id)));
+    }
+
+    if ($action === 'rename_watchlist') {
+        $watchlist_id = (int) ($body['watchlist_id'] ?? 0);
+        $name = miq_api_clean_text($body['name'] ?? '', 120);
+        $watchlists = miq_account_table('watchlists');
+        if (!$watchlist_id || $name === '') miq_api_json(array('error' => 'Choose a watchlist and enter a name.'), 422);
+        $duplicate = miq_account_fetch_one(miq_account_query("SELECT id FROM {$watchlists} WHERE user_id = ? AND name = ? AND id <> ? LIMIT 1", 'isi', array($user_id, $name, $watchlist_id)));
+        if ($duplicate) miq_api_json(array('error' => 'A watchlist with that name already exists.'), 409);
+        $owned = miq_account_fetch_one(miq_account_query("SELECT id FROM {$watchlists} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($watchlist_id, $user_id)));
+        if (!$owned) miq_api_json(array('error' => 'Watchlist not found.'), 404);
+        miq_account_query("UPDATE {$watchlists} SET name = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'sii', array($name, $watchlist_id, $user_id))->close();
+        miq_api_json(array('saved' => true, 'watchlists' => miq_api_watchlists($user_id)));
+    }
+
+    if ($action === 'delete_watchlist') {
+        $watchlist_id = (int) ($body['watchlist_id'] ?? 0);
+        $watchlists = miq_account_table('watchlists');
+        $items = miq_account_table('watchlist_items');
+        $owned = miq_account_fetch_one(miq_account_query("SELECT id FROM {$watchlists} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($watchlist_id, $user_id)));
+        if (!$owned) miq_api_json(array('error' => 'Watchlist not found.'), 404);
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            miq_account_query("DELETE FROM {$items} WHERE watchlist_id = ? AND user_id = ?", 'ii', array($watchlist_id, $user_id))->close();
+            miq_account_query("DELETE FROM {$watchlists} WHERE id = ? AND user_id = ?", 'ii', array($watchlist_id, $user_id))->close();
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        miq_api_json(array('deleted' => true, 'watchlists' => miq_api_watchlists($user_id)));
     }
 
     if ($action === 'add_watchlist_item') {
@@ -585,17 +1048,57 @@ try {
         $items = miq_account_table('watchlist_items');
         $owned = miq_account_fetch_one(miq_account_query("SELECT id FROM {$watchlists} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($watchlist_id, $user_id)));
         if (!$owned) miq_api_json(array('error' => 'Watchlist not found.'), 404);
-        miq_account_query("INSERT INTO {$items} (watchlist_id, user_id, code, sort_order, created_at) VALUES (?, ?, ?, 0, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE sort_order = sort_order", 'iis', array($watchlist_id, $user_id, $code))->close();
+        if (!miq_stock_quotes(array($code))) {
+            miq_api_json(array('error' => 'That stock code does not have a current quote.'), 422);
+        }
+        $item_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total, COALESCE(MAX(sort_order), -1) AS max_order FROM {$items} WHERE watchlist_id = ? AND user_id = ?", 'ii', array($watchlist_id, $user_id)));
+        $existing = miq_account_fetch_one(miq_account_query("SELECT id FROM {$items} WHERE watchlist_id = ? AND user_id = ? AND code = ? LIMIT 1", 'iis', array($watchlist_id, $user_id, $code)));
+        if (!$existing && (int) ($item_count['total'] ?? 0) >= miq_account_config()['max_watchlist_items']) {
+            miq_api_json(array('error' => 'This watchlist has reached its stock limit.'), 422);
+        }
+        miq_account_query(
+            "INSERT INTO {$items} (watchlist_id, user_id, code, sort_order, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE sort_order = sort_order",
+            'iisi',
+            array($watchlist_id, $user_id, $code, (int) ($item_count['max_order'] ?? -1) + 1)
+        )->close();
         miq_account_query("UPDATE {$watchlists} SET updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'ii', array($watchlist_id, $user_id))->close();
-        miq_api_json(array('saved' => true));
+        miq_api_json(array('saved' => true, 'watchlists' => miq_api_watchlists($user_id)));
     }
 
     if ($action === 'remove_watchlist_item') {
         $watchlist_id = (int) ($body['watchlist_id'] ?? 0);
         $code = miq_api_clean_code($body['code'] ?? '');
+        $watchlists = miq_account_table('watchlists');
         $items = miq_account_table('watchlist_items');
         miq_account_query("DELETE FROM {$items} WHERE watchlist_id = ? AND user_id = ? AND code = ?", 'iis', array($watchlist_id, $user_id, $code))->close();
-        miq_api_json(array('saved' => true));
+        miq_account_query("UPDATE {$watchlists} SET updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'ii', array($watchlist_id, $user_id))->close();
+        miq_api_json(array('saved' => true, 'watchlists' => miq_api_watchlists($user_id)));
+    }
+
+    if ($action === 'reorder_watchlist_items') {
+        $watchlist_id = (int) ($body['watchlist_id'] ?? 0);
+        $codes = miq_stock_clean_codes($body['codes'] ?? array(), miq_account_config()['max_watchlist_items']);
+        $watchlists = miq_account_table('watchlists');
+        $items = miq_account_table('watchlist_items');
+        $owned = miq_account_fetch_one(miq_account_query("SELECT id FROM {$watchlists} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($watchlist_id, $user_id)));
+        if (!$owned) miq_api_json(array('error' => 'Watchlist not found.'), 404);
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            foreach ($codes as $index => $code) {
+                miq_account_query(
+                    "UPDATE {$items} SET sort_order = ? WHERE watchlist_id = ? AND user_id = ? AND code = ?",
+                    'iiis',
+                    array($index, $watchlist_id, $user_id, $code)
+                )->close();
+            }
+            miq_account_query("UPDATE {$watchlists} SET updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'ii', array($watchlist_id, $user_id))->close();
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        miq_api_json(array('saved' => true, 'watchlists' => miq_api_watchlists($user_id)));
     }
 
     if ($action === 'list_charts') {
@@ -1063,6 +1566,130 @@ try {
         miq_api_json(array('saved' => true, 'id' => $idea_id, 'status' => $status));
     }
 
+    if ($action === 'bookmark_idea') {
+        $idea_id = (int) ($body['idea_id'] ?? 0);
+        $bookmarked = filter_var($body['bookmarked'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $ideas = miq_account_table('community_ideas');
+        $idea = miq_account_fetch_one(miq_account_query(
+            "SELECT id FROM {$ideas} WHERE id = ? AND status = 'published' AND visibility = 'public' LIMIT 1",
+            'i',
+            array($idea_id)
+        ));
+        if (!$idea) miq_api_json(array('error' => 'Published idea not found.'), 404);
+        $bookmarks = miq_account_table('community_bookmarks');
+        if ($bookmarked) {
+            miq_account_query(
+                "INSERT INTO {$bookmarks} (user_id, idea_id, created_at) VALUES (?, ?, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE created_at = created_at",
+                'ii',
+                array($user_id, $idea_id)
+            )->close();
+        } else {
+            miq_account_query("DELETE FROM {$bookmarks} WHERE user_id = ? AND idea_id = ?", 'ii', array($user_id, $idea_id))->close();
+        }
+        miq_api_json(array('saved' => true, 'idea_id' => $idea_id, 'bookmarked' => $bookmarked));
+    }
+
+    if ($action === 'save_idea_reply') {
+        $idea_id = (int) ($body['idea_id'] ?? 0);
+        $parent_reply_id = (int) ($body['parent_reply_id'] ?? 0);
+        $reply_body = miq_api_clean_text($body['body'] ?? '', 2000);
+        if (!$idea_id || $reply_body === '') miq_api_json(array('error' => 'Write a reply before posting.'), 422);
+        $reply_limit = miq_account_config()['rate_limits']['community_reply_user'];
+        if (!miq_account_rate_limit('community_reply_user', (string) $user_id, $reply_limit['limit'], $reply_limit['window'])) {
+            miq_api_json(array('error' => 'Too many replies. Try again later.'), 429);
+        }
+        $ideas = miq_account_table('community_ideas');
+        $idea = miq_account_fetch_one(miq_account_query(
+            "SELECT id, user_id, title FROM {$ideas} WHERE id = ? AND status = 'published' AND visibility = 'public' LIMIT 1",
+            'i',
+            array($idea_id)
+        ));
+        if (!$idea) miq_api_json(array('error' => 'Published idea not found.'), 404);
+        $replies = miq_account_table('community_replies');
+        $parent = null;
+        if ($parent_reply_id > 0) {
+            $parent = miq_account_fetch_one(miq_account_query(
+                "SELECT id, user_id FROM {$replies} WHERE id = ? AND idea_id = ? AND status = 'published' LIMIT 1",
+                'ii',
+                array($parent_reply_id, $idea_id)
+            ));
+            if (!$parent) miq_api_json(array('error' => 'The reply you selected is no longer available.'), 404);
+        }
+        $statement = miq_account_query(
+            "INSERT INTO {$replies} (idea_id, user_id, parent_reply_id, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'published', UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+            'iiis',
+            array($idea_id, $user_id, $parent_reply_id ?: null, $reply_body)
+        );
+        $reply_id = (int) miq_account_db()->insert_id;
+        $statement->close();
+        $link = 'community?idea=' . $idea_id . '#reply-' . $reply_id;
+        if ((int) $idea['user_id'] !== $user_id) {
+            miq_account_notify(
+                (int) $idea['user_id'],
+                'community_reply',
+                'New reply to your idea',
+                $user['display_name'] . ' replied to “' . $idea['title'] . '”.',
+                $link,
+                'community-reply:' . $reply_id . ':idea-owner'
+            );
+        }
+        if ($parent && (int) $parent['user_id'] !== $user_id && (int) $parent['user_id'] !== (int) $idea['user_id']) {
+            miq_account_notify(
+                (int) $parent['user_id'],
+                'community_reply',
+                'New reply to your comment',
+                $user['display_name'] . ' replied in “' . $idea['title'] . '”.',
+                $link,
+                'community-reply:' . $reply_id . ':parent'
+            );
+        }
+        $bookmarks = miq_account_table('community_bookmarks');
+        $bookmark_users = miq_account_fetch_all(miq_account_query(
+            "SELECT user_id FROM {$bookmarks} WHERE idea_id = ? ORDER BY created_at LIMIT 100",
+            'i',
+            array($idea_id)
+        ));
+        foreach ($bookmark_users as $bookmark_user) {
+            $bookmark_user_id = (int) $bookmark_user['user_id'];
+            if (
+                $bookmark_user_id === $user_id
+                || $bookmark_user_id === (int) $idea['user_id']
+                || ($parent && $bookmark_user_id === (int) $parent['user_id'])
+            ) {
+                continue;
+            }
+            miq_account_notify(
+                $bookmark_user_id,
+                'community_reply',
+                'New reply on a bookmarked idea',
+                $user['display_name'] . ' replied in â€œ' . $idea['title'] . 'â€.',
+                $link,
+                'community-reply:' . $reply_id . ':bookmark:' . $bookmark_user_id
+            );
+        }
+        miq_api_json(array('saved' => true, 'id' => $reply_id));
+    }
+
+    if ($action === 'delete_idea_reply') {
+        $reply_id = (int) ($body['reply_id'] ?? ($body['id'] ?? 0));
+        $replies = miq_account_table('community_replies');
+        $reply = miq_account_fetch_one(miq_account_query(
+            "SELECT id, user_id FROM {$replies} WHERE id = ? AND status = 'published' LIMIT 1",
+            'i',
+            array($reply_id)
+        ));
+        if (!$reply) miq_api_json(array('error' => 'Reply not found.'), 404);
+        if ((int) $reply['user_id'] !== $user_id && !miq_account_is_moderator($user)) {
+            miq_api_json(array('error' => 'You cannot remove this reply.'), 403);
+        }
+        miq_account_query(
+            "UPDATE {$replies} SET status = 'deleted', updated_at = UTC_TIMESTAMP() WHERE id = ?",
+            'i',
+            array($reply_id)
+        )->close();
+        miq_api_json(array('deleted' => true, 'id' => $reply_id));
+    }
+
     if ($action === 'vote') {
         list($context_type, $context_key) = miq_api_pulse_context($body['context_type'] ?? 'site', $body['context_key'] ?? 'site');
         $timeframe = miq_api_pulse_timeframe($body['timeframe'] ?? '30d');
@@ -1140,7 +1767,7 @@ try {
         $db->begin_transaction();
         try {
             $idea = miq_account_fetch_one(miq_account_query(
-                "SELECT id, status FROM {$ideas} WHERE id = ? LIMIT 1 FOR UPDATE",
+                "SELECT id, user_id, title, status FROM {$ideas} WHERE id = ? LIMIT 1 FOR UPDATE",
                 'i',
                 array($idea_id)
             ));
@@ -1162,6 +1789,21 @@ try {
                 miq_account_query("UPDATE {$reports} SET status = 'reviewed' WHERE idea_id = ? AND status = 'open'", 'i', array($idea_id))->close();
             }
             miq_api_record_moderation_action($user_id, $idea_id, $decision, $note);
+            $notification_title = $decision === 'publish'
+                ? 'Your community idea was published'
+                : ($decision === 'reject' ? 'Your community idea needs changes' : 'Your community idea was hidden');
+            $notification_message = $decision === 'publish'
+                ? 'Your idea “' . $idea['title'] . '” is now visible in Community Ideas.'
+                : $note;
+            $notification_link = $decision === 'publish' ? 'community?idea=' . $idea_id : 'workspace?tab=ideas';
+            miq_account_notify(
+                (int) $idea['user_id'],
+                'community_moderation',
+                $notification_title,
+                $notification_message,
+                $notification_link,
+                'idea-moderation:' . $idea_id . ':' . $status
+            );
             $db->commit();
         } catch (Throwable $error) {
             $db->rollback();
@@ -1201,9 +1843,24 @@ try {
                 miq_account_query("UPDATE {$reports} SET status = 'dismissed' WHERE id = ?", 'i', array($report_id))->close();
                 miq_api_record_moderation_action($user_id, $idea_id, 'report_dismissed', 'Report #' . $report_id . ': ' . $note);
             } else {
+                $reported_idea = miq_account_fetch_one(miq_account_query(
+                    "SELECT user_id, title FROM {$ideas} WHERE id = ? LIMIT 1",
+                    'i',
+                    array($idea_id)
+                ));
                 miq_account_query("UPDATE {$ideas} SET status = 'hidden', visibility = 'private', updated_at = UTC_TIMESTAMP() WHERE id = ?", 'i', array($idea_id))->close();
                 miq_account_query("UPDATE {$reports} SET status = 'reviewed' WHERE idea_id = ? AND status = 'open'", 'i', array($idea_id))->close();
                 miq_api_record_moderation_action($user_id, $idea_id, 'hide', 'Report #' . $report_id . ': ' . $note);
+                if ($reported_idea) {
+                    miq_account_notify(
+                        (int) $reported_idea['user_id'],
+                        'community_moderation',
+                        'Your community idea was hidden',
+                        $note,
+                        'workspace?tab=ideas',
+                        'idea-moderation:' . $idea_id . ':hidden'
+                    );
+                }
             }
             $db->commit();
         } catch (Throwable $error) {

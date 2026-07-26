@@ -1,7 +1,10 @@
 <?php
+    require_once __DIR__ . '/account/bootstrap.php';
     $map = isset($_GET["map"]) ? $_GET["map"] : '';
     $longMA = 200;
-    $data = strtoupper(isset($_GET["data"]) ? $_GET["data"] : 'NYSE');
+    $market_user = miq_account_current_user();
+    $market_preferences = $market_user ? miq_account_user_preferences((int) $market_user['id']) : miq_account_preference_defaults();
+    $data = strtoupper(isset($_GET["data"]) ? $_GET["data"] : $market_preferences['default_market']);
     $sort = isset($_GET["sort"]) ? $_GET["sort"] : '';
     $showbar = isset($_GET["showbar"]) ? $_GET["showbar"] : '';
     $highlight = isset($_GET["highlight"]) ? $_GET["highlight"] : '';

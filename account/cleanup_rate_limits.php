@@ -39,8 +39,25 @@ $statement = miq_account_query(
 $released_users = $statement->affected_rows;
 $statement->close();
 
+$expired_notifications = 0;
+$expired_replies = 0;
+try {
+    $notifications = miq_account_table('notifications');
+    $statement = miq_account_query("DELETE FROM {$notifications} WHERE read_at IS NOT NULL AND created_at < UTC_TIMESTAMP() - INTERVAL 180 DAY");
+    $expired_notifications = $statement->affected_rows;
+    $statement->close();
+
+    $replies = miq_account_table('community_replies');
+    $statement = miq_account_query("DELETE FROM {$replies} WHERE status = 'deleted' AND updated_at < UTC_TIMESTAMP() - INTERVAL 30 DAY");
+    $expired_replies = $statement->affected_rows;
+    $statement->close();
+} catch (Throwable $optional_cleanup_error) {
+    error_log('360MiQ optional productivity cleanup failed: ' . $optional_cleanup_error->getMessage());
+}
+
 fwrite(
     STDOUT,
     "Deleted {$deleted} stale rate-limit row(s), {$expired_sessions} expired session(s), "
-    . "{$expired_activity} old activity row(s); released {$released_users} expired suspension(s).\n"
+    . "{$expired_activity} old activity row(s), {$expired_notifications} read notification(s), "
+    . "{$expired_replies} deleted reply row(s); released {$released_users} expired suspension(s).\n"
 );

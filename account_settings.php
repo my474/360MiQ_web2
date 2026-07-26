@@ -9,6 +9,7 @@ $messages = array();
 $errors = array();
 $display_name_suggestions = array();
 $settings_display_name = $user['display_name'];
+$preferences = miq_account_user_preferences((int) $user['id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!miq_account_check_csrf($_POST['csrf_token'] ?? '')) {
@@ -24,6 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $messages[] = 'Your display name was updated.';
                 $settings_display_name = $name;
                 $user = miq_account_current_user();
+            } elseif ($action === 'preferences') {
+                $preferences = miq_account_save_preferences((int) $user['id'], array(
+                    'default_market' => $_POST['default_market'] ?? '',
+                    'preferred_timeframe' => $_POST['preferred_timeframe'] ?? '',
+                    'theme_mode' => $_POST['theme_mode'] ?? '',
+                    'chart_type' => $_POST['chart_type'] ?? '',
+                    'chart_period' => $_POST['chart_period'] ?? '',
+                    'auto_save_charts' => isset($_POST['auto_save_charts']),
+                ));
+                $messages[] = 'Your synced preferences were updated.';
             } elseif ($action === 'password') {
                 $current_password = (string) ($_POST['current_password'] ?? '');
                 $new_password = (string) ($_POST['new_password'] ?? '');
@@ -48,6 +59,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (trim((string) ($_POST['confirmation'] ?? '')) !== 'DELETE MY ACCOUNT') throw new RuntimeException('Type DELETE MY ACCOUNT to confirm account deletion.');
                 $db = miq_account_db();
                 $db->begin_transaction();
+                try {
+                    $ideas_for_delete = miq_account_table('community_ideas');
+                    $replies_for_delete = miq_account_table('community_replies');
+                    $bookmarks_for_delete = miq_account_table('community_bookmarks');
+                    miq_account_query("DELETE FROM {$replies_for_delete} WHERE idea_id IN (SELECT id FROM {$ideas_for_delete} WHERE user_id = ?)", 'i', array((int) $user['id']))->close();
+                    miq_account_query("DELETE FROM {$bookmarks_for_delete} WHERE idea_id IN (SELECT id FROM {$ideas_for_delete} WHERE user_id = ?)", 'i', array((int) $user['id']))->close();
+                } catch (Throwable $optional_community_cleanup_error) {
+                    error_log('360MiQ optional community cleanup failed: ' . $optional_community_cleanup_error->getMessage());
+                }
+                foreach (array('community_replies', 'community_bookmarks', 'notifications', 'price_alerts', 'research_notes', 'user_preferences') as $account_table) {
+                    try {
+                        miq_account_query("DELETE FROM " . miq_account_table($account_table) . " WHERE user_id = ?", 'i', array((int) $user['id']))->close();
+                    } catch (Throwable $optional_delete_error) {
+                        error_log('360MiQ optional account-data cleanup failed: ' . $optional_delete_error->getMessage());
+                    }
+                }
                 miq_account_query("DELETE FROM {$users} WHERE id = ?", 'i', array((int) $user['id']))->close();
                 $db->commit();
                 miq_account_logout(true);
@@ -72,18 +99,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta property="og:title" content="Account Settings - 360MiQ.com" />
     <meta name="description" content="Manage your 360MiQ account, privacy, and workspace data." />
     <title>Account Settings - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css?v=20260726.5">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.3">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260726.6">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.5">
     <?php if (miq_account_config()['google_client_id'] !== ''): ?><script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script><?php endif; ?>
 </head>
 <body>
 <?php $page = 'account'; include __DIR__ . '/header.php'; ?>
 <main class="miq-workspace-page container">
-    <div class="miq-workspace-heading"><div><span class="miq-account-kicker">Account controls</span><h1>Account settings</h1><p><?php echo htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8'); ?></p></div><a class="btn btn-outline-primary" href="/workspace">Back to Workspace</a></div>
+    <div class="miq-workspace-heading"><div><span class="miq-account-kicker">Account controls</span><h1>Account settings</h1><p><?php echo htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8'); ?></p></div><a class="btn btn-outline-primary" href="workspace">Back to Workspace</a></div>
     <?php foreach ($messages as $message): ?><div class="alert alert-success"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></div><?php endforeach; ?>
     <?php foreach ($errors as $error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div><?php endforeach; ?>
     <div class="miq-workspace-grid">
         <section class="miq-workspace-panel"><h2>Profile</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="profile"><label for="settings-display-name">Display name</label><input id="settings-display-name" class="form-control" name="display_name" value="<?php echo htmlspecialchars($settings_display_name, ENT_QUOTES, 'UTF-8'); ?>" maxlength="80" required><?php if (!empty($display_name_suggestions)): ?><div class="miq-display-name-suggestions" aria-live="polite"><span>Available suggestions:</span><?php foreach ($display_name_suggestions as $suggestion): ?><button type="button" class="btn btn-sm btn-outline-primary miq-display-name-suggestion" data-display-name-suggestion="<?php echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8'); ?>" data-display-name-target="settings-display-name"><?php echo htmlspecialchars($suggestion, ENT_QUOTES, 'UTF-8'); ?></button><?php endforeach; ?></div><?php endif; ?><button class="btn btn-primary" type="submit">Save profile</button></form></section>
+        <section class="miq-workspace-panel miq-workspace-panel-wide">
+            <h2>Synced preferences</h2>
+            <p>Use the same defaults on every device. Saved chart layouts remain separate and keep their own complete chart state.</p>
+            <form method="post" class="miq-preferences-form">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="action" value="preferences">
+                <div class="miq-settings-fields">
+                    <label>Default market<select class="form-control" name="default_market"><?php foreach (array('NYSE', 'NASDAQ', 'LSE', 'TSX', 'ASX', 'NSE', 'TYO', 'HKEX', 'SHSE', 'SZSE') as $option): ?><option value="<?php echo $option; ?>" <?php echo $preferences['default_market'] === $option ? 'selected' : ''; ?>><?php echo $option; ?></option><?php endforeach; ?></select></label>
+                    <label>Preferred timeframe<select class="form-control" name="preferred_timeframe"><?php foreach (array('1m', '3m', '6m', 'ytd', '1y', '2y', '3y', '5y', '8y', '10y', 'all') as $option): ?><option value="<?php echo $option; ?>" <?php echo $preferences['preferred_timeframe'] === $option ? 'selected' : ''; ?>><?php echo strtoupper($option); ?></option><?php endforeach; ?></select></label>
+                    <label>Theme<select class="form-control" name="theme_mode"><option value="system" <?php echo $preferences['theme_mode'] === 'system' ? 'selected' : ''; ?>>Follow device</option><option value="light" <?php echo $preferences['theme_mode'] === 'light' ? 'selected' : ''; ?>>Light</option><option value="dark" <?php echo $preferences['theme_mode'] === 'dark' ? 'selected' : ''; ?>>Dark</option></select></label>
+                    <label>New-chart style<select class="form-control" name="chart_type"><?php foreach (array('candlestick' => 'Candlestick', 'heikin_ashi' => 'Heikin Ashi', 'bar' => 'Bar', 'line' => 'Line', 'area' => 'Area', 'baseline' => 'Baseline') as $value => $label): ?><option value="<?php echo $value; ?>" <?php echo $preferences['chart_type'] === $value ? 'selected' : ''; ?>><?php echo $label; ?></option><?php endforeach; ?></select></label>
+                    <label>Chart interval<select class="form-control" name="chart_period"><?php foreach (array('daily', 'weekly', 'monthly', 'quarterly', 'yearly') as $option): ?><option value="<?php echo $option; ?>" <?php echo $preferences['chart_period'] === $option ? 'selected' : ''; ?>><?php echo ucfirst($option); ?></option><?php endforeach; ?></select></label>
+                </div>
+                <label class="miq-settings-check"><input type="checkbox" name="auto_save_charts" value="1" <?php echo $preferences['auto_save_charts'] ? 'checked' : ''; ?>> Automatically sync chart changes while signed in</label>
+                <button class="btn btn-primary" type="submit">Save preferences</button>
+            </form>
+        </section>
         <section class="miq-workspace-panel"><h2>Change password</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="password"><label for="current-password">Current password</label><input id="current-password" class="form-control" type="password" name="current_password" autocomplete="current-password" required><label for="new-password">New password</label><input id="new-password" class="form-control" type="password" name="new_password" minlength="8" autocomplete="new-password" required><button class="btn btn-primary" type="submit">Change password</button></form></section>
         <section class="miq-workspace-panel"><h2>Your data</h2><p>Export your account data or permanently delete your account and private workspace.</p><a class="btn btn-outline-primary" href="account_export.php">Download my data</a></section>
         <section class="miq-workspace-panel"><h2>Connected login</h2><?php if (miq_account_config()['google_client_id'] !== ''): ?><p>Connect Google for faster sign-in. The Google email must match this account.</p><form method="post" id="google-link-form" class="miq-google-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="google_link"><input type="hidden" name="credential" id="google-link-credential"><div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="link" data-google-size="medium"></div></form><?php else: ?><p>Google connection will be available after the production OAuth client is configured.</p><?php endif; ?></section>

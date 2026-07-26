@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
     <link rel="stylesheet" href="assets/css/inlinehelp2.css">
-    <link rel="stylesheet" href="assets/css/screener-presets.css?v=20260726.1">
+    <link rel="stylesheet" href="assets/css/screener-presets.css?v=20260726.2">
 
 <style>
 .dataTables_filter {
@@ -630,6 +630,7 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
         </div>
         <p id="miq-screener-preset-status" class="miq-screener-presets__status" role="status" aria-live="polite">Loading presets…</p>
     </div>
+    <p class="miq-screener-presets__description">Each preset preserves filters, sorting, page size, and selected columns. Guest presets stay in this browser; signed-in presets sync across devices.</p>
     <div class="miq-screener-presets__controls">
         <label class="miq-screener-presets__field miq-screener-presets__field--select">
             <span>Saved preset</span>

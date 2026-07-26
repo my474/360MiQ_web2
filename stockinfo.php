@@ -285,6 +285,7 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <link rel="stylesheet" href="assets/css/inlinehelp.css">
     <link rel="stylesheet" href="assets/css/help-tip2.css">
     <link rel="stylesheet" href="assets/css/toggleSwitch.css">
+    <link rel="stylesheet" href="assets/css/stock-account-tools.css?v=20260726.1">
     <!--script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script-->
     <!--script defer data-cfasync="false" src="assets/js/bot-detector.js"-->
     <script>
@@ -1062,6 +1063,9 @@ function adsBlocked(callback){
 
 </div></div></div>
 </section>
+    <div class="container">
+        <?php include __DIR__ . '/components/stock-account-tools.php'; ?>
+    </div>
     <?php if (miq_community_enabled()): ?>
         <div class="container miq-community-pulse-placement miq-community-pulse-placement-stock">
             <?php include __DIR__ . '/components/community-pulse.php'; ?>
@@ -2007,6 +2011,7 @@ window.__STOCKINFO_PAGE_CONFIG = {
 </script>
 <script src="assets/js/ValuationBands.js?v=20260625.1"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
+<script src="assets/js/stock-account-tools.js?v=20260726.1" defer></script>
 <script>
 (function () {
     function currentStockCode() {

@@ -50,6 +50,12 @@
     color: #08783e;
 }
 
+.miq-screener-presets__description {
+    margin: -3px 0 13px;
+    color: #5f6b7a;
+    font-size: .75rem;
+}
+
 .miq-screener-presets__controls {
     display: grid;
     grid-template-columns: minmax(190px, 0.8fr) minmax(220px, 1fr) minmax(420px, 1.7fr);
@@ -147,7 +153,8 @@
 }
 
 [data-theme="dark"] .miq-screener-presets__status,
-[data-theme="dark"] .miq-screener-presets__field {
+[data-theme="dark"] .miq-screener-presets__field,
+[data-theme="dark"] .miq-screener-presets__description {
     color: #c4ccdc;
 }
 

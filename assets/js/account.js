@@ -6,6 +6,7 @@
     var pendingPulseVoteKey = '360miq-pending-community-vote';
     var pendingPulseVoteMaxAge = 24 * 60 * 60 * 1000;
     var sentimentTrendRequests = {};
+    var themePreferenceTimer = null;
     var pulseDebugEnabled = new URLSearchParams(window.location.search).get('community_debug') === '1';
     var pulseMarketLabels = {
         NYSE: 'NYSE',
@@ -832,8 +833,18 @@
         inspectPulse: inspectPulse
     };
 
-    document.documentElement.addEventListener('themechange', function () {
+    document.documentElement.addEventListener('themechange', function (event) {
         renderGoogleButtons();
+        if (!state.loggedIn || !event.detail || !event.detail.theme) return;
+        window.clearTimeout(themePreferenceTimer);
+        themePreferenceTimer = window.setTimeout(function () {
+            var nextPreferences = Object.assign({}, state.preferences || {}, {
+                theme_mode: event.detail.theme
+            });
+            jsonRequest('save_preferences', nextPreferences).then(function (body) {
+                if (body.preferences) state.preferences = body.preferences;
+            }).catch(function () { /* Theme remains available locally when sync is unavailable. */ });
+        }, 250);
     });
 
     document.addEventListener('DOMContentLoaded', function () {

@@ -6,10 +6,10 @@
     var workspace = null;
     var communityEnabled = !document.body || document.body.getAttribute('data-community-enabled') !== 'false';
     var activeTab = new URLSearchParams(window.location.search).get('tab') || 'overview';
-    if (!communityEnabled && activeTab === 'ideas') activeTab = 'overview';
-    if (activeTab === 'watchlists') activeTab = 'overview';
+    if (!communityEnabled && (activeTab === 'ideas' || activeTab === 'bookmarks')) activeTab = 'overview';
     var chartsState = { items: [], page: 0, total: 0, search: '', kind: '', loading: false };
     var scriptsState = { items: [], page: 0, total: 0, search: '', status: '', loading: false };
+    var editingNoteId = 0;
 
     function escapeHtml(value) {
         return String(value == null ? '' : value).replace(/[&<>'"]/g, function (character) {
@@ -102,6 +102,15 @@
                 href: 'stockinfo?code=' + encodeURIComponent(item.code)
             });
         });
+        workspaceItems('notes').slice(0, 2).forEach(function (item) {
+            items.push({
+                type: 'Research note',
+                title: item.title,
+                detail: item.stock_code || item.chart_name || item.script_name || 'Private journal',
+                date: item.updated_at,
+                href: 'workspace?tab=notes'
+            });
+        });
         if (communityEnabled) {
             workspaceItems('ideas').slice(0, 1).forEach(function (item) {
                 items.push({
@@ -157,6 +166,51 @@
         return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Screening</span><h2>Saved screens</h2></div><a href="screener">Open screener</a></div>' + body + '</section>';
     }
 
+    function renderRecentCharts() {
+        var charts = workspaceItems('charts').slice(0, 4);
+        var body = charts.length
+            ? '<div class="miq-dashboard-compact-list">' + charts.map(function (item) {
+                return '<a href="tool?tab=3&stockcode=' + encodeURIComponent(item.code || '') + '&chart_id=' + Number(item.id) +
+                    '"><strong>' + escapeHtml(item.name) + '</strong><small>' + escapeHtml(item.code || 'Advanced Chart') +
+                    ' · updated ' + escapeHtml(humanDate(item.updated_at)) + '</small></a>';
+            }).join('') + '</div>'
+            : '<div class="miq-dashboard-mini-empty">Your recently saved charts will appear here.</div>';
+        return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Charting</span><h2>Recent charts</h2></div><a href="workspace?tab=charts">View all</a></div>' + body + '</section>';
+    }
+
+    function quoteMap() {
+        return workspaceItems('watchlist_quotes').reduce(function (map, quote) {
+            map[String(quote.code || '').toUpperCase()] = quote;
+            return map;
+        }, {});
+    }
+
+    function renderWatchlistMovers() {
+        var quotes = workspaceItems('watchlist_quotes').slice().sort(function (left, right) {
+            return Math.abs(Number(right.change_pct || 0)) - Math.abs(Number(left.change_pct || 0));
+        }).slice(0, 8);
+        var body = quotes.length ? '<div class="miq-dashboard-movers">' + quotes.map(function (quote) {
+            var change = Number(quote.change_pct || 0);
+            var changeClass = change > 0 ? 'is-up' : (change < 0 ? 'is-down' : '');
+            return '<a href="stockinfo?code=' + encodeURIComponent(quote.code) + '"><span><strong>' + escapeHtml(quote.code) +
+                '</strong><small>' + escapeHtml(quote.name_en || quote.name_tc || quote.exchange || '') +
+                '</small></span><span class="miq-mover-price">' + escapeHtml(quote.close == null ? '—' : quote.close) +
+                '<em class="' + changeClass + '">' + (change > 0 ? '+' : '') + change.toFixed(2) + '%</em></span></a>';
+        }).join('') + '</div>' : '<div class="miq-dashboard-mini-empty">Add stocks to a watchlist to see daily movers here.</div>';
+        return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Watchlists</span><h2>Watchlist movers</h2></div><a href="workspace?tab=watchlists">Manage</a></div>' + body + '</section>';
+    }
+
+    function renderTriggeredAlerts() {
+        var alerts = workspaceItems('alerts').filter(function (alert) { return alert.status === 'triggered'; }).slice(0, 5);
+        var body = alerts.length ? '<div class="miq-dashboard-compact-list">' + alerts.map(function (alert) {
+            return '<a href="stockinfo?code=' + encodeURIComponent(alert.code) + '"><strong>' + escapeHtml(alert.code) +
+                ' ' + (alert.condition_type === 'above' ? '≥ ' : '≤ ') + escapeHtml(alert.target_price) +
+                '</strong><small>Triggered ' + escapeHtml(humanDate(alert.triggered_at)) +
+                (alert.last_price != null ? ' · last ' + escapeHtml(alert.last_price) : '') + '</small></a>';
+        }).join('') + '</div>' : '<div class="miq-dashboard-mini-empty">No newly triggered alerts.</div>';
+        return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Monitoring</span><h2>Triggered alerts</h2></div><a href="workspace?tab=alerts">View all</a></div>' + body + '</section>';
+    }
+
     function renderCommunitySummary() {
         var ideas = workspaceItems('ideas').slice(0, 3);
         var body = ideas.length
@@ -178,16 +232,20 @@
             '<a class="btn btn-outline-primary" href="market">View Markets</a>' +
             (communityEnabled ? '<a class="btn btn-outline-primary" href="community">Community Ideas</a>' : '') + '</div>';
         var metrics = '<section class="miq-dashboard-metrics miq-workspace-panel-wide" aria-label="Workspace totals">' +
-            dashboardMetric(workspaceCount('charts'), 'Saved charts', 'Open and manage', 'workspace?tab=charts') +
-            dashboardMetric(workspaceCount('scripts'), 'Pine scripts', 'Continue coding', 'workspace?tab=scripts') +
+            dashboardMetric(workspaceCount('watchlist_items'), 'Watchlist stocks', 'Track daily movers', 'workspace?tab=watchlists') +
+            dashboardMetric(workspaceCount('active_alerts'), 'Active alerts', 'Monitor targets', 'workspace?tab=alerts') +
+            dashboardMetric(workspaceCount('notes'), 'Research notes', 'Private journal', 'workspace?tab=notes') +
             dashboardMetric(workspaceCount('screener_presets'), 'Saved screens', 'Run a preset', 'workspace?tab=presets') +
-            dashboardMetric(workspaceCount('searches'), 'Recent stocks', 'Review history', 'workspace?tab=searches') +
-            (communityEnabled ? dashboardMetric(workspaceCount('ideas'), 'Community ideas', 'Drafts and submissions', 'workspace?tab=ideas') : '') + '</section>';
+            dashboardMetric(workspaceCount('charts'), 'Saved charts', 'Open and manage', 'workspace?tab=charts') +
+            dashboardMetric(workspaceCount('scripts'), 'Pine scripts', 'Continue coding', 'workspace?tab=scripts') + '</section>';
         return '<section class="miq-dashboard-hero miq-workspace-panel-wide"><div><span class="miq-dashboard-eyebrow">Personalized dashboard</span><h2>Your research at a glance</h2><p>Pick up where you left off, reopen saved tools, or start a new market investigation.</p></div>' + actions + '</section>' +
             metrics +
             '<section class="miq-workspace-panel miq-workspace-panel-wide miq-dashboard-continue"><div class="miq-dashboard-panel-heading"><div><span>Based on your activity</span><h2>Continue researching</h2></div></div>' + renderRecentActivity() + '</section>' +
-            renderRecentStocks() +
+            renderWatchlistMovers() +
+            renderTriggeredAlerts() +
+            renderRecentCharts() +
             renderSavedScreens() +
+            renderRecentStocks() +
             (communityEnabled ? renderCommunitySummary() : renderPrivacySummary()) +
             (communityEnabled ? '<section class="miq-dashboard-privacy-note miq-workspace-panel-wide"><strong>Private by default.</strong> Saved charts, scripts, screens, and drafts remain private unless you explicitly share or submit them. <a href="account_settings">Review account settings</a></section>' : '');
     }
@@ -243,6 +301,107 @@
         return panel('Pine scripts', controls + '<p class="miq-asset-note">A chart keeps an embedded script snapshot for reproducible sharing. My Scripts stores the reusable account copy.</p><div class="miq-asset-list">' + rows + '</div>' + more, true);
     }
 
+    function renderWatchlists() {
+        var quotes = quoteMap();
+        var create = '<form class="miq-management-create" data-watchlist-create><input class="form-control" name="name" maxlength="120" placeholder="New watchlist name" required><button class="btn btn-primary" type="submit">Create watchlist</button></form>';
+        var lists = workspaceItems('watchlists');
+        var body = lists.length ? '<div class="miq-management-stack">' + lists.map(function (list) {
+            var items = Array.isArray(list.items) ? list.items : [];
+            var rows = items.length ? items.map(function (item, index) {
+                var quote = quotes[String(item.code || '').toUpperCase()] || {};
+                var change = Number(quote.change_pct || 0);
+                var changeClass = change > 0 ? 'is-up' : (change < 0 ? 'is-down' : '');
+                return '<div class="miq-watchlist-row" data-watchlist-code="' + escapeHtml(item.code) + '"><a href="stockinfo?code=' +
+                    encodeURIComponent(item.code) + '"><strong>' + escapeHtml(item.code) + '</strong><small>' +
+                    escapeHtml(quote.name_en || quote.name_tc || quote.exchange || '') + '</small></a><span>' +
+                    escapeHtml(quote.close == null ? '—' : quote.close) + '</span><span class="' + changeClass + '">' +
+                    (change > 0 ? '+' : '') + change.toFixed(2) + '%</span><div class="miq-management-actions">' +
+                    '<button class="btn btn-sm btn-link" type="button" data-workspace-action="watchlist-up" ' + (index === 0 ? 'disabled' : '') + ' aria-label="Move ' + escapeHtml(item.code) + ' up">↑</button>' +
+                    '<button class="btn btn-sm btn-link" type="button" data-workspace-action="watchlist-down" ' + (index === items.length - 1 ? 'disabled' : '') + ' aria-label="Move ' + escapeHtml(item.code) + ' down">↓</button>' +
+                    '<button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="watchlist-remove">Remove</button></div></div>';
+            }).join('') : '<div class="miq-empty-state">No stocks in this watchlist yet.</div>';
+            return '<article class="miq-management-card" data-watchlist-id="' + Number(list.id) + '"><div class="miq-management-heading"><div><h3>' +
+                escapeHtml(list.name) + '</h3><small>' + items.length + ' stock' + (items.length === 1 ? '' : 's') +
+                ' · updated ' + escapeHtml(humanDate(list.updated_at)) + '</small></div><div class="miq-management-actions">' +
+                '<button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="watchlist-rename-show">Rename</button>' +
+                '<button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="watchlist-delete">Delete</button></div></div>' +
+                '<form class="miq-management-create" data-watchlist-rename hidden><input class="form-control" name="name" maxlength="120" value="' +
+                escapeHtml(list.name) + '" required><button class="btn btn-primary" type="submit">Save name</button><button class="btn btn-outline-secondary" type="button" data-workspace-action="watchlist-rename-cancel">Cancel</button></form>' +
+                '<div class="miq-watchlist-table">' + rows + '</div><form class="miq-management-create" data-watchlist-add><input class="form-control" name="code" maxlength="40" placeholder="Stock code, e.g. AAPL" required><button class="btn btn-outline-primary" type="submit">Add stock</button></form></article>';
+        }).join('') + '</div>' : '<div class="miq-empty-state">Create your first watchlist to monitor stocks from the dashboard.</div>';
+        return panel('Watchlists', '<p class="miq-asset-note">Create multiple named lists, add stocks from here or any stock page, and order each list for your workflow.</p>' + create + body, true);
+    }
+
+    function noteSelectOptions(items, selectedId, labelKey) {
+        return '<option value="">None</option>' + items.map(function (item) {
+            return '<option value="' + Number(item.id) + '"' + (Number(selectedId) === Number(item.id) ? ' selected' : '') + '>' +
+                escapeHtml(item[labelKey] || item.name) + '</option>';
+        }).join('');
+    }
+
+    function renderNotes() {
+        var notes = workspaceItems('notes');
+        var editing = notes.find(function (note) { return Number(note.id) === Number(editingNoteId); }) || {};
+        var form = '<form class="miq-note-editor" data-note-form><input type="hidden" name="id" value="' + (editing.id ? Number(editing.id) : '') + '">' +
+            '<div class="miq-form-row"><label>Stock code<input class="form-control" name="stock_code" maxlength="40" value="' + escapeHtml(editing.stock_code || '') + '" placeholder="AAPL"></label>' +
+            '<label>Saved chart<select class="form-control" name="chart_id">' + noteSelectOptions(workspaceItems('charts'), editing.chart_id, 'name') + '</select></label>' +
+            '<label>Pine script<select class="form-control" name="script_id">' + noteSelectOptions(workspaceItems('scripts'), editing.script_id, 'name') + '</select></label></div>' +
+            '<label>Title<input class="form-control" name="title" maxlength="160" value="' + escapeHtml(editing.title || '') + '" required></label>' +
+            '<label>Research note<textarea class="form-control" name="body" rows="7" maxlength="20000" required>' + escapeHtml(editing.body || '') + '</textarea></label>' +
+            '<div class="miq-management-actions"><button class="btn btn-primary" type="submit">' + (editing.id ? 'Update note' : 'Save note') + '</button>' +
+            (editing.id ? '<button class="btn btn-outline-secondary" type="button" data-workspace-action="note-cancel">Cancel edit</button>' : '') + '</div></form>';
+        var rows = notes.length ? '<div class="miq-management-stack">' + notes.map(function (note) {
+            var linked = [note.stock_code, note.chart_name, note.script_name].filter(Boolean).join(' · ') || 'Private research';
+            return '<article class="miq-management-card" data-note-id="' + Number(note.id) + '"><div class="miq-management-heading"><div><h3>' +
+                escapeHtml(note.title) + '</h3><small>' + escapeHtml(linked) + ' · updated ' + escapeHtml(humanDate(note.updated_at)) +
+                '</small></div><div class="miq-management-actions"><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="note-edit">Edit</button>' +
+                '<button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="note-delete">Delete</button></div></div><p class="miq-note-copy">' +
+                escapeHtml(note.body) + '</p></article>';
+        }).join('') + '</div>' : '<div class="miq-empty-state">No research notes yet. Link your first note to a stock, chart, or Pine script.</div>';
+        return panel('Private research journal', form + rows, true);
+    }
+
+    function renderAlerts() {
+        var alerts = workspaceItems('alerts');
+        var form = '<form class="miq-alert-create" data-alert-form><input class="form-control" name="code" maxlength="40" placeholder="Stock code" required>' +
+            '<select class="form-control" name="condition_type"><option value="above">At or above</option><option value="below">At or below</option></select>' +
+            '<input class="form-control" name="target_price" type="number" min="0.0001" max="1000000000000" step="any" placeholder="Target price" required><button class="btn btn-primary" type="submit">Create alert</button></form>';
+        var rows = alerts.length ? '<div class="miq-management-stack">' + alerts.map(function (alert) {
+            var next = alert.status === 'active' ? 'disabled' : 'active';
+            return '<article class="miq-management-card miq-alert-row" data-alert-id="' + Number(alert.id) + '"><div><a href="stockinfo?code=' +
+                encodeURIComponent(alert.code) + '"><strong>' + escapeHtml(alert.code) + '</strong></a><span>' +
+                (alert.condition_type === 'above' ? 'At or above ' : 'At or below ') + escapeHtml(alert.target_price) +
+                '</span><small>Last price ' + escapeHtml(alert.last_price == null ? 'not checked' : alert.last_price) +
+                (alert.triggered_at ? ' · triggered ' + escapeHtml(humanDate(alert.triggered_at)) : '') + '</small></div><span class="miq-alert-status is-' +
+                escapeHtml(alert.status) + '">' + escapeHtml(alert.status) + '</span><div class="miq-management-actions"><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="alert-status" data-next-status="' +
+                next + '">' + (alert.status === 'active' ? 'Pause' : 'Reactivate') + '</button><button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="alert-delete">Delete</button></div></article>';
+        }).join('') + '</div>' : '<div class="miq-empty-state">No price alerts yet.</div>';
+        return panel('Price alerts', '<p class="miq-asset-note">Alerts are checked by the scheduled server job and appear in your notifications when triggered.</p>' + form + rows, true);
+    }
+
+    function renderNotifications() {
+        var notifications = workspaceItems('notifications');
+        var toolbar = '<div class="miq-management-toolbar"><span>' + workspaceCount('notifications_unread') + ' unread</span><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="notifications-read-all">Mark all read</button></div>';
+        var rows = notifications.length ? '<div class="miq-notification-list">' + notifications.map(function (notification) {
+            var contentHtml = '<strong>' + escapeHtml(notification.title) + '</strong><span>' + escapeHtml(notification.message) + '</span><small>' + escapeHtml(humanDate(notification.created_at)) + '</small>';
+            return '<article class="miq-notification-row' + (notification.read_at ? '' : ' is-unread') + '" data-notification-id="' + Number(notification.id) + '">' +
+                (notification.link_url ? '<a href="' + escapeHtml(notification.link_url) + '" data-workspace-action="notification-open">' + contentHtml + '</a>' : '<div>' + contentHtml + '</div>') +
+                (!notification.read_at ? '<button class="btn btn-sm btn-link" type="button" data-workspace-action="notification-read">Mark read</button>' : '') + '</article>';
+        }).join('') + '</div>' : '<div class="miq-empty-state">No notifications yet.</div>';
+        return panel('Notifications', toolbar + rows, true);
+    }
+
+    function renderBookmarks() {
+        var bookmarks = workspaceItems('bookmarks');
+        var rows = bookmarks.length ? '<div class="miq-management-stack">' + bookmarks.map(function (bookmark) {
+            return '<article class="miq-management-card" data-bookmark-idea="' + Number(bookmark.idea_id) + '"><div class="miq-management-heading"><div><a href="community?idea=' +
+                Number(bookmark.idea_id) + '"><h3>' + escapeHtml(bookmark.title) + '</h3></a><small>' +
+                escapeHtml([bookmark.code, bookmark.direction, bookmark.timeframe].filter(Boolean).join(' · ')) + '</small></div>' +
+                '<button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="bookmark-remove">Remove bookmark</button></div></article>';
+        }).join('') + '</div>' : '<div class="miq-empty-state">Bookmark useful published ideas to find them here.</div>';
+        return panel('Community bookmarks', rows, true);
+    }
+
     function renderSimpleList(title, items, renderer) {
         if (!items || !items.length) return panel(title, '<div class="miq-empty-state">Nothing saved here yet.</div>', true);
         return panel(title, '<ul class="miq-workspace-list">' + items.map(function (item) { return '<li>' + renderer(item) + '</li>'; }).join('') + '</ul>', true);
@@ -250,8 +409,13 @@
 
     function render(tab) {
         if (!workspace) return;
-        if (!communityEnabled && tab === 'ideas') tab = 'overview';
-        if (tab === 'charts') content.innerHTML = renderCharts();
+        if (!communityEnabled && (tab === 'ideas' || tab === 'bookmarks')) tab = 'overview';
+        if (tab === 'watchlists') content.innerHTML = renderWatchlists();
+        else if (tab === 'notes') content.innerHTML = renderNotes();
+        else if (tab === 'alerts') content.innerHTML = renderAlerts();
+        else if (tab === 'notifications') content.innerHTML = renderNotifications();
+        else if (tab === 'bookmarks') content.innerHTML = renderBookmarks();
+        else if (tab === 'charts') content.innerHTML = renderCharts();
         else if (tab === 'scripts') content.innerHTML = renderScripts();
         else if (tab === 'presets') {
             content.innerHTML = renderSimpleList('Screener presets', workspace.screener_presets, function (item) {
@@ -383,11 +547,58 @@
     }
 
     content.addEventListener('submit', function (event) {
+        var watchlistCreate = event.target.closest('[data-watchlist-create]');
+        var watchlistRename = event.target.closest('[data-watchlist-rename]');
+        var watchlistAdd = event.target.closest('[data-watchlist-add]');
+        var noteForm = event.target.closest('[data-note-form]');
+        var alertForm = event.target.closest('[data-alert-form]');
         var chartFilter = event.target.closest('[data-chart-filter]');
         var scriptFilter = event.target.closest('[data-script-filter]');
         var chartRename = event.target.closest('[data-rename-chart-form]');
         var scriptRename = event.target.closest('[data-rename-script-form]');
-        if (chartFilter) {
+        if (watchlistCreate) {
+            event.preventDefault();
+            window.MIQAccount.action('create_watchlist', { name: watchlistCreate.elements.name.value.trim() })
+                .then(function () { return refreshWorkspaceAndTab('Watchlist created.'); })
+                .catch(function (error) { showStatus(error.message, 'danger'); });
+        } else if (watchlistRename) {
+            event.preventDefault();
+            var renameList = closestAsset(watchlistRename, '[data-watchlist-id]');
+            window.MIQAccount.action('rename_watchlist', {
+                watchlist_id: Number(renameList.getAttribute('data-watchlist-id')),
+                name: watchlistRename.elements.name.value.trim()
+            }).then(function () { return refreshWorkspaceAndTab('Watchlist renamed.'); })
+                .catch(function (error) { showStatus(error.message, 'danger'); });
+        } else if (watchlistAdd) {
+            event.preventDefault();
+            var addList = closestAsset(watchlistAdd, '[data-watchlist-id]');
+            window.MIQAccount.action('add_watchlist_item', {
+                watchlist_id: Number(addList.getAttribute('data-watchlist-id')),
+                code: watchlistAdd.elements.code.value.trim().toUpperCase()
+            }).then(function () { return refreshWorkspaceAndTab('Stock added to watchlist.'); })
+                .catch(function (error) { showStatus(error.message, 'danger'); });
+        } else if (noteForm) {
+            event.preventDefault();
+            window.MIQAccount.action('save_note', {
+                id: Number(noteForm.elements.id.value || 0),
+                stock_code: noteForm.elements.stock_code.value.trim().toUpperCase(),
+                chart_id: Number(noteForm.elements.chart_id.value || 0),
+                script_id: Number(noteForm.elements.script_id.value || 0),
+                title: noteForm.elements.title.value.trim(),
+                body: noteForm.elements.body.value.trim()
+            }).then(function () {
+                editingNoteId = 0;
+                return refreshWorkspaceAndTab('Research note saved.');
+            }).catch(function (error) { showStatus(error.message, 'danger'); });
+        } else if (alertForm) {
+            event.preventDefault();
+            window.MIQAccount.action('save_alert', {
+                code: alertForm.elements.code.value.trim().toUpperCase(),
+                condition_type: alertForm.elements.condition_type.value,
+                target_price: alertForm.elements.target_price.value
+            }).then(function () { return refreshWorkspaceAndTab('Price alert created.'); })
+                .catch(function (error) { showStatus(error.message, 'danger'); });
+        } else if (chartFilter) {
             event.preventDefault();
             chartsState.search = chartFilter.elements.search.value.trim();
             chartsState.kind = chartFilter.elements.kind.value;
@@ -413,6 +624,90 @@
     });
 
     content.addEventListener('click', function (event) {
+        var workspaceButton = event.target.closest('[data-workspace-action]');
+        if (workspaceButton) {
+            var workspaceAction = workspaceButton.getAttribute('data-workspace-action');
+            var watchlistElement = closestAsset(workspaceButton, '[data-watchlist-id]');
+            var watchlistId = watchlistElement ? Number(watchlistElement.getAttribute('data-watchlist-id')) : 0;
+            var watchlistRow = closestAsset(workspaceButton, '[data-watchlist-code]');
+            var watchlistCode = watchlistRow ? watchlistRow.getAttribute('data-watchlist-code') : '';
+            var noteElement = closestAsset(workspaceButton, '[data-note-id]');
+            var noteId = noteElement ? Number(noteElement.getAttribute('data-note-id')) : 0;
+            var alertElement = closestAsset(workspaceButton, '[data-alert-id]');
+            var alertId = alertElement ? Number(alertElement.getAttribute('data-alert-id')) : 0;
+            if (workspaceAction === 'watchlist-rename-show') {
+                watchlistElement.querySelector('[data-watchlist-rename]').hidden = false;
+            } else if (workspaceAction === 'watchlist-rename-cancel') {
+                watchlistElement.querySelector('[data-watchlist-rename]').hidden = true;
+            } else if (workspaceAction === 'watchlist-delete') {
+                if (window.confirm('Delete this watchlist and all of its items?')) {
+                    window.MIQAccount.action('delete_watchlist', { watchlist_id: watchlistId })
+                        .then(function () { return refreshWorkspaceAndTab('Watchlist deleted.'); })
+                        .catch(function (error) { showStatus(error.message, 'danger'); });
+                }
+            } else if (workspaceAction === 'watchlist-remove') {
+                window.MIQAccount.action('remove_watchlist_item', { watchlist_id: watchlistId, code: watchlistCode })
+                    .then(function () { return refreshWorkspaceAndTab(watchlistCode + ' removed.'); })
+                    .catch(function (error) { showStatus(error.message, 'danger'); });
+            } else if (workspaceAction === 'watchlist-up' || workspaceAction === 'watchlist-down') {
+                var list = workspaceItems('watchlists').find(function (item) { return Number(item.id) === watchlistId; });
+                var codes = list ? list.items.map(function (item) { return item.code; }) : [];
+                var codeIndex = codes.indexOf(watchlistCode);
+                var swapIndex = workspaceAction === 'watchlist-up' ? codeIndex - 1 : codeIndex + 1;
+                if (codeIndex >= 0 && swapIndex >= 0 && swapIndex < codes.length) {
+                    var swapped = codes[swapIndex];
+                    codes[swapIndex] = codes[codeIndex];
+                    codes[codeIndex] = swapped;
+                    window.MIQAccount.action('reorder_watchlist_items', { watchlist_id: watchlistId, codes: codes })
+                        .then(function () { return refreshWorkspaceAndTab(); })
+                        .catch(function (error) { showStatus(error.message, 'danger'); });
+                }
+            } else if (workspaceAction === 'note-edit') {
+                editingNoteId = noteId;
+                render('notes');
+                var editor = content.querySelector('[data-note-form]');
+                if (editor) editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (workspaceAction === 'note-cancel') {
+                editingNoteId = 0;
+                render('notes');
+            } else if (workspaceAction === 'note-delete') {
+                if (window.confirm('Delete this private research note?')) {
+                    window.MIQAccount.action('delete_note', { id: noteId }).then(function () {
+                        if (editingNoteId === noteId) editingNoteId = 0;
+                        return refreshWorkspaceAndTab('Research note deleted.');
+                    }).catch(function (error) { showStatus(error.message, 'danger'); });
+                }
+            } else if (workspaceAction === 'alert-status') {
+                window.MIQAccount.action('set_alert_status', { id: alertId, status: workspaceButton.getAttribute('data-next-status') })
+                    .then(function () { return refreshWorkspaceAndTab('Price alert updated.'); })
+                    .catch(function (error) { showStatus(error.message, 'danger'); });
+            } else if (workspaceAction === 'alert-delete') {
+                if (window.confirm('Delete this price alert?')) {
+                    window.MIQAccount.action('delete_alert', { id: alertId })
+                        .then(function () { return refreshWorkspaceAndTab('Price alert deleted.'); })
+                        .catch(function (error) { showStatus(error.message, 'danger'); });
+                }
+            } else if (workspaceAction === 'notifications-read-all') {
+                window.MIQAccount.action('mark_notification_read', { id: 0 }).then(function () {
+                    return refreshWorkspaceAndTab('Notifications marked read.');
+                }).catch(function (error) { showStatus(error.message, 'danger'); });
+            } else if (workspaceAction === 'notification-read') {
+                var notification = closestAsset(workspaceButton, '[data-notification-id]');
+                window.MIQAccount.action('mark_notification_read', { id: Number(notification.getAttribute('data-notification-id')) })
+                    .then(function () { return refreshWorkspaceAndTab(); })
+                    .catch(function (error) { showStatus(error.message, 'danger'); });
+            } else if (workspaceAction === 'notification-open') {
+                var notificationRow = closestAsset(workspaceButton, '[data-notification-id]');
+                window.MIQAccount.action('mark_notification_read', { id: Number(notificationRow.getAttribute('data-notification-id')) }).catch(function () {});
+            } else if (workspaceAction === 'bookmark-remove') {
+                var bookmark = closestAsset(workspaceButton, '[data-bookmark-idea]');
+                window.MIQAccount.action('bookmark_idea', { idea_id: Number(bookmark.getAttribute('data-bookmark-idea')), bookmarked: false })
+                    .then(function () { return refreshWorkspaceAndTab('Bookmark removed.'); })
+                    .catch(function (error) { showStatus(error.message, 'danger'); });
+            }
+            if (workspaceAction !== 'notification-open') event.preventDefault();
+            return;
+        }
         var button = event.target.closest('[data-asset-action]');
         if (!button) return;
         var action = button.getAttribute('data-asset-action');

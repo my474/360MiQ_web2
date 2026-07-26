@@ -84,6 +84,13 @@ $structured_data = array(
         )
     )
 );
+$miq_account_user = miq_account_current_user();
+$miq_account_preferences = $miq_account_user
+    ? miq_account_user_preferences((int) $miq_account_user['id'])
+    : miq_account_preference_defaults();
+$miq_account_unread_notifications = $miq_account_user
+    ? miq_account_unread_notification_count((int) $miq_account_user['id'])
+    : 0;
 ?>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
@@ -94,10 +101,9 @@ $structured_data = array(
 <link rel="icon" type="image/png" sizes="192x181" href="assets/img/360Logo_192.png">
 <link rel="icon" type="image/png" sizes="512x482" href="assets/img/360Logo_512.png">
 <!-- Anti-FOUC: before all stylesheets -->
-<script>(function(){var s=localStorage.getItem('360miq-dark-mode');if(s==='true'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){var loggedIn=<?php echo $miq_account_user ? 'true' : 'false'; ?>;var preference=<?php echo json_encode($miq_account_preferences['theme_mode']); ?>;var saved=localStorage.getItem('360miq-dark-mode');var dark;if(loggedIn&&preference!=='system'){dark=preference==='dark';localStorage.setItem('360miq-dark-mode',dark?'true':'false');}else if(loggedIn){dark=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches);}else{dark=saved==='true'||(saved===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches);}document.documentElement.setAttribute('data-theme',dark?'dark':'light');})();</script>
 <script>window.__SITE_DISPLAY_POLICY={showStockIndexPrices:<?php echo $show_stock_index_prices ? 'true' : 'false'; ?>};</script>
 <?php
-$miq_account_user = miq_account_current_user();
 $miq_inferred_context_type = $route === 'stockinfo' ? 'stock' : ($route === 'market' ? 'market' : ($route === 'econ' ? 'econ' : ($route === 'tool' ? 'tool' : 'site')));
 $miq_account_context_type = isset($miq_page_context_type) && in_array($miq_page_context_type, array('stock', 'market', 'econ', 'tool', 'site'), true)
     ? $miq_page_context_type
@@ -129,6 +135,8 @@ $miq_account_client_state = array(
     'apiUrl' => 'account_api.php',
     'accountUrl' => 'account.php',
     'workspaceUrl' => 'workspace',
+    'preferences' => $miq_account_preferences,
+    'unreadNotifications' => $miq_account_unread_notifications,
     'contextType' => $miq_account_context_type,
     'contextKey' => substr($miq_account_context_key, 0, 80),
 );

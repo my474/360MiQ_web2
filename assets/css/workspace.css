@@ -569,6 +569,79 @@ html[data-theme="dark"] body.miq-user-admin-body {
 .miq-idea-direction-bearish { color: #9d2e2e; background: #ffe1e1; }
 .miq-idea-direction-neutral { color: #6f5b09; background: #fff0b8; }
 
+.miq-idea-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 13px;
+}
+
+.miq-idea-card-actions .btn.active {
+    border-color: #1689e5;
+    background: #1689e5;
+    color: #fff;
+}
+
+.miq-idea-replies {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid rgba(59, 153, 224, .22);
+    border-radius: 9px;
+    background: rgba(59, 153, 224, .04);
+}
+
+.miq-idea-replies[hidden] {
+    display: none;
+}
+
+.miq-community-reply {
+    position: relative;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(138, 148, 166, .2);
+}
+
+.miq-community-reply > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.miq-community-reply small {
+    color: #667085;
+    font-size: 10px;
+}
+
+.miq-community-reply p {
+    margin: 7px 0 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.miq-community-reply > .btn {
+    position: absolute;
+    right: 0;
+    bottom: 3px;
+}
+
+.miq-idea-replies form {
+    margin-top: 14px;
+}
+
+.miq-idea-replies form label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.miq-idea-replies form textarea {
+    margin: 5px 0 8px;
+}
+
+.miq-reply-login {
+    margin: 12px 0 0;
+}
+
 .miq-report-form {
     max-width: 620px;
     margin-top: 14px;
@@ -1422,6 +1495,313 @@ html[data-theme="dark"] .miq-community-page input:-webkit-autofill {
     -webkit-box-shadow: 0 0 0 1000px #2b2d47 inset;
 }
 
+.miq-management-create,
+.miq-alert-create,
+.miq-settings-fields {
+    display: grid;
+    gap: 10px;
+}
+
+.miq-management-create {
+    grid-template-columns: minmax(180px, 1fr) auto auto;
+    margin-bottom: 16px;
+}
+
+.miq-management-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.miq-management-card {
+    padding: 17px;
+    border: 1px solid rgba(138, 148, 166, .28);
+    border-radius: 10px;
+    background: #fbfcfe;
+}
+
+.miq-management-heading,
+.miq-management-actions,
+.miq-management-toolbar,
+.miq-watchlist-row,
+.miq-alert-row,
+.miq-notification-row {
+    display: flex;
+    align-items: center;
+}
+
+.miq-management-heading,
+.miq-management-toolbar,
+.miq-notification-row {
+    justify-content: space-between;
+}
+
+.miq-management-heading {
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.miq-management-heading h3 {
+    margin: 0 0 3px;
+    font-size: 18px;
+}
+
+.miq-management-heading small,
+.miq-alert-row small,
+.miq-notification-row small {
+    display: block;
+    color: #667085;
+    font-size: 11px;
+}
+
+.miq-management-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.miq-watchlist-table {
+    margin: 10px 0 15px;
+}
+
+.miq-watchlist-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(75px, auto) minmax(75px, auto) auto;
+    gap: 12px;
+    min-height: 54px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(138, 148, 166, .2);
+}
+
+.miq-watchlist-row > a strong,
+.miq-watchlist-row > a small {
+    display: block;
+}
+
+.miq-watchlist-row > a small {
+    overflow: hidden;
+    color: #667085;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.is-up {
+    color: #087a4e !important;
+}
+
+.is-down {
+    color: #c43232 !important;
+}
+
+.miq-note-editor {
+    margin-bottom: 18px;
+    padding: 17px;
+    border: 1px solid rgba(59, 153, 224, .25);
+    border-radius: 10px;
+    background: rgba(59, 153, 224, .05);
+}
+
+.miq-note-editor label {
+    display: block;
+    margin-bottom: 11px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.miq-note-editor .form-control {
+    margin-top: 5px;
+}
+
+.miq-note-copy {
+    margin: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.miq-alert-create {
+    grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) auto;
+    margin-bottom: 16px;
+}
+
+.miq-alert-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 15px;
+}
+
+.miq-alert-row > div:first-child span,
+.miq-alert-row > div:first-child small {
+    display: block;
+}
+
+.miq-alert-status {
+    padding: 4px 8px;
+    border: 1px solid rgba(59, 153, 224, .3);
+    border-radius: 999px;
+    color: #315f84;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.miq-alert-status.is-triggered {
+    border-color: rgba(181, 71, 8, .35);
+    color: #b54708;
+}
+
+.miq-management-toolbar {
+    margin-bottom: 12px;
+}
+
+.miq-notification-list {
+    border-top: 1px solid rgba(138, 148, 166, .22);
+}
+
+.miq-notification-row {
+    gap: 16px;
+    padding: 14px 8px;
+    border-bottom: 1px solid rgba(138, 148, 166, .22);
+}
+
+.miq-notification-row.is-unread {
+    border-left: 3px solid #1689e5;
+    background: rgba(59, 153, 224, .06);
+}
+
+.miq-notification-row > a,
+.miq-notification-row > div {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+    color: inherit;
+}
+
+.miq-dashboard-movers {
+    display: grid;
+}
+
+.miq-dashboard-movers > a {
+    display: flex;
+    min-width: 0;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(138, 148, 166, .18);
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: inherit;
+}
+
+.miq-dashboard-movers > a > span:first-child,
+.miq-dashboard-movers strong,
+.miq-dashboard-movers small,
+.miq-mover-price,
+.miq-mover-price em {
+    display: block;
+}
+
+.miq-dashboard-movers > a > span:first-child {
+    min-width: 0;
+}
+
+.miq-dashboard-movers small {
+    overflow: hidden;
+    color: #667085;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.miq-mover-price {
+    text-align: right;
+}
+
+.miq-mover-price em {
+    font-size: 11px;
+    font-style: normal;
+}
+
+.miq-settings-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.miq-settings-fields label {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.miq-settings-fields .form-control {
+    margin-top: 5px;
+}
+
+.miq-settings-check {
+    display: flex;
+    margin: 8px 0 15px;
+    align-items: center;
+    gap: 8px;
+}
+
+html[data-theme="dark"] .miq-management-card,
+html[data-theme="dark"] .miq-note-editor,
+html[data-theme="dark"] .miq-notification-row.is-unread {
+    border-color: rgba(110, 168, 255, .3);
+    background: #252741;
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-management-heading small,
+html[data-theme="dark"] .miq-alert-row small,
+html[data-theme="dark"] .miq-watchlist-row > a small,
+html[data-theme="dark"] .miq-notification-row small,
+html[data-theme="dark"] .miq-dashboard-movers small {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-watchlist-row,
+html[data-theme="dark"] .miq-notification-list,
+html[data-theme="dark"] .miq-notification-row,
+html[data-theme="dark"] .miq-dashboard-movers > a {
+    border-color: #3b4260;
+}
+
+html[data-theme="dark"] .miq-workspace-page .miq-management-create .form-control,
+html[data-theme="dark"] .miq-workspace-page .miq-alert-create .form-control,
+html[data-theme="dark"] .miq-workspace-page .miq-note-editor .form-control,
+html[data-theme="dark"] .miq-workspace-page .miq-preferences-form .form-control {
+    border-color: #59607d;
+    background: #2b2d47;
+    color: #f1f3f7;
+}
+
+html[data-theme="dark"] .is-up {
+    color: #78ddb1 !important;
+}
+
+html[data-theme="dark"] .is-down {
+    color: #ff9b9b !important;
+}
+
+html[data-theme="dark"] .miq-alert-status {
+    border-color: rgba(110, 168, 255, .45);
+    color: #b8d9ff;
+}
+
+html[data-theme="dark"] .miq-alert-status.is-triggered {
+    border-color: rgba(255, 186, 105, .45);
+    color: #ffba69;
+}
+
+html[data-theme="dark"] .miq-idea-replies {
+    border-color: rgba(110, 168, 255, .28);
+    background: #252741;
+}
+
+html[data-theme="dark"] .miq-community-reply {
+    border-color: #3b4260;
+}
+
+html[data-theme="dark"] .miq-community-reply small {
+    color: #c5c9d6;
+}
+
 @media (max-width: 767.98px) {
     .miq-workspace-heading {
         align-items: flex-start;
@@ -1516,6 +1896,20 @@ html[data-theme="dark"] .miq-community-page input:-webkit-autofill {
 
     .miq-user-admin-audit article > div:nth-child(2) {
         text-align: left;
+    }
+
+    .miq-management-create,
+    .miq-alert-create,
+    .miq-settings-fields,
+    .miq-watchlist-row,
+    .miq-alert-row {
+        grid-template-columns: 1fr;
+    }
+
+    .miq-management-heading,
+    .miq-notification-row {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 

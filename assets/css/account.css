@@ -572,6 +572,33 @@ html[data-theme="dark"] .miq-account-nav-item .dropdown-item:focus {
     background: #303250;
 }
 
+.miq-account-unread,
+.miq-tab-count {
+    display: inline-flex;
+    min-width: 18px;
+    height: 18px;
+    margin-left: auto;
+    padding: 0 5px;
+    border-radius: 999px;
+    align-items: center;
+    justify-content: center;
+    background: #1689e5;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.miq-account-nav-item .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.miq-account-nav-item .dropdown-item i {
+    margin-right: 3px;
+}
+
 @media (max-width: 991.98px) {
     .miq-account-name {
         max-width: none;

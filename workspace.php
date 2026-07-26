@@ -14,8 +14,8 @@ if (!$user) {
     <meta property="og:title" content="My Workspace - 360MiQ.com" />
     <meta name="description" content="<?php echo $community_enabled ? 'Your saved charts, Pine scripts, screener presets, searches, and community ideas on 360MiQ.com.' : 'Your saved charts, Pine scripts, screener presets, and searches on 360MiQ.com.'; ?>" />
     <title>My Workspace - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.4">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260726.6">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.5">
 </head>
 <body data-community-enabled="<?php echo $community_enabled ? 'true' : 'false'; ?>">
 <?php $page = 'workspace'; include __DIR__ . '/header.php'; ?>
@@ -33,8 +33,12 @@ if (!$user) {
         <button class="btn btn-outline-primary" data-workspace-tab="charts" type="button">Saved Charts</button>
         <button class="btn btn-outline-primary" data-workspace-tab="scripts" type="button">Pine Scripts</button>
         <button class="btn btn-outline-primary" data-workspace-tab="presets" type="button">Screener Presets</button>
+        <button class="btn btn-outline-primary" data-workspace-tab="watchlists" type="button">Watchlists</button>
+        <button class="btn btn-outline-primary" data-workspace-tab="notes" type="button">Research Notes</button>
+        <button class="btn btn-outline-primary" data-workspace-tab="alerts" type="button">Price Alerts</button>
         <button class="btn btn-outline-primary" data-workspace-tab="searches" type="button">Recent Searches</button>
-        <?php if ($community_enabled): ?><button class="btn btn-outline-primary" data-workspace-tab="ideas" type="button">Community Ideas</button><?php endif; ?>
+        <?php if ($community_enabled): ?><button class="btn btn-outline-primary" data-workspace-tab="ideas" type="button">Community Ideas</button><button class="btn btn-outline-primary" data-workspace-tab="bookmarks" type="button">Bookmarks</button><?php endif; ?>
+        <button class="btn btn-outline-primary" data-workspace-tab="notifications" type="button">Notifications<?php if (!empty($miq_account_unread_notifications)): ?> <span class="miq-tab-count"><?php echo (int) $miq_account_unread_notifications; ?></span><?php endif; ?></button>
     </div>
     <section id="miq-workspace-content" class="miq-workspace-grid" aria-live="polite">
         <div class="miq-workspace-loading">Loading your workspace…</div>
@@ -42,6 +46,6 @@ if (!$user) {
 </main>
 <?php include __DIR__ . '/footer.php'; ?>
 <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-<script src="assets/js/workspace.js?v=20260726.4"></script>
+<script src="assets/js/workspace.js?v=20260726.5"></script>
 </body>
 </html>

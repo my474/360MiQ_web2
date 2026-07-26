@@ -1,0 +1,228 @@
+.miq-stock-tools {
+    width: 100%;
+    margin: 0 auto 16px;
+    padding: 20px 24px;
+    border: 1px solid #d7e7f5;
+    border-radius: 14px;
+    background: #fff;
+    color: #202631;
+    box-shadow: 0 8px 24px rgba(29, 54, 79, .07);
+    text-align: left;
+}
+
+.miq-stock-tools-heading,
+.miq-stock-tool-actions,
+.miq-stock-tool-inline,
+.miq-stock-mini-item,
+.miq-stock-mini-actions {
+    display: flex;
+    align-items: center;
+}
+
+.miq-stock-tools-heading {
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.miq-stock-tools h2,
+.miq-stock-tools h3,
+.miq-stock-tools p {
+    margin-top: 0;
+}
+
+.miq-stock-tools h2 {
+    margin-bottom: 0;
+    font-size: 24px;
+}
+
+.miq-stock-tools h3 {
+    margin-bottom: 5px;
+    font-size: 17px;
+}
+
+.miq-stock-tools h3 i {
+    width: 22px;
+    color: #1689e5;
+}
+
+.miq-stock-tools-workspace-link {
+    white-space: nowrap;
+}
+
+.miq-stock-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.miq-stock-tool-panel {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e1e8f0;
+    border-radius: 10px;
+    background: #f8fbfe;
+}
+
+.miq-stock-tool-panel > p {
+    min-height: 42px;
+    margin-bottom: 12px;
+    color: #667085;
+    font-size: 13px;
+}
+
+.miq-stock-tool-panel label {
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.miq-stock-tool-panel .form-control {
+    margin-bottom: 9px;
+}
+
+.miq-stock-tool-inline,
+.miq-stock-tool-actions,
+.miq-stock-mini-actions {
+    gap: 7px;
+}
+
+.miq-stock-tool-inline {
+    margin-top: 9px;
+}
+
+.miq-stock-tool-inline .form-control {
+    min-width: 0;
+    margin: 0;
+}
+
+.miq-stock-alert-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.miq-stock-alert-form .form-control {
+    margin: 0;
+}
+
+.miq-stock-alert-form .btn {
+    grid-column: 1 / -1;
+}
+
+.miq-stock-mini-list {
+    margin-top: 12px;
+}
+
+.miq-stock-mini-item {
+    justify-content: space-between;
+    gap: 9px;
+    padding: 8px 0;
+    border-top: 1px solid #e1e8f0;
+    font-size: 12px;
+}
+
+.miq-stock-mini-copy {
+    min-width: 0;
+}
+
+.miq-stock-mini-copy strong,
+.miq-stock-mini-copy span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.miq-stock-mini-copy span {
+    color: #667085;
+}
+
+.miq-stock-mini-actions .btn {
+    padding: 2px 5px;
+    font-size: 11px;
+}
+
+.miq-stock-tools-status {
+    margin-bottom: 12px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    background: #e9f6ff;
+    color: #135b91;
+    font-size: 13px;
+}
+
+.miq-stock-tools-status.is-error {
+    background: #fff0f1;
+    color: #9b1c27;
+}
+
+.miq-stock-tools-signed-out {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.miq-stock-tools-signed-out p {
+    margin-bottom: 0;
+}
+
+html[data-theme="dark"] .miq-stock-tools {
+    border-color: #394362;
+    background: #20213a;
+    color: #f1f3f7;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+}
+
+html[data-theme="dark"] .miq-stock-tool-panel {
+    border-color: #3a4260;
+    background: #292b46;
+}
+
+html[data-theme="dark"] .miq-stock-tool-panel > p,
+html[data-theme="dark"] .miq-stock-mini-copy span {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-stock-mini-item {
+    border-color: #414965;
+}
+
+html[data-theme="dark"] .miq-stock-tools .form-control {
+    border-color: #59607d;
+    background: #30324e;
+    color: #f5f7fa;
+}
+
+html[data-theme="dark"] .miq-stock-tools-status {
+    background: #173854;
+    color: #b9e1ff;
+}
+
+html[data-theme="dark"] .miq-stock-tools-status.is-error {
+    background: #4b252d;
+    color: #ffd4d8;
+}
+
+@media (max-width: 991.98px) {
+    .miq-stock-tools-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .miq-stock-tool-panel > p {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .miq-stock-tools {
+        padding: 17px;
+    }
+
+    .miq-stock-tools-heading,
+    .miq-stock-tools-signed-out {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

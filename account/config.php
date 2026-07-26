@@ -69,6 +69,7 @@ function miq_account_config()
             'email_cooldown' => array('limit' => 1, 'window' => (int) miq_account_env('MIQ_RATE_EMAIL_COOLDOWN', 60)),
             'community_vote_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_VOTE_LIMIT', 30), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_VOTE_WINDOW', 3600)),
             'community_report_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPORT_LIMIT', 10), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPORT_WINDOW', 3600)),
+            'community_reply_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPLY_LIMIT', 20), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPLY_WINDOW', 3600)),
         ),
         'max_chart_bytes' => (int) miq_account_env('MIQ_MAX_CHART_BYTES', 1000000),
         'max_script_chars' => (int) miq_account_env('MIQ_MAX_SCRIPT_CHARS', 100000),
@@ -76,6 +77,10 @@ function miq_account_config()
         'max_named_chart_count' => (int) miq_account_env('MIQ_MAX_NAMED_CHART_COUNT', 100),
         'max_script_count' => (int) miq_account_env('MIQ_MAX_SCRIPT_COUNT', 200),
         'max_screener_preset_count' => (int) miq_account_env('MIQ_MAX_SCREENER_PRESET_COUNT', 50),
+        'max_watchlist_count' => (int) miq_account_env('MIQ_MAX_WATCHLIST_COUNT', 20),
+        'max_watchlist_items' => (int) miq_account_env('MIQ_MAX_WATCHLIST_ITEMS', 100),
+        'max_note_count' => (int) miq_account_env('MIQ_MAX_NOTE_COUNT', 1000),
+        'max_alert_count' => (int) miq_account_env('MIQ_MAX_ALERT_COUNT', 100),
         'max_asset_versions' => (int) miq_account_env('MIQ_MAX_ASSET_VERSIONS', 20),
     );
 

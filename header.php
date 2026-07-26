@@ -1,5 +1,5 @@
 <?php $miq_nav_user = isset($miq_account_user) ? $miq_account_user : miq_account_current_user(); ?>
-<link rel="stylesheet" href="assets/css/account.css?v=20260726.5">
+<link rel="stylesheet" href="assets/css/account.css?v=20260726.6">
 <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar container not-selectable">
   <a class="navbar-brand" href="./"><img src="assets/img/Logo/360Logo.png" width="70" alt="360MiQ logo"></a>
   <span class="navbar-toggler collapsed navtitle" style="margin:0;padding:0">
@@ -80,9 +80,13 @@
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="miqAccountMenu">
               <a class="dropdown-item" href="workspace"><i class="fas fa-layer-group fa-fw"></i> My Workspace</a>
+              <a class="dropdown-item" href="workspace?tab=watchlists"><i class="fas fa-star fa-fw"></i> Watchlists</a>
               <a class="dropdown-item" href="workspace?tab=charts"><i class="fas fa-chart-line fa-fw"></i> Saved Charts</a>
               <a class="dropdown-item" href="workspace?tab=scripts"><i class="fas fa-code fa-fw"></i> Pine Scripts</a>
+              <a class="dropdown-item" href="workspace?tab=notes"><i class="fas fa-book-open fa-fw"></i> Research Notes</a>
+              <a class="dropdown-item" href="workspace?tab=alerts"><i class="fas fa-bell fa-fw"></i> Price Alerts</a>
               <?php if (miq_community_enabled()): ?><a class="dropdown-item" href="community"><i class="fas fa-users fa-fw"></i> Community Ideas</a><?php endif; ?>
+              <a class="dropdown-item" href="workspace?tab=notifications"><i class="fas fa-inbox fa-fw"></i> Notifications<?php if (!empty($miq_account_unread_notifications)): ?><span class="miq-account-unread"><?php echo (int) $miq_account_unread_notifications; ?></span><?php endif; ?></a>
               <a class="dropdown-item" href="account_settings"><i class="fas fa-cog fa-fw"></i> Settings</a>
               <?php if (miq_account_is_admin($miq_nav_user)): ?><a class="dropdown-item" href="account_user_admin"><i class="fas fa-user-shield fa-fw"></i> User Administration</a><?php endif; ?>
               <?php if (miq_community_enabled() && miq_account_is_moderator($miq_nav_user)): ?><a class="dropdown-item" href="community_moderation"><i class="fas fa-shield-alt fa-fw"></i> Moderation Queue</a><?php endif; ?>
@@ -225,7 +229,7 @@ $(document).on('click', '.color-item', function(event) {
 
 <!-- Script -->
 <script src="https://code.jquery.com/jquery-migrate-3.0.0.min.js"></script>
-<script src="assets/js/account.js?v=20260726.5" defer></script>
+<script src="assets/js/account.js?v=20260726.6" defer></script>
 <!-- jQuery UI -->
 <link href='autocomplete/jquery-ui.min.css' rel='stylesheet' type='text/css'>
 <style>

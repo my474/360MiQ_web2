@@ -21,6 +21,13 @@
     var pendingAccountScript = null;
     var requestedAccountAssetHandled = false;
 
+    function accountChartPreferences() {
+        var accountState = window.MIQAccount && window.MIQAccount.state;
+        return accountState && accountState.loggedIn && accountState.preferences
+            ? accountState.preferences
+            : {};
+    }
+
     function setAccountSyncStatus(message, isError) {
         var status = document.getElementById('toolStockChartAccountSyncStatus');
         if (!status) return;
@@ -794,6 +801,8 @@
         };
         var shouldLoadStoredLayout = options.load !== false;
         var layoutExisted = (shouldLoadStoredLayout && hasStoredLayout(layoutId)) || !!options.document;
+        var chartPreferences = accountChartPreferences();
+        var preferenceAutosave = chartPreferences.auto_save_charts !== false;
         var carriedRelativeStrength = options.preserveRelativeStrength === false ? [] : relativeStrengthSnapshots(stockChart);
 
         if (stockChart && stockChart.destroy) stockChart.destroy();
@@ -806,7 +815,7 @@
             storage: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? accountChartStorageV2(code, currentChartAsset, layoutId) : undefined,
             storagePrefix: STOCK_CHART_STORAGE_PREFIX,
             load: shouldLoadStoredLayout,
-            autosave: options.autosave !== false,
+            autosave: options.autosave !== false && preferenceAutosave,
             document: options.document || undefined,
             theme: currentThemeName(),
             recentStocks: recentStocks(),
@@ -822,6 +831,11 @@
             onPineAccountLoad: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? loadLinkedPineScript : null
         });
         applyStockMetadata(stockChart, code, options.symbolInfo);
+        if (!layoutExisted) {
+            if (chartPreferences.chart_type && stockChart.setChartType) stockChart.setChartType(chartPreferences.chart_type);
+            if (chartPreferences.chart_period && stockChart.setPeriod) stockChart.setPeriod(chartPreferences.chart_period);
+            if (chartPreferences.preferred_timeframe && stockChart.setDateRangePreset) stockChart.setDateRangePreset(chartPreferences.preferred_timeframe);
+        }
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         restoreRelativeStrengthSnapshots(stockChart, carriedRelativeStrength);
         if (options.visibleRange) applyVisibleDateRange(stockChart, options.visibleRange);
