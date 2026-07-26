@@ -178,6 +178,29 @@
         }
     }
 
+    function updateSearchResultPrompt() {
+        var resultHeading = document.getElementById('searchresult');
+        if (!resultHeading) return;
+        var prompt = loggedIn
+            ? 'Save this screen as a preset to use it across devices.'
+            : 'Save this screen as a preset in this browser. Sign in to sync it across devices.';
+        Array.prototype.forEach.call(resultHeading.querySelectorAll('span'), function (item) {
+            if (item.textContent.indexOf('Bookmark this search') >= 0) {
+                item.textContent = prompt;
+            }
+        });
+    }
+
+    function installSearchResultPrompt() {
+        updateSearchResultPrompt();
+        if (!window.jQuery) return;
+        jQuery('#screener_grid')
+            .off('xhr.dt.miqPresetPrompt')
+            .on('xhr.dt.miqPresetPrompt', function () {
+                window.setTimeout(updateSearchResultPrompt, 0);
+            });
+    }
+
     function render() {
         var selected = selectedPreset();
         var ordered = sortedPresets();
@@ -638,6 +661,7 @@
             remove: document.getElementById('miq-screener-preset-delete')
         };
         bindEvents();
+        installSearchResultPrompt();
         restorePendingTable();
         presets = readLocal(activeStorageKey());
         render();
