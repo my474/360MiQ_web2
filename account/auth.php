@@ -9,6 +9,8 @@ function miq_account_start_session()
 
     $config = miq_account_config();
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
+    ini_set('session.gc_maxlifetime', (string) $config['session_lifetime']);
+    ini_set('session.use_strict_mode', '1');
     session_name($config['cookie_name']);
     session_set_cookie_params(array(
         'lifetime' => $config['session_lifetime'],
@@ -158,6 +160,11 @@ function miq_account_current_user()
     static $loaded = false;
     static $user = null;
 
+    $cookie_name = miq_account_config()['cookie_name'];
+    if (session_status() !== PHP_SESSION_ACTIVE && empty($_COOKIE[$cookie_name])) {
+        $loaded = true;
+        return null;
+    }
     miq_account_bootstrap();
     if ($loaded) {
         return $user;
@@ -357,10 +364,38 @@ function miq_account_check_csrf($token)
 function miq_account_safe_return_to($value, $fallback = '/')
 {
     $value = trim((string) $value);
-    if ($value === '' || strpos($value, '/') !== 0 || strpos($value, '//') === 0 || preg_match('/^[a-z][a-z0-9+.-]*:/i', $value)) {
+    if (
+        $value === ''
+        || preg_match('/[\x00-\x1F\x7F\\\\]/', $value)
+        || preg_match('/%(?:2f|5c)/i', $value)
+        || strpos($value, '//') === 0
+    ) {
         return $fallback;
     }
+
+    $parts = parse_url($value);
+    if (
+        $parts === false
+        || isset($parts['scheme'])
+        || isset($parts['host'])
+        || isset($parts['user'])
+        || isset($parts['pass'])
+    ) {
+        return $fallback;
+    }
+
     return $value;
+}
+
+function miq_account_validate_password($password)
+{
+    $length = strlen((string) $password);
+    if ($length < 8) {
+        throw new InvalidArgumentException('Use a password with at least 8 characters.');
+    }
+    if ($length > 1024) {
+        throw new InvalidArgumentException('The password is too long.');
+    }
 }
 
 function miq_account_flash($type, $message)
@@ -516,7 +551,11 @@ function miq_account_send_mail($to, $subject, $body)
         try {
             $html_body = nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8'));
             $result = email($subject, $html_body, $to, $to);
-            return $result !== false;
+            if ($result !== true) {
+                error_log('360MiQ account mailer helper did not confirm delivery. email() must return true on success and false on failure.');
+                return false;
+            }
+            return true;
         } catch (Throwable $exception) {
             error_log('360MiQ account email delivery failed: ' . $exception->getMessage());
             return false;
@@ -589,6 +628,7 @@ function miq_account_issue_email_token($user_id, $type)
     $user_id = (int) $user_id;
     $expires = $type === 'verify' ? 86400 : 3600;
     $expires_at = gmdate('Y-m-d H:i:s', time() + $expires);
+    miq_account_query("DELETE FROM {$table} WHERE user_id = ?", 'i', array($user_id))->close();
     miq_account_query(
         "INSERT INTO {$table} (user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, UTC_TIMESTAMP())",
         'iss',

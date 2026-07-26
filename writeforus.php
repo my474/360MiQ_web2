@@ -94,8 +94,8 @@
     <div class="block-heading">
         <br><br>
         <div class="top-bar">
-            <a href="/account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-outline-primary me-2" style="background:white">Login</a>
-            <a href="/account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-primary">Register</a>
+            <a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-outline-primary me-2" style="background:white">Login</a>
+            <a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-primary">Register</a>
         </div>
         <h1 class="text-info">Write for Us – Share Your Investment Insights</h1>
     </div>
@@ -153,11 +153,11 @@
   <br>
   <h4>How to Submit</h4>
   <ul>
-      <li>If you don't have an account, please&nbsp;&nbsp;<a href="/account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-primary">Register</a>
+      <li>If you don't have an account, please&nbsp;&nbsp;<a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-primary">Register</a>
           <div class="screenshot">
                 <img src="/assets/img/writeforus_register.jpg?" alt="register"/>
             </div></li>
-      <li>Please&nbsp;&nbsp;<a href="/account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-outline-primary me-2" style="background:white">Login</a> and post your article.
+      <li>Please&nbsp;&nbsp;<a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-outline-primary me-2" style="background:white">Login</a> and post your article.
         <div class="screenshot">
             <img src="/assets/img/writeforus_login.jpg?" alt="login"/>
         </div></li>

@@ -50,6 +50,10 @@ header('X-Robots-Tag: noindex, nofollow');
             <span data-moderation-count="reports">-</span>
             <small>Open reports</small>
         </button>
+        <button class="miq-moderation-stat" type="button" data-moderation-tab="replies">
+            <span data-moderation-count="replies">-</span>
+            <small>Pending replies</small>
+        </button>
         <button class="miq-moderation-stat" type="button" data-moderation-tab="history">
             <span data-moderation-count="actions">-</span>
             <small>Actions logged</small>
@@ -58,12 +62,17 @@ header('X-Robots-Tag: noindex, nofollow');
     <div class="miq-moderation-tabs" role="tablist" aria-label="Moderation sections">
         <button class="btn btn-outline-primary active" type="button" role="tab" aria-selected="true" data-moderation-tab="pending">Pending ideas</button>
         <button class="btn btn-outline-primary" type="button" role="tab" aria-selected="false" data-moderation-tab="reports">User reports</button>
+        <button class="btn btn-outline-primary" type="button" role="tab" aria-selected="false" data-moderation-tab="replies">Pending replies</button>
         <button class="btn btn-outline-primary" type="button" role="tab" aria-selected="false" data-moderation-tab="history">Audit history</button>
         <button class="btn btn-outline-secondary ml-auto" type="button" data-moderation-refresh><i class="fas fa-sync-alt"></i> Refresh</button>
     </div>
     <section class="miq-workspace-panel miq-workspace-panel-wide miq-moderation-panel" data-moderation-panel="pending">
         <div class="miq-moderation-panel-heading"><div><span class="miq-account-kicker">Publication queue</span><h2>Pending ideas</h2></div><p>Publish suitable submissions or reject them with a clear moderator note.</p></div>
         <div id="miq-moderation-queue" aria-live="polite">Loading pending ideas...</div>
+    </section>
+    <section class="miq-workspace-panel miq-workspace-panel-wide miq-moderation-panel" data-moderation-panel="replies" hidden>
+        <div class="miq-moderation-panel-heading"><div><span class="miq-account-kicker">Reply queue</span><h2>Pending replies</h2></div><p>Review replies before they become visible on published ideas.</p></div>
+        <div id="miq-moderation-replies" aria-live="polite">Loading pending replies...</div>
     </section>
     <section class="miq-workspace-panel miq-workspace-panel-wide miq-moderation-panel" data-moderation-panel="reports" hidden>
         <div class="miq-moderation-panel-heading"><div><span class="miq-account-kicker">Safety queue</span><h2>User reports</h2></div><p>Review the report and complete idea before dismissing it or hiding the content.</p></div>
@@ -76,6 +85,6 @@ header('X-Robots-Tag: noindex, nofollow');
 </main>
 <?php include __DIR__ . '/footer.php'; ?>
 <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-<script src="assets/js/moderation.js?v=20260726.1"></script>
+<script src="assets/js/moderation.js?v=20260726.2"></script>
 </body>
 </html>

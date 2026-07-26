@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS miq_community_replies (
     user_id BIGINT UNSIGNED NOT NULL,
     parent_reply_id BIGINT UNSIGNED NULL,
     body TEXT NOT NULL,
-    status ENUM('published', 'hidden', 'deleted') NOT NULL DEFAULT 'published',
+    status ENUM('pending', 'published', 'rejected', 'hidden', 'deleted') NOT NULL DEFAULT 'pending',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),

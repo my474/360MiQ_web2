@@ -1,5 +1,8 @@
 -- 360MiQ main-site account/workspace schema.
 -- Replace `miq_` with MIQ_ACCOUNT_TABLE_PREFIX when deploying.
+-- Foreign keys are intentionally omitted because the restricted Bluehost
+-- account user has no REFERENCES grant. Ordered lifecycle cleanup is handled
+-- by account/lifecycle.php; indexed ownership columns preserve performance.
 
 CREATE TABLE IF NOT EXISTS miq_users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -25,8 +28,7 @@ CREATE TABLE IF NOT EXISTS miq_users (
     UNIQUE KEY uq_miq_users_display_name (display_name),
     KEY ix_miq_users_status (status),
     KEY ix_miq_users_last_seen (last_seen_at),
-    KEY ix_miq_users_suspension (status, suspended_until),
-    CONSTRAINT fk_miq_users_suspender FOREIGN KEY (suspended_by_user_id) REFERENCES miq_users (id) ON DELETE SET NULL
+    KEY ix_miq_users_suspension (status, suspended_until)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_identities (
@@ -38,8 +40,7 @@ CREATE TABLE IF NOT EXISTS miq_identities (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_identity (provider, provider_user_id),
-    KEY ix_miq_identity_user (user_id),
-    CONSTRAINT fk_miq_identity_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_identity_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_email_tokens (
@@ -51,8 +52,7 @@ CREATE TABLE IF NOT EXISTS miq_email_tokens (
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_email_token (token_hash),
     KEY ix_miq_email_token_user (user_id),
-    KEY ix_miq_email_token_expiry (expires_at),
-    CONSTRAINT fk_miq_email_token_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_email_token_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_password_reset_tokens (
@@ -64,8 +64,7 @@ CREATE TABLE IF NOT EXISTS miq_password_reset_tokens (
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_reset_token (token_hash),
     KEY ix_miq_reset_token_user (user_id),
-    KEY ix_miq_reset_token_expiry (expires_at),
-    CONSTRAINT fk_miq_reset_token_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_reset_token_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_rate_limits (
@@ -91,8 +90,7 @@ CREATE TABLE IF NOT EXISTS miq_sessions (
     UNIQUE KEY uq_miq_session_hash (session_hash),
     KEY ix_miq_session_user (user_id),
     KEY ix_miq_session_last_seen (last_seen_at),
-    KEY ix_miq_session_expiry (expires_at),
-    CONSTRAINT fk_miq_session_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_session_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_user_activity_daily (
@@ -102,8 +100,7 @@ CREATE TABLE IF NOT EXISTS miq_user_activity_daily (
     last_seen_at DATETIME NOT NULL,
     request_count INT UNSIGNED NOT NULL DEFAULT 1,
     PRIMARY KEY (user_id, activity_date),
-    KEY ix_miq_activity_date (activity_date),
-    CONSTRAINT fk_miq_activity_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_activity_date (activity_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_user_admin_actions (
@@ -119,9 +116,7 @@ CREATE TABLE IF NOT EXISTS miq_user_admin_actions (
     PRIMARY KEY (id),
     KEY ix_miq_user_admin_target (target_user_id, created_at),
     KEY ix_miq_user_admin_actor (admin_user_id, created_at),
-    KEY ix_miq_user_admin_created (created_at),
-    CONSTRAINT fk_miq_user_admin_target FOREIGN KEY (target_user_id) REFERENCES miq_users (id) ON DELETE SET NULL,
-    CONSTRAINT fk_miq_user_admin_actor FOREIGN KEY (admin_user_id) REFERENCES miq_users (id) ON DELETE SET NULL
+    KEY ix_miq_user_admin_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_recent_searches (
@@ -133,8 +128,7 @@ CREATE TABLE IF NOT EXISTS miq_recent_searches (
     searched_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_recent_search (user_id, code),
-    KEY ix_miq_recent_user_time (user_id, searched_at),
-    CONSTRAINT fk_miq_recent_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_recent_user_time (user_id, searched_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_screener_presets (
@@ -152,8 +146,7 @@ CREATE TABLE IF NOT EXISTS miq_screener_presets (
     UNIQUE KEY uq_miq_screener_preset_key (user_id, client_key),
     UNIQUE KEY uq_miq_screener_preset_name (user_id, name),
     KEY ix_miq_screener_preset_time (user_id, updated_at),
-    KEY ix_miq_screener_preset_default (user_id, is_default),
-    CONSTRAINT fk_miq_screener_preset_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_screener_preset_default (user_id, is_default)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_saved_charts (
@@ -173,8 +166,7 @@ CREATE TABLE IF NOT EXISTS miq_saved_charts (
     UNIQUE KEY uq_miq_chart_asset (user_id, asset_key),
     KEY ix_miq_chart_user_time (user_id, updated_at),
     KEY ix_miq_chart_workspace (user_id, kind, code),
-    KEY ix_miq_chart_public (visibility, updated_at),
-    CONSTRAINT fk_miq_chart_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_chart_public (visibility, updated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_chart_versions (
@@ -186,9 +178,7 @@ CREATE TABLE IF NOT EXISTS miq_chart_versions (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_chart_revision (chart_id, revision),
-    KEY ix_miq_chart_versions_user (user_id, created_at),
-    CONSTRAINT fk_miq_chart_version_chart FOREIGN KEY (chart_id) REFERENCES miq_saved_charts (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_chart_version_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_chart_versions_user (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_pine_scripts (
@@ -207,8 +197,7 @@ CREATE TABLE IF NOT EXISTS miq_pine_scripts (
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_script_asset (user_id, asset_key),
     KEY ix_miq_script_user_time (user_id, updated_at),
-    KEY ix_miq_script_public (visibility, status, updated_at),
-    CONSTRAINT fk_miq_script_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_script_public (visibility, status, updated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_pine_script_versions (
@@ -220,9 +209,7 @@ CREATE TABLE IF NOT EXISTS miq_pine_script_versions (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_script_revision (script_id, revision),
-    KEY ix_miq_script_versions_user (user_id, created_at),
-    CONSTRAINT fk_miq_script_version_script FOREIGN KEY (script_id) REFERENCES miq_pine_scripts (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_script_version_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_script_versions_user (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_watchlists (
@@ -232,8 +219,7 @@ CREATE TABLE IF NOT EXISTS miq_watchlists (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
-    KEY ix_miq_watchlist_user (user_id, updated_at),
-    CONSTRAINT fk_miq_watchlist_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_watchlist_user (user_id, updated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_watchlist_items (
@@ -245,9 +231,7 @@ CREATE TABLE IF NOT EXISTS miq_watchlist_items (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_watchlist_item (watchlist_id, code),
-    KEY ix_miq_watchlist_item_user (user_id),
-    CONSTRAINT fk_miq_watchlist_item_list FOREIGN KEY (watchlist_id) REFERENCES miq_watchlists (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_watchlist_item_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_watchlist_item_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_user_preferences (
@@ -259,8 +243,7 @@ CREATE TABLE IF NOT EXISTS miq_user_preferences (
     chart_period VARCHAR(24) NOT NULL DEFAULT 'daily',
     auto_save_charts TINYINT(1) NOT NULL DEFAULT 1,
     updated_at DATETIME NOT NULL,
-    PRIMARY KEY (user_id),
-    CONSTRAINT fk_miq_preference_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    PRIMARY KEY (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_research_notes (
@@ -277,10 +260,7 @@ CREATE TABLE IF NOT EXISTS miq_research_notes (
     KEY ix_miq_note_user_time (user_id, updated_at),
     KEY ix_miq_note_stock (user_id, stock_code, updated_at),
     KEY ix_miq_note_chart (user_id, chart_id),
-    KEY ix_miq_note_script (user_id, script_id),
-    CONSTRAINT fk_miq_note_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_note_chart FOREIGN KEY (chart_id) REFERENCES miq_saved_charts (id) ON DELETE SET NULL,
-    CONSTRAINT fk_miq_note_script FOREIGN KEY (script_id) REFERENCES miq_pine_scripts (id) ON DELETE SET NULL
+    KEY ix_miq_note_script (user_id, script_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_price_alerts (
@@ -296,8 +276,7 @@ CREATE TABLE IF NOT EXISTS miq_price_alerts (
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     KEY ix_miq_alert_user_status (user_id, status, updated_at),
-    KEY ix_miq_alert_code_status (code, status),
-    CONSTRAINT fk_miq_alert_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_alert_code_status (code, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_notifications (
@@ -312,8 +291,7 @@ CREATE TABLE IF NOT EXISTS miq_notifications (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_notification_dedupe (user_id, dedupe_key),
-    KEY ix_miq_notification_user_read (user_id, read_at, created_at),
-    CONSTRAINT fk_miq_notification_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_notification_user_read (user_id, read_at, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_ideas (
@@ -336,8 +314,7 @@ CREATE TABLE IF NOT EXISTS miq_community_ideas (
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_idea_slug (slug),
     KEY ix_miq_idea_context (code, status, published_at),
-    KEY ix_miq_idea_user_time (user_id, updated_at),
-    CONSTRAINT fk_miq_idea_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_idea_user_time (user_id, updated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_bookmarks (
@@ -347,9 +324,7 @@ CREATE TABLE IF NOT EXISTS miq_community_bookmarks (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_community_bookmark (user_id, idea_id),
-    KEY ix_miq_bookmark_user_time (user_id, created_at),
-    CONSTRAINT fk_miq_bookmark_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_bookmark_idea FOREIGN KEY (idea_id) REFERENCES miq_community_ideas (id) ON DELETE CASCADE
+    KEY ix_miq_bookmark_user_time (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_replies (
@@ -358,15 +333,12 @@ CREATE TABLE IF NOT EXISTS miq_community_replies (
     user_id BIGINT UNSIGNED NOT NULL,
     parent_reply_id BIGINT UNSIGNED NULL,
     body TEXT NOT NULL,
-    status ENUM('published', 'hidden', 'deleted') NOT NULL DEFAULT 'published',
+    status ENUM('pending', 'published', 'rejected', 'hidden', 'deleted') NOT NULL DEFAULT 'pending',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     KEY ix_miq_reply_idea_time (idea_id, status, created_at),
-    KEY ix_miq_reply_user_time (user_id, created_at),
-    CONSTRAINT fk_miq_reply_idea FOREIGN KEY (idea_id) REFERENCES miq_community_ideas (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_reply_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_reply_parent FOREIGN KEY (parent_reply_id) REFERENCES miq_community_replies (id) ON DELETE SET NULL
+    KEY ix_miq_reply_user_time (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_idea_revisions (
@@ -376,9 +348,7 @@ CREATE TABLE IF NOT EXISTS miq_community_idea_revisions (
     payload_json MEDIUMTEXT NOT NULL,
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
-    KEY ix_miq_idea_revision (idea_id, created_at),
-    CONSTRAINT fk_miq_idea_revision_idea FOREIGN KEY (idea_id) REFERENCES miq_community_ideas (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_idea_revision_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_idea_revision (idea_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_votes (
@@ -393,8 +363,7 @@ CREATE TABLE IF NOT EXISTS miq_community_votes (
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_vote (user_id, context_type, context_key),
     KEY ix_miq_vote_context (context_type, context_key, direction),
-    KEY ix_miq_vote_active (context_type, context_key, expires_at, direction),
-    CONSTRAINT fk_miq_vote_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_vote_active (context_type, context_key, expires_at, direction)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_vote_events (
@@ -411,8 +380,7 @@ CREATE TABLE IF NOT EXISTS miq_community_vote_events (
     PRIMARY KEY (id),
     KEY ix_miq_vote_event_context (context_type, context_key, created_at),
     KEY ix_miq_vote_event_user (user_id, context_type, context_key, created_at),
-    KEY ix_miq_vote_event_created (created_at),
-    CONSTRAINT fk_miq_vote_event_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_vote_event_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_community_sentiment_daily (
@@ -442,9 +410,7 @@ CREATE TABLE IF NOT EXISTS miq_community_reports (
     status ENUM('open', 'reviewed', 'dismissed') NOT NULL DEFAULT 'open',
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
-    KEY ix_miq_report_status (status, created_at),
-    CONSTRAINT fk_miq_report_idea FOREIGN KEY (idea_id) REFERENCES miq_community_ideas (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_report_user FOREIGN KEY (reporter_user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_report_status (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_moderation_actions (
@@ -455,9 +421,7 @@ CREATE TABLE IF NOT EXISTS miq_moderation_actions (
     note VARCHAR(500) NULL,
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
-    KEY ix_miq_moderation_idea (idea_id, created_at),
-    CONSTRAINT fk_miq_moderation_user FOREIGN KEY (moderator_user_id) REFERENCES miq_users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_miq_moderation_idea FOREIGN KEY (idea_id) REFERENCES miq_community_ideas (id) ON DELETE CASCADE
+    KEY ix_miq_moderation_idea (idea_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_sso_tokens (
@@ -469,6 +433,5 @@ CREATE TABLE IF NOT EXISTS miq_sso_tokens (
     created_at DATETIME NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_miq_sso_token (token_hash),
-    KEY ix_miq_sso_expiry (expires_at),
-    CONSTRAINT fk_miq_sso_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_sso_expiry (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

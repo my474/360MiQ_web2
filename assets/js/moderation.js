@@ -3,9 +3,10 @@
 
     var queue = document.getElementById('miq-moderation-queue');
     var reports = document.getElementById('miq-moderation-reports');
+    var replies = document.getElementById('miq-moderation-replies');
     var history = document.getElementById('miq-moderation-history');
     var status = document.getElementById('miq-moderation-status');
-    var dashboard = { ideas: [], reports: [], history: [], counts: {} };
+    var dashboard = { ideas: [], reports: [], replies: [], history: [], counts: {} };
 
     function escapeHtml(value) {
         return String(value == null ? '' : value).replace(/[&<>'"]/g, function (character) {
@@ -140,8 +141,23 @@
         }).join('') + '</div>';
     }
 
+    function renderReplies() {
+        var pendingReplies = dashboard.replies || [];
+        if (!pendingReplies.length) {
+            replies.innerHTML = '<div class="miq-empty-state">No replies are waiting for review.</div>';
+            return;
+        }
+        replies.innerHTML = pendingReplies.map(function (reply) {
+            return '<article class="miq-moderation-card" data-moderation-reply="' + escapeHtml(reply.id) + '">'
+                + '<div class="miq-moderation-card-header"><div><span class="miq-account-kicker">Reply to ' + escapeHtml(reply.idea_title) + '</span><h3>' + escapeHtml(reply.author_display_name) + '</h3><small>' + escapeHtml(reply.author_email) + ' · ' + escapeHtml(humanDate(reply.created_at)) + '</small></div><span class="miq-moderation-id">Reply #' + escapeHtml(reply.id) + '</span></div>'
+                + '<div class="miq-moderation-copy"><section><h4>Reply</h4><p>' + escapeHtml(reply.body) + '</p></section></div>'
+                + noteControl('reply-' + reply.id, 'Explain a rejection or hide decision')
+                + '<div class="miq-moderation-actions"><button class="btn btn-primary" type="button" data-moderate-reply="publish" data-reply-id="' + escapeHtml(reply.id) + '">Publish</button><button class="btn btn-outline-secondary" type="button" data-moderate-reply="reject" data-reply-id="' + escapeHtml(reply.id) + '">Reject</button><button class="btn btn-outline-danger" type="button" data-moderate-reply="hide" data-reply-id="' + escapeHtml(reply.id) + '">Hide</button></div></article>';
+        }).join('');
+    }
+
     function renderCounts() {
-        ['pending', 'reports', 'actions'].forEach(function (key) {
+        ['pending', 'reports', 'replies', 'actions'].forEach(function (key) {
             var target = document.querySelector('[data-moderation-count="' + key + '"]');
             if (target) target.textContent = Number(dashboard.counts && dashboard.counts[key] || 0);
         });
@@ -151,6 +167,7 @@
         renderCounts();
         renderPending();
         renderReports();
+        renderReplies();
         renderHistory();
     }
 
@@ -242,6 +259,27 @@
         });
     }
 
+    function moderateReply(button) {
+        var replyId = button.getAttribute('data-reply-id');
+        var decision = button.getAttribute('data-moderate-reply');
+        var card = button.closest('[data-moderation-reply]');
+        var note = card.querySelector('[data-moderation-note="reply-' + replyId + '"]');
+        var noteValue = note ? note.value.trim() : '';
+        if (decision !== 'publish' && !noteValue) {
+            setStatus('Add a moderator note before rejecting or hiding a reply.', 'error');
+            if (note) note.focus();
+            return;
+        }
+        if (!window.confirm((decision === 'publish' ? 'Publish' : actionLabel(decision)) + ' reply #' + replyId + '?')) return;
+        setCardBusy(card, true);
+        window.MIQAccount.request('moderate_reply', { reply_id: replyId, decision: decision, note: noteValue }).then(function () {
+            return loadDashboard(actionLabel(decision) + ' reply #' + replyId + '.');
+        }).catch(function (error) {
+            setStatus(error.message, 'error');
+            setCardBusy(card, false);
+        });
+    }
+
     document.addEventListener('click', function (event) {
         var tab = event.target.closest ? event.target.closest('[data-moderation-tab]') : null;
         if (tab) {
@@ -259,12 +297,17 @@
             return;
         }
         var reportAction = event.target.closest ? event.target.closest('[data-report-decision]') : null;
-        if (reportAction) moderateReport(reportAction);
+        if (reportAction) {
+            moderateReport(reportAction);
+            return;
+        }
+        var replyAction = event.target.closest ? event.target.closest('[data-moderate-reply]') : null;
+        if (replyAction) moderateReply(replyAction);
     });
 
     document.addEventListener('DOMContentLoaded', function () {
         var initialTab = new URLSearchParams(window.location.search).get('tab');
-        if (['pending', 'reports', 'history'].indexOf(initialTab) === -1) initialTab = 'pending';
+        if (['pending', 'reports', 'replies', 'history'].indexOf(initialTab) === -1) initialTab = 'pending';
         selectTab(initialTab);
         if (window.MIQAccount) loadDashboard();
         else setStatus('The account service is unavailable.', 'error');

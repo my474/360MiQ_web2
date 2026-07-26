@@ -3,7 +3,7 @@ require_once __DIR__ . '/account/bootstrap.php';
 
 $admin_user = miq_account_current_user();
 if (!$admin_user) {
-    header('Location: account.php?view=login&return_to=/account_user_admin');
+    header('Location: account.php?view=login&return_to=account_user_admin');
     exit;
 }
 if (!miq_account_is_admin($admin_user)) {

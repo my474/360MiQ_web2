@@ -11,9 +11,7 @@ ALTER TABLE miq_users
     ADD COLUMN suspension_reason VARCHAR(500) NULL AFTER suspended_until,
     ADD COLUMN suspended_by_user_id BIGINT UNSIGNED NULL AFTER suspension_reason,
     ADD KEY ix_miq_users_last_seen (last_seen_at),
-    ADD KEY ix_miq_users_suspension (status, suspended_until),
-    ADD CONSTRAINT fk_miq_users_suspender
-        FOREIGN KEY (suspended_by_user_id) REFERENCES miq_users (id) ON DELETE SET NULL;
+    ADD KEY ix_miq_users_suspension (status, suspended_until);
 
 ALTER TABLE miq_sessions
     ADD KEY ix_miq_session_last_seen (last_seen_at),
@@ -26,8 +24,7 @@ CREATE TABLE IF NOT EXISTS miq_user_activity_daily (
     last_seen_at DATETIME NOT NULL,
     request_count INT UNSIGNED NOT NULL DEFAULT 1,
     PRIMARY KEY (user_id, activity_date),
-    KEY ix_miq_activity_date (activity_date),
-    CONSTRAINT fk_miq_activity_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_activity_date (activity_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS miq_user_admin_actions (
@@ -43,7 +40,5 @@ CREATE TABLE IF NOT EXISTS miq_user_admin_actions (
     PRIMARY KEY (id),
     KEY ix_miq_user_admin_target (target_user_id, created_at),
     KEY ix_miq_user_admin_actor (admin_user_id, created_at),
-    KEY ix_miq_user_admin_created (created_at),
-    CONSTRAINT fk_miq_user_admin_target FOREIGN KEY (target_user_id) REFERENCES miq_users (id) ON DELETE SET NULL,
-    CONSTRAINT fk_miq_user_admin_actor FOREIGN KEY (admin_user_id) REFERENCES miq_users (id) ON DELETE SET NULL
+    KEY ix_miq_user_admin_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

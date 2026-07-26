@@ -2,7 +2,7 @@
 require_once __DIR__ . '/account/bootstrap.php';
 
 $view = isset($_GET['view']) ? (string) $_GET['view'] : 'login';
-$return_to = miq_account_safe_return_to(isset($_GET['return_to']) ? $_GET['return_to'] : (isset($_POST['return_to']) ? $_POST['return_to'] : '/'));
+$return_to = miq_account_safe_return_to(isset($_GET['return_to']) ? $_GET['return_to'] : (isset($_POST['return_to']) ? $_POST['return_to'] : 'workspace'), 'workspace');
 $errors = array();
 $display_name_suggestions = array();
 $register_display_name = '';
@@ -20,7 +20,13 @@ function miq_account_redirect($path)
 function miq_account_token_link($kind, $token)
 {
     $query = $kind === 'verify' ? 'verify=' : 'reset=';
-    return miq_account_config()['base_url'] . '/account.php?' . $query . rawurlencode($token);
+    $base_url = miq_account_config()['base_url'];
+    $configured_path = (string) (parse_url($base_url, PHP_URL_PATH) ?? '');
+    $request_directory = str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/account.php')));
+    $deployment_path = $configured_path !== '' && $configured_path !== '/'
+        ? ''
+        : ($request_directory === '/' || $request_directory === '.' ? '' : $request_directory);
+    return $base_url . $deployment_path . '/account.php?' . $query . rawurlencode($token);
 }
 
 function miq_account_process_verification($token)
@@ -42,25 +48,24 @@ function miq_account_process_verification($token)
         return;
     }
 
-    miq_account_query("UPDATE {$users} SET email_verified_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ?", 'i', array((int) $row['user_id']))->close();
-    miq_account_query("DELETE FROM {$tokens} WHERE id = ?", 'i', array((int) $row['token_id']))->close();
+    $db = miq_account_db();
+    $db->begin_transaction();
+    try {
+        miq_account_query("UPDATE {$users} SET email_verified_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ?", 'i', array((int) $row['user_id']))->close();
+        miq_account_query("DELETE FROM {$tokens} WHERE user_id = ?", 'i', array((int) $row['user_id']))->close();
+        $db->commit();
+    } catch (Throwable $error) {
+        $db->rollback();
+        throw $error;
+    }
     miq_account_flash('success', 'Your email is verified. You can now sign in.');
 }
 
-function miq_account_process_email_registration($email, $password, $confirm_password, $display_name)
+function miq_account_send_verification_for_user($user)
 {
-    if (strlen($password) < 8) {
-        throw new InvalidArgumentException('Use a password with at least 8 characters.');
-    }
-    if ($password !== $confirm_password) {
-        throw new InvalidArgumentException('The passwords do not match.');
-    }
-
-    $user_id = miq_account_create_user($email, $password, $display_name, 'email', null);
-    $token = miq_account_issue_email_token($user_id, 'verify');
-    $user = miq_account_find_user_by_email($email);
+    $token = miq_account_issue_email_token((int) $user['id'], 'verify');
     $link = miq_account_token_link('verify', $token);
-    $sent = $user && miq_account_send_mail(
+    $sent = miq_account_send_mail(
         $user['email'],
         'Verify your 360MiQ account',
         "Welcome to 360MiQ.\n\nVerify your email address by opening this link:\n{$link}\n\nThis link expires in 24 hours.\n"
@@ -69,6 +74,18 @@ function miq_account_process_email_registration($email, $password, $confirm_pass
         error_log('360MiQ verification link: ' . $link);
     }
     return $sent;
+}
+
+function miq_account_process_email_registration($email, $password, $confirm_password, $display_name)
+{
+    miq_account_validate_password($password);
+    if ($password !== $confirm_password) {
+        throw new InvalidArgumentException('The passwords do not match.');
+    }
+
+    $user_id = miq_account_create_user($email, $password, $display_name, 'email', null);
+    $user = miq_account_find_user_by_email($email);
+    return $user && miq_account_send_verification_for_user($user);
 }
 
 function miq_account_process_google_login($credential)
@@ -123,14 +140,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($email !== '') {
                     miq_account_require_rate_limit('register_email', $email, 'Too many registration attempts for this email. Please try again later.');
                 }
-                miq_account_process_email_registration(
+                $verification_sent = miq_account_process_email_registration(
                     $email,
                     (string) ($_POST['password'] ?? ''),
                     (string) ($_POST['confirm_password'] ?? ''),
                     $register_display_name
                 );
-                miq_account_flash('success', 'Account created. Check your email to verify your address before signing in.');
-                miq_account_redirect('account.php?view=login');
+                if ($verification_sent) {
+                    miq_account_flash('success', 'Account created. Check your email to verify your address before signing in.');
+                    miq_account_redirect('account.php?view=login');
+                }
+                miq_account_flash('warning', 'Your account was created, but the verification email could not be sent. Try resending it after the mail helper is fixed.');
+                miq_account_redirect('account.php?view=resend&email=' . rawurlencode($email));
             } elseif ($action === 'login') {
                 $login_email = miq_account_normalize_email($_POST['email'] ?? '');
                 miq_account_require_rate_limit('login_ip', miq_account_client_ip(), 'Too many login attempts. Please try again later.');
@@ -143,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $user = miq_account_require_active_user($user);
                 if (empty($user['email_verified_at'])) {
-                    throw new RuntimeException('Please verify your email before signing in.');
+                    throw new RuntimeException('Please verify your email before signing in. You can request a new verification email below.');
                 }
                 miq_account_login_user($user['id'], $user['session_version']);
                 miq_account_redirect($return_to);
@@ -168,25 +189,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 miq_account_flash('success', 'If an account exists for that email, a reset link has been sent.');
                 miq_account_redirect('account.php?view=login');
+            } elseif ($action === 'resend_verification') {
+                $email = miq_account_normalize_email($_POST['email'] ?? '');
+                miq_account_require_rate_limit('verification_resend_ip', miq_account_client_ip(), 'Too many verification requests. Please try again later.');
+                if ($email !== '') {
+                    miq_account_require_rate_limit('verification_resend_email', $email, 'Too many verification requests for this email. Please try again later.');
+                }
+                $user = miq_account_find_user_by_email($email);
+                if ($user && empty($user['email_verified_at']) && $user['password_hash']) {
+                    miq_account_send_verification_for_user($user);
+                }
+                miq_account_flash('success', 'If an unverified account exists for that email, a new verification link has been sent.');
+                miq_account_redirect('account.php?view=login');
             } elseif ($action === 'reset_password') {
                 $token = (string) ($_POST['token'] ?? '');
                 $password = (string) ($_POST['password'] ?? '');
-                if (strlen($password) < 8) {
-                    throw new InvalidArgumentException('Use a password with at least 8 characters.');
-                }
+                miq_account_validate_password($password);
                 $tokens = miq_account_table('password_reset_tokens');
                 $users = miq_account_table('users');
-                $row = miq_account_fetch_one(miq_account_query(
-                    "SELECT t.id AS token_id, u.id AS user_id FROM {$tokens} t INNER JOIN {$users} u ON u.id = t.user_id WHERE t.token_hash = ? AND t.expires_at >= UTC_TIMESTAMP() LIMIT 1",
-                    's',
-                    array(miq_account_hash_token($token))
-                ));
-                if (!$row) {
-                    throw new RuntimeException('That reset link is invalid or has expired.');
+                $db = miq_account_db();
+                $db->begin_transaction();
+                try {
+                    $row = miq_account_fetch_one(miq_account_query(
+                        "SELECT t.id AS token_id, u.id AS user_id FROM {$tokens} t INNER JOIN {$users} u ON u.id = t.user_id WHERE t.token_hash = ? AND t.expires_at >= UTC_TIMESTAMP() LIMIT 1 FOR UPDATE",
+                        's',
+                        array(miq_account_hash_token($token))
+                    ));
+                    if (!$row) {
+                        throw new RuntimeException('That reset link is invalid or has expired.');
+                    }
+                    $hash = password_hash($password, defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT);
+                    miq_account_query("UPDATE {$users} SET password_hash = ?, session_version = session_version + 1, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($hash, (int) $row['user_id']))->close();
+                    miq_account_query("DELETE FROM {$tokens} WHERE user_id = ?", 'i', array((int) $row['user_id']))->close();
+                    $db->commit();
+                } catch (Throwable $error) {
+                    $db->rollback();
+                    throw $error;
                 }
-                $hash = password_hash($password, defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT);
-                miq_account_query("UPDATE {$users} SET password_hash = ?, session_version = session_version + 1, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($hash, (int) $row['user_id']))->close();
-                miq_account_query("DELETE FROM {$tokens} WHERE id = ?", 'i', array((int) $row['token_id']))->close();
                 miq_account_flash('success', 'Your password was changed. You can now sign in.');
                 miq_account_redirect('account.php?view=login');
             }
@@ -202,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $flash = miq_account_take_flash();
 $current_user = miq_account_current_user();
 if ($current_user && $view !== 'reset') {
-    miq_account_redirect($return_to === '/' ? '/workspace' : $return_to);
+    miq_account_redirect($return_to);
 }
 ?>
 <!DOCTYPE html>
@@ -234,7 +273,7 @@ if ($current_user && $view !== 'reset') {
     <section class="miq-account-card container">
         <div class="miq-account-intro">
             <span class="miq-account-kicker">360MiQ Workspace</span>
-            <h1><?php echo $view === 'register' ? 'Create your account' : ($view === 'reset' ? 'Reset your password' : 'Sign in to your workspace'); ?></h1>
+            <h1><?php echo $view === 'register' ? 'Create your account' : ($view === 'reset' ? 'Reset your password' : ($view === 'resend' ? 'Resend verification email' : 'Sign in to your workspace')); ?></h1>
             <p>Save <?php echo htmlspecialchars($account_feature_summary, ENT_QUOTES, 'UTF-8'); ?> across devices.</p>
         </div>
 
@@ -257,9 +296,9 @@ if ($current_user && $view !== 'reset') {
                 <label for="register_email">Email</label>
                 <input id="register_email" name="email" class="form-control" type="email" autocomplete="email" value="<?php echo htmlspecialchars($register_email, ENT_QUOTES, 'UTF-8'); ?>" required>
                 <label for="register_password">Password</label>
-                <input id="register_password" name="password" class="form-control" type="password" minlength="8" autocomplete="new-password" required>
+                <input id="register_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
                 <label for="confirm_password">Confirm password</label>
-                <input id="confirm_password" name="confirm_password" class="form-control" type="password" minlength="8" autocomplete="new-password" required>
+                <input id="confirm_password" name="confirm_password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
                 <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
             <p class="miq-account-switch">Already have an account? <a href="account.php?view=login">Sign in</a></p>
@@ -269,9 +308,18 @@ if ($current_user && $view !== 'reset') {
                 <input type="hidden" name="action" value="reset_password">
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['reset'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="reset_password">New password</label>
-                <input id="reset_password" name="password" class="form-control" type="password" minlength="8" autocomplete="new-password" required>
+                <input id="reset_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
                 <button class="btn btn-primary btn-block" type="submit">Change password</button>
             </form>
+        <?php elseif ($view === 'resend'): ?>
+            <form method="post" class="miq-account-form">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="action" value="resend_verification">
+                <label for="verification_email">Email</label>
+                <input id="verification_email" name="email" class="form-control" type="email" autocomplete="email" value="<?php echo htmlspecialchars((string) ($_GET['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
+                <button class="btn btn-primary btn-block" type="submit">Send verification link</button>
+            </form>
+            <p class="miq-account-switch"><a href="account.php?view=login">Back to sign in</a></p>
         <?php else: ?>
             <form method="post" class="miq-account-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
@@ -296,6 +344,7 @@ if ($current_user && $view !== 'reset') {
                 <div class="miq-google-unavailable">Google login will appear after the production OAuth client is configured.</div>
             <?php endif; ?>
             <div class="miq-account-links"><a href="account.php?view=register">Create an account</a><a href="account.php?view=forgot">Forgot password?</a></div>
+            <p class="miq-account-switch"><a href="account.php?view=resend">Resend verification email</a></p>
             <?php if ($view === 'forgot'): ?>
                 <form method="post" class="miq-account-form miq-reset-inline">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">

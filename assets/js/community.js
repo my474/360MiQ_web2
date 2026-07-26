@@ -158,8 +158,7 @@
         replyStatus.textContent = 'Posting…';
         accountRequest('save_idea_reply', { idea_id: ideaId, body: replyForm.elements.body.value.trim() }).then(function () {
             replyForm.reset();
-            replyStatus.textContent = 'Reply posted.';
-            return loadReplies(ideaId);
+            replyStatus.textContent = 'Reply submitted for review.';
         }).catch(function (error) {
             replyStatus.textContent = error.message;
         });

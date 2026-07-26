@@ -26,8 +26,7 @@ CREATE TABLE IF NOT EXISTS miq_community_vote_events (
     PRIMARY KEY (id),
     KEY ix_miq_vote_event_context (context_type, context_key, created_at),
     KEY ix_miq_vote_event_user (user_id, context_type, context_key, created_at),
-    KEY ix_miq_vote_event_created (created_at),
-    CONSTRAINT fk_miq_vote_event_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_vote_event_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO miq_community_vote_events

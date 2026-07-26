@@ -84,7 +84,9 @@ $structured_data = array(
         )
     )
 );
-$miq_account_user = miq_account_current_user();
+$miq_account_cookie_name = miq_account_config()['cookie_name'];
+$miq_account_has_session = session_status() === PHP_SESSION_ACTIVE || isset($_COOKIE[$miq_account_cookie_name]);
+$miq_account_user = $miq_account_has_session ? miq_account_current_user() : null;
 $miq_account_preferences = $miq_account_user
     ? miq_account_user_preferences((int) $miq_account_user['id'])
     : miq_account_preference_defaults();
@@ -131,7 +133,7 @@ $miq_account_client_state = array(
     'userId' => $miq_account_user ? (int) $miq_account_user['id'] : null,
     'displayName' => $miq_account_user ? $miq_account_user['display_name'] : null,
     'role' => $miq_account_user ? $miq_account_user['role'] : null,
-    'csrfToken' => miq_account_csrf_token(),
+    'csrfToken' => session_status() === PHP_SESSION_ACTIVE ? miq_account_csrf_token() : '',
     'apiUrl' => 'account_api.php',
     'accountUrl' => 'account.php',
     'workspaceUrl' => 'workspace',

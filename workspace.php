@@ -3,7 +3,7 @@ require_once __DIR__ . '/account/bootstrap.php';
 $user = miq_account_current_user();
 $community_enabled = miq_community_enabled();
 if (!$user) {
-    header('Location: account.php?view=login&return_to=/workspace');
+    header('Location: account.php?view=login&return_to=workspace');
     exit;
 }
 ?>

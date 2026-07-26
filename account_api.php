@@ -14,9 +14,30 @@ function miq_api_json($payload, $status = 200)
 
 function miq_api_body()
 {
-    $raw = file_get_contents('php://input');
-    $body = json_decode((string) $raw, true);
-    return is_array($body) ? $body : $_POST;
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        return array();
+    }
+
+    $maximum = max(1024, (int) miq_account_config()['max_api_request_bytes']);
+    $content_length = isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
+    if ($content_length > $maximum) {
+        miq_api_json(array('error' => 'The request is too large.'), 413);
+    }
+
+    $content_type = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
+    if (strpos($content_type, 'application/json') === false) {
+        return $_POST;
+    }
+
+    $raw = file_get_contents('php://input', false, null, 0, $maximum + 1);
+    if ($raw === false || strlen($raw) > $maximum) {
+        miq_api_json(array('error' => 'The request is too large.'), 413);
+    }
+    $body = json_decode($raw, true);
+    if (!is_array($body)) {
+        miq_api_json(array('error' => 'The JSON request body is invalid.'), 400);
+    }
+    return $body;
 }
 
 function miq_api_user()
@@ -295,6 +316,7 @@ function miq_api_moderation_dashboard()
     $users = miq_account_table('users');
     $reports = miq_account_table('community_reports');
     $actions = miq_account_table('moderation_actions');
+    $replies = miq_account_table('community_replies');
 
     $pending = miq_account_fetch_all(miq_account_query(
         "SELECT i.id, i.user_id, i.code, i.title, i.direction, i.timeframe, i.thesis, i.catalyst, i.risk, i.disclosure, i.status, i.visibility, i.created_at, i.updated_at, i.published_at, author.display_name AS author_display_name, author.email AS author_email, (SELECT COUNT(*) FROM {$reports} report_count WHERE report_count.idea_id = i.id AND report_count.status = 'open') AS open_report_count FROM {$ideas} i INNER JOIN {$users} author ON author.id = i.user_id WHERE i.status = 'pending' ORDER BY i.updated_at ASC LIMIT 100"
@@ -302,20 +324,26 @@ function miq_api_moderation_dashboard()
     $open_reports = miq_account_fetch_all(miq_account_query(
         "SELECT r.id AS report_id, r.reason AS report_reason, r.details AS report_details, r.status AS report_status, r.created_at AS report_created_at, reporter.display_name AS reporter_display_name, reporter.email AS reporter_email, i.id AS idea_id, i.user_id AS author_user_id, i.code, i.title, i.direction, i.timeframe, i.thesis, i.catalyst, i.risk, i.disclosure, i.status AS idea_status, i.visibility AS idea_visibility, i.created_at AS idea_created_at, i.updated_at AS idea_updated_at, i.published_at, author.display_name AS author_display_name, author.email AS author_email FROM {$reports} r INNER JOIN {$ideas} i ON i.id = r.idea_id INNER JOIN {$users} reporter ON reporter.id = r.reporter_user_id INNER JOIN {$users} author ON author.id = i.user_id WHERE r.status = 'open' ORDER BY r.created_at ASC LIMIT 100"
     ));
+    $pending_replies = miq_account_fetch_all(miq_account_query(
+        "SELECT reply.id, reply.idea_id, reply.user_id, reply.parent_reply_id, reply.body, reply.status, reply.created_at, reply.updated_at, author.display_name AS author_display_name, author.email AS author_email, idea.title AS idea_title, idea.code AS idea_code FROM {$replies} reply INNER JOIN {$users} author ON author.id = reply.user_id INNER JOIN {$ideas} idea ON idea.id = reply.idea_id WHERE reply.status = 'pending' ORDER BY reply.created_at ASC LIMIT 100"
+    ));
     $history = miq_account_fetch_all(miq_account_query(
         "SELECT action_log.id, action_log.idea_id, action_log.action, action_log.note, action_log.created_at, moderator.display_name AS moderator_display_name, moderator.email AS moderator_email, i.title AS idea_title, i.code AS idea_code, i.status AS idea_status FROM {$actions} action_log INNER JOIN {$users} moderator ON moderator.id = action_log.moderator_user_id INNER JOIN {$ideas} i ON i.id = action_log.idea_id ORDER BY action_log.created_at DESC, action_log.id DESC LIMIT 100"
     ));
     $pending_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$ideas} WHERE status = 'pending'"));
     $report_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$reports} WHERE status = 'open'"));
+    $reply_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$replies} WHERE status = 'pending'"));
     $action_count = miq_account_fetch_one(miq_account_query("SELECT COUNT(*) AS total FROM {$actions}"));
 
     return array(
         'ideas' => $pending,
         'reports' => $open_reports,
+        'replies' => $pending_replies,
         'history' => $history,
         'counts' => array(
             'pending' => (int) ($pending_count['total'] ?? 0),
             'reports' => (int) ($report_count['total'] ?? 0),
+            'replies' => (int) ($reply_count['total'] ?? 0),
             'actions' => (int) ($action_count['total'] ?? 0),
         ),
     );
@@ -524,18 +552,33 @@ function miq_api_workspace($user)
 
 $body = miq_api_body();
 $action = isset($_GET['action']) ? (string) $_GET['action'] : (isset($body['action']) ? (string) $body['action'] : '');
+$request_method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+$read_actions = array(
+    'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'workspace',
+    'get_preferences', 'list_notes', 'list_alerts', 'list_screener_presets',
+    'list_watchlists', 'watchlist_state', 'list_charts', 'get_chart',
+    'list_chart_versions', 'list_scripts', 'get_script', 'list_script_versions',
+    'moderation_dashboard', 'moderation_queue'
+);
+if ($request_method === 'GET') {
+    if (!in_array($action, $read_actions, true)) {
+        header('Allow: POST');
+        miq_api_json(array('error' => 'This action requires POST.'), 405);
+    }
+} elseif ($request_method === 'POST') {
+    miq_api_require_post_csrf($body);
+} else {
+    header('Allow: GET, POST');
+    miq_api_json(array('error' => 'Method not allowed.'), 405);
+}
 $community_actions = array(
     'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'save_idea', 'vote',
     'report_idea', 'bookmark_idea', 'save_idea_reply', 'delete_idea_reply',
-    'moderation_dashboard', 'moderation_queue', 'moderate_idea', 'moderate_report'
+    'moderation_dashboard', 'moderation_queue', 'moderate_idea', 'moderate_reply', 'moderate_report'
 );
 if (!miq_community_enabled() && in_array($action, $community_actions, true)) {
     miq_api_json(array('error' => 'Community features are currently unavailable.'), 404);
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    miq_api_require_post_csrf($body);
-}
-
 try {
     if ($action === 'pulse') {
         list($context_type, $context_key) = miq_api_pulse_context($_GET['context_type'] ?? 'site', $_GET['context_key'] ?? 'site');
@@ -1180,6 +1223,9 @@ try {
             // Backward compatibility for named clients that predate stable asset keys.
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$charts} WHERE user_id = ? AND code = ? AND name = ? LIMIT 1", 'iss', array($user_id, $code, $name)));
         }
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
         if ($existing) {
             $chart_id = (int) $existing['id'];
             if ($expected_revision > 0 && $expected_revision !== (int) $existing['revision']) {
@@ -1229,6 +1275,11 @@ try {
                 miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($chart_id, $user_id, $layout_json))->close();
             }
         }
+        $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         $saved_chart = miq_account_fetch_one(miq_account_query("SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, created_at, updated_at FROM {$charts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($chart_id, $user_id)));
         miq_api_json(array('saved' => true, 'chart' => miq_api_chart_payload($saved_chart), 'id' => $chart_id, 'revision' => $revision));
     }
@@ -1266,6 +1317,9 @@ try {
         }
         $name = miq_api_clean_text($body['name'] ?? ('Copy of ' . $chart['name']), 120);
         $asset_key = miq_api_asset_key();
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
         $statement = miq_account_query(
             "INSERT INTO {$charts} (user_id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, 'named', ?, 'private', 1, NULL, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
             'issss',
@@ -1274,6 +1328,11 @@ try {
         $new_id = (int) miq_account_db()->insert_id;
         $statement->close();
         miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($new_id, $user_id, $chart['layout_json']))->close();
+        $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         miq_api_json(array('saved' => true, 'id' => $new_id, 'asset_key' => $asset_key, 'revision' => 1));
     }
 
@@ -1308,6 +1367,9 @@ try {
         if (!$chart || !$version) miq_api_json(array('error' => 'Chart version not found.'), 404);
         if ($expected_revision > 0 && $expected_revision !== (int) $chart['revision']) miq_api_json(array('error' => 'This chart changed on another device.', 'conflict' => true, 'chart' => miq_api_chart_payload($chart)), 409);
         $revision = (int) $chart['revision'] + 1;
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
         $statement = $expected_revision > 0
             ? miq_account_query("UPDATE {$charts} SET layout_json = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($version['layout_json'], $revision, $chart_id, $user_id, $expected_revision))
             : miq_account_query("UPDATE {$charts} SET layout_json = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($version['layout_json'], $revision, $chart_id, $user_id));
@@ -1319,6 +1381,11 @@ try {
         }
         miq_account_query("INSERT INTO {$versions} (chart_id, user_id, revision, layout_json, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($chart_id, $user_id, $revision, $version['layout_json']))->close();
         miq_api_trim_versions($versions, 'chart_id', $chart_id);
+        $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         miq_api_json(array('saved' => true, 'id' => $chart_id, 'revision' => $revision, 'layout' => json_decode($version['layout_json'], true)));
     }
 
@@ -1390,6 +1457,9 @@ try {
             // Preserve the pre-asset-key API contract for cached/older clients.
             $existing = miq_account_fetch_one(miq_account_query("SELECT * FROM {$scripts} WHERE user_id = ? AND name = ? AND code = ? LIMIT 1", 'iss', array($user_id, $name, $code)));
         }
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
         if ($existing) {
             $script_id = (int) $existing['id'];
             if ($expected_revision > 0 && $expected_revision !== (int) $existing['revision']) {
@@ -1436,6 +1506,11 @@ try {
                 miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($script_id, $user_id, $source))->close();
             }
         }
+        $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         $saved_script = miq_account_fetch_one(miq_account_query("SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, created_at, updated_at FROM {$scripts} WHERE id = ? AND user_id = ? LIMIT 1", 'ii', array($script_id, $user_id)));
         miq_api_json(array('saved' => true, 'script' => miq_api_script_payload($saved_script), 'id' => $script_id, 'revision' => $revision));
     }
@@ -1471,6 +1546,9 @@ try {
         if (miq_api_count_rows($scripts, $user_id) >= miq_account_config()['max_script_count']) miq_api_json(array('error' => 'Your Pine script storage limit has been reached.'), 422);
         $name = miq_api_clean_text($body['name'] ?? ('Copy of ' . $script['name']), 120);
         $asset_key = miq_api_asset_key();
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
         $statement = miq_account_query(
             "INSERT INTO {$scripts} (user_id, asset_key, name, code, source_code, visibility, revision, status, last_client_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'private', 1, 'draft', NULL, UTC_TIMESTAMP(), UTC_TIMESTAMP())",
             'issss',
@@ -1479,6 +1557,11 @@ try {
         $new_id = (int) miq_account_db()->insert_id;
         $statement->close();
         miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, 1, ?, UTC_TIMESTAMP())", 'iis', array($new_id, $user_id, $script['source_code']))->close();
+        $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         miq_api_json(array('saved' => true, 'id' => $new_id, 'asset_key' => $asset_key, 'revision' => 1));
     }
 
@@ -1521,6 +1604,9 @@ try {
         if (!$script || !$version) miq_api_json(array('error' => 'Pine script version not found.'), 404);
         if ($expected_revision > 0 && $expected_revision !== (int) $script['revision']) miq_api_json(array('error' => 'This script changed on another device.', 'conflict' => true, 'script' => miq_api_script_payload($script)), 409);
         $revision = (int) $script['revision'] + 1;
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
         $statement = $expected_revision > 0
             ? miq_account_query("UPDATE {$scripts} SET source_code = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ? AND revision = ?", 'siiii', array($version['source_code'], $revision, $script_id, $user_id, $expected_revision))
             : miq_account_query("UPDATE {$scripts} SET source_code = ?, revision = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?", 'siii', array($version['source_code'], $revision, $script_id, $user_id));
@@ -1532,6 +1618,11 @@ try {
         }
         miq_account_query("INSERT INTO {$versions} (script_id, user_id, revision, source_code, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())", 'iiis', array($script_id, $user_id, $revision, $version['source_code']))->close();
         miq_api_trim_versions($versions, 'script_id', $script_id);
+        $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
         miq_api_json(array('saved' => true, 'id' => $script_id, 'revision' => $revision, 'source_code' => $version['source_code']));
     }
 
@@ -1616,12 +1707,13 @@ try {
             if (!$parent) miq_api_json(array('error' => 'The reply you selected is no longer available.'), 404);
         }
         $statement = miq_account_query(
-            "INSERT INTO {$replies} (idea_id, user_id, parent_reply_id, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'published', UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+            "INSERT INTO {$replies} (idea_id, user_id, parent_reply_id, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'pending', UTC_TIMESTAMP(), UTC_TIMESTAMP())",
             'iiis',
             array($idea_id, $user_id, $parent_reply_id ?: null, $reply_body)
         );
         $reply_id = (int) miq_account_db()->insert_id;
         $statement->close();
+        miq_api_json(array('saved' => true, 'id' => $reply_id, 'status' => 'pending'));
         $link = 'community?idea=' . $idea_id . '#reply-' . $reply_id;
         if ((int) $idea['user_id'] !== $user_id) {
             miq_account_notify(
@@ -1662,7 +1754,7 @@ try {
                 $bookmark_user_id,
                 'community_reply',
                 'New reply on a bookmarked idea',
-                $user['display_name'] . ' replied in â€œ' . $idea['title'] . 'â€.',
+                $user['display_name'] . ' replied in “' . $idea['title'] . '”.',
                 $link,
                 'community-reply:' . $reply_id . ':bookmark:' . $bookmark_user_id
             );
@@ -1810,6 +1902,74 @@ try {
             throw $error;
         }
         miq_api_json(array('saved' => true, 'status' => $status));
+    }
+
+    if ($action === 'moderate_reply') {
+        miq_api_require_moderator($user);
+        $reply_id = (int) ($body['reply_id'] ?? 0);
+        $decision = in_array(($body['decision'] ?? ''), array('publish', 'reject', 'hide'), true) ? $body['decision'] : '';
+        $note = miq_api_clean_text($body['note'] ?? '', 500);
+        if (!$reply_id || $decision === '') miq_api_json(array('error' => 'Invalid reply moderation action.'), 422);
+        if ($decision !== 'publish' && $note === '') miq_api_json(array('error' => 'Add a moderator note before rejecting or hiding a reply.'), 422);
+        $status = $decision === 'publish' ? 'published' : ($decision === 'reject' ? 'rejected' : 'hidden');
+        $replies = miq_account_table('community_replies');
+        $ideas = miq_account_table('community_ideas');
+        $users = miq_account_table('users');
+        $db = miq_account_db();
+        $db->begin_transaction();
+        try {
+            $reply = miq_account_fetch_one(miq_account_query(
+                "SELECT reply.id, reply.idea_id, reply.user_id, reply.parent_reply_id, reply.status, idea.title AS idea_title, idea.user_id AS idea_user_id, author.display_name AS reply_author_name FROM {$replies} reply INNER JOIN {$ideas} idea ON idea.id = reply.idea_id INNER JOIN {$users} author ON author.id = reply.user_id WHERE reply.id = ? LIMIT 1 FOR UPDATE",
+                'i',
+                array($reply_id)
+            ));
+            if (!$reply) throw new RuntimeException('Reply not found.');
+            miq_account_query("UPDATE {$replies} SET status = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($status, $reply_id))->close();
+            miq_api_record_moderation_action($user_id, (int) $reply['idea_id'], 'reply_' . $decision, 'Reply #' . $reply_id . ($note !== '' ? ': ' . $note : ''));
+            $db->commit();
+        } catch (Throwable $error) {
+            $db->rollback();
+            throw $error;
+        }
+        miq_account_notify(
+            (int) $reply['user_id'],
+            'community_moderation',
+            $decision === 'publish' ? 'Your reply was published' : 'Your reply was reviewed',
+            $decision === 'publish' ? 'Your reply on “' . $reply['idea_title'] . '” is now public.' : 'Your reply on “' . $reply['idea_title'] . '” was ' . $status . '.',
+            'community?idea=' . (int) $reply['idea_id'] . '#reply-' . $reply_id,
+            'community-reply-moderation:' . $reply_id . ':' . $status
+        );
+        if ($decision === 'publish') {
+            $link = 'community?idea=' . (int) $reply['idea_id'] . '#reply-' . $reply_id;
+            $targets = array((int) $reply['idea_user_id']);
+            if ((int) $reply['parent_reply_id'] > 0) {
+                $parent = miq_account_fetch_one(miq_account_query(
+                    "SELECT user_id FROM {$replies} WHERE id = ? LIMIT 1",
+                    'i',
+                    array((int) $reply['parent_reply_id'])
+                ));
+                if ($parent) $targets[] = (int) $parent['user_id'];
+            }
+            $bookmarks = miq_account_table('community_bookmarks');
+            $bookmark_users = miq_account_fetch_all(miq_account_query(
+                "SELECT user_id FROM {$bookmarks} WHERE idea_id = ? ORDER BY created_at LIMIT 100",
+                'i',
+                array((int) $reply['idea_id'])
+            ));
+            foreach ($bookmark_users as $bookmark_user) $targets[] = (int) $bookmark_user['user_id'];
+            foreach (array_unique($targets) as $target_user_id) {
+                if ($target_user_id <= 0 || $target_user_id === (int) $reply['user_id']) continue;
+                miq_account_notify(
+                    $target_user_id,
+                    'community_reply',
+                    'New reply on a community idea',
+                    $reply['reply_author_name'] . ' replied in “' . $reply['idea_title'] . '”.',
+                    $link,
+                    'community-reply:' . $reply_id . ':published:' . $target_user_id
+                );
+            }
+        }
+        miq_api_json(array('saved' => true, 'id' => $reply_id, 'status' => $status));
     }
 
     if ($action === 'moderate_report') {

@@ -14,6 +14,5 @@ CREATE TABLE IF NOT EXISTS miq_screener_presets (
     UNIQUE KEY uq_miq_screener_preset_key (user_id, client_key),
     UNIQUE KEY uq_miq_screener_preset_name (user_id, name),
     KEY ix_miq_screener_preset_time (user_id, updated_at),
-    KEY ix_miq_screener_preset_default (user_id, is_default),
-    CONSTRAINT fk_miq_screener_preset_user FOREIGN KEY (user_id) REFERENCES miq_users (id) ON DELETE CASCADE
+    KEY ix_miq_screener_preset_default (user_id, is_default)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

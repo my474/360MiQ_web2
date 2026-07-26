@@ -2,7 +2,7 @@
 require_once __DIR__ . '/account/bootstrap.php';
 $user = miq_account_current_user();
 if (!$user) {
-    header('Location: account.php?view=login&return_to=/account_settings');
+    header('Location: account.php?view=login&return_to=account_settings');
     exit;
 }
 $messages = array();
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $new_password = (string) ($_POST['new_password'] ?? '');
                 $full_user = miq_account_find_user_by_email($user['email']);
                 if (!$full_user['password_hash'] || !password_verify($current_password, $full_user['password_hash'])) throw new RuntimeException('Your current password is not correct.');
-                if (strlen($new_password) < 8) throw new RuntimeException('Use a new password with at least 8 characters.');
+                miq_account_validate_password($new_password);
                 $hash = password_hash($new_password, defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT);
                 miq_account_query("UPDATE {$users} SET password_hash = ?, session_version = session_version + 1, updated_at = UTC_TIMESTAMP() WHERE id = ?", 'si', array($hash, (int) $user['id']))->close();
                 $fresh = miq_account_find_user_by_email($user['email']);
@@ -59,27 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (trim((string) ($_POST['confirmation'] ?? '')) !== 'DELETE MY ACCOUNT') throw new RuntimeException('Type DELETE MY ACCOUNT to confirm account deletion.');
                 $db = miq_account_db();
                 $db->begin_transaction();
-                try {
-                    $ideas_for_delete = miq_account_table('community_ideas');
-                    $replies_for_delete = miq_account_table('community_replies');
-                    $bookmarks_for_delete = miq_account_table('community_bookmarks');
-                    miq_account_query("DELETE FROM {$replies_for_delete} WHERE idea_id IN (SELECT id FROM {$ideas_for_delete} WHERE user_id = ?)", 'i', array((int) $user['id']))->close();
-                    miq_account_query("DELETE FROM {$bookmarks_for_delete} WHERE idea_id IN (SELECT id FROM {$ideas_for_delete} WHERE user_id = ?)", 'i', array((int) $user['id']))->close();
-                } catch (Throwable $optional_community_cleanup_error) {
-                    error_log('360MiQ optional community cleanup failed: ' . $optional_community_cleanup_error->getMessage());
-                }
-                foreach (array('community_replies', 'community_bookmarks', 'notifications', 'price_alerts', 'research_notes', 'user_preferences') as $account_table) {
-                    try {
-                        miq_account_query("DELETE FROM " . miq_account_table($account_table) . " WHERE user_id = ?", 'i', array((int) $user['id']))->close();
-                    } catch (Throwable $optional_delete_error) {
-                        error_log('360MiQ optional account-data cleanup failed: ' . $optional_delete_error->getMessage());
-                    }
-                }
-                miq_account_query("DELETE FROM {$users} WHERE id = ?", 'i', array((int) $user['id']))->close();
+                miq_account_delete_user_data((int) $user['id']);
                 $db->commit();
                 miq_account_logout(true);
                 miq_account_flash('success', 'Your account and private workspace data were deleted.');
-                header('Location: /');
+                header('Location: ./');
                 exit;
             }
         } catch (Throwable $error) {
@@ -128,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button class="btn btn-primary" type="submit">Save preferences</button>
             </form>
         </section>
-        <section class="miq-workspace-panel"><h2>Change password</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="password"><label for="current-password">Current password</label><input id="current-password" class="form-control" type="password" name="current_password" autocomplete="current-password" required><label for="new-password">New password</label><input id="new-password" class="form-control" type="password" name="new_password" minlength="8" autocomplete="new-password" required><button class="btn btn-primary" type="submit">Change password</button></form></section>
+        <section class="miq-workspace-panel"><h2>Change password</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="password"><label for="current-password">Current password</label><input id="current-password" class="form-control" type="password" name="current_password" maxlength="1024" autocomplete="current-password" required><label for="new-password">New password</label><input id="new-password" class="form-control" type="password" name="new_password" minlength="8" maxlength="1024" autocomplete="new-password" required><button class="btn btn-primary" type="submit">Change password</button></form></section>
         <section class="miq-workspace-panel"><h2>Your data</h2><p>Export your account data or permanently delete your account and private workspace.</p><a class="btn btn-outline-primary" href="account_export.php">Download my data</a></section>
         <section class="miq-workspace-panel"><h2>Connected login</h2><?php if (miq_account_config()['google_client_id'] !== ''): ?><p>Connect Google for faster sign-in. The Google email must match this account.</p><form method="post" id="google-link-form" class="miq-google-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="google_link"><input type="hidden" name="credential" id="google-link-credential"><div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="link" data-google-size="medium"></div></form><?php else: ?><p>Google connection will be available after the production OAuth client is configured.</p><?php endif; ?></section>
         <section class="miq-workspace-panel miq-workspace-panel-wide"><h2>Delete account</h2><p>This permanently removes your account, private charts, scripts, searches, and watchlists.<?php if (miq_community_enabled()): ?> Community drafts and published ideas will also be removed.<?php endif; ?></p><form method="post" onsubmit="return window.confirm('Delete this account and all workspace data?');"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="delete"><label for="delete-confirmation">Type DELETE MY ACCOUNT to confirm</label><input id="delete-confirmation" class="form-control" name="confirmation" maxlength="22" required><button class="btn btn-outline-danger" type="submit">Delete account permanently</button></form></section>

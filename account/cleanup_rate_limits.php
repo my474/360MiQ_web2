@@ -8,7 +8,7 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/lifecycle.php';
 
 $table = miq_account_table('rate_limits');
 $statement = miq_account_db()->prepare("DELETE FROM {$table} WHERE last_attempt_at < UTC_TIMESTAMP() - INTERVAL 2 DAY");
@@ -41,6 +41,9 @@ $statement->close();
 
 $expired_notifications = 0;
 $expired_replies = 0;
+$expired_email_tokens = 0;
+$expired_reset_tokens = 0;
+$expired_sso_tokens = 0;
 try {
     $notifications = miq_account_table('notifications');
     $statement = miq_account_query("DELETE FROM {$notifications} WHERE read_at IS NOT NULL AND created_at < UTC_TIMESTAMP() - INTERVAL 180 DAY");
@@ -51,13 +54,37 @@ try {
     $statement = miq_account_query("DELETE FROM {$replies} WHERE status = 'deleted' AND updated_at < UTC_TIMESTAMP() - INTERVAL 30 DAY");
     $expired_replies = $statement->affected_rows;
     $statement->close();
+
 } catch (Throwable $optional_cleanup_error) {
     error_log('360MiQ optional productivity cleanup failed: ' . $optional_cleanup_error->getMessage());
+}
+
+try {
+    foreach (array(
+        'email_tokens' => 'expired_email_tokens',
+        'password_reset_tokens' => 'expired_reset_tokens',
+    ) as $logical_name => $counter_name) {
+        if (!miq_account_table_exists($logical_name)) continue;
+        $token_table = miq_account_table($logical_name);
+        $statement = miq_account_query("DELETE FROM {$token_table} WHERE expires_at < UTC_TIMESTAMP()");
+        ${$counter_name} = $statement->affected_rows;
+        $statement->close();
+    }
+    if (miq_account_table_exists('sso_tokens')) {
+        $sso_tokens = miq_account_table('sso_tokens');
+        $statement = miq_account_query("DELETE FROM {$sso_tokens} WHERE expires_at < UTC_TIMESTAMP() OR (consumed_at IS NOT NULL AND consumed_at < UTC_TIMESTAMP() - INTERVAL 7 DAY)");
+        $expired_sso_tokens = $statement->affected_rows;
+        $statement->close();
+    }
+} catch (Throwable $token_cleanup_error) {
+    error_log('360MiQ token cleanup failed: ' . $token_cleanup_error->getMessage());
 }
 
 fwrite(
     STDOUT,
     "Deleted {$deleted} stale rate-limit row(s), {$expired_sessions} expired session(s), "
     . "{$expired_activity} old activity row(s), {$expired_notifications} read notification(s), "
-    . "{$expired_replies} deleted reply row(s); released {$released_users} expired suspension(s).\n"
+    . "{$expired_replies} deleted reply row(s), {$expired_email_tokens} verification token(s), "
+    . "{$expired_reset_tokens} reset token(s), {$expired_sso_tokens} SSO token(s); "
+    . "released {$released_users} expired suspension(s).\n"
 );
