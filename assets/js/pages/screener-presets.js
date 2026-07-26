@@ -8,6 +8,36 @@
         'mscore', 'ma10', 'ma20', 'ma50', 'ma100', 'ma200', 'ma250',
         'rsi14d', 'rsi14w', 'macdd', 'macdw', 'highlow', 'volume'
     ];
+    var FILTER_CONTROLS = [
+        ['sector', 'Sector', 'All'],
+        ['industry', 'Industry', 'All'],
+        ['marketcap', 'Market_Cap', 'All'],
+        ['polar_ta', 'Technical_Polar', 'All'],
+        ['polar_va', 'Valuation_Polar', 'All'],
+        ['polar_fa', 'Fundamental_Polar', 'All'],
+        ['polar_trendgauge', 'Trend_Gauge', 'All'],
+        ['channel_pos', 'Price_Channel_Pos', 'All'],
+        ['channel_trend', 'Price_Channel_Trend', 'All'],
+        ['pe_stdev', 'PE_Band_STDEV_σ', 'All'],
+        ['pe_trend', 'PE_Band_Trend', 'All'],
+        ['pb_stdev', 'PB_Band_STDEV_σ', 'All'],
+        ['pb_trend', 'PB_Band_Trend', 'All'],
+        ['fscore', 'F-Score', 'All'],
+        ['zscore', 'Z-Score', 'All'],
+        ['mscore', 'M-Score', 'All'],
+        ['ma10', 'MA10', 'None'],
+        ['ma20', 'MA20', 'None'],
+        ['ma50', 'MA50', 'None'],
+        ['ma100', 'MA100', 'None'],
+        ['ma200', 'MA200', 'None'],
+        ['ma250', 'MA250', 'None'],
+        ['rsi14d', 'RSI14_Daily', 'None'],
+        ['rsi14w', 'RSI14_Weekly', 'None'],
+        ['macdd', 'MACD_Daily', 'None'],
+        ['macdw', 'MACD_Weekly', 'None'],
+        ['highlow', 'High_Low', 'None'],
+        ['volume', 'Volume', 'None']
+    ];
     var GUEST_KEY = '360miq-screener-presets:guest:v1';
     var USER_KEY_PREFIX = '360miq-screener-presets:user:';
     var PENDING_TABLE_KEY = '360miq-screener-preset-pending-table:v1';
@@ -198,13 +228,52 @@
         return window.MIQAccount.request(action, payload || {}, method || 'POST');
     }
 
-    function currentConfig() {
-        var query = new URLSearchParams(window.location.search);
+    function filterControlValue(groupId) {
+        var group = document.getElementById(groupId);
+        var button = group && group.querySelector ? group.querySelector('button.btn') : null;
+        if (!button) return '';
+        var value = String(button.textContent || '').replace(/\s+/g, ' ').trim();
+        var separator = value.indexOf(':');
+        return (separator >= 0 ? value.slice(separator + 1) : value).trim();
+    }
+
+    function filtersFromControls() {
+        var marketLabels = {
+            'nyse + nasdaq': 'NYSE + NASDAQ',
+            'nyse': 'NYSE',
+            'nasdaq': 'NASDAQ',
+            'nyse arca': 'NYSEARCA',
+            'london': 'LSE',
+            'australia': 'ASX',
+            'toronto tsx': 'TSX',
+            'india nse': 'NSE',
+            'tokyo': 'TYO',
+            'hong kong': 'HKEX',
+            'shanghai': 'SHSE',
+            'shenzhen': 'SZSE'
+        };
+        var marketLabel = filterControlValue('Market').toLocaleLowerCase();
         var filters = {};
-        FILTER_KEYS.forEach(function (key) {
-            var value = query.get(key);
-            if (value !== null && value.trim() !== '') filters[key] = value.trim();
+        if (marketLabels[marketLabel]) filters.market = marketLabels[marketLabel];
+        FILTER_CONTROLS.forEach(function (definition) {
+            var value = filterControlValue(definition[1]);
+            if (value && value.toLocaleLowerCase() !== definition[2].toLocaleLowerCase()) {
+                filters[definition[0]] = value;
+            }
         });
+        return filters.market ? filters : null;
+    }
+
+    function currentConfig() {
+        var filters = filtersFromControls();
+        if (!filters) {
+            var query = new URLSearchParams(window.location.search);
+            filters = {};
+            FILTER_KEYS.forEach(function (key) {
+                var value = query.get(key);
+                if (value !== null && value.trim() !== '') filters[key] = value.trim();
+            });
+        }
         if (!filters.market) return null;
         var tableConfig = { order: [[3, 'desc']], pageLength: 30, columns: [] };
         if (window.jQuery && jQuery.fn.dataTable && jQuery.fn.dataTable.isDataTable('#screener_grid')) {
@@ -219,7 +288,7 @@
     function requireCurrentConfig() {
         var config = currentConfig();
         if (!config) {
-            setStatus('Run a screener search before saving a preset.', 'error');
+            setStatus('The current screener filters could not be read.', 'error');
             return null;
         }
         return config;
