@@ -72,6 +72,7 @@ function miq_account_config()
             'community_vote_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_VOTE_LIMIT', 30), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_VOTE_WINDOW', 3600)),
             'community_report_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPORT_LIMIT', 10), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPORT_WINDOW', 3600)),
             'community_reply_user' => array('limit' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPLY_LIMIT', 20), 'window' => (int) miq_account_env('MIQ_RATE_COMMUNITY_REPLY_WINDOW', 3600)),
+            'sso_user' => array('limit' => (int) miq_account_env('MIQ_RATE_SSO_USER_LIMIT', 20), 'window' => (int) miq_account_env('MIQ_RATE_SSO_USER_WINDOW', 3600)),
             'asset_write_user' => array('limit' => (int) miq_account_env('MIQ_RATE_ASSET_WRITE_LIMIT', 600), 'window' => (int) miq_account_env('MIQ_RATE_ASSET_WRITE_WINDOW', 3600)),
             'asset_version_user' => array('limit' => (int) miq_account_env('MIQ_RATE_ASSET_VERSION_LIMIT', 60), 'window' => (int) miq_account_env('MIQ_RATE_ASSET_VERSION_WINDOW', 3600)),
         ),

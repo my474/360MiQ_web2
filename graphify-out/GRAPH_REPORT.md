@@ -1,11 +1,11 @@
-﻿# Graph Report - .  (2026-07-26)
+﻿# Graph Report - .  (2026-07-27)
 
 ## Corpus Check
-- 151 files Â· ~774,186 words
+- 151 files Â· ~774,945 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1445 nodes Â· 2737 edges Â· 151 communities detected
+- 1448 nodes Â· 2743 edges Â· 151 communities detected
 - Extraction: 100% EXTRACTED Â· 0% INFERRED Â· 0% AMBIGUOUS
 - Token cost: 0 input Â· 0 output
 
@@ -329,55 +329,55 @@ Nodes (3): miq_account_process_email_registration(), miq_account_send_verificati
 
 ### Community 37 - "Community 37"
 Cohesion: 0.48
-Nodes (4): e(), i(), n(), s()
+Nodes (5): miq_sso_begin(), miq_sso_browser_error(), miq_sso_shared_secret(), miq_sso_target(), miq_sso_targets()
 
 ### Community 38 - "Community 38"
+Cohesion: 0.48
+Nodes (4): e(), i(), n(), s()
+
+### Community 39 - "Community 39"
 Cohesion: 0.52
 Nodes (6): sectorPerformance(), setLabelEvent(), sort1day(), sort20day(), sort5day(), sortAZ()
 
-### Community 39 - "Community 39"
-Cohesion: 0.33
-Nodes (2): detectIE(), rounding()
-
 ### Community 40 - "Community 40"
 Cohesion: 0.33
-Nodes (0):
+Nodes (2): detectIE(), rounding()
 
 ### Community 41 - "Community 41"
 Cohesion: 0.33
 Nodes (0):
 
 ### Community 42 - "Community 42"
+Cohesion: 0.33
+Nodes (0):
+
+### Community 43 - "Community 43"
 Cohesion: 0.4
 Nodes (2): miq_account_db(), miq_account_query()
 
-### Community 43 - "Community 43"
+### Community 44 - "Community 44"
 Cohesion: 0.6
 Nodes (4): formatPercent(), numberOrNull(), percentChange(), pointPercentChange()
 
-### Community 44 - "Community 44"
+### Community 45 - "Community 45"
 Cohesion: 0.53
 Nodes (5): earningSurpriseChart(), earningSurpriseComment(), Pxband(), valuationBands(), valuationComment()
-
-### Community 45 - "Community 45"
-Cohesion: 0.4
-Nodes (0):
 
 ### Community 46 - "Community 46"
 Cohesion: 0.4
 Nodes (0):
 
 ### Community 47 - "Community 47"
+Cohesion: 0.4
+Nodes (0):
+
+### Community 48 - "Community 48"
 Cohesion: 0.6
 Nodes (3): pchart(), polarTheme(), setLabelEvent()
 
-### Community 48 - "Community 48"
+### Community 49 - "Community 49"
 Cohesion: 0.7
 Nodes (4): ema0(), tsf(), TSFchart(), tsfLookback()
-
-### Community 49 - "Community 49"
-Cohesion: 0.67
-Nodes (2): miq_sso_begin(), miq_sso_shared_secret()
 
 ### Community 50 - "Community 50"
 Cohesion: 0.5

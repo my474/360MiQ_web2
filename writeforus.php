@@ -86,7 +86,12 @@
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 
-<?php $page = 'writeforus'; include "./header.php" ?>
+<?php
+$page = 'writeforus';
+$write_for_us_login_url = 'account_sso.php?target=new-post';
+$write_for_us_register_url = 'account_sso.php?target=new-post&signup=1';
+include "./header.php";
+?>
 
     <main class="page">
     <section class="clean-block about-us" style="padding: 0 0 30px;"><div class="container">
@@ -94,13 +99,13 @@
     <div class="block-heading">
         <br><br>
         <div class="top-bar">
-            <a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-outline-primary me-2" style="background:white">Login</a>
-            <a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-primary">Register</a>
+            <a href="<?php echo htmlspecialchars($write_for_us_login_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-outline-primary me-2">Sign in with 360MiQ</a>
+            <a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary">Create a 360MiQ account</a>
         </div>
         <h1 class="text-info">Write for Us – Share Your Investment Insights</h1>
     </div>
 
-  <p>Are you passionate about investing, trading strategies, or financial markets? Join our free community of contributors and share your expertise with a global audience eager to learn and grow. Simply log in or register to submit your article. All submissions will be reviewed after submission—no prior topic or content approval is needed.</p>
+  <p>Are you passionate about investing, trading strategies, or financial markets? Join our free community of contributors and share your expertise with a global audience eager to learn and grow. Use your 360MiQ account to open the article editor—there is no separate WordPress registration or password to manage. All submissions are saved for editorial review and cannot be published directly by a new contributor.</p>
   <br>
   <h4>Why Contribute?</h4>
   <ul>
@@ -152,16 +157,13 @@
   </ul>
   <br>
   <h4>How to Submit</h4>
-  <ul>
-      <li>If you don't have an account, please&nbsp;&nbsp;<a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-primary">Register</a>
-          <div class="screenshot">
-                <img src="/assets/img/writeforus_register.jpg?" alt="register"/>
-            </div></li>
-      <li>Please&nbsp;&nbsp;<a href="account_sso.php?return_to=/blog/wp-admin/post-new.php" class="btn btn-outline-primary me-2" style="background:white">Login</a> and post your article.
-        <div class="screenshot">
-            <img src="/assets/img/writeforus_login.jpg?" alt="login"/>
-        </div></li>
-  </ul>
+  <ol>
+      <li><a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>">Create a free 360MiQ account</a>, or <a href="<?php echo htmlspecialchars($write_for_us_login_url, ENT_QUOTES, 'UTF-8'); ?>">sign in with your existing account</a>. Google sign-in is supported.</li>
+      <li>Review your <strong>Public display name</strong> in Account Settings. This is the author name shown with articles created through 360MiQ SSO.</li>
+      <li>Open the WordPress editor through the Write for Us link, write your article, and submit it for review.</li>
+      <li>An editor will review the draft before anything is published.</li>
+  </ol>
+  <p><strong>Existing WordPress contributors:</strong> use a 360MiQ account with the same email address to retain your existing WordPress profile and article history. Existing Contributor, Author, Editor and Administrator roles are preserved.</p>
   <p>Our editorial team will review your submission and respond within 1 business day.</p>
 
   <br>

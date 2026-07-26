@@ -15,35 +15,87 @@ function miq_sso_shared_secret()
     return (string) miq_account_env('MIQ_SSO_SHARED_SECRET', '');
 }
 
+function miq_sso_targets()
+{
+    return array(
+        'posts' => '/blog/wp-admin/edit.php',
+        'new-post' => '/blog/wp-admin/post-new.php',
+    );
+}
+
+function miq_sso_target()
+{
+    $targets = miq_sso_targets();
+    $target = isset($_GET['target']) ? (string) $_GET['target'] : '';
+    if (isset($targets[$target])) {
+        return array('key' => $target, 'return_to' => $targets[$target]);
+    }
+
+    // Accept the old return_to links while they are being replaced, but convert
+    // them to an allowlisted identifier before sending a user through sign-in.
+    if (isset($_GET['return_to'])) {
+        $return_to = miq_account_safe_return_to($_GET['return_to'], $targets['posts']);
+        foreach ($targets as $key => $path) {
+            if ($return_to === $path) {
+                return array('key' => $key, 'return_to' => $path);
+            }
+        }
+    }
+
+    return array('key' => 'posts', 'return_to' => $targets['posts']);
+}
+
+function miq_sso_browser_error($message, $status = 503)
+{
+    http_response_code($status);
+    header('Content-Type: text/plain; charset=UTF-8');
+    header('Cache-Control: no-store');
+    echo (string) $message;
+    exit;
+}
+
 function miq_sso_begin()
 {
     $user = miq_account_current_user();
-    $return_to = miq_account_safe_return_to($_GET['return_to'] ?? '/blog/wp-admin/edit.php', '/blog/wp-admin/edit.php');
+    $target = miq_sso_target();
     if (!$user) {
-        $handoff = 'account_sso.php?return_to=' . rawurlencode($return_to);
-        header('Location: account.php?view=login&return_to=' . rawurlencode($handoff));
+        $view = isset($_GET['signup']) && $_GET['signup'] === '1' ? 'register' : 'login';
+        $handoff = 'account_sso.php?target=' . rawurlencode($target['key']);
+        header('Location: account.php?view=' . $view . '&return_to=' . rawurlencode($handoff));
         exit;
     }
 
     if (miq_sso_shared_secret() === '') {
-        header('Location: blog/wp-login.php?redirect_to=' . rawurlencode($return_to));
-        exit;
+        miq_sso_browser_error('Write for Us sign-in is temporarily unavailable because WordPress SSO is not configured.');
+    }
+
+    $limits = miq_account_config()['rate_limits'];
+    $sso_limit = $limits['sso_user'];
+    if (!miq_account_rate_limit('sso_user', (string) $user['id'], $sso_limit['limit'], $sso_limit['window'])) {
+        miq_sso_browser_error('Too many WordPress sign-in requests. Please wait and try again.', 429);
     }
 
     $token = miq_account_create_token();
     $tokens = miq_account_table('sso_tokens');
     $expires_at = gmdate('Y-m-d H:i:s', time() + 300);
     miq_account_query(
+        "DELETE FROM {$tokens} WHERE user_id = ? AND consumed_at IS NULL",
+        'i',
+        array((int) $user['id'])
+    )->close();
+    miq_account_query(
         "INSERT INTO {$tokens} (user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, UTC_TIMESTAMP())",
         'iss',
         array((int) $user['id'], miq_account_hash_token($token), $expires_at)
     )->close();
-    header('Location: /blog/?miq_sso=1&token=' . rawurlencode($token) . '&return_to=' . rawurlencode($return_to));
+    header('Cache-Control: no-store');
+    header('Referrer-Policy: no-referrer');
+    header('Location: /blog/?miq_sso=1&token=' . rawurlencode($token) . '&return_to=' . rawurlencode($target['return_to']));
     exit;
 }
 
 if (isset($_GET['mode']) && $_GET['mode'] === 'consume') {
-    $provided_secret = isset($_SERVER['HTTP_X_MIQ_SSO_SECRET']) ? $_SERVER['HTTP_X_MIQ_SSO_SECRET'] : ($_POST['secret'] ?? '');
+    $provided_secret = isset($_SERVER['HTTP_X_MIQ_SSO_SECRET']) ? $_SERVER['HTTP_X_MIQ_SSO_SECRET'] : '';
     if (miq_sso_shared_secret() === '' || !hash_equals(miq_sso_shared_secret(), (string) $provided_secret)) {
         miq_sso_json(array('error' => 'SSO is not configured.'), 403);
     }

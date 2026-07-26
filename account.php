@@ -17,7 +17,7 @@ function miq_account_redirect($path)
     exit;
 }
 
-function miq_account_token_link($kind, $token)
+function miq_account_token_link($kind, $token, $return_to = 'workspace')
 {
     $query = $kind === 'verify' ? 'verify=' : 'reset=';
     $base_url = miq_account_config()['base_url'];
@@ -26,7 +26,9 @@ function miq_account_token_link($kind, $token)
     $deployment_path = $configured_path !== '' && $configured_path !== '/'
         ? ''
         : ($request_directory === '/' || $request_directory === '.' ? '' : $request_directory);
-    return $base_url . $deployment_path . '/account.php?' . $query . rawurlencode($token);
+    $safe_return_to = miq_account_safe_return_to($return_to, 'workspace');
+    return $base_url . $deployment_path . '/account.php?' . $query . rawurlencode($token)
+        . '&return_to=' . rawurlencode($safe_return_to);
 }
 
 function miq_account_process_verification($token)
@@ -61,10 +63,10 @@ function miq_account_process_verification($token)
     miq_account_flash('success', 'Your email is verified. You can now sign in.');
 }
 
-function miq_account_send_verification_for_user($user)
+function miq_account_send_verification_for_user($user, $return_to = 'workspace')
 {
     $token = miq_account_issue_email_token((int) $user['id'], 'verify');
-    $link = miq_account_token_link('verify', $token);
+    $link = miq_account_token_link('verify', $token, $return_to);
     $sent = miq_account_send_mail(
         $user['email'],
         'Verify your 360MiQ account',
@@ -76,7 +78,7 @@ function miq_account_send_verification_for_user($user)
     return $sent;
 }
 
-function miq_account_process_email_registration($email, $password, $confirm_password, $display_name)
+function miq_account_process_email_registration($email, $password, $confirm_password, $display_name, $return_to = 'workspace')
 {
     miq_account_validate_password($password);
     if ($password !== $confirm_password) {
@@ -85,7 +87,7 @@ function miq_account_process_email_registration($email, $password, $confirm_pass
 
     $user_id = miq_account_create_user($email, $password, $display_name, 'email', null);
     $user = miq_account_find_user_by_email($email);
-    return $user && miq_account_send_verification_for_user($user);
+    return $user && miq_account_send_verification_for_user($user, $return_to);
 }
 
 function miq_account_process_google_login($credential)
@@ -119,7 +121,7 @@ if (isset($_GET['verify'])) {
     } catch (Throwable $error) {
         miq_account_flash('danger', 'We could not verify that link. Please request a new one.');
     }
-    miq_account_redirect('account.php?view=login');
+    miq_account_redirect('account.php?view=login&return_to=' . rawurlencode($return_to));
 }
 
 if (isset($_GET['reset'])) {
@@ -144,14 +146,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $email,
                     (string) ($_POST['password'] ?? ''),
                     (string) ($_POST['confirm_password'] ?? ''),
-                    $register_display_name
+                    $register_display_name,
+                    $return_to
                 );
                 if ($verification_sent) {
                     miq_account_flash('success', 'Account created. Check your email to verify your address before signing in.');
-                    miq_account_redirect('account.php?view=login');
+                    miq_account_redirect('account.php?view=login&return_to=' . rawurlencode($return_to));
                 }
                 miq_account_flash('warning', 'Your account was created, but the verification email could not be sent. Try resending it after the mail helper is fixed.');
-                miq_account_redirect('account.php?view=resend&email=' . rawurlencode($email));
+                miq_account_redirect('account.php?view=resend&email=' . rawurlencode($email) . '&return_to=' . rawurlencode($return_to));
             } elseif ($action === 'login') {
                 $login_email = miq_account_normalize_email($_POST['email'] ?? '');
                 miq_account_require_rate_limit('login_ip', miq_account_client_ip(), 'Too many login attempts. Please try again later.');
@@ -181,14 +184,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = miq_account_find_user_by_email($email);
                 if ($user && $user['password_hash']) {
                     $token = miq_account_issue_email_token($user['id'], 'reset');
-                    $link = miq_account_token_link('reset', $token);
+                    $link = miq_account_token_link('reset', $token, $return_to);
                     $sent = miq_account_send_mail($user['email'], 'Reset your 360MiQ password', "Open this link to reset your password:\n{$link}\n\nThis link expires in one hour.\n");
                     if (!$sent && miq_account_config()['debug']) {
                         error_log('360MiQ reset link: ' . $link);
                     }
                 }
                 miq_account_flash('success', 'If an account exists for that email, a reset link has been sent.');
-                miq_account_redirect('account.php?view=login');
+                miq_account_redirect('account.php?view=login&return_to=' . rawurlencode($return_to));
             } elseif ($action === 'resend_verification') {
                 $email = miq_account_normalize_email($_POST['email'] ?? '');
                 miq_account_require_rate_limit('verification_resend_ip', miq_account_client_ip(), 'Too many verification requests. Please try again later.');
@@ -197,10 +200,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $user = miq_account_find_user_by_email($email);
                 if ($user && empty($user['email_verified_at']) && $user['password_hash']) {
-                    miq_account_send_verification_for_user($user);
+                    miq_account_send_verification_for_user($user, $return_to);
                 }
                 miq_account_flash('success', 'If an unverified account exists for that email, a new verification link has been sent.');
-                miq_account_redirect('account.php?view=login');
+                miq_account_redirect('account.php?view=login&return_to=' . rawurlencode($return_to));
             } elseif ($action === 'reset_password') {
                 $token = (string) ($_POST['token'] ?? '');
                 $password = (string) ($_POST['password'] ?? '');
@@ -227,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw $error;
                 }
                 miq_account_flash('success', 'Your password was changed. You can now sign in.');
-                miq_account_redirect('account.php?view=login');
+                miq_account_redirect('account.php?view=login&return_to=' . rawurlencode($return_to));
             }
         } catch (Throwable $error) {
             if ($error instanceof MiqAccountDisplayNameTakenException) {
@@ -285,8 +288,9 @@ if ($current_user && $view !== 'reset') {
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="register">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
-                <label for="display_name">Display name</label>
+                <label for="display_name">Public display name</label>
                 <input id="display_name" name="display_name" class="form-control" maxlength="80" autocomplete="name" value="<?php echo htmlspecialchars($register_display_name, ENT_QUOTES, 'UTF-8'); ?>" required>
+                <small>This name is shown with community activity and published articles.</small>
                 <?php if (!empty($display_name_suggestions)): ?>
                     <div class="miq-display-name-suggestions" aria-live="polite">
                         <span>Available suggestions:</span>
@@ -301,12 +305,23 @@ if ($current_user && $view !== 'reset') {
                 <input id="confirm_password" name="confirm_password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
                 <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
-            <p class="miq-account-switch">Already have an account? <a href="account.php?view=login">Sign in</a></p>
+            <?php if (miq_account_config()['google_client_id'] !== ''): ?>
+                <div class="miq-account-divider"><span>or</span></div>
+                <form method="post" id="google-login-form" class="miq-google-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="action" value="google">
+                    <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="credential" id="google-credential">
+                    <div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="login" data-google-size="large"></div>
+                </form>
+            <?php endif; ?>
+            <p class="miq-account-switch">Already have an account? <a href="<?php echo htmlspecialchars('account.php?view=login&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Sign in</a></p>
         <?php elseif ($view === 'reset'): ?>
             <form method="post" class="miq-account-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="reset_password">
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['reset'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="reset_password">New password</label>
                 <input id="reset_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
                 <button class="btn btn-primary btn-block" type="submit">Change password</button>
@@ -315,11 +330,12 @@ if ($current_user && $view !== 'reset') {
             <form method="post" class="miq-account-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="resend_verification">
+                <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="verification_email">Email</label>
                 <input id="verification_email" name="email" class="form-control" type="email" autocomplete="email" value="<?php echo htmlspecialchars((string) ($_GET['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
                 <button class="btn btn-primary btn-block" type="submit">Send verification link</button>
             </form>
-            <p class="miq-account-switch"><a href="account.php?view=login">Back to sign in</a></p>
+            <p class="miq-account-switch"><a href="<?php echo htmlspecialchars('account.php?view=login&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Back to sign in</a></p>
         <?php else: ?>
             <form method="post" class="miq-account-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
@@ -343,12 +359,13 @@ if ($current_user && $view !== 'reset') {
             <?php else: ?>
                 <div class="miq-google-unavailable">Google login will appear after the production OAuth client is configured.</div>
             <?php endif; ?>
-            <div class="miq-account-links"><a href="account.php?view=register">Create an account</a><a href="account.php?view=forgot">Forgot password?</a></div>
-            <p class="miq-account-switch"><a href="account.php?view=resend">Resend verification email</a></p>
+            <div class="miq-account-links"><a href="<?php echo htmlspecialchars('account.php?view=register&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Create an account</a><a href="<?php echo htmlspecialchars('account.php?view=forgot&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Forgot password?</a></div>
+            <p class="miq-account-switch"><a href="<?php echo htmlspecialchars('account.php?view=resend&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Resend verification email</a></p>
             <?php if ($view === 'forgot'): ?>
                 <form method="post" class="miq-account-form miq-reset-inline">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="request_reset">
+                    <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <label for="forgot_email">Reset email</label>
                     <input id="forgot_email" name="email" class="form-control" type="email" autocomplete="email" required>
                     <button class="btn btn-outline-primary btn-block" type="submit">Send reset link</button>

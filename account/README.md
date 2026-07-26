@@ -68,7 +68,13 @@ define('MIQ_SSO_SHARED_SECRET', '<the-same-long-random-secret>');
 define('MIQ_MAIN_SITE_URL', 'https://360miq.com');
 ```
 
-The mu-plugin `blog/wp-content/mu-plugins/miq-main-site-sso.php` maps a main-site account to a WordPress Contributor account. It does not copy or synchronize passwords. Existing administrators are never downgraded.
+The mu-plugin `blog/wp-content/mu-plugins/miq-main-site-sso.php` maps a main-site account to a WordPress user record. It does not copy or synchronize passwords.
+
+`writeforus.php` sends users through an allowlisted `new-post` SSO target. Email registration, verification, email/password login, and Google login all preserve that target and return the user to the WordPress editor. WordPress first looks for the durable `miq_main_user_id` link and then falls back to the same verified email address, so an existing WordPress profile and its posts are reused. A conflicting link fails closed for administrator review.
+
+New SSO-created profiles are managed by 360MiQ: their public display name and HTTPS avatar synchronize on the next Write for Us sign-in. Existing WordPress profiles keep their WordPress display name. Subscribers are promoted to Contributor; existing Contributors, Authors, Editors, Administrators, and stronger custom roles are never downgraded.
+
+For the `/full` test deployment, set `MIQ_MAIN_SITE_URL` to `https://360miq.com/full` only when intentionally testing against the configured WordPress installation. The WordPress server uses that value to consume the one-time token from the correct account endpoint.
 
 ## Important production checks
 
@@ -90,6 +96,7 @@ The account layer stores only a SHA-256 hash of each IP/email key. Defaults are 
 - Registration: 5 attempts per IP and 3 per email per hour.
 - Password reset: 10 requests per IP and 3 per email per hour.
 - Verification/reset email delivery: 12 per IP per hour, 3 per recipient per hour, and one message per recipient per 60 seconds.
+- WordPress SSO: 20 handoffs per account per hour.
 - Chart/Pine writes: 600 per account per hour; explicit versions: 60 per account per hour.
 - Community pulse: 30 vote submissions or changes per account per hour.
 - Community reports: 10 report submissions per account per hour, with duplicate open reports blocked.
