@@ -28,29 +28,168 @@
         return '<section class="miq-workspace-panel' + (wide ? ' miq-workspace-panel-wide' : '') + '"><h2>' + escapeHtml(title) + '</h2>' + body + '</section>';
     }
 
+    function parseWorkspaceDate(value) {
+        if (!value) return null;
+        var text = String(value);
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(text)) {
+            text = text.replace(' ', 'T') + 'Z';
+        }
+        var parsed = new Date(text);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
     function humanDate(value) {
-        if (!value) return '';
-        var parsed = new Date(String(value).replace(' ', 'T') + (String(value).indexOf('Z') >= 0 ? '' : 'Z'));
-        return isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleString();
+        var parsed = parseWorkspaceDate(value);
+        return parsed ? parsed.toLocaleString() : String(value || '');
     }
 
     function assetMeta(parts) {
         return '<span class="miq-asset-meta">' + parts.filter(Boolean).map(escapeHtml).join(' · ') + '</span>';
     }
 
-    function renderOverview() {
+    function workspaceItems(key) {
+        return Array.isArray(workspace[key]) ? workspace[key] : [];
+    }
+
+    function workspaceCount(key) {
         var counts = workspace.counts || {};
-        var panels = [
-            panel('Saved charts', '<p>' + Number(counts.charts == null ? workspace.charts.length : counts.charts) + ' chart(s)</p><a href="workspace?tab=charts">Manage saved charts</a>'),
-            panel('Pine scripts', '<p>' + Number(counts.scripts == null ? workspace.scripts.length : counts.scripts) + ' script(s)</p><a href="workspace?tab=scripts">Manage Pine scripts</a>'),
-            panel('Screener presets', '<p>' + Number(counts.screener_presets == null ? (workspace.screener_presets || []).length : counts.screener_presets) + ' preset(s)</p><a href="workspace?tab=presets">Open saved screens</a>'),
-            panel('Recent searches', '<p>' + Number(counts.searches == null ? workspace.searches.length : counts.searches) + ' recent search(es)</p><a href="workspace?tab=searches">Open search history</a>')
-        ];
+        if (counts[key] != null) return Number(counts[key]);
+        return workspaceItems(key).length;
+    }
+
+    function dashboardMetric(value, label, detail, href) {
+        return '<a class="miq-dashboard-metric" href="' + href + '">' +
+            '<strong>' + Number(value || 0) + '</strong>' +
+            '<span>' + escapeHtml(label) + '</span>' +
+            '<small>' + escapeHtml(detail) + '</small></a>';
+    }
+
+    function recentActivityItems() {
+        var items = [];
+        workspaceItems('charts').slice(0, 2).forEach(function (item) {
+            items.push({
+                type: 'Saved chart',
+                title: item.name,
+                detail: item.code || 'Advanced Chart',
+                date: item.updated_at,
+                href: 'tool?tab=3&stockcode=' + encodeURIComponent(item.code || '') + '&chart_id=' + encodeURIComponent(item.id)
+            });
+        });
+        workspaceItems('scripts').slice(0, 2).forEach(function (item) {
+            items.push({
+                type: 'Pine script',
+                title: item.name,
+                detail: item.code ? 'Test symbol ' + item.code : (item.status || 'Draft'),
+                date: item.updated_at,
+                href: 'tool?tab=3&stockcode=' + encodeURIComponent(item.code || 'SPY') + '&script_id=' + encodeURIComponent(item.id)
+            });
+        });
+        workspaceItems('screener_presets').slice(0, 2).forEach(function (item) {
+            items.push({
+                type: 'Screener preset',
+                title: item.name,
+                detail: item.is_default === true || item.is_default === 1 || item.is_default === '1' ? 'Default preset' : 'Saved screen',
+                date: item.updated_at,
+                href: 'screener?preset=' + encodeURIComponent(item.client_key)
+            });
+        });
+        workspaceItems('searches').slice(0, 2).forEach(function (item) {
+            items.push({
+                type: 'Recent stock',
+                title: item.code,
+                detail: item.display_name || item.exchange || 'Stock research',
+                date: item.searched_at,
+                href: 'stockinfo?code=' + encodeURIComponent(item.code)
+            });
+        });
         if (communityEnabled) {
-            panels.push(panel('Community ideas', '<p>' + Number(counts.ideas == null ? workspace.ideas.length : counts.ideas) + ' idea(s)</p><a href="community">Open community ideas</a>'));
+            workspaceItems('ideas').slice(0, 1).forEach(function (item) {
+                items.push({
+                    type: 'Community idea',
+                    title: item.title,
+                    detail: [item.direction, item.status].filter(Boolean).join(' · '),
+                    date: item.updated_at,
+                    href: 'workspace?tab=ideas'
+                });
+            });
         }
-        panels.push(panel('Privacy by default', '<p>Charts, scripts, and drafts stay private until you explicitly share or submit them.</p>', true));
-        return panels.join('');
+        return items.sort(function (left, right) {
+            var leftDate = parseWorkspaceDate(left.date);
+            var rightDate = parseWorkspaceDate(right.date);
+            return (rightDate ? rightDate.getTime() : 0) - (leftDate ? leftDate.getTime() : 0);
+        }).slice(0, 4);
+    }
+
+    function renderRecentActivity() {
+        var items = recentActivityItems();
+        if (!items.length) {
+            return '<div class="miq-dashboard-empty"><strong>Start your first piece of research</strong><span>Open a chart, screen stocks, or search for a company. Your recent work will appear here.</span><a class="btn btn-sm btn-primary" href="screener">Open Stock Screener</a></div>';
+        }
+        return '<div class="miq-dashboard-activity-grid">' + items.map(function (item) {
+            return '<a class="miq-dashboard-activity" href="' + item.href + '">' +
+                '<span class="miq-dashboard-type">' + escapeHtml(item.type) + '</span>' +
+                '<strong>' + escapeHtml(item.title) + '</strong>' +
+                '<span>' + escapeHtml(item.detail) + '</span>' +
+                '<small>' + escapeHtml(humanDate(item.date)) + '</small></a>';
+        }).join('') + '</div>';
+    }
+
+    function renderRecentStocks() {
+        var searches = workspaceItems('searches').slice(0, 8);
+        var body = searches.length
+            ? '<div class="miq-dashboard-stock-list">' + searches.map(function (item) {
+                return '<a href="stockinfo?code=' + encodeURIComponent(item.code) + '" title="' + escapeHtml(item.display_name || item.code) + '">' + escapeHtml(item.code) + '</a>';
+            }).join('') + '</div>'
+            : '<div class="miq-dashboard-mini-empty">Your recently viewed stocks will appear here.</div>';
+        return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>History</span><h2>Recent stocks</h2></div><a href="workspace?tab=searches">View all</a></div>' + body + '</section>';
+    }
+
+    function renderSavedScreens() {
+        var presets = workspaceItems('screener_presets').slice(0, 4);
+        var body = presets.length
+            ? '<div class="miq-dashboard-compact-list">' + presets.map(function (item) {
+                var detail = item.is_default === true || item.is_default === 1 || item.is_default === '1'
+                    ? 'Default preset'
+                    : 'Updated ' + humanDate(item.updated_at);
+                return '<a href="screener?preset=' + encodeURIComponent(item.client_key) + '"><strong>' + escapeHtml(item.name) + '</strong><small>' + escapeHtml(detail) + '</small></a>';
+            }).join('') + '</div>'
+            : '<div class="miq-dashboard-mini-empty">Save a screener setup to reuse it here.</div>';
+        return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Screening</span><h2>Saved screens</h2></div><a href="screener">Open screener</a></div>' + body + '</section>';
+    }
+
+    function renderCommunitySummary() {
+        var ideas = workspaceItems('ideas').slice(0, 3);
+        var body = ideas.length
+            ? '<div class="miq-dashboard-compact-list">' + ideas.map(function (item) {
+                return '<a href="workspace?tab=ideas"><strong>' + escapeHtml(item.title) + '</strong><small>' + escapeHtml([item.direction, item.status].filter(Boolean).join(' · ')) + '</small></a>';
+            }).join('') + '</div>'
+            : '<div class="miq-dashboard-mini-empty">Your submitted and draft ideas will appear here.</div>';
+        return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Community</span><h2>Your ideas</h2></div><a href="community">Open community</a></div>' + body + '</section>';
+    }
+
+    function renderPrivacySummary() {
+        return '<section class="miq-workspace-panel miq-dashboard-compact miq-dashboard-privacy"><div class="miq-dashboard-panel-heading"><div><span>Account</span><h2>Private by default</h2></div><a href="account_settings">Settings</a></div><p>Saved charts, scripts, screens, and drafts remain private unless you explicitly share or submit them.</p></section>';
+    }
+
+    function renderOverview() {
+        var actions = '<div class="miq-dashboard-actions">' +
+            '<a class="btn btn-primary" href="tool?tab=3">Open Advanced Chart</a>' +
+            '<a class="btn btn-outline-primary" href="screener">Run Stock Screener</a>' +
+            '<a class="btn btn-outline-primary" href="market">View Markets</a>' +
+            (communityEnabled ? '<a class="btn btn-outline-primary" href="community">Community Ideas</a>' : '') + '</div>';
+        var metrics = '<section class="miq-dashboard-metrics miq-workspace-panel-wide" aria-label="Workspace totals">' +
+            dashboardMetric(workspaceCount('charts'), 'Saved charts', 'Open and manage', 'workspace?tab=charts') +
+            dashboardMetric(workspaceCount('scripts'), 'Pine scripts', 'Continue coding', 'workspace?tab=scripts') +
+            dashboardMetric(workspaceCount('screener_presets'), 'Saved screens', 'Run a preset', 'workspace?tab=presets') +
+            dashboardMetric(workspaceCount('searches'), 'Recent stocks', 'Review history', 'workspace?tab=searches') +
+            (communityEnabled ? dashboardMetric(workspaceCount('ideas'), 'Community ideas', 'Drafts and submissions', 'workspace?tab=ideas') : '') + '</section>';
+        return '<section class="miq-dashboard-hero miq-workspace-panel-wide"><div><span class="miq-dashboard-eyebrow">Personalized dashboard</span><h2>Your research at a glance</h2><p>Pick up where you left off, reopen saved tools, or start a new market investigation.</p></div>' + actions + '</section>' +
+            metrics +
+            '<section class="miq-workspace-panel miq-workspace-panel-wide miq-dashboard-continue"><div class="miq-dashboard-panel-heading"><div><span>Based on your activity</span><h2>Continue researching</h2></div></div>' + renderRecentActivity() + '</section>' +
+            renderRecentStocks() +
+            renderSavedScreens() +
+            (communityEnabled ? renderCommunitySummary() : renderPrivacySummary()) +
+            (communityEnabled ? '<section class="miq-dashboard-privacy-note miq-workspace-panel-wide"><strong>Private by default.</strong> Saved charts, scripts, screens, and drafts remain private unless you explicitly share or submit them. <a href="account_settings">Review account settings</a></section>' : '');
     }
 
     function chartRow(item) {

@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-07-26)
 
 ## Corpus Check
-- 145 files · ~758,599 words
+- 145 files · ~759,308 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1366 nodes · 2541 edges · 145 communities detected
+- 1378 nodes · 2577 edges · 145 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -214,32 +214,32 @@ Cohesion: 0.05
 Nodes (11): ar, E(), eg, ip(), nC(), nF(), nN(), s0 (+3 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.11
-Nodes (33): add_Days(), createChart(), dateFormatStr(), ensureComposerReady(), fetchAjaxSeriesData(), findNameByIdAndType(), getSeriesList(), getSubtitle() (+25 more)
+Cohesion: 0.15
+Nodes (41): activeStorageKey(), bindEvents(), cleanName(), createPreset(), currentConfig(), filterControlValue(), filtersFromControls(), handleDefault() (+33 more)
 
 ### Community 11 - "Community 11"
-Cohesion: 0.16
-Nodes (39): activeStorageKey(), bindEvents(), cleanName(), createPreset(), currentConfig(), filterControlValue(), filtersFromControls(), handleDefault() (+31 more)
+Cohesion: 0.11
+Nodes (33): add_Days(), createChart(), dateFormatStr(), ensureComposerReady(), fetchAjaxSeriesData(), findNameByIdAndType(), getSeriesList(), getSubtitle() (+25 more)
 
 ### Community 12 - "Community 12"
 Cohesion: 0.19
 Nodes (32): absoluteUrl(), asNumber(), chartDatasets(), cleanText(), cleanValue(), codeFromLink(), currentGraph(), dateString() (+24 more)
 
 ### Community 13 - "Community 13"
+Cohesion: 0.18
+Nodes (28): assetMeta(), chartRow(), dashboardMetric(), escapeHtml(), humanDate(), importRecentScripts(), load(), loadCharts() (+20 more)
+
+### Community 14 - "Community 14"
 Cohesion: 0.13
 Nodes (25): addWeekday(), CCASSComment(), CCASSmonthlyCompression(), CCASSyearlyComment(), datedecrypt(), dayofyear(), embedVideo(), enqueueChartRender() (+17 more)
 
-### Community 14 - "Community 14"
+### Community 15 - "Community 15"
 Cohesion: 0.1
 Nodes (11): miq_api_clean_text(), miq_api_count_rows(), miq_api_json(), miq_api_pulse_context(), miq_api_pulse_timeframe(), miq_api_record_moderation_action(), miq_api_require_moderator(), miq_api_require_post_csrf() (+3 more)
 
-### Community 15 - "Community 15"
+### Community 16 - "Community 16"
 Cohesion: 0.13
 Nodes (18): add_Days(), applyPriceInfoTheme(), dayofyear(), exchFn(), fscoreEfficiencyTXT(), fscoreLiquidityTXT(), fscoreProfitabilityTXT(), macdZeroTXT() (+10 more)
-
-### Community 16 - "Community 16"
-Cohesion: 0.25
-Nodes (18): assetMeta(), chartRow(), escapeHtml(), humanDate(), importRecentScripts(), load(), loadCharts(), loadScripts() (+10 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.27

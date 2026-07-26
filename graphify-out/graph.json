@@ -65,7 +65,7 @@
       "source_file": "account_api.php",
       "source_location": "L1",
       "id": "account_api_php",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_json()",
@@ -73,7 +73,7 @@
       "source_file": "account_api.php",
       "source_location": "L8",
       "id": "account_api_miq_api_json",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_body()",
@@ -81,7 +81,7 @@
       "source_file": "account_api.php",
       "source_location": "L15",
       "id": "account_api_miq_api_body",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_user()",
@@ -89,7 +89,7 @@
       "source_file": "account_api.php",
       "source_location": "L22",
       "id": "account_api_miq_api_user",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_require_post_csrf()",
@@ -97,7 +97,7 @@
       "source_file": "account_api.php",
       "source_location": "L31",
       "id": "account_api_miq_api_require_post_csrf",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_clean_code()",
@@ -105,7 +105,7 @@
       "source_file": "account_api.php",
       "source_location": "L38",
       "id": "account_api_miq_api_clean_code",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_clean_text()",
@@ -113,7 +113,7 @@
       "source_file": "account_api.php",
       "source_location": "L44",
       "id": "account_api_miq_api_clean_text",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_pulse_timeframe()",
@@ -121,7 +121,7 @@
       "source_file": "account_api.php",
       "source_location": "L53",
       "id": "account_api_miq_api_pulse_timeframe",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_pulse_period_end()",
@@ -129,7 +129,7 @@
       "source_file": "account_api.php",
       "source_location": "L68",
       "id": "account_api_miq_api_pulse_period_end",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_pulse_context()",
@@ -137,7 +137,7 @@
       "source_file": "account_api.php",
       "source_location": "L73",
       "id": "account_api_miq_api_pulse_context",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_asset_key()",
@@ -145,7 +145,7 @@
       "source_file": "account_api.php",
       "source_location": "L89",
       "id": "account_api_miq_api_asset_key",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_existing_asset_key()",
@@ -153,7 +153,7 @@
       "source_file": "account_api.php",
       "source_location": "L102",
       "id": "account_api_miq_api_existing_asset_key",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_client_datetime()",
@@ -161,7 +161,7 @@
       "source_file": "account_api.php",
       "source_location": "L108",
       "id": "account_api_miq_api_client_datetime",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_page()",
@@ -169,7 +169,7 @@
       "source_file": "account_api.php",
       "source_location": "L114",
       "id": "account_api_miq_api_page",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_limit()",
@@ -177,7 +177,7 @@
       "source_file": "account_api.php",
       "source_location": "L119",
       "id": "account_api_miq_api_limit",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_layout_json()",
@@ -185,7 +185,7 @@
       "source_file": "account_api.php",
       "source_location": "L125",
       "id": "account_api_miq_api_layout_json",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_screener_config()",
@@ -193,7 +193,7 @@
       "source_file": "account_api.php",
       "source_location": "L144",
       "id": "account_api_miq_api_screener_config",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_screener_preset_payload()",
@@ -201,7 +201,7 @@
       "source_file": "account_api.php",
       "source_location": "L219",
       "id": "account_api_miq_api_screener_preset_payload",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_chart_payload()",
@@ -209,7 +209,7 @@
       "source_file": "account_api.php",
       "source_location": "L235",
       "id": "account_api_miq_api_chart_payload",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_script_payload()",
@@ -217,7 +217,7 @@
       "source_file": "account_api.php",
       "source_location": "L247",
       "id": "account_api_miq_api_script_payload",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_count_rows()",
@@ -225,7 +225,7 @@
       "source_file": "account_api.php",
       "source_location": "L256",
       "id": "account_api_miq_api_count_rows",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_trim_versions()",
@@ -233,7 +233,7 @@
       "source_file": "account_api.php",
       "source_location": "L264",
       "id": "account_api_miq_api_trim_versions",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_counts()",
@@ -241,7 +241,7 @@
       "source_file": "account_api.php",
       "source_location": "L280",
       "id": "account_api_miq_api_counts",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_require_moderator()",
@@ -249,7 +249,7 @@
       "source_file": "account_api.php",
       "source_location": "L285",
       "id": "account_api_miq_api_require_moderator",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_moderation_dashboard()",
@@ -257,7 +257,7 @@
       "source_file": "account_api.php",
       "source_location": "L292",
       "id": "account_api_miq_api_moderation_dashboard",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_record_moderation_action()",
@@ -265,7 +265,7 @@
       "source_file": "account_api.php",
       "source_location": "L324",
       "id": "account_api_miq_api_record_moderation_action",
-      "community": 14
+      "community": 15
     },
     {
       "label": "miq_api_workspace()",
@@ -273,7 +273,7 @@
       "source_file": "account_api.php",
       "source_location": "L333",
       "id": "account_api_miq_api_workspace",
-      "community": 14
+      "community": 15
     },
     {
       "label": "account_export.php",
@@ -5673,7 +5673,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L1",
       "id": "assets_js_workspace_js",
-      "community": 16
+      "community": 13
     },
     {
       "label": "escapeHtml()",
@@ -5681,7 +5681,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L14",
       "id": "workspace_escapehtml",
-      "community": 16
+      "community": 13
     },
     {
       "label": "showStatus()",
@@ -5689,7 +5689,7 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L20",
       "id": "workspace_showstatus",
-      "community": 16
+      "community": 13
     },
     {
       "label": "panel()",
@@ -5697,151 +5697,231 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L27",
       "id": "workspace_panel",
-      "community": 16
+      "community": 13
+    },
+    {
+      "label": "parseWorkspaceDate()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L31",
+      "id": "workspace_parseworkspacedate",
+      "community": 13
     },
     {
       "label": "humanDate()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L31",
+      "source_location": "L41",
       "id": "workspace_humandate",
-      "community": 16
+      "community": 13
     },
     {
       "label": "assetMeta()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L37",
+      "source_location": "L46",
       "id": "workspace_assetmeta",
-      "community": 16
+      "community": 13
+    },
+    {
+      "label": "workspaceItems()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L50",
+      "id": "workspace_workspaceitems",
+      "community": 13
+    },
+    {
+      "label": "workspaceCount()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L54",
+      "id": "workspace_workspacecount",
+      "community": 13
+    },
+    {
+      "label": "dashboardMetric()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L60",
+      "id": "workspace_dashboardmetric",
+      "community": 13
+    },
+    {
+      "label": "recentActivityItems()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L67",
+      "id": "workspace_recentactivityitems",
+      "community": 13
+    },
+    {
+      "label": "renderRecentActivity()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L123",
+      "id": "workspace_renderrecentactivity",
+      "community": 13
+    },
+    {
+      "label": "renderRecentStocks()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L137",
+      "id": "workspace_renderrecentstocks",
+      "community": 13
+    },
+    {
+      "label": "renderSavedScreens()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L147",
+      "id": "workspace_rendersavedscreens",
+      "community": 13
+    },
+    {
+      "label": "renderCommunitySummary()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L160",
+      "id": "workspace_rendercommunitysummary",
+      "community": 13
+    },
+    {
+      "label": "renderPrivacySummary()",
+      "file_type": "code",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L170",
+      "id": "workspace_renderprivacysummary",
+      "community": 13
     },
     {
       "label": "renderOverview()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L41",
+      "source_location": "L174",
       "id": "workspace_renderoverview",
-      "community": 16
+      "community": 13
     },
     {
       "label": "chartRow()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L56",
+      "source_location": "L195",
       "id": "workspace_chartrow",
-      "community": 16
+      "community": 13
     },
     {
       "label": "renderCharts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L72",
+      "source_location": "L211",
       "id": "workspace_rendercharts",
-      "community": 16
+      "community": 13
     },
     {
       "label": "scriptRow()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L79",
+      "source_location": "L218",
       "id": "workspace_scriptrow",
-      "community": 16
+      "community": 13
     },
     {
       "label": "renderScripts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L100",
+      "source_location": "L239",
       "id": "workspace_renderscripts",
-      "community": 16
+      "community": 13
     },
     {
       "label": "renderSimpleList()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L107",
+      "source_location": "L246",
       "id": "workspace_rendersimplelist",
-      "community": 16
+      "community": 13
     },
     {
       "label": "render()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L112",
+      "source_location": "L251",
       "id": "workspace_render",
-      "community": 16
+      "community": 13
     },
     {
       "label": "loadCharts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L141",
+      "source_location": "L280",
       "id": "workspace_loadcharts",
-      "community": 16
+      "community": 13
     },
     {
       "label": "loadScripts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L161",
+      "source_location": "L300",
       "id": "workspace_loadscripts",
-      "community": 16
+      "community": 13
     },
     {
       "label": "refreshWorkspaceAndTab()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L181",
+      "source_location": "L320",
       "id": "workspace_refreshworkspaceandtab",
-      "community": 16
+      "community": 13
     },
     {
       "label": "closestAsset()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L192",
+      "source_location": "L331",
       "id": "workspace_closestasset",
-      "community": 16
+      "community": 13
     },
     {
       "label": "renderVersions()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L196",
+      "source_location": "L335",
       "id": "workspace_renderversions",
-      "community": 16
+      "community": 13
     },
     {
       "label": "downloadText()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L207",
+      "source_location": "L346",
       "id": "workspace_downloadtext",
-      "community": 16
+      "community": 13
     },
     {
       "label": "safeFileName()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L218",
+      "source_location": "L357",
       "id": "workspace_safefilename",
-      "community": 16
+      "community": 13
     },
     {
       "label": "importRecentScripts()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L222",
+      "source_location": "L361",
       "id": "workspace_importrecentscripts",
-      "community": 16
+      "community": 13
     },
     {
       "label": "load()",
       "file_type": "code",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L318",
+      "source_location": "L457",
       "id": "workspace_load",
-      "community": 16
+      "community": 13
     },
     {
       "label": "yearlyTrendChart.js",
@@ -6137,7 +6217,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_market_main_js",
-      "community": 13
+      "community": 14
     },
     {
       "label": "marketIndexDisplayName()",
@@ -6145,7 +6225,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_marketindexdisplayname",
-      "community": 13
+      "community": 14
     },
     {
       "label": "yieldToBrowser()",
@@ -6153,7 +6233,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_yieldtobrowser",
-      "community": 13
+      "community": 14
     },
     {
       "label": "stopObservingChart()",
@@ -6161,7 +6241,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_stopobservingchart",
-      "community": 13
+      "community": 14
     },
     {
       "label": "markChartRenderFailed()",
@@ -6169,7 +6249,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_markchartrenderfailed",
-      "community": 13
+      "community": 14
     },
     {
       "label": "enqueueChartRender()",
@@ -6177,7 +6257,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_enqueuechartrender",
-      "community": 13
+      "community": 14
     },
     {
       "label": "runChartRenderQueue()",
@@ -6185,7 +6265,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_runchartrenderqueue",
-      "community": 13
+      "community": 14
     },
     {
       "label": "lazyRenderChart()",
@@ -6193,7 +6273,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_lazyrenderchart",
-      "community": 13
+      "community": 14
     },
     {
       "label": "loadMarketFeaturedPosts()",
@@ -6201,7 +6281,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_loadmarketfeaturedposts",
-      "community": 13
+      "community": 14
     },
     {
       "label": "embedVideo()",
@@ -6209,7 +6289,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_embedvideo",
-      "community": 13
+      "community": 14
     },
     {
       "label": "updateColumns()",
@@ -6217,7 +6297,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_updatecolumns",
-      "community": 13
+      "community": 14
     },
     {
       "label": "tab1()",
@@ -6225,7 +6305,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_tab1",
-      "community": 13
+      "community": 14
     },
     {
       "label": "openTabHash()",
@@ -6233,7 +6313,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_opentabhash",
-      "community": 13
+      "community": 14
     },
     {
       "label": "seasonality()",
@@ -6241,7 +6321,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_seasonality",
-      "community": 13
+      "community": 14
     },
     {
       "label": "datedecrypt()",
@@ -6249,7 +6329,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_datedecrypt",
-      "community": 13
+      "community": 14
     },
     {
       "label": "dayofyear()",
@@ -6257,7 +6337,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_dayofyear",
-      "community": 13
+      "community": 14
     },
     {
       "label": "highchartReflow()",
@@ -6265,7 +6345,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_highchartreflow",
-      "community": 13
+      "community": 14
     },
     {
       "label": "returnComment()",
@@ -6273,7 +6353,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_returncomment",
-      "community": 13
+      "community": 14
     },
     {
       "label": "CCASSComment()",
@@ -6281,7 +6361,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_ccasscomment",
-      "community": 13
+      "community": 14
     },
     {
       "label": "CCASSyearlyComment()",
@@ -6289,7 +6369,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_ccassyearlycomment",
-      "community": 13
+      "community": 14
     },
     {
       "label": "openTOOL()",
@@ -6297,7 +6377,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_opentool",
-      "community": 13
+      "community": 14
     },
     {
       "label": "YearlyTrendToggle()",
@@ -6305,7 +6385,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_yearlytrendtoggle",
-      "community": 13
+      "community": 14
     },
     {
       "label": "CCASSmonthlyCompression()",
@@ -6313,7 +6393,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_ccassmonthlycompression",
-      "community": 13
+      "community": 14
     },
     {
       "label": "formatToMonthYear()",
@@ -6321,7 +6401,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_formattomonthyear",
-      "community": 13
+      "community": 14
     },
     {
       "label": "getTopBottom10Movers()",
@@ -6329,7 +6409,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_gettopbottom10movers",
-      "community": 13
+      "community": 14
     },
     {
       "label": "getTopBottom10HighLow()",
@@ -6337,7 +6417,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_gettopbottom10highlow",
-      "community": 13
+      "community": 14
     },
     {
       "label": "getTopBottom10MA()",
@@ -6345,7 +6425,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_gettopbottom10ma",
-      "community": 13
+      "community": 14
     },
     {
       "label": "renderMovers()",
@@ -6353,7 +6433,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_rendermovers",
-      "community": 13
+      "community": 14
     },
     {
       "label": "renderMoversXY()",
@@ -6361,7 +6441,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_rendermoversxy",
-      "community": 13
+      "community": 14
     },
     {
       "label": "addWeekday()",
@@ -6369,7 +6449,7 @@
       "source_file": "assets\\js\\pages\\market-main.js",
       "source_location": "L1",
       "id": "market_main_addweekday",
-      "community": 13
+      "community": 14
     },
     {
       "label": "screener-main.js",
@@ -6497,7 +6577,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L1",
       "id": "assets_js_pages_screener_presets_js",
-      "community": 11
+      "community": 10
     },
     {
       "label": "storageGet()",
@@ -6505,7 +6585,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L55",
       "id": "screener_presets_storageget",
-      "community": 11
+      "community": 10
     },
     {
       "label": "storageSet()",
@@ -6513,7 +6593,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L64",
       "id": "screener_presets_storageset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "storageRemove()",
@@ -6521,7 +6601,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L73",
       "id": "screener_presets_storageremove",
-      "community": 11
+      "community": 10
     },
     {
       "label": "userStorageKey()",
@@ -6529,7 +6609,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L77",
       "id": "screener_presets_userstoragekey",
-      "community": 11
+      "community": 10
     },
     {
       "label": "activeStorageKey()",
@@ -6537,7 +6617,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L81",
       "id": "screener_presets_activestoragekey",
-      "community": 11
+      "community": 10
     },
     {
       "label": "makeKey()",
@@ -6545,7 +6625,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L85",
       "id": "screener_presets_makekey",
-      "community": 11
+      "community": 10
     },
     {
       "label": "normalizeConfig()",
@@ -6553,7 +6633,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L98",
       "id": "screener_presets_normalizeconfig",
-      "community": 11
+      "community": 10
     },
     {
       "label": "normalizePreset()",
@@ -6561,7 +6641,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L126",
       "id": "screener_presets_normalizepreset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "readLocal()",
@@ -6569,7 +6649,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L144",
       "id": "screener_presets_readlocal",
-      "community": 11
+      "community": 10
     },
     {
       "label": "saveLocal()",
@@ -6577,7 +6657,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L148",
       "id": "screener_presets_savelocal",
-      "community": 11
+      "community": 10
     },
     {
       "label": "setStatus()",
@@ -6585,7 +6665,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L152",
       "id": "screener_presets_setstatus",
-      "community": 11
+      "community": 10
     },
     {
       "label": "selectedPreset()",
@@ -6593,7 +6673,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L158",
       "id": "screener_presets_selectedpreset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "sortedPresets()",
@@ -6601,7 +6681,7 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L162",
       "id": "screener_presets_sortedpresets",
-      "community": 11
+      "community": 10
     },
     {
       "label": "summaryStatus()",
@@ -6609,207 +6689,223 @@
       "source_file": "assets\\js\\pages\\screener-presets.js",
       "source_location": "L169",
       "id": "screener_presets_summarystatus",
-      "community": 11
+      "community": 10
+    },
+    {
+      "label": "updateSearchResultPrompt()",
+      "file_type": "code",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L181",
+      "id": "screener_presets_updatesearchresultprompt",
+      "community": 10
+    },
+    {
+      "label": "installSearchResultPrompt()",
+      "file_type": "code",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L194",
+      "id": "screener_presets_installsearchresultprompt",
+      "community": 10
     },
     {
       "label": "render()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L181",
+      "source_location": "L204",
       "id": "screener_presets_render",
-      "community": 11
+      "community": 10
     },
     {
       "label": "setBusy()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L219",
+      "source_location": "L242",
       "id": "screener_presets_setbusy",
-      "community": 11
+      "community": 10
     },
     {
       "label": "request()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L224",
+      "source_location": "L247",
       "id": "screener_presets_request",
-      "community": 11
+      "community": 10
     },
     {
       "label": "filterControlValue()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L231",
+      "source_location": "L254",
       "id": "screener_presets_filtercontrolvalue",
-      "community": 11
+      "community": 10
     },
     {
       "label": "filtersFromControls()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L240",
+      "source_location": "L263",
       "id": "screener_presets_filtersfromcontrols",
-      "community": 11
+      "community": 10
     },
     {
       "label": "currentConfig()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L267",
+      "source_location": "L290",
       "id": "screener_presets_currentconfig",
-      "community": 11
+      "community": 10
     },
     {
       "label": "requireCurrentConfig()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L288",
+      "source_location": "L311",
       "id": "screener_presets_requirecurrentconfig",
-      "community": 11
+      "community": 10
     },
     {
       "label": "cleanName()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L297",
+      "source_location": "L320",
       "id": "screener_presets_cleanname",
-      "community": 11
+      "community": 10
     },
     {
       "label": "nameExists()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L301",
+      "source_location": "L324",
       "id": "screener_presets_nameexists",
-      "community": 11
+      "community": 10
     },
     {
       "label": "uniqueName()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L308",
+      "source_location": "L331",
       "id": "screener_presets_uniquename",
-      "community": 11
+      "community": 10
     },
     {
       "label": "replacePreset()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L319",
+      "source_location": "L342",
       "id": "screener_presets_replacepreset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "savePreset()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L333",
+      "source_location": "L356",
       "id": "screener_presets_savepreset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "createPreset()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L352",
+      "source_location": "L375",
       "id": "screener_presets_createpreset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "handleSaveNew()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L387",
+      "source_location": "L410",
       "id": "screener_presets_handlesavenew",
-      "community": 11
+      "community": 10
     },
     {
       "label": "handleUpdate()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L392",
+      "source_location": "L415",
       "id": "screener_presets_handleupdate",
-      "community": 11
+      "community": 10
     },
     {
       "label": "handleDuplicate()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L420",
+      "source_location": "L447",
       "id": "screener_presets_handleduplicate",
-      "community": 11
+      "community": 10
     },
     {
       "label": "handleDefault()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L428",
+      "source_location": "L455",
       "id": "screener_presets_handledefault",
-      "community": 11
+      "community": 10
     },
     {
       "label": "handleDelete()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L448",
+      "source_location": "L475",
       "id": "screener_presets_handledelete",
-      "community": 11
+      "community": 10
     },
     {
       "label": "loadPreset()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L474",
+      "source_location": "L501",
       "id": "screener_presets_loadpreset",
-      "community": 11
+      "community": 10
     },
     {
       "label": "restorePendingTable()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L493",
+      "source_location": "L520",
       "id": "screener_presets_restorependingtable",
-      "community": 11
+      "community": 10
     },
     {
       "label": "mergeGuestPresets()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L526",
+      "source_location": "L553",
       "id": "screener_presets_mergeguestpresets",
-      "community": 11
+      "community": 10
     },
     {
       "label": "maybeLoadDefault()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L565",
+      "source_location": "L592",
       "id": "screener_presets_maybeloaddefault",
-      "community": 11
+      "community": 10
     },
     {
       "label": "loadAccountPresets()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L579",
+      "source_location": "L606",
       "id": "screener_presets_loadaccountpresets",
-      "community": 11
+      "community": 10
     },
     {
       "label": "bindEvents()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L599",
+      "source_location": "L626",
       "id": "screener_presets_bindevents",
-      "community": 11
+      "community": 10
     },
     {
       "label": "init()",
       "file_type": "code",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L621",
+      "source_location": "L648",
       "id": "screener_presets_init",
-      "community": 11
+      "community": 10
     },
     {
       "label": "screener-share.js",
@@ -6889,7 +6985,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_stockinfo_main_js",
-      "community": 15
+      "community": 16
     },
     {
       "label": "numberformat()",
@@ -6897,7 +6993,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_numberformat",
-      "community": 15
+      "community": 16
     },
     {
       "label": "numberformatM()",
@@ -6905,7 +7001,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_numberformatm",
-      "community": 15
+      "community": 16
     },
     {
       "label": "exchFn()",
@@ -6913,7 +7009,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_exchfn",
-      "community": 15
+      "community": 16
     },
     {
       "label": "mcapFn()",
@@ -6921,7 +7017,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_mcapfn",
-      "community": 15
+      "community": 16
     },
     {
       "label": "trendgauge2txt()",
@@ -6929,7 +7025,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_trendgauge2txt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "getRandomInt()",
@@ -6937,7 +7033,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_getrandomint",
-      "community": 15
+      "community": 16
     },
     {
       "label": "setPriceInfoTrend()",
@@ -6945,7 +7041,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_setpriceinfotrend",
-      "community": 15
+      "community": 16
     },
     {
       "label": "applyPriceInfoTheme()",
@@ -6953,7 +7049,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_applypriceinfotheme",
-      "community": 15
+      "community": 16
     },
     {
       "label": "scheduleNonCriticalStockWork()",
@@ -6961,7 +7057,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_schedulenoncriticalstockwork",
-      "community": 15
+      "community": 16
     },
     {
       "label": "loadPeers()",
@@ -6969,7 +7065,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_loadpeers",
-      "community": 15
+      "community": 16
     },
     {
       "label": "maincontent()",
@@ -6977,7 +7073,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_maincontent",
-      "community": 15
+      "community": 16
     },
     {
       "label": "fscoreProfitabilityTXT()",
@@ -6985,7 +7081,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_fscoreprofitabilitytxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "fscoreLiquidityTXT()",
@@ -6993,7 +7089,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_fscoreliquiditytxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "fscoreEfficiencyTXT()",
@@ -7001,7 +7097,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_fscoreefficiencytxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "mscoreTXT()",
@@ -7009,7 +7105,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_mscoretxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "zscoreTXT()",
@@ -7017,7 +7113,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_zscoretxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "rsiTXT()",
@@ -7025,7 +7121,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_rsitxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "macdZeroTXT()",
@@ -7033,7 +7129,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_macdzerotxt",
-      "community": 15
+      "community": 16
     },
     {
       "label": "priceDeviationChartDraw()",
@@ -7041,7 +7137,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_pricedeviationchartdraw",
-      "community": 15
+      "community": 16
     },
     {
       "label": "scroll2peers()",
@@ -7049,7 +7145,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_scroll2peers",
-      "community": 15
+      "community": 16
     },
     {
       "label": "openTOOL()",
@@ -7057,7 +7153,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_opentool",
-      "community": 15
+      "community": 16
     },
     {
       "label": "updateColumns()",
@@ -7065,7 +7161,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_updatecolumns",
-      "community": 15
+      "community": 16
     },
     {
       "label": "add_Days()",
@@ -7073,7 +7169,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_add_days",
-      "community": 15
+      "community": 16
     },
     {
       "label": "dayofyear()",
@@ -7081,7 +7177,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_dayofyear",
-      "community": 15
+      "community": 16
     },
     {
       "label": "YearlyTrendToggle()",
@@ -7089,7 +7185,7 @@
       "source_file": "assets\\js\\pages\\stockinfo-main.js",
       "source_location": "L1",
       "id": "stockinfo_main_yearlytrendtoggle",
-      "community": 15
+      "community": 16
     },
     {
       "label": "tool-main.js",
@@ -7097,7 +7193,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "assets_js_pages_tool_main_js",
-      "community": 10
+      "community": 11
     },
     {
       "label": "pauseChart()",
@@ -7105,7 +7201,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_pausechart",
-      "community": 10
+      "community": 11
     },
     {
       "label": "timeframeBTN()",
@@ -7113,7 +7209,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_timeframebtn",
-      "community": 10
+      "community": 11
     },
     {
       "label": "stockcodeInputRED()",
@@ -7121,7 +7217,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_stockcodeinputred",
-      "community": 10
+      "community": 11
     },
     {
       "label": "periodBTN()",
@@ -7129,7 +7225,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_periodbtn",
-      "community": 10
+      "community": 11
     },
     {
       "label": "add_Days()",
@@ -7137,7 +7233,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_add_days",
-      "community": 10
+      "community": 11
     },
     {
       "label": "dateFormatStr()",
@@ -7145,7 +7241,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_dateformatstr",
-      "community": 10
+      "community": 11
     },
     {
       "label": "updateInputs()",
@@ -7153,7 +7249,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updateinputs",
-      "community": 10
+      "community": 11
     },
     {
       "label": "validate()",
@@ -7161,7 +7257,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_validate",
-      "community": 10
+      "community": 11
     },
     {
       "label": "race()",
@@ -7169,7 +7265,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_race",
-      "community": 10
+      "community": 11
     },
     {
       "label": "raceChart()",
@@ -7177,7 +7273,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_racechart",
-      "community": 10
+      "community": 11
     },
     {
       "label": "getSubtitle()",
@@ -7185,7 +7281,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_getsubtitle",
-      "community": 10
+      "community": 11
     },
     {
       "label": "stop()",
@@ -7193,7 +7289,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_stop",
-      "community": 10
+      "community": 11
     },
     {
       "label": "pause()",
@@ -7201,7 +7297,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_pause",
-      "community": 10
+      "community": 11
     },
     {
       "label": "update()",
@@ -7209,7 +7305,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_update",
-      "community": 10
+      "community": 11
     },
     {
       "label": "play()",
@@ -7217,7 +7313,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_play",
-      "community": 10
+      "community": 11
     },
     {
       "label": "restoreComposerSeries()",
@@ -7225,7 +7321,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_restorecomposerseries",
-      "community": 10
+      "community": 11
     },
     {
       "label": "updateResults()",
@@ -7233,7 +7329,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updateresults",
-      "community": 10
+      "community": 11
     },
     {
       "label": "showSuggestions()",
@@ -7241,7 +7337,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_showsuggestions",
-      "community": 10
+      "community": 11
     },
     {
       "label": "selectItem()",
@@ -7249,7 +7345,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_selectitem",
-      "community": 10
+      "community": 11
     },
     {
       "label": "loadScriptOnce()",
@@ -7257,7 +7353,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadscriptonce",
-      "community": 10
+      "community": 11
     },
     {
       "label": "loadStylesheetOnce()",
@@ -7265,7 +7361,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadstylesheetonce",
-      "community": 10
+      "community": 11
     },
     {
       "label": "loadComposerCatalog()",
@@ -7273,7 +7369,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_loadcomposercatalog",
-      "community": 10
+      "community": 11
     },
     {
       "label": "setComposerLoading()",
@@ -7281,7 +7377,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_setcomposerloading",
-      "community": 10
+      "community": 11
     },
     {
       "label": "ensureComposerReady()",
@@ -7289,7 +7385,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_ensurecomposerready",
-      "community": 10
+      "community": 11
     },
     {
       "label": "adjustComboBoxWidth()",
@@ -7297,7 +7393,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_adjustcomboboxwidth",
-      "community": 10
+      "community": 11
     },
     {
       "label": "updateDataSeriesList()",
@@ -7305,7 +7401,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatedataserieslist",
-      "community": 10
+      "community": 11
     },
     {
       "label": "getSeriesList()",
@@ -7313,7 +7409,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_getserieslist",
-      "community": 10
+      "community": 11
     },
     {
       "label": "fetchAjaxSeriesData()",
@@ -7321,7 +7417,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_fetchajaxseriesdata",
-      "community": 10
+      "community": 11
     },
     {
       "label": "initializeAutocomplete()",
@@ -7329,7 +7425,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_initializeautocomplete",
-      "community": 10
+      "community": 11
     },
     {
       "label": "clearChart()",
@@ -7337,7 +7433,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_clearchart",
-      "community": 10
+      "community": 11
     },
     {
       "label": "updateNavigatorToEarliestSeries()",
@@ -7345,7 +7441,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatenavigatortoearliestseries",
-      "community": 10
+      "community": 11
     },
     {
       "label": "updateHistory()",
@@ -7353,7 +7449,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_updatehistory",
-      "community": 10
+      "community": 11
     },
     {
       "label": "openTabHash()",
@@ -7361,7 +7457,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_opentabhash",
-      "community": 10
+      "community": 11
     },
     {
       "label": "highchartReflow()",
@@ -7369,7 +7465,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_highchartreflow",
-      "community": 10
+      "community": 11
     },
     {
       "label": "initializeControls()",
@@ -7377,7 +7473,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_initializecontrols",
-      "community": 10
+      "community": 11
     },
     {
       "label": "findNameByIdAndType()",
@@ -7385,7 +7481,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_findnamebyidandtype",
-      "community": 10
+      "community": 11
     },
     {
       "label": "createChart()",
@@ -7393,7 +7489,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_createchart",
-      "community": 10
+      "community": 11
     },
     {
       "label": "insertStepTransitions()",
@@ -7401,7 +7497,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_insertsteptransitions",
-      "community": 10
+      "community": 11
     },
     {
       "label": "showNotification()",
@@ -7409,7 +7505,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_shownotification",
-      "community": 10
+      "community": 11
     },
     {
       "label": "removeBadgeIfExpired()",
@@ -7417,7 +7513,7 @@
       "source_file": "assets\\js\\pages\\tool-main.js",
       "source_location": "L1",
       "id": "tool_main_removebadgeifexpired",
-      "community": 10
+      "community": 11
     },
     {
       "label": "tool-share.js",
@@ -24524,6 +24620,18 @@
       "source_location": "L31",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_parseworkspacedate",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_parseworkspacedate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
       "_tgt": "workspace_humandate",
       "source": "assets_js_workspace_js",
       "target": "workspace_humandate",
@@ -24533,7 +24641,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L37",
+      "source_location": "L46",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_assetmeta",
@@ -24545,7 +24653,115 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L41",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_workspaceitems",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_workspaceitems",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_workspacecount",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_workspacecount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_dashboardmetric",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_dashboardmetric",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_recentactivityitems",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_recentactivityitems",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_renderrecentactivity",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_renderrecentactivity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L137",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_renderrecentstocks",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_renderrecentstocks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L147",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_rendersavedscreens",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_rendersavedscreens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L160",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_rendercommunitysummary",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_rendercommunitysummary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L170",
+      "weight": 1.0,
+      "_src": "assets_js_workspace_js",
+      "_tgt": "workspace_renderprivacysummary",
+      "source": "assets_js_workspace_js",
+      "target": "workspace_renderprivacysummary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L174",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_renderoverview",
@@ -24557,7 +24773,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L56",
+      "source_location": "L195",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_chartrow",
@@ -24569,7 +24785,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L72",
+      "source_location": "L211",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_rendercharts",
@@ -24581,7 +24797,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L79",
+      "source_location": "L218",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_scriptrow",
@@ -24593,7 +24809,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L100",
+      "source_location": "L239",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_renderscripts",
@@ -24605,7 +24821,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L107",
+      "source_location": "L246",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_rendersimplelist",
@@ -24617,7 +24833,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L112",
+      "source_location": "L251",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_render",
@@ -24629,7 +24845,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L141",
+      "source_location": "L280",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_loadcharts",
@@ -24641,7 +24857,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L161",
+      "source_location": "L300",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_loadscripts",
@@ -24653,7 +24869,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L181",
+      "source_location": "L320",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_refreshworkspaceandtab",
@@ -24665,7 +24881,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L192",
+      "source_location": "L331",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_closestasset",
@@ -24677,7 +24893,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L196",
+      "source_location": "L335",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_renderversions",
@@ -24689,7 +24905,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L207",
+      "source_location": "L346",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_downloadtext",
@@ -24701,7 +24917,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L218",
+      "source_location": "L357",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_safefilename",
@@ -24713,7 +24929,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L222",
+      "source_location": "L361",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_importrecentscripts",
@@ -24725,7 +24941,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L318",
+      "source_location": "L457",
       "weight": 1.0,
       "_src": "assets_js_workspace_js",
       "_tgt": "workspace_load",
@@ -24749,7 +24965,67 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L59",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "workspace_dashboardmetric",
+      "_tgt": "workspace_escapehtml",
+      "source": "workspace_escapehtml",
+      "target": "workspace_dashboardmetric",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L130",
+      "weight": 1.0,
+      "_src": "workspace_renderrecentactivity",
+      "_tgt": "workspace_escapehtml",
+      "source": "workspace_escapehtml",
+      "target": "workspace_renderrecentactivity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L141",
+      "weight": 1.0,
+      "_src": "workspace_renderrecentstocks",
+      "_tgt": "workspace_escapehtml",
+      "source": "workspace_escapehtml",
+      "target": "workspace_renderrecentstocks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L154",
+      "weight": 1.0,
+      "_src": "workspace_rendersavedscreens",
+      "_tgt": "workspace_escapehtml",
+      "source": "workspace_escapehtml",
+      "target": "workspace_rendersavedscreens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L164",
+      "weight": 1.0,
+      "_src": "workspace_rendercommunitysummary",
+      "_tgt": "workspace_escapehtml",
+      "source": "workspace_escapehtml",
+      "target": "workspace_rendercommunitysummary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L198",
       "weight": 1.0,
       "_src": "workspace_chartrow",
       "_tgt": "workspace_escapehtml",
@@ -24761,7 +25037,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L73",
+      "source_location": "L212",
       "weight": 1.0,
       "_src": "workspace_rendercharts",
       "_tgt": "workspace_escapehtml",
@@ -24773,7 +25049,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L83",
+      "source_location": "L222",
       "weight": 1.0,
       "_src": "workspace_scriptrow",
       "_tgt": "workspace_escapehtml",
@@ -24785,7 +25061,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L101",
+      "source_location": "L240",
       "weight": 1.0,
       "_src": "workspace_renderscripts",
       "_tgt": "workspace_escapehtml",
@@ -24797,7 +25073,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L119",
+      "source_location": "L258",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_escapehtml",
@@ -24809,7 +25085,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L203",
+      "source_location": "L342",
       "weight": 1.0,
       "_src": "workspace_renderversions",
       "_tgt": "workspace_escapehtml",
@@ -24821,7 +25097,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L327",
+      "source_location": "L466",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_escapehtml",
@@ -24833,7 +25109,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L157",
+      "source_location": "L296",
       "weight": 1.0,
       "_src": "workspace_loadcharts",
       "_tgt": "workspace_showstatus",
@@ -24845,7 +25121,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L177",
+      "source_location": "L316",
       "weight": 1.0,
       "_src": "workspace_loadscripts",
       "_tgt": "workspace_showstatus",
@@ -24857,7 +25133,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L182",
+      "source_location": "L321",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_showstatus",
@@ -24869,7 +25145,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L226",
+      "source_location": "L365",
       "weight": 1.0,
       "_src": "workspace_importrecentscripts",
       "_tgt": "workspace_showstatus",
@@ -24881,7 +25157,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L328",
+      "source_location": "L467",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_showstatus",
@@ -24893,19 +25169,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L44",
-      "weight": 1.0,
-      "_src": "workspace_renderoverview",
-      "_tgt": "workspace_panel",
-      "source": "workspace_panel",
-      "target": "workspace_renderoverview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "assets\\js\\workspace.js",
-      "source_location": "L76",
+      "source_location": "L215",
       "weight": 1.0,
       "_src": "workspace_rendercharts",
       "_tgt": "workspace_panel",
@@ -24917,7 +25181,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L104",
+      "source_location": "L243",
       "weight": 1.0,
       "_src": "workspace_renderscripts",
       "_tgt": "workspace_panel",
@@ -24929,7 +25193,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L108",
+      "source_location": "L247",
       "weight": 1.0,
       "_src": "workspace_rendersimplelist",
       "_tgt": "workspace_panel",
@@ -24941,7 +25205,55 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L61",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "workspace_humandate",
+      "_tgt": "workspace_parseworkspacedate",
+      "source": "workspace_parseworkspacedate",
+      "target": "workspace_humandate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L117",
+      "weight": 1.0,
+      "_src": "workspace_recentactivityitems",
+      "_tgt": "workspace_parseworkspacedate",
+      "source": "workspace_parseworkspacedate",
+      "target": "workspace_recentactivityitems",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L133",
+      "weight": 1.0,
+      "_src": "workspace_renderrecentactivity",
+      "_tgt": "workspace_humandate",
+      "source": "workspace_humandate",
+      "target": "workspace_renderrecentactivity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L153",
+      "weight": 1.0,
+      "_src": "workspace_rendersavedscreens",
+      "_tgt": "workspace_humandate",
+      "source": "workspace_humandate",
+      "target": "workspace_rendersavedscreens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L200",
       "weight": 1.0,
       "_src": "workspace_chartrow",
       "_tgt": "workspace_humandate",
@@ -24953,7 +25265,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L85",
+      "source_location": "L224",
       "weight": 1.0,
       "_src": "workspace_scriptrow",
       "_tgt": "workspace_humandate",
@@ -24965,7 +25277,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L121",
+      "source_location": "L260",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_humandate",
@@ -24977,7 +25289,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L203",
+      "source_location": "L342",
       "weight": 1.0,
       "_src": "workspace_renderversions",
       "_tgt": "workspace_humandate",
@@ -24989,7 +25301,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L61",
+      "source_location": "L200",
       "weight": 1.0,
       "_src": "workspace_chartrow",
       "_tgt": "workspace_assetmeta",
@@ -25001,7 +25313,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L85",
+      "source_location": "L224",
       "weight": 1.0,
       "_src": "workspace_scriptrow",
       "_tgt": "workspace_assetmeta",
@@ -25013,7 +25325,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L121",
+      "source_location": "L260",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_assetmeta",
@@ -25025,7 +25337,163 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L135",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_src": "workspace_workspacecount",
+      "_tgt": "workspace_workspaceitems",
+      "source": "workspace_workspaceitems",
+      "target": "workspace_workspacecount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L69",
+      "weight": 1.0,
+      "_src": "workspace_recentactivityitems",
+      "_tgt": "workspace_workspaceitems",
+      "source": "workspace_workspaceitems",
+      "target": "workspace_recentactivityitems",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L138",
+      "weight": 1.0,
+      "_src": "workspace_renderrecentstocks",
+      "_tgt": "workspace_workspaceitems",
+      "source": "workspace_workspaceitems",
+      "target": "workspace_renderrecentstocks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L148",
+      "weight": 1.0,
+      "_src": "workspace_rendersavedscreens",
+      "_tgt": "workspace_workspaceitems",
+      "source": "workspace_workspaceitems",
+      "target": "workspace_rendersavedscreens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L161",
+      "weight": 1.0,
+      "_src": "workspace_rendercommunitysummary",
+      "_tgt": "workspace_workspaceitems",
+      "source": "workspace_workspaceitems",
+      "target": "workspace_rendercommunitysummary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L181",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_workspacecount",
+      "source": "workspace_workspacecount",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L181",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_dashboardmetric",
+      "source": "workspace_dashboardmetric",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L124",
+      "weight": 1.0,
+      "_src": "workspace_renderrecentactivity",
+      "_tgt": "workspace_recentactivityitems",
+      "source": "workspace_recentactivityitems",
+      "target": "workspace_renderrecentactivity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L188",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_renderrecentactivity",
+      "source": "workspace_renderrecentactivity",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L189",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_renderrecentstocks",
+      "source": "workspace_renderrecentstocks",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L190",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_rendersavedscreens",
+      "source": "workspace_rendersavedscreens",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L191",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_rendercommunitysummary",
+      "source": "workspace_rendercommunitysummary",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L191",
+      "weight": 1.0,
+      "_src": "workspace_renderoverview",
+      "_tgt": "workspace_renderprivacysummary",
+      "source": "workspace_renderprivacysummary",
+      "target": "workspace_renderoverview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L274",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_renderoverview",
@@ -25037,7 +25505,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L115",
+      "source_location": "L254",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_rendercharts",
@@ -25049,7 +25517,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L116",
+      "source_location": "L255",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_renderscripts",
@@ -25061,7 +25529,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L118",
+      "source_location": "L257",
       "weight": 1.0,
       "_src": "workspace_render",
       "_tgt": "workspace_rendersimplelist",
@@ -25073,7 +25541,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L154",
+      "source_location": "L293",
       "weight": 1.0,
       "_src": "workspace_loadcharts",
       "_tgt": "workspace_render",
@@ -25085,7 +25553,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L174",
+      "source_location": "L313",
       "weight": 1.0,
       "_src": "workspace_loadscripts",
       "_tgt": "workspace_render",
@@ -25097,12 +25565,24 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L187",
+      "source_location": "L326",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_render",
       "source": "workspace_render",
       "target": "workspace_refreshworkspaceandtab",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\workspace.js",
+      "source_location": "L463",
+      "weight": 1.0,
+      "_src": "workspace_load",
+      "_tgt": "workspace_render",
+      "source": "workspace_render",
+      "target": "workspace_load",
       "confidence_score": 1.0
     },
     {
@@ -25111,18 +25591,6 @@
       "source_file": "assets\\js\\workspace.js",
       "source_location": "L324",
       "weight": 1.0,
-      "_src": "workspace_load",
-      "_tgt": "workspace_render",
-      "source": "workspace_render",
-      "target": "workspace_load",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "assets\\js\\workspace.js",
-      "source_location": "L185",
-      "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_loadcharts",
       "source": "workspace_loadcharts",
@@ -25133,7 +25601,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L322",
+      "source_location": "L461",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_loadcharts",
@@ -25145,7 +25613,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L186",
+      "source_location": "L325",
       "weight": 1.0,
       "_src": "workspace_refreshworkspaceandtab",
       "_tgt": "workspace_loadscripts",
@@ -25157,7 +25625,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L323",
+      "source_location": "L462",
       "weight": 1.0,
       "_src": "workspace_load",
       "_tgt": "workspace_loadscripts",
@@ -25169,7 +25637,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\workspace.js",
-      "source_location": "L243",
+      "source_location": "L382",
       "weight": 1.0,
       "_src": "workspace_importrecentscripts",
       "_tgt": "workspace_refreshworkspaceandtab",
@@ -27020,6 +27488,30 @@
       "source_location": "L181",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
+      "_tgt": "screener_presets_updatesearchresultprompt",
+      "source": "assets_js_pages_screener_presets_js",
+      "target": "screener_presets_updatesearchresultprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L194",
+      "weight": 1.0,
+      "_src": "assets_js_pages_screener_presets_js",
+      "_tgt": "screener_presets_installsearchresultprompt",
+      "source": "assets_js_pages_screener_presets_js",
+      "target": "screener_presets_installsearchresultprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L204",
+      "weight": 1.0,
+      "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_render",
       "source": "assets_js_pages_screener_presets_js",
       "target": "screener_presets_render",
@@ -27029,7 +27521,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L219",
+      "source_location": "L242",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_setbusy",
@@ -27041,7 +27533,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L224",
+      "source_location": "L247",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_request",
@@ -27053,7 +27545,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L231",
+      "source_location": "L254",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_filtercontrolvalue",
@@ -27065,7 +27557,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L240",
+      "source_location": "L263",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_filtersfromcontrols",
@@ -27077,7 +27569,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L267",
+      "source_location": "L290",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_currentconfig",
@@ -27089,7 +27581,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L288",
+      "source_location": "L311",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_requirecurrentconfig",
@@ -27101,7 +27593,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L297",
+      "source_location": "L320",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_cleanname",
@@ -27113,7 +27605,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L301",
+      "source_location": "L324",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_nameexists",
@@ -27125,7 +27617,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L308",
+      "source_location": "L331",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_uniquename",
@@ -27137,7 +27629,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L319",
+      "source_location": "L342",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_replacepreset",
@@ -27149,7 +27641,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L333",
+      "source_location": "L356",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_savepreset",
@@ -27161,7 +27653,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L352",
+      "source_location": "L375",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_createpreset",
@@ -27173,7 +27665,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L387",
+      "source_location": "L410",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_handlesavenew",
@@ -27185,7 +27677,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L392",
+      "source_location": "L415",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_handleupdate",
@@ -27197,7 +27689,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L420",
+      "source_location": "L447",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_handleduplicate",
@@ -27209,7 +27701,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L428",
+      "source_location": "L455",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_handledefault",
@@ -27221,7 +27713,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L448",
+      "source_location": "L475",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_handledelete",
@@ -27233,7 +27725,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L474",
+      "source_location": "L501",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_loadpreset",
@@ -27245,7 +27737,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L493",
+      "source_location": "L520",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_restorependingtable",
@@ -27257,7 +27749,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L526",
+      "source_location": "L553",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_mergeguestpresets",
@@ -27269,7 +27761,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L565",
+      "source_location": "L592",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_maybeloaddefault",
@@ -27281,7 +27773,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L579",
+      "source_location": "L606",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_loadaccountpresets",
@@ -27293,7 +27785,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L599",
+      "source_location": "L626",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_bindevents",
@@ -27305,7 +27797,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L621",
+      "source_location": "L648",
       "weight": 1.0,
       "_src": "assets_js_pages_screener_presets_js",
       "_tgt": "screener_presets_init",
@@ -27341,7 +27833,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L536",
+      "source_location": "L563",
       "weight": 1.0,
       "_src": "screener_presets_mergeguestpresets",
       "_tgt": "screener_presets_storageset",
@@ -27353,7 +27845,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L560",
+      "source_location": "L587",
       "weight": 1.0,
       "_src": "screener_presets_mergeguestpresets",
       "_tgt": "screener_presets_storageremove",
@@ -27377,7 +27869,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L591",
+      "source_location": "L618",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_userstoragekey",
@@ -27401,7 +27893,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L638",
+      "source_location": "L666",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_activestoragekey",
@@ -27413,7 +27905,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L370",
+      "source_location": "L393",
       "weight": 1.0,
       "_src": "screener_presets_createpreset",
       "_tgt": "screener_presets_makekey",
@@ -27437,7 +27929,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L285",
+      "source_location": "L308",
       "weight": 1.0,
       "_src": "screener_presets_currentconfig",
       "_tgt": "screener_presets_normalizeconfig",
@@ -27449,7 +27941,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L425",
+      "source_location": "L452",
       "weight": 1.0,
       "_src": "screener_presets_handleduplicate",
       "_tgt": "screener_presets_normalizeconfig",
@@ -27461,7 +27953,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L510",
+      "source_location": "L537",
       "weight": 1.0,
       "_src": "screener_presets_restorependingtable",
       "_tgt": "screener_presets_normalizeconfig",
@@ -27473,7 +27965,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L320",
+      "source_location": "L343",
       "weight": 1.0,
       "_src": "screener_presets_replacepreset",
       "_tgt": "screener_presets_normalizepreset",
@@ -27485,7 +27977,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L527",
+      "source_location": "L554",
       "weight": 1.0,
       "_src": "screener_presets_mergeguestpresets",
       "_tgt": "screener_presets_readlocal",
@@ -27497,7 +27989,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L591",
+      "source_location": "L618",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_readlocal",
@@ -27509,7 +28001,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L638",
+      "source_location": "L666",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_readlocal",
@@ -27521,7 +28013,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L329",
+      "source_location": "L352",
       "weight": 1.0,
       "_src": "screener_presets_replacepreset",
       "_tgt": "screener_presets_savelocal",
@@ -27533,7 +28025,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L438",
+      "source_location": "L465",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_savelocal",
@@ -27545,7 +28037,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L464",
+      "source_location": "L491",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_savelocal",
@@ -27557,7 +28049,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L583",
+      "source_location": "L610",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_savelocal",
@@ -27581,7 +28073,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L291",
+      "source_location": "L314",
       "weight": 1.0,
       "_src": "screener_presets_requirecurrentconfig",
       "_tgt": "screener_presets_setstatus",
@@ -27593,7 +28085,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L355",
+      "source_location": "L378",
       "weight": 1.0,
       "_src": "screener_presets_createpreset",
       "_tgt": "screener_presets_setstatus",
@@ -27605,7 +28097,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L398",
+      "source_location": "L425",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_setstatus",
@@ -27617,7 +28109,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L432",
+      "source_location": "L459",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_setstatus",
@@ -27629,7 +28121,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L453",
+      "source_location": "L480",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_setstatus",
@@ -27641,7 +28133,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L476",
+      "source_location": "L503",
       "weight": 1.0,
       "_src": "screener_presets_loadpreset",
       "_tgt": "screener_presets_setstatus",
@@ -27653,7 +28145,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L571",
+      "source_location": "L598",
       "weight": 1.0,
       "_src": "screener_presets_maybeloaddefault",
       "_tgt": "screener_presets_setstatus",
@@ -27665,7 +28157,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L594",
+      "source_location": "L621",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_setstatus",
@@ -27677,7 +28169,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L641",
+      "source_location": "L669",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_setstatus",
@@ -27689,7 +28181,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L182",
+      "source_location": "L205",
       "weight": 1.0,
       "_src": "screener_presets_render",
       "_tgt": "screener_presets_selectedpreset",
@@ -27701,7 +28193,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L393",
+      "source_location": "L416",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_selectedpreset",
@@ -27713,7 +28205,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L421",
+      "source_location": "L448",
       "weight": 1.0,
       "_src": "screener_presets_handleduplicate",
       "_tgt": "screener_presets_selectedpreset",
@@ -27725,7 +28217,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L429",
+      "source_location": "L456",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_selectedpreset",
@@ -27737,7 +28229,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L449",
+      "source_location": "L476",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_selectedpreset",
@@ -27749,7 +28241,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L602",
+      "source_location": "L629",
       "weight": 1.0,
       "_src": "screener_presets_bindevents",
       "_tgt": "screener_presets_selectedpreset",
@@ -27761,7 +28253,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L183",
+      "source_location": "L206",
       "weight": 1.0,
       "_src": "screener_presets_render",
       "_tgt": "screener_presets_sortedpresets",
@@ -27773,7 +28265,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L336",
+      "source_location": "L359",
       "weight": 1.0,
       "_src": "screener_presets_savepreset",
       "_tgt": "screener_presets_summarystatus",
@@ -27785,7 +28277,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L440",
+      "source_location": "L467",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_summarystatus",
@@ -27797,7 +28289,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L466",
+      "source_location": "L493",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_summarystatus",
@@ -27809,7 +28301,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L588",
+      "source_location": "L615",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_summarystatus",
@@ -27821,7 +28313,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L646",
+      "source_location": "L674",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_summarystatus",
@@ -27833,7 +28325,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L221",
+      "source_location": "L195",
+      "weight": 1.0,
+      "_src": "screener_presets_installsearchresultprompt",
+      "_tgt": "screener_presets_updatesearchresultprompt",
+      "source": "screener_presets_updatesearchresultprompt",
+      "target": "screener_presets_installsearchresultprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L664",
+      "weight": 1.0,
+      "_src": "screener_presets_init",
+      "_tgt": "screener_presets_installsearchresultprompt",
+      "source": "screener_presets_installsearchresultprompt",
+      "target": "screener_presets_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L244",
       "weight": 1.0,
       "_src": "screener_presets_setbusy",
       "_tgt": "screener_presets_render",
@@ -27845,7 +28361,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L330",
+      "source_location": "L353",
       "weight": 1.0,
       "_src": "screener_presets_replacepreset",
       "_tgt": "screener_presets_render",
@@ -27857,7 +28373,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L439",
+      "source_location": "L466",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_render",
@@ -27869,7 +28385,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L465",
+      "source_location": "L492",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_render",
@@ -27881,7 +28397,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L587",
+      "source_location": "L614",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_render",
@@ -27893,7 +28409,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L604",
+      "source_location": "L631",
       "weight": 1.0,
       "_src": "screener_presets_bindevents",
       "_tgt": "screener_presets_render",
@@ -27905,7 +28421,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L639",
+      "source_location": "L667",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_render",
@@ -27917,7 +28433,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L378",
+      "source_location": "L401",
       "weight": 1.0,
       "_src": "screener_presets_createpreset",
       "_tgt": "screener_presets_setbusy",
@@ -27929,7 +28445,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L411",
+      "source_location": "L438",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_setbusy",
@@ -27941,7 +28457,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L431",
+      "source_location": "L458",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_setbusy",
@@ -27953,7 +28469,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L452",
+      "source_location": "L479",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_setbusy",
@@ -27965,7 +28481,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L339",
+      "source_location": "L362",
       "weight": 1.0,
       "_src": "screener_presets_savepreset",
       "_tgt": "screener_presets_request",
@@ -27977,7 +28493,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L434",
+      "source_location": "L461",
       "weight": 1.0,
       "_src": "screener_presets_handledefault",
       "_tgt": "screener_presets_request",
@@ -27989,7 +28505,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L455",
+      "source_location": "L482",
       "weight": 1.0,
       "_src": "screener_presets_handledelete",
       "_tgt": "screener_presets_request",
@@ -28001,7 +28517,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L545",
+      "source_location": "L572",
       "weight": 1.0,
       "_src": "screener_presets_mergeguestpresets",
       "_tgt": "screener_presets_request",
@@ -28013,7 +28529,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L580",
+      "source_location": "L607",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_request",
@@ -28025,7 +28541,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L255",
+      "source_location": "L278",
       "weight": 1.0,
       "_src": "screener_presets_filtersfromcontrols",
       "_tgt": "screener_presets_filtercontrolvalue",
@@ -28037,7 +28553,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L268",
+      "source_location": "L291",
       "weight": 1.0,
       "_src": "screener_presets_currentconfig",
       "_tgt": "screener_presets_filtersfromcontrols",
@@ -28049,7 +28565,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L289",
+      "source_location": "L312",
       "weight": 1.0,
       "_src": "screener_presets_requirecurrentconfig",
       "_tgt": "screener_presets_currentconfig",
@@ -28061,7 +28577,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L388",
+      "source_location": "L411",
       "weight": 1.0,
       "_src": "screener_presets_handlesavenew",
       "_tgt": "screener_presets_requirecurrentconfig",
@@ -28073,7 +28589,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L394",
+      "source_location": "L421",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_requirecurrentconfig",
@@ -28085,7 +28601,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L358",
+      "source_location": "L381",
       "weight": 1.0,
       "_src": "screener_presets_createpreset",
       "_tgt": "screener_presets_cleanname",
@@ -28097,7 +28613,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L396",
+      "source_location": "L423",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_cleanname",
@@ -28109,7 +28625,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L311",
+      "source_location": "L334",
       "weight": 1.0,
       "_src": "screener_presets_uniquename",
       "_tgt": "screener_presets_nameexists",
@@ -28121,7 +28637,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L364",
+      "source_location": "L387",
       "weight": 1.0,
       "_src": "screener_presets_createpreset",
       "_tgt": "screener_presets_nameexists",
@@ -28133,7 +28649,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L401",
+      "source_location": "L428",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_nameexists",
@@ -28145,7 +28661,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L423",
+      "source_location": "L450",
       "weight": 1.0,
       "_src": "screener_presets_handleduplicate",
       "_tgt": "screener_presets_uniquename",
@@ -28157,7 +28673,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L541",
+      "source_location": "L568",
       "weight": 1.0,
       "_src": "screener_presets_mergeguestpresets",
       "_tgt": "screener_presets_uniquename",
@@ -28169,7 +28685,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L335",
+      "source_location": "L358",
       "weight": 1.0,
       "_src": "screener_presets_savepreset",
       "_tgt": "screener_presets_replacepreset",
@@ -28181,7 +28697,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L552",
+      "source_location": "L579",
       "weight": 1.0,
       "_src": "screener_presets_mergeguestpresets",
       "_tgt": "screener_presets_replacepreset",
@@ -28193,7 +28709,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L380",
+      "source_location": "L403",
       "weight": 1.0,
       "_src": "screener_presets_createpreset",
       "_tgt": "screener_presets_savepreset",
@@ -28205,7 +28721,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L413",
+      "source_location": "L440",
       "weight": 1.0,
       "_src": "screener_presets_handleupdate",
       "_tgt": "screener_presets_savepreset",
@@ -28217,7 +28733,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L389",
+      "source_location": "L412",
       "weight": 1.0,
       "_src": "screener_presets_handlesavenew",
       "_tgt": "screener_presets_createpreset",
@@ -28229,7 +28745,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L425",
+      "source_location": "L452",
       "weight": 1.0,
       "_src": "screener_presets_handleduplicate",
       "_tgt": "screener_presets_createpreset",
@@ -28241,7 +28757,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L610",
+      "source_location": "L418",
+      "weight": 1.0,
+      "_src": "screener_presets_handleupdate",
+      "_tgt": "screener_presets_handlesavenew",
+      "source": "screener_presets_handlesavenew",
+      "target": "screener_presets_handleupdate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\pages\\screener-presets.js",
+      "source_location": "L637",
       "weight": 1.0,
       "_src": "screener_presets_bindevents",
       "_tgt": "screener_presets_handlesavenew",
@@ -28253,7 +28781,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L609",
+      "source_location": "L636",
       "weight": 1.0,
       "_src": "screener_presets_bindevents",
       "_tgt": "screener_presets_handleupdate",
@@ -28265,7 +28793,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L570",
+      "source_location": "L597",
       "weight": 1.0,
       "_src": "screener_presets_maybeloaddefault",
       "_tgt": "screener_presets_loadpreset",
@@ -28277,7 +28805,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L613",
+      "source_location": "L640",
       "weight": 1.0,
       "_src": "screener_presets_bindevents",
       "_tgt": "screener_presets_loadpreset",
@@ -28289,7 +28817,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L637",
+      "source_location": "L665",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_restorependingtable",
@@ -28301,7 +28829,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L584",
+      "source_location": "L611",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_mergeguestpresets",
@@ -28313,7 +28841,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L589",
+      "source_location": "L616",
       "weight": 1.0,
       "_src": "screener_presets_loadaccountpresets",
       "_tgt": "screener_presets_maybeloaddefault",
@@ -28325,7 +28853,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L647",
+      "source_location": "L675",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_maybeloaddefault",
@@ -28337,7 +28865,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L642",
+      "source_location": "L670",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_loadaccountpresets",
@@ -28349,7 +28877,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\pages\\screener-presets.js",
-      "source_location": "L636",
+      "source_location": "L663",
       "weight": 1.0,
       "_src": "screener_presets_init",
       "_tgt": "screener_presets_bindevents",

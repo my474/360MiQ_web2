@@ -15,7 +15,7 @@ if (!$user) {
     <meta name="description" content="<?php echo $community_enabled ? 'Your saved charts, Pine scripts, screener presets, searches, and community ideas on 360MiQ.com.' : 'Your saved charts, Pine scripts, screener presets, and searches on 360MiQ.com.'; ?>" />
     <title>My Workspace - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/css/account.css">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.3">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.4">
 </head>
 <body data-community-enabled="<?php echo $community_enabled ? 'true' : 'false'; ?>">
 <?php $page = 'workspace'; include __DIR__ . '/header.php'; ?>
@@ -26,11 +26,10 @@ if (!$user) {
             <h1>Welcome, <?php echo htmlspecialchars($user['display_name'], ENT_QUOTES, 'UTF-8'); ?></h1>
             <p>Your saved research stays private unless you choose to share it.</p>
         </div>
-        <a class="btn btn-primary" href="tool?tab=3">Open Advanced Chart</a>
     </div>
     <div id="miq-workspace-status" class="alert" hidden></div>
     <div class="miq-workspace-tabs" role="tablist" aria-label="Workspace sections">
-        <button class="btn btn-outline-primary active" data-workspace-tab="overview" type="button">Overview</button>
+        <button class="btn btn-outline-primary active" data-workspace-tab="overview" type="button">Dashboard</button>
         <button class="btn btn-outline-primary" data-workspace-tab="charts" type="button">Saved Charts</button>
         <button class="btn btn-outline-primary" data-workspace-tab="scripts" type="button">Pine Scripts</button>
         <button class="btn btn-outline-primary" data-workspace-tab="presets" type="button">Screener Presets</button>
@@ -43,6 +42,6 @@ if (!$user) {
 </main>
 <?php include __DIR__ . '/footer.php'; ?>
 <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-<script src="assets/js/workspace.js?v=20260726.3"></script>
+<script src="assets/js/workspace.js?v=20260726.4"></script>
 </body>
 </html>
