@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 360MiQ Main Site SSO
  * Description: Maps authenticated 360MiQ main-site accounts to WordPress contributor accounts.
- * Version: 1.1.0
+ * Version: 1.2.0
  */
 
 if (!defined('ABSPATH')) {
@@ -33,10 +33,29 @@ function miq_main_site_sso_return_to($value)
     return $value;
 }
 
-function miq_main_site_sso_main_site_url()
+function miq_main_site_sso_issuer()
+{
+    $issuer = sanitize_key(wp_unslash((string) ($_GET['issuer'] ?? '')));
+    if (!in_array($issuer, array('production', 'full'), true)) {
+        wp_die(esc_html__('The main-site login source is invalid.', 'miq-main-site-sso'));
+    }
+    return $issuer;
+}
+
+function miq_main_site_sso_verify_issuer($issuer, $token)
+{
+    $provided = sanitize_text_field(wp_unslash((string) ($_GET['issuer_sig'] ?? '')));
+    $expected = hash_hmac('sha256', (string) $issuer . "\n" . (string) $token, miq_main_site_sso_secret());
+    return preg_match('/^[a-f0-9]{64}$/i', $provided) && hash_equals($expected, $provided);
+}
+
+function miq_main_site_sso_main_site_url($issuer)
 {
     $url = defined('MIQ_MAIN_SITE_URL') ? (string) MIQ_MAIN_SITE_URL : 'https://360miq.com';
     $url = untrailingslashit(esc_url_raw($url));
+    if ($issuer === 'full') {
+        $url .= '/full';
+    }
     $scheme = strtolower((string) wp_parse_url($url, PHP_URL_SCHEME));
     if (!wp_http_validate_url($url) || ($scheme !== 'https' && !(defined('WP_DEBUG') && WP_DEBUG && $scheme === 'http'))) {
         wp_die(esc_html__('The configured main-site SSO URL is invalid.', 'miq-main-site-sso'));
@@ -189,7 +208,12 @@ function miq_main_site_sso_bootstrap()
         wp_die(esc_html__('The main-site login token is invalid.', 'miq-main-site-sso'));
     }
 
-    $endpoint = miq_main_site_sso_main_site_url() . '/account_sso.php?mode=consume';
+    $issuer = miq_main_site_sso_issuer();
+    if (!miq_main_site_sso_verify_issuer($issuer, $token)) {
+        wp_die(esc_html__('The main-site login source could not be verified.', 'miq-main-site-sso'));
+    }
+
+    $endpoint = miq_main_site_sso_main_site_url($issuer) . '/account_sso.php?mode=consume';
     $response = wp_remote_post($endpoint, array(
         'timeout' => 8,
         'redirection' => 0,

@@ -17,7 +17,7 @@
       "source_file": "account.php",
       "source_location": "L1",
       "id": "account_php",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_redirect()",
@@ -25,7 +25,7 @@
       "source_file": "account.php",
       "source_location": "L14",
       "id": "account_miq_account_redirect",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_token_link()",
@@ -33,7 +33,7 @@
       "source_file": "account.php",
       "source_location": "L20",
       "id": "account_miq_account_token_link",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_process_verification()",
@@ -41,7 +41,7 @@
       "source_file": "account.php",
       "source_location": "L34",
       "id": "account_miq_account_process_verification",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_send_verification_for_user()",
@@ -49,7 +49,7 @@
       "source_file": "account.php",
       "source_location": "L66",
       "id": "account_miq_account_send_verification_for_user",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_process_email_registration()",
@@ -57,7 +57,7 @@
       "source_file": "account.php",
       "source_location": "L81",
       "id": "account_miq_account_process_email_registration",
-      "community": 36
+      "community": 37
     },
     {
       "label": "miq_account_process_google_login()",
@@ -65,7 +65,7 @@
       "source_file": "account.php",
       "source_location": "L93",
       "id": "account_miq_account_process_google_login",
-      "community": 36
+      "community": 37
     },
     {
       "label": "account_api.php",
@@ -377,7 +377,7 @@
       "source_file": "account_sso.php",
       "source_location": "L1",
       "id": "account_sso_php",
-      "community": 37
+      "community": 33
     },
     {
       "label": "miq_sso_json()",
@@ -385,7 +385,7 @@
       "source_file": "account_sso.php",
       "source_location": "L4",
       "id": "account_sso_miq_sso_json",
-      "community": 37
+      "community": 33
     },
     {
       "label": "miq_sso_shared_secret()",
@@ -393,39 +393,55 @@
       "source_file": "account_sso.php",
       "source_location": "L13",
       "id": "account_sso_miq_sso_shared_secret",
-      "community": 37
+      "community": 33
+    },
+    {
+      "label": "miq_sso_issuer()",
+      "file_type": "code",
+      "source_file": "account_sso.php",
+      "source_location": "L18",
+      "id": "account_sso_miq_sso_issuer",
+      "community": 33
+    },
+    {
+      "label": "miq_sso_issuer_signature()",
+      "file_type": "code",
+      "source_file": "account_sso.php",
+      "source_location": "L24",
+      "id": "account_sso_miq_sso_issuer_signature",
+      "community": 33
     },
     {
       "label": "miq_sso_targets()",
       "file_type": "code",
       "source_file": "account_sso.php",
-      "source_location": "L18",
+      "source_location": "L29",
       "id": "account_sso_miq_sso_targets",
-      "community": 37
+      "community": 33
     },
     {
       "label": "miq_sso_target()",
       "file_type": "code",
       "source_file": "account_sso.php",
-      "source_location": "L26",
+      "source_location": "L37",
       "id": "account_sso_miq_sso_target",
-      "community": 37
+      "community": 33
     },
     {
       "label": "miq_sso_browser_error()",
       "file_type": "code",
       "source_file": "account_sso.php",
-      "source_location": "L48",
+      "source_location": "L59",
       "id": "account_sso_miq_sso_browser_error",
-      "community": 37
+      "community": 33
     },
     {
       "label": "miq_sso_begin()",
       "file_type": "code",
       "source_file": "account_sso.php",
-      "source_location": "L57",
+      "source_location": "L68",
       "id": "account_sso_miq_sso_begin",
-      "community": 37
+      "community": 33
     },
     {
       "label": "account_user_admin.php",
@@ -4609,7 +4625,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_ui1_12_1_min_js",
-      "community": 33
+      "community": 34
     },
     {
       "label": "e()",
@@ -4617,7 +4633,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_e",
-      "community": 33
+      "community": 34
     },
     {
       "label": "i()",
@@ -4625,7 +4641,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_i",
-      "community": 33
+      "community": 34
     },
     {
       "label": "s()",
@@ -4633,7 +4649,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_s",
-      "community": 33
+      "community": 34
     },
     {
       "label": "n()",
@@ -4641,7 +4657,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_n",
-      "community": 33
+      "community": 34
     },
     {
       "label": "o()",
@@ -4649,7 +4665,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_o",
-      "community": 33
+      "community": 34
     },
     {
       "label": "a()",
@@ -4657,7 +4673,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_a",
-      "community": 33
+      "community": 34
     },
     {
       "label": "r()",
@@ -4665,7 +4681,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_r",
-      "community": 33
+      "community": 34
     },
     {
       "label": "t()",
@@ -4673,7 +4689,7 @@
       "source_file": "assets\\js\\jquery-ui1.12.1.min.js",
       "source_location": "L6",
       "id": "jquery_ui1_12_1_min_t",
-      "community": 33
+      "community": 34
     },
     {
       "label": "jquery.sparkline.min.js",
@@ -5825,7 +5841,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L1",
       "id": "assets_js_theme_js",
-      "community": 35
+      "community": 36
     },
     {
       "label": "isDark()",
@@ -5833,7 +5849,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L13",
       "id": "theme_isdark",
-      "community": 35
+      "community": 36
     },
     {
       "label": "getSaved()",
@@ -5841,7 +5857,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L17",
       "id": "theme_getsaved",
-      "community": 35
+      "community": 36
     },
     {
       "label": "applyTheme()",
@@ -5849,7 +5865,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L23",
       "id": "theme_applytheme",
-      "community": 35
+      "community": 36
     },
     {
       "label": "setTheme()",
@@ -5857,7 +5873,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L53",
       "id": "theme_settheme",
-      "community": 35
+      "community": 36
     },
     {
       "label": "toggleTheme()",
@@ -5865,7 +5881,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L58",
       "id": "theme_toggletheme",
-      "community": 35
+      "community": 36
     },
     {
       "label": "updateToggleIcon()",
@@ -5873,7 +5889,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L64",
       "id": "theme_updatetoggleicon",
-      "community": 35
+      "community": 36
     },
     {
       "label": "initToggle()",
@@ -5881,7 +5897,7 @@
       "source_file": "assets\\js\\theme.js",
       "source_location": "L74",
       "id": "theme_inittoggle",
-      "community": 35
+      "community": 36
     },
     {
       "label": "Treemap.js",
@@ -7369,7 +7385,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L1",
       "id": "assets_js_pages_screener_share_js",
-      "community": 34
+      "community": 35
     },
     {
       "label": "notify()",
@@ -7377,7 +7393,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L4",
       "id": "screener_share_notify",
-      "community": 34
+      "community": 35
     },
     {
       "label": "getShareUrl()",
@@ -7385,7 +7401,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L29",
       "id": "screener_share_getshareurl",
-      "community": 34
+      "community": 35
     },
     {
       "label": "fallbackCopy()",
@@ -7393,7 +7409,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L33",
       "id": "screener_share_fallbackcopy",
-      "community": 34
+      "community": 35
     },
     {
       "label": "copyUrl()",
@@ -7401,7 +7417,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L87",
       "id": "screener_share_copyurl",
-      "community": 34
+      "community": 35
     },
     {
       "label": "shareUrl()",
@@ -7409,7 +7425,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L100",
       "id": "screener_share_shareurl",
-      "community": 34
+      "community": 35
     },
     {
       "label": "makeButton()",
@@ -7417,7 +7433,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L119",
       "id": "screener_share_makebutton",
-      "community": 34
+      "community": 35
     },
     {
       "label": "ensureShareActions()",
@@ -7425,7 +7441,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L132",
       "id": "screener_share_ensureshareactions",
-      "community": 34
+      "community": 35
     },
     {
       "label": "init()",
@@ -7433,7 +7449,7 @@
       "source_file": "assets\\js\\pages\\screener-share.js",
       "source_location": "L152",
       "id": "screener_share_init",
-      "community": 34
+      "community": 35
     },
     {
       "label": "stockinfo-main.js",
@@ -12304,6 +12320,30 @@
       "source_location": "L18",
       "weight": 1.0,
       "_src": "account_sso_php",
+      "_tgt": "account_sso_miq_sso_issuer",
+      "source": "account_sso_php",
+      "target": "account_sso_miq_sso_issuer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_sso.php",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "account_sso_php",
+      "_tgt": "account_sso_miq_sso_issuer_signature",
+      "source": "account_sso_php",
+      "target": "account_sso_miq_sso_issuer_signature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_sso.php",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "account_sso_php",
       "_tgt": "account_sso_miq_sso_targets",
       "source": "account_sso_php",
       "target": "account_sso_miq_sso_targets",
@@ -12313,7 +12353,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L26",
+      "source_location": "L37",
       "weight": 1.0,
       "_src": "account_sso_php",
       "_tgt": "account_sso_miq_sso_target",
@@ -12325,7 +12365,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L48",
+      "source_location": "L59",
       "weight": 1.0,
       "_src": "account_sso_php",
       "_tgt": "account_sso_miq_sso_browser_error",
@@ -12337,7 +12377,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L57",
+      "source_location": "L68",
       "weight": 1.0,
       "_src": "account_sso_php",
       "_tgt": "account_sso_miq_sso_begin",
@@ -12349,7 +12389,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L68",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_src": "account_sso_miq_sso_issuer_signature",
+      "_tgt": "account_sso_miq_sso_shared_secret",
+      "source": "account_sso_miq_sso_shared_secret",
+      "target": "account_sso_miq_sso_issuer_signature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account_sso.php",
+      "source_location": "L79",
       "weight": 1.0,
       "_src": "account_sso_miq_sso_begin",
       "_tgt": "account_sso_miq_sso_shared_secret",
@@ -12361,7 +12413,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L28",
+      "source_location": "L104",
+      "weight": 1.0,
+      "_src": "account_sso_miq_sso_begin",
+      "_tgt": "account_sso_miq_sso_issuer",
+      "source": "account_sso_miq_sso_issuer",
+      "target": "account_sso_miq_sso_begin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account_sso.php",
+      "source_location": "L109",
+      "weight": 1.0,
+      "_src": "account_sso_miq_sso_begin",
+      "_tgt": "account_sso_miq_sso_issuer_signature",
+      "source": "account_sso_miq_sso_issuer_signature",
+      "target": "account_sso_miq_sso_begin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account_sso.php",
+      "source_location": "L39",
       "weight": 1.0,
       "_src": "account_sso_miq_sso_target",
       "_tgt": "account_sso_miq_sso_targets",
@@ -12373,7 +12449,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L60",
+      "source_location": "L71",
       "weight": 1.0,
       "_src": "account_sso_miq_sso_begin",
       "_tgt": "account_sso_miq_sso_target",
@@ -12385,7 +12461,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account_sso.php",
-      "source_location": "L69",
+      "source_location": "L80",
       "weight": 1.0,
       "_src": "account_sso_miq_sso_begin",
       "_tgt": "account_sso_miq_sso_browser_error",

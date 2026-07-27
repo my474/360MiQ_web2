@@ -74,7 +74,7 @@ The mu-plugin `blog/wp-content/mu-plugins/miq-main-site-sso.php` maps a main-sit
 
 New SSO-created profiles are managed by 360MiQ: their public display name and HTTPS avatar synchronize on the next Write for Us sign-in. Existing WordPress profiles keep their WordPress display name. Subscribers are promoted to Contributor; existing Contributors, Authors, Editors, Administrators, and stronger custom roles are never downgraded.
 
-For the `/full` test deployment, set `MIQ_MAIN_SITE_URL` to `https://360miq.com/full` only when intentionally testing against the configured WordPress installation. The WordPress server uses that value to consume the one-time token from the correct account endpoint.
+`MIQ_MAIN_SITE_URL` is always the production root. The identical `account_sso.php` copies detect whether they are running at `/account_sso.php` or `/full/account_sso.php` and send a signed `production` or `full` issuer marker to the shared WordPress installation. WordPress verifies that marker and consumes the one-time token from the matching endpoint, so no manual URL switch is needed between production and testing.
 
 ## Important production checks
 

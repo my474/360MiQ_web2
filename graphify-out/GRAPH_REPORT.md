@@ -1,13 +1,13 @@
-﻿# Graph Report - .  (2026-07-27)
+# Graph Report - .  (2026-07-27)
 
 ## Corpus Check
-- 151 files Â· ~774,945 words
+- 151 files · ~775,059 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1448 nodes Â· 2743 edges Â· 151 communities detected
-- Extraction: 100% EXTRACTED Â· 0% INFERRED Â· 0% AMBIGUOUS
-- Token cost: 0 input Â· 0 output
+- 1450 nodes · 2748 edges · 151 communities detected
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
+- Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Community 0|Community 0]]
@@ -312,24 +312,24 @@ Cohesion: 0.4
 Nodes (9): bindButton(), copyUrl(), fallbackCopy(), getComposerShareUrl(), getRaceShareUrl(), notify(), setupSharing(), shareUrl() (+1 more)
 
 ### Community 33 - "Community 33"
+Cohesion: 0.42
+Nodes (7): miq_sso_begin(), miq_sso_browser_error(), miq_sso_issuer(), miq_sso_issuer_signature(), miq_sso_shared_secret(), miq_sso_target(), miq_sso_targets()
+
+### Community 34 - "Community 34"
 Cohesion: 0.44
 Nodes (7): a(), i(), n(), o(), r(), s(), t()
 
-### Community 34 - "Community 34"
+### Community 35 - "Community 35"
 Cohesion: 0.47
 Nodes (8): copyUrl(), ensureShareActions(), fallbackCopy(), getShareUrl(), init(), makeButton(), notify(), shareUrl()
 
-### Community 35 - "Community 35"
+### Community 36 - "Community 36"
 Cohesion: 0.5
 Nodes (6): applyTheme(), initToggle(), isDark(), setTheme(), toggleTheme(), updateToggleIcon()
 
-### Community 36 - "Community 36"
+### Community 37 - "Community 37"
 Cohesion: 0.38
 Nodes (3): miq_account_process_email_registration(), miq_account_send_verification_for_user(), miq_account_token_link()
-
-### Community 37 - "Community 37"
-Cohesion: 0.48
-Nodes (5): miq_sso_begin(), miq_sso_browser_error(), miq_sso_shared_secret(), miq_sso_target(), miq_sso_targets()
 
 ### Community 38 - "Community 38"
 Cohesion: 0.48
@@ -785,7 +785,7 @@ Nodes (0):
 
 ## Knowledge Gaps
 - **1 isolated node(s):** `MiqAccountRateLimitException`
-  These have â‰¤1 connection - possible missing edges or undocumented components.
+  These have ≤1 connection - possible missing edges or undocumented components.
 - **Thin community `Community 71`** (2 nodes): `endsWith()`, `db_adv_get2.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 72`** (2 nodes): `endsWith()`, `db_api_get.php`

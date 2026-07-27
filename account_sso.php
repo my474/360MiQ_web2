@@ -15,6 +15,17 @@ function miq_sso_shared_secret()
     return (string) miq_account_env('MIQ_SSO_SHARED_SECRET', '');
 }
 
+function miq_sso_issuer()
+{
+    $script_name = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+    return preg_match('#^/full(?:/|$)#', $script_name) ? 'full' : 'production';
+}
+
+function miq_sso_issuer_signature($issuer, $token)
+{
+    return hash_hmac('sha256', (string) $issuer . "\n" . (string) $token, miq_sso_shared_secret());
+}
+
 function miq_sso_targets()
 {
     return array(
@@ -90,7 +101,15 @@ function miq_sso_begin()
     )->close();
     header('Cache-Control: no-store');
     header('Referrer-Policy: no-referrer');
-    header('Location: /blog/?miq_sso=1&token=' . rawurlencode($token) . '&return_to=' . rawurlencode($target['return_to']));
+    $issuer = miq_sso_issuer();
+    $wordpress_query = http_build_query(array(
+        'miq_sso' => '1',
+        'token' => $token,
+        'issuer' => $issuer,
+        'issuer_sig' => miq_sso_issuer_signature($issuer, $token),
+        'return_to' => $target['return_to'],
+    ), '', '&', PHP_QUERY_RFC3986);
+    header('Location: /blog/?' . $wordpress_query);
     exit;
 }
 

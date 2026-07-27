@@ -67,6 +67,10 @@ assert.match(mainSso, /DELETE FROM \{\$tokens\} WHERE user_id = \? AND consumed_
 assert.match(mainSso, /\$_SERVER\['HTTP_X_MIQ_SSO_SECRET'\].*:\s*''/);
 assert.doesNotMatch(mainSso, /\$_POST\['secret'\]/);
 assert.match(mainSso, /u\.status = 'active'.*FOR UPDATE/s);
+assert.match(mainSso, /function miq_sso_issuer\(\)/);
+assert.match(mainSso, /preg_match\('#\^\/full\(\?:\/\|\$\)#/);
+assert.match(mainSso, /hash_hmac\('sha256'.*\$issuer.*\\n.*\$token/s);
+assert.match(mainSso, /'issuer_sig' => miq_sso_issuer_signature\(\$issuer, \$token\)/);
 assert.match(wordpressSso, /function miq_main_site_sso_linked_user/);
 assert.match(wordpressSso, /miq_main_user_id/);
 assert.match(wordpressSso, /already linked to another 360MiQ account/);
@@ -75,6 +79,10 @@ assert.match(wordpressSso, /wp_update_user\(array\('ID' => \$user->ID, 'display_
 assert.match(wordpressSso, /add_filter\('get_avatar_url', 'miq_main_site_sso_avatar_url'/);
 assert.match(wordpressSso, /if \(!\$user->has_cap\('edit_posts'\)\)/);
 assert.doesNotMatch(wordpressSso, /!\$user->has_cap\('manage_options'\).*!\$user->has_cap\('edit_others_posts'\)/s);
+assert.match(wordpressSso, /in_array\(\$issuer, array\('production', 'full'\), true\)/);
+assert.match(wordpressSso, /hash_equals\(\$expected, \$provided\)/);
+assert.match(wordpressSso, /if \(\$issuer === 'full'\) \{\s*\$url \.= '\/full';/s);
+assert.match(wordpressSso, /miq_main_site_sso_main_site_url\(\$issuer\) \. '\/account_sso\.php\?mode=consume'/);
 assert.match(wordpressSso, /'redirection' => 0/);
 assert.match(wordpressSso, /'sslverify' => true/);
 assert.match(writeForUs, /account_sso\.php\?target=new-post/);
