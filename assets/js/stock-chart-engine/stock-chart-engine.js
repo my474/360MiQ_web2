@@ -10602,6 +10602,49 @@
     ctx.lineTo(activeRect.x + activeRect.width, this.pointer.y);
     ctx.stroke();
     ctx.restore();
+    this.drawCrosshairAxisMarkers(activeRect, theme);
+  };
+
+  Chart.prototype.drawCrosshairAxisMarkers = function (activeRect, theme) {
+    var ctx = this.ctx;
+    var pointer = this.pointer;
+    var timeRect = this.timeAxisRect;
+    if (!ctx || !pointer || !activeRect || !timeRect) return;
+
+    var time = this.timeForX(pointer.x, activeRect);
+    var range = this.paneRange(activeRect.paneId);
+    var value = this.valueForY(pointer.y, activeRect, range);
+    if (time == null || !Number.isFinite(value)) return;
+
+    var fillColor = theme.crosshair;
+    var textColor = contrastTextColor(fillColor);
+    var markerHeight = 18;
+    var valueTop = clamp(
+      Math.round(pointer.y - markerHeight / 2),
+      activeRect.y,
+      activeRect.y + activeRect.height - markerHeight
+    );
+    var dateLabel = formatDate(Math.round(time));
+    var dateWidth = Math.min(timeRect.width, Math.max(70, textWidth(ctx, dateLabel) + 16));
+    var dateLeft = clamp(
+      Math.round(pointer.x - dateWidth / 2),
+      timeRect.x,
+      timeRect.x + timeRect.width - dateWidth
+    );
+    var dateTop = timeRect.y + Math.round((timeRect.height - markerHeight) / 2);
+
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(activeRect.scaleX + 1, valueTop, activeRect.scaleWidth - 1, markerHeight);
+    ctx.fillRect(dateLeft, dateTop, dateWidth, markerHeight);
+    ctx.fillStyle = textColor;
+    ctx.fillText(formatNumber(value), activeRect.scaleX + activeRect.scaleWidth / 2, valueTop + markerHeight / 2);
+    ctx.fillText(dateLabel, dateLeft + dateWidth / 2, dateTop + markerHeight / 2);
+    ctx.restore();
   };
 
   function drawArrowHead(ctx, ax, ay, bx, by, color) {

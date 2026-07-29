@@ -367,6 +367,50 @@ function formatTestPriceLegend(chart, bar) {
   return `${formatTestDate(bar.time)}  O ${formatTestNumber(bar.open)} H ${formatTestNumber(bar.high)} L ${formatTestNumber(bar.low)} C ${formatTestNumber(bar.close)}${suffix}`;
 }
 
+function assertCrosshairAxisMarkers(chart, expectedThemeName) {
+  chart.layoutPanes();
+  const rect = chart.getPaneRect('price') || chart.paneRects[0];
+  const originalPointer = chart.pointer;
+  const originalCommands = chart.canvas.commands;
+  const pointer = {
+    x: rect.x + Math.round(rect.width * 0.41),
+    y: rect.y + Math.round(rect.height * 0.57),
+    pointerType: 'mouse'
+  };
+  const expectedDate = formatTestDate(Math.round(chart.timeForX(pointer.x, rect)));
+  const expectedValue = formatTestNumber(chart.valueForY(pointer.y, rect, chart.paneRange(rect.paneId)));
+  const theme = chart.theme();
+  chart.pointer = pointer;
+  chart.canvas.commands = [];
+  chart.drawCrosshair(theme);
+
+  const valueBackground = chart.canvas.commands.find((command) => (
+    command.type === 'fillRect' &&
+    command.x === rect.scaleX + 1 &&
+    command.width === rect.scaleWidth - 1
+  ));
+  const dateBackground = chart.canvas.commands.find((command) => (
+    command.type === 'fillRect' &&
+    command.y >= chart.timeAxisRect.y &&
+    command.y + command.height <= chart.timeAxisRect.y + chart.timeAxisRect.height
+  ));
+  const valueText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === expectedValue);
+  const dateText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === expectedDate);
+
+  assert.strictEqual(theme.name, expectedThemeName);
+  assert.ok(valueBackground, `${expectedThemeName} crosshair should render a price-axis marker`);
+  assert.ok(dateBackground, `${expectedThemeName} crosshair should render a date-axis marker`);
+  assert.strictEqual(valueBackground.fillStyle, theme.crosshair);
+  assert.strictEqual(dateBackground.fillStyle, theme.crosshair);
+  assert.ok(valueText, `${expectedThemeName} crosshair should label its y-axis value`);
+  assert.ok(dateText, `${expectedThemeName} crosshair should label its x-axis date`);
+  assert.notStrictEqual(valueText.fillStyle, theme.crosshair);
+  assert.strictEqual(dateText.fillStyle, valueText.fillStyle);
+
+  chart.pointer = originalPointer;
+  chart.canvas.commands = originalCommands;
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -404,6 +448,7 @@ const chart = new StockChartEngine.Chart('#chart', {
   }
 });
 assert.strictEqual(chart.autosaveTimer, null);
+assertCrosshairAxisMarkers(chart, 'light');
 const pineSource = `//@version=5
 indicator("RSI Average", overlay=false)
 r = ta.rsi(close, 14)
@@ -2301,13 +2346,17 @@ assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && c
 
 chart.setTheme('dark');
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
+assertCrosshairAxisMarkers(chart, 'dark');
 
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+assertCrosshairAxisMarkers(chart, 'light');
 chart.toggleTheme();
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
+assertCrosshairAxisMarkers(chart, 'dark');
 chart.toggleTheme();
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+assertCrosshairAxisMarkers(chart, 'light');
 
 const additionalIndicators = [
   'WMA', 'HMA', 'DEMA', 'TEMA', 'ROC', 'MOM', 'CCI', 'MFI', 'ADX', 'OBV',
@@ -3449,6 +3498,7 @@ const darkChart = new StockChartEngine.Chart('#chart', {
   autosave: false
 });
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'dark');
+assertCrosshairAxisMarkers(darkChart, 'dark');
 const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' });
 const initialDarkIndicator = darkChart.document.indicators.find((indicator) => indicator.id === initialDarkIndicatorId);
 assert.strictEqual(initialDarkIndicator.styles.value.color, '#60a5fa');
