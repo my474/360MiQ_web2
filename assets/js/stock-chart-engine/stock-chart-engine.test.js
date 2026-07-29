@@ -408,6 +408,7 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   assert.strictEqual(dateText.fillStyle, valueText.fillStyle);
   assert.ok(/^600 11px /.test(valueText.font));
   assert.strictEqual(dateText.font, valueText.font);
+  assert.strictEqual(dateText.y, chart.timeAxisRect.y + 17);
 
   chart.pointer = originalPointer;
   chart.canvas.commands = originalCommands;
