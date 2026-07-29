@@ -417,10 +417,18 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   const seriesMarkerTips = chart.canvas.commands.filter((command) => (
     command.type === 'lineTo' && command.x === rect.scaleX + 1
   ));
+  const seriesMarkerTops = chart.canvas.commands.filter((command) => (
+    command.type === 'moveTo' && command.x === rect.scaleX + 9
+  ));
+  const seriesMarkerBottoms = chart.canvas.commands.filter((command) => (
+    command.type === 'lineTo' && command.x === rect.scaleX + 9
+  ));
   assert.ok(persistentItems.length > 0, `${expectedThemeName} chart should expose persistent scale markers`);
   assert.ok(persistentBackgrounds.length > 0, `${expectedThemeName} chart should draw persistent scale markers`);
   assert.ok(persistentBackgrounds.every((command) => !command.shadowBlur && !command.shadowOffsetY));
-  assert.ok(seriesMarkerTips.length >= persistentBackgrounds.length, `${expectedThemeName} scale markers should use anchored arrow tags`);
+  assert.strictEqual(seriesMarkerTips.length, persistentBackgrounds.length, `${expectedThemeName} scale markers should use anchored arrow tags`);
+  assert.strictEqual(seriesMarkerTops.length, persistentBackgrounds.length, `${expectedThemeName} series triangles should begin at the marker top`);
+  assert.strictEqual(seriesMarkerBottoms.length, persistentBackgrounds.length, `${expectedThemeName} series triangles should begin at the marker bottom`);
   persistentItems.forEach((item) => {
     assert.ok(persistentBackgrounds.some((command) => command.fillStyle === item.color), `${expectedThemeName} scale marker should use its series color`);
   });

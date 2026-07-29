@@ -10743,8 +10743,6 @@
     var width = marker.width;
     var height = marker.height;
     var radius = Math.min(marker.radius, width / 2, height / 2);
-    var arrowHalf = Math.min(5, height / 2 - 2);
-    var arrowCenter = y + height / 2;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + width - radius, y);
@@ -10752,9 +10750,7 @@
     ctx.lineTo(x + width, y + height - radius);
     ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
     ctx.lineTo(x, y + height);
-    ctx.lineTo(x, arrowCenter + arrowHalf);
     ctx.lineTo(marker.tipX, marker.tipY);
-    ctx.lineTo(x, arrowCenter - arrowHalf);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
