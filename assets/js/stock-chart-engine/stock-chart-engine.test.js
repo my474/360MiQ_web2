@@ -213,7 +213,14 @@ class FakeCanvas extends FakeElement {
       clearRect() {},
       closePath() {},
       fill() {
-        canvas.commands.push({ type: 'fill', alpha: this.globalAlpha });
+        canvas.commands.push({
+          type: 'fill',
+          alpha: this.globalAlpha,
+          fillStyle: this.fillStyle,
+          shadowColor: this.shadowColor,
+          shadowBlur: this.shadowBlur,
+          shadowOffsetY: this.shadowOffsetY
+        });
       },
       fillRect(x, y, width, height) {
         canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha, fillStyle: this.fillStyle });
@@ -384,28 +391,23 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   chart.canvas.commands = [];
   chart.drawCrosshair(theme);
 
-  const valueBackground = chart.canvas.commands.find((command) => (
-    command.type === 'fillRect' &&
-    command.x === rect.scaleX + 1 &&
-    command.width === rect.scaleWidth - 1
+  const markerBackgrounds = chart.canvas.commands.filter((command) => (
+    command.type === 'fill' && command.fillStyle === theme.crosshair
   ));
-  const dateBackground = chart.canvas.commands.find((command) => (
-    command.type === 'fillRect' &&
-    command.y >= chart.timeAxisRect.y &&
-    command.y + command.height <= chart.timeAxisRect.y + chart.timeAxisRect.height
-  ));
+  const roundedCorners = chart.canvas.commands.filter((command) => command.type === 'quadraticCurveTo');
   const valueText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === expectedValue);
   const dateText = chart.canvas.commands.find((command) => command.type === 'fillText' && command.text === expectedDate);
 
   assert.strictEqual(theme.name, expectedThemeName);
-  assert.ok(valueBackground, `${expectedThemeName} crosshair should render a price-axis marker`);
-  assert.ok(dateBackground, `${expectedThemeName} crosshair should render a date-axis marker`);
-  assert.strictEqual(valueBackground.fillStyle, theme.crosshair);
-  assert.strictEqual(dateBackground.fillStyle, theme.crosshair);
+  assert.strictEqual(markerBackgrounds.length, 2, `${expectedThemeName} crosshair should render both axis markers`);
+  assert.ok(markerBackgrounds.every((command) => command.shadowBlur === 5 && command.shadowOffsetY === 2));
+  assert.ok(roundedCorners.length >= 8, `${expectedThemeName} crosshair markers should have rounded corners`);
   assert.ok(valueText, `${expectedThemeName} crosshair should label its y-axis value`);
   assert.ok(dateText, `${expectedThemeName} crosshair should label its x-axis date`);
   assert.notStrictEqual(valueText.fillStyle, theme.crosshair);
   assert.strictEqual(dateText.fillStyle, valueText.fillStyle);
+  assert.ok(/^600 11px /.test(valueText.font));
+  assert.strictEqual(dateText.font, valueText.font);
 
   chart.pointer = originalPointer;
   chart.canvas.commands = originalCommands;
@@ -2633,12 +2635,21 @@ assert.ok(!crosshairLegendTexts.includes(latestPriceLabel));
 assert.ok(crosshairLegendTexts.includes(expectedRsiLegendLabel));
 chart.canvas.commands = [];
 chart.drawCrosshair(chart.theme());
-const verticalCrosshairSegments = chart.canvas.commands.filter((command) => command.type === 'lineTo' && command.x === crosshairX);
+const crosshairStrokeIndex = chart.canvas.commands.findIndex((command) => command.type === 'stroke');
+const crosshairLineCommands = chart.canvas.commands.slice(0, crosshairStrokeIndex);
+const verticalCrosshairSegments = crosshairLineCommands.filter((command) => (
+  command.type === 'lineTo' &&
+  command.x === crosshairX
+));
 assert.strictEqual(verticalCrosshairSegments.length, crosshairPaneRects.length);
 crosshairPaneRects.forEach((rect) => {
   assert.ok(verticalCrosshairSegments.some((command) => command.y === rect.y + rect.height));
 });
-assert.strictEqual(chart.canvas.commands.filter((command) => command.type === 'lineTo' && command.y === chart.pointer.y && command.x !== crosshairX).length, 1);
+assert.ok(crosshairLineCommands.some((command) => (
+  command.type === 'lineTo' &&
+  command.y === chart.pointer.y &&
+  command.x === rsiPaneRectForCrosshair.x + rsiPaneRectForCrosshair.width
+)));
 chart.pointer = null;
 const originalBarsForPriceLegend = chart.bars;
 const originalVisibleRangeForPriceLegend = chart.document.visibleRange;

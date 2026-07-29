@@ -10618,34 +10618,107 @@
 
     var fillColor = theme.crosshair;
     var textColor = contrastTextColor(fillColor);
-    var markerHeight = 18;
+    var outlineColor = colorWithAlpha(theme.background, 0.78) || theme.background;
+    var markerHeight = 20;
+    var markerRadius = 5;
     var valueTop = clamp(
       Math.round(pointer.y - markerHeight / 2),
-      activeRect.y,
-      activeRect.y + activeRect.height - markerHeight
+      activeRect.y + 2,
+      activeRect.y + activeRect.height - markerHeight - 2
     );
+    var valueLeft = activeRect.scaleX + 6;
+    var valueWidth = activeRect.scaleWidth - 10;
+    var valueNotchY = clamp(pointer.y, valueTop + markerRadius + 2, valueTop + markerHeight - markerRadius - 2);
     var dateLabel = formatDate(Math.round(time));
-    var dateWidth = Math.min(timeRect.width, Math.max(70, textWidth(ctx, dateLabel) + 16));
+    var dateWidth = Math.min(timeRect.width, Math.max(76, textWidth(ctx, dateLabel) + 20));
     var dateLeft = clamp(
       Math.round(pointer.x - dateWidth / 2),
       timeRect.x,
       timeRect.x + timeRect.width - dateWidth
     );
-    var dateTop = timeRect.y + Math.round((timeRect.height - markerHeight) / 2);
+    var dateTop = timeRect.y + 6;
+    var dateNotchX = clamp(pointer.x, dateLeft + markerRadius + 4, dateLeft + dateWidth - markerRadius - 4);
 
     ctx.save();
     ctx.setLineDash([]);
-    ctx.font = '11px sans-serif';
+    ctx.font = '600 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = fillColor;
-    ctx.fillRect(activeRect.scaleX + 1, valueTop, activeRect.scaleWidth - 1, markerHeight);
-    ctx.fillRect(dateLeft, dateTop, dateWidth, markerHeight);
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 1;
+    ctx.shadowColor = theme.name === 'dark' ? 'rgba(0, 0, 0, 0.34)' : 'rgba(15, 23, 42, 0.22)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetY = 2;
+    drawRoundedAxisMarker(ctx, {
+      x: valueLeft,
+      y: valueTop,
+      width: valueWidth,
+      height: markerHeight,
+      radius: markerRadius,
+      notchSide: 'left',
+      notchCenter: valueNotchY,
+      notchTip: pointer.y
+    });
+    drawRoundedAxisMarker(ctx, {
+      x: dateLeft,
+      y: dateTop,
+      width: dateWidth,
+      height: markerHeight,
+      radius: markerRadius,
+      notchSide: 'top',
+      notchCenter: dateNotchX,
+      notchTip: pointer.x
+    });
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
     ctx.fillStyle = textColor;
-    ctx.fillText(formatNumber(value), activeRect.scaleX + activeRect.scaleWidth / 2, valueTop + markerHeight / 2);
+    ctx.fillText(formatNumber(value), valueLeft + valueWidth / 2, valueTop + markerHeight / 2 + 0.5);
     ctx.fillText(dateLabel, dateLeft + dateWidth / 2, dateTop + markerHeight / 2);
     ctx.restore();
   };
+
+  function drawRoundedAxisMarker(ctx, marker) {
+    var x = marker.x;
+    var y = marker.y;
+    var width = marker.width;
+    var height = marker.height;
+    var radius = Math.min(marker.radius, width / 2, height / 2);
+    var notchHalf = 4;
+    var notchDepth = 6;
+    ctx.beginPath();
+
+    if (marker.notchSide === 'top') {
+      var topNotchCenter = clamp(marker.notchCenter, x + radius + notchHalf, x + width - radius - notchHalf);
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(topNotchCenter - notchHalf, y);
+      ctx.lineTo(marker.notchTip, y - notchDepth);
+      ctx.lineTo(topNotchCenter + notchHalf, y);
+    } else {
+      ctx.moveTo(x + radius, y);
+    }
+
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+
+    if (marker.notchSide === 'left') {
+      var leftNotchCenter = clamp(marker.notchCenter, y + radius + notchHalf, y + height - radius - notchHalf);
+      ctx.lineTo(x, leftNotchCenter + notchHalf);
+      ctx.lineTo(x - notchDepth, marker.notchTip);
+      ctx.lineTo(x, leftNotchCenter - notchHalf);
+    }
+
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
 
   function drawArrowHead(ctx, ax, ay, bx, by, color) {
     var angle = Math.atan2(by - ay, bx - ax);
