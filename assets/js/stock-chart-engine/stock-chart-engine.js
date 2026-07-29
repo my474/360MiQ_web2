@@ -9427,20 +9427,21 @@
       var item = entry.item;
       var label = item.label;
       var color = item.color || theme.crosshair;
-      var left = rect.scaleX + 7;
-      var width = Math.min(rect.scaleWidth - 11, Math.max(34, approximateTextWidth(label) + 12));
+      var left = rect.scaleX + 9;
+      var width = Math.min(rect.scaleWidth - 13, Math.max(34, approximateTextWidth(label) + 12));
       var centerY = entry.top + height / 2;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(rect.scaleX + 1, entry.y);
-      ctx.lineTo(left - 1, entry.y);
-      if (Math.abs(entry.y - centerY) > 0.5) ctx.lineTo(left - 1, centerY);
-      ctx.stroke();
       ctx.fillStyle = color;
       ctx.strokeStyle = colorWithAlpha(theme.background, 0.78) || theme.background;
       ctx.lineWidth = 1;
-      drawDockedAxisMarker(ctx, left, entry.top, width, height, 4);
+      drawSeriesAxisMarker(ctx, {
+        x: left,
+        y: entry.top,
+        width: width,
+        height: height,
+        radius: 4,
+        tipX: rect.scaleX + 1,
+        tipY: entry.y
+      });
       ctx.fillStyle = contrastTextColor(color);
       ctx.fillText(label, left + 6, centerY + 0.5);
     });
@@ -10736,8 +10737,14 @@
     ctx.stroke();
   }
 
-  function drawDockedAxisMarker(ctx, x, y, width, height, radius) {
-    radius = Math.min(radius, width / 2, height / 2);
+  function drawSeriesAxisMarker(ctx, marker) {
+    var x = marker.x;
+    var y = marker.y;
+    var width = marker.width;
+    var height = marker.height;
+    var radius = Math.min(marker.radius, width / 2, height / 2);
+    var arrowHalf = Math.min(5, height / 2 - 2);
+    var arrowCenter = y + height / 2;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + width - radius, y);
@@ -10745,6 +10752,9 @@
     ctx.lineTo(x + width, y + height - radius);
     ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
     ctx.lineTo(x, y + height);
+    ctx.lineTo(x, arrowCenter + arrowHalf);
+    ctx.lineTo(marker.tipX, marker.tipY);
+    ctx.lineTo(x, arrowCenter - arrowHalf);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
