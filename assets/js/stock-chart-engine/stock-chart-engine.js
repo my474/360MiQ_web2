@@ -10674,8 +10674,9 @@
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
     ctx.fillStyle = textColor;
-    ctx.fillText(formatNumber(value), valueLeft + valueWidth / 2, valueTop + markerHeight / 2 + 1.5);
-    ctx.fillText(dateLabel, dateLeft + dateWidth / 2, dateTop + markerHeight / 2);
+    ctx.fillText(formatNumber(value), valueLeft + valueWidth / 2, valueTop + markerHeight / 2 + 0.5);
+    // Numeric dates have no descenders, so a small optical offset reads more centered than the em-box midpoint.
+    ctx.fillText(dateLabel, dateLeft + dateWidth / 2, dateTop + markerHeight / 2 + 1);
     ctx.restore();
   };
 
