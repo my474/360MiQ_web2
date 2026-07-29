@@ -115,7 +115,7 @@ include "./header.php";
   </ul>
   <br>
   <h4>Where Your Article Will Appear</h4>
-  <p><strong>Please note:</strong> Only relevant articles that include a featured image or suitable image will be featured in these locations. Placement is not guaranteed for every submission.</p>
+  <p><strong>Please note:</strong> Only relevant articles that include a featured image or an inline image will be featured in these locations.</p>
     <ul>
         <li><div class="screenshot-caption">Your article will be spotlighted on <strong>Home page</strong> to attract broad readership.</div>
         <div class="screenshot">
