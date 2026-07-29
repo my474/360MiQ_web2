@@ -400,7 +400,7 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
 
   assert.strictEqual(theme.name, expectedThemeName);
   assert.strictEqual(markerBackgrounds.length, 2, `${expectedThemeName} crosshair should render both axis markers`);
-  assert.ok(markerBackgrounds.every((command) => command.shadowBlur === 5 && command.shadowOffsetY === 2));
+  assert.ok(markerBackgrounds.every((command) => !command.shadowBlur && !command.shadowOffsetY));
   assert.ok(roundedCorners.length >= 8, `${expectedThemeName} crosshair markers should have rounded corners`);
   assert.ok(valueText, `${expectedThemeName} crosshair should label its y-axis value`);
   assert.ok(dateText, `${expectedThemeName} crosshair should label its x-axis date`);
@@ -409,6 +409,23 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   assert.ok(/^600 11px /.test(valueText.font));
   assert.strictEqual(dateText.font, valueText.font);
   assert.strictEqual(dateText.y, chart.timeAxisRect.y + 17);
+
+  chart.canvas.commands = [];
+  chart.drawScaleMarkers(rect, chart.paneRange(rect.paneId), theme);
+  const persistentItems = chart.scaleMarkerItems(rect, chart.scaleMarkerTimeForPane(rect), theme);
+  const persistentBackgrounds = chart.canvas.commands.filter((command) => command.type === 'fill');
+  const dockedMarkerStarts = chart.canvas.commands.filter((command) => (
+    command.type === 'moveTo' && command.x === rect.scaleX + 7
+  ));
+  assert.ok(persistentItems.length > 0, `${expectedThemeName} chart should expose persistent scale markers`);
+  assert.ok(persistentBackgrounds.length > 0, `${expectedThemeName} chart should draw persistent scale markers`);
+  assert.ok(persistentBackgrounds.every((command) => !command.shadowBlur && !command.shadowOffsetY));
+  assert.ok(dockedMarkerStarts.length >= persistentBackgrounds.length, `${expectedThemeName} scale markers should use docked flat-left tags`);
+  persistentItems.forEach((item) => {
+    assert.ok(chart.canvas.commands.some((command) => (
+      command.type === 'stroke' && command.strokeStyle === item.color
+    )), `${expectedThemeName} scale marker should connect to its value with the series color`);
+  });
 
   chart.pointer = originalPointer;
   chart.canvas.commands = originalCommands;

@@ -9395,9 +9395,14 @@
     var items = this.scaleMarkerItems(rect, time, theme);
     if (!items.length) return;
     ctx.save();
-    ctx.font = '11px sans-serif';
+    ctx.font = '600 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
+    ctx.setLineDash([]);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     var height = 18;
     var minTop = Math.min(rect.y + 24, rect.y + rect.height - height - 2);
     var maxTop = rect.y + rect.height - height - 2;
@@ -9421,11 +9426,23 @@
     positioned.forEach(function (entry) {
       var item = entry.item;
       var label = item.label;
-      var width = Math.min(rect.scaleWidth - 8, Math.max(34, approximateTextWidth(label) + 12));
-      ctx.fillStyle = item.color || theme.crosshair;
-      ctx.fillRect(rect.scaleX + 4, entry.top, width, height);
-      ctx.fillStyle = contrastTextColor(item.color || theme.crosshair);
-      ctx.fillText(label, rect.scaleX + 9, entry.top + height / 2);
+      var color = item.color || theme.crosshair;
+      var left = rect.scaleX + 7;
+      var width = Math.min(rect.scaleWidth - 11, Math.max(34, approximateTextWidth(label) + 12));
+      var centerY = entry.top + height / 2;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(rect.scaleX + 1, entry.y);
+      ctx.lineTo(left - 1, entry.y);
+      if (Math.abs(entry.y - centerY) > 0.5) ctx.lineTo(left - 1, centerY);
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = colorWithAlpha(theme.background, 0.78) || theme.background;
+      ctx.lineWidth = 1;
+      drawDockedAxisMarker(ctx, left, entry.top, width, height, 4);
+      ctx.fillStyle = contrastTextColor(color);
+      ctx.fillText(label, left + 6, centerY + 0.5);
     });
     ctx.restore();
   };
@@ -10644,12 +10661,13 @@
     ctx.font = '600 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     ctx.fillStyle = fillColor;
     ctx.strokeStyle = outlineColor;
     ctx.lineWidth = 1;
-    ctx.shadowColor = theme.name === 'dark' ? 'rgba(0, 0, 0, 0.34)' : 'rgba(15, 23, 42, 0.22)';
-    ctx.shadowBlur = 5;
-    ctx.shadowOffsetY = 2;
     drawRoundedAxisMarker(ctx, {
       x: valueLeft,
       y: valueTop,
@@ -10670,9 +10688,6 @@
       notchCenter: dateNotchX,
       notchTip: pointer.x
     });
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
     ctx.fillStyle = textColor;
     ctx.fillText(formatNumber(value), valueLeft + valueWidth / 2, valueTop + markerHeight / 2 + 0.5);
     // Numeric dates have no descenders, so a small optical offset reads more centered than the em-box midpoint.
@@ -10716,6 +10731,20 @@
 
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function drawDockedAxisMarker(ctx, x, y, width, height, radius) {
+    radius = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x, y + height);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
