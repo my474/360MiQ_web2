@@ -223,10 +223,32 @@ class FakeCanvas extends FakeElement {
         });
       },
       fillRect(x, y, width, height) {
-        canvas.commands.push({ type: 'fillRect', x, y, width, height, alpha: this.globalAlpha, fillStyle: this.fillStyle });
+        canvas.commands.push({
+          type: 'fillRect',
+          x,
+          y,
+          width,
+          height,
+          alpha: this.globalAlpha,
+          fillStyle: this.fillStyle,
+          shadowColor: this.shadowColor,
+          shadowBlur: this.shadowBlur,
+          shadowOffsetY: this.shadowOffsetY
+        });
       },
       fillText(text, x, y) {
-        canvas.commands.push({ type: 'fillText', text: String(text), x, y, alpha: this.globalAlpha, fillStyle: this.fillStyle, font: this.font });
+        canvas.commands.push({
+          type: 'fillText',
+          text: String(text),
+          x,
+          y,
+          alpha: this.globalAlpha,
+          fillStyle: this.fillStyle,
+          font: this.font,
+          shadowColor: this.shadowColor,
+          shadowBlur: this.shadowBlur,
+          shadowOffsetY: this.shadowOffsetY
+        });
       },
       lineTo(x, y) {
         canvas.commands.push({ type: 'lineTo', x, y, alpha: this.globalAlpha });
@@ -257,7 +279,16 @@ class FakeCanvas extends FakeElement {
       },
       setTransform() {},
       stroke() {
-        canvas.commands.push({ type: 'stroke', alpha: this.globalAlpha, strokeStyle: this.strokeStyle, lineWidth: this.lineWidth, lineDash: (this._lineDash || []).slice() });
+        canvas.commands.push({
+          type: 'stroke',
+          alpha: this.globalAlpha,
+          strokeStyle: this.strokeStyle,
+          lineWidth: this.lineWidth,
+          lineDash: (this._lineDash || []).slice(),
+          shadowColor: this.shadowColor,
+          shadowBlur: this.shadowBlur,
+          shadowOffsetY: this.shadowOffsetY
+        });
       },
       strokeRect(x, y, width, height) {
         canvas.commands.push({ type: 'strokeRect', x, y, width, height, alpha: this.globalAlpha, strokeStyle: this.strokeStyle, lineDash: (this._lineDash || []).slice() });
@@ -437,42 +468,97 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   persistentItems.forEach((item) => {
     assert.ok(persistentBackgrounds.some((command) => command.fillStyle === item.color), `${expectedThemeName} scale marker should use its series color`);
   });
-  const firstSeriesRightCorner = chart.canvas.commands.find((command) => command.type === 'quadraticCurveTo');
-  const hoverLabel = persistentTexts[0].text;
-  const normalBodyLayout = {
-    x: seriesMarkerTops[0].x,
-    y: seriesMarkerTops[0].y,
-    width: firstSeriesRightCorner.x - seriesMarkerTops[0].x,
-    height: seriesMarkerBottoms[0].y - seriesMarkerTops[0].y
-  };
-  chart.pointer = {
-    x: normalBodyLayout.x + normalBodyLayout.width / 2,
-    y: normalBodyLayout.y + normalBodyLayout.height / 2,
-    pointerType: 'mouse'
-  };
-  chart.canvas.commands = [];
-  chart.drawScaleMarkers(rect, chart.paneRange(rect.paneId), theme);
-  const hoveredText = chart.canvas.commands.find((command) => (
-    command.type === 'fillText' && command.text === hoverLabel && /^700 11px /.test(command.font)
-  ));
-  const hoveredTop = chart.canvas.commands.find((command) => command.type === 'moveTo' && command.x === rect.scaleX + 9);
-  const hoveredBottom = chart.canvas.commands.find((command) => command.type === 'lineTo' && command.x === rect.scaleX + 9);
-  const hoveredRightCorner = chart.canvas.commands.find((command) => command.type === 'quadraticCurveTo');
-  assert.ok(hoveredText, `${expectedThemeName} scale marker should become bold on mouse hover`);
-  assert.deepStrictEqual({
-    x: hoveredTop.x,
-    y: hoveredTop.y,
-    width: hoveredRightCorner.x - hoveredTop.x,
-    height: hoveredBottom.y - hoveredTop.y
-  }, normalBodyLayout, `${expectedThemeName} scale marker hover should not change layout`);
-  chart.pointer.pointerType = 'touch';
-  chart.canvas.commands = [];
-  chart.drawScaleMarkers(rect, chart.paneRange(rect.paneId), theme);
-  assert.ok(chart.canvas.commands.some((command) => (
-    command.type === 'fillText' && command.text === hoverLabel && /^600 11px /.test(command.font)
-  )), `${expectedThemeName} touch input should not leave a series marker hovered`);
 
   chart.pointer = originalPointer;
+  chart.canvas.commands = originalCommands;
+}
+
+function assertLegendSeriesGlow(chart, expectedThemeName, indicatorId) {
+  const originalPointer = chart.pointer;
+  const originalCommands = chart.canvas.commands;
+  chart.pointer = null;
+  chart.canvas.commands = [];
+  chart.draw();
+
+  const zone = chart.legendHitZones.find((item) => item.indicatorId === indicatorId);
+  assert.ok(zone, `${expectedThemeName} chart should expose a hit target for the series legend`);
+
+  chart.canvas.commands = [];
+  chart.handlePointerMove({
+    clientX: zone.x + Math.min(16, Math.max(2, zone.width - 2)),
+    clientY: zone.y + zone.height / 2,
+    pointerType: 'mouse'
+  });
+
+  const theme = chart.theme();
+  const markerItem = chart.scaleMarkerItems(
+    chart.getPaneRect(zone.paneId),
+    chart.scaleMarkerTimeForPane(),
+    theme
+  ).find((item) => item.indicatorId === zone.indicatorId && item.output === zone.output);
+  const legendText = chart.canvas.commands.find((command) => (
+    command.type === 'fillText' &&
+    command.fillStyle === zone.color &&
+    /^700 12px /.test(command.font) &&
+    command.shadowColor === zone.color &&
+    command.shadowBlur === 8
+  ));
+  const legendBullet = chart.canvas.commands.find((command) => (
+    command.type === 'fillRect' &&
+    command.width === 8 &&
+    command.height === 8 &&
+    command.fillStyle === zone.color &&
+    command.shadowColor === zone.color &&
+    command.shadowBlur === 8
+  ));
+  const glowingSeries = chart.canvas.commands.find((command) => (
+    (
+      command.type === 'stroke' && command.strokeStyle === zone.color ||
+      command.type === 'fillRect' && command.fillStyle === zone.color && (command.width !== 8 || command.height !== 8)
+    ) &&
+    command.shadowColor === zone.color &&
+    command.shadowBlur === 8
+  ));
+  const glowingMarker = chart.canvas.commands.find((command) => (
+    command.type === 'fill' &&
+    command.fillStyle === zone.color &&
+    command.shadowColor === zone.color &&
+    command.shadowBlur === 8
+  ));
+  const markerText = markerItem && chart.canvas.commands.find((command) => (
+    command.type === 'fillText' &&
+    command.text === markerItem.label &&
+    /^600 11px /.test(command.font)
+  ));
+
+  assert.strictEqual(theme.name, expectedThemeName);
+  assert.deepStrictEqual(chart.hoveredLegendSeries, {
+    indicatorId: zone.indicatorId,
+    output: zone.output
+  });
+  assert.strictEqual(chart.canvas.style.cursor, 'pointer');
+  assert.ok(legendText, `${expectedThemeName} legend text should become bold and glow on hover`);
+  assert.ok(legendBullet, `${expectedThemeName} legend swatch should glow on hover`);
+  assert.ok(glowingSeries, `${expectedThemeName} plotted series should glow with its legend`);
+  assert.ok(markerItem, `${expectedThemeName} hovered series should expose a matching scale marker`);
+  assert.ok(glowingMarker, `${expectedThemeName} scale marker should glow with its legend`);
+  assert.ok(markerText, `${expectedThemeName} scale marker text should remain semibold`);
+
+  const paneRect = chart.getPaneRect(zone.paneId);
+  chart.canvas.commands = [];
+  chart.handlePointerMove({
+    clientX: paneRect.scaleX + 20,
+    clientY: chart.yForValue(markerItem.value, paneRect, chart.paneRange(zone.paneId)),
+    pointerType: 'mouse'
+  });
+  assert.strictEqual(chart.hoveredLegendSeries, null, `${expectedThemeName} scale marker hover should not activate the series`);
+  assert.ok(!chart.canvas.commands.some((command) => (
+    command.shadowColor === zone.color && command.shadowBlur === 8
+  )), `${expectedThemeName} scale marker hover alone should not create a glow`);
+
+  chart.pointer = originalPointer;
+  chart.canvas.commands = [];
+  chart.draw();
   chart.canvas.commands = originalCommands;
 }
 
@@ -2402,6 +2488,7 @@ assert.strictEqual(updatedMa.styles.value.opacity, 0.35);
 chart.canvas.commands = [];
 chart.draw();
 assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && command.alpha === 0.35));
+assertLegendSeriesGlow(chart, 'light', ma20Id);
 
 ['AROON', 'AO', 'STOCHRSI', 'UO', 'VORTEX', 'VWMA', 'LSMA', 'FISHER', 'PPO', 'KST', 'TSI'].forEach((type) => {
   const id = chart.addIndicator(type, { placement: StockChartEngine.Indicators[type].defaultPanePolicy === 'source' ? 'source' : 'new' });
@@ -2412,16 +2499,20 @@ assert.ok(chart.canvas.commands.some((command) => command.type === 'stroke' && c
 chart.setTheme('dark');
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 assertCrosshairAxisMarkers(chart, 'dark');
+assertLegendSeriesGlow(chart, 'dark', ma20Id);
 
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assertCrosshairAxisMarkers(chart, 'light');
+assertLegendSeriesGlow(chart, 'light', ma20Id);
 chart.toggleTheme();
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 assertCrosshairAxisMarkers(chart, 'dark');
+assertLegendSeriesGlow(chart, 'dark', ma20Id);
 chart.toggleTheme();
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assertCrosshairAxisMarkers(chart, 'light');
+assertLegendSeriesGlow(chart, 'light', ma20Id);
 
 const additionalIndicators = [
   'WMA', 'HMA', 'DEMA', 'TEMA', 'ROC', 'MOM', 'CCI', 'MFI', 'ADX', 'OBV',
@@ -3577,6 +3668,7 @@ const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' }
 const initialDarkIndicator = darkChart.document.indicators.find((indicator) => indicator.id === initialDarkIndicatorId);
 assert.strictEqual(initialDarkIndicator.styles.value.color, '#60a5fa');
 assert.strictEqual(initialDarkIndicator.styles.value.opacity, 1);
+assertLegendSeriesGlow(darkChart, 'dark', initialDarkIndicatorId);
 darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'light');
 darkDom.documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });

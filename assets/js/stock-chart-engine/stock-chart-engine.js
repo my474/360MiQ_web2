@@ -2379,6 +2379,7 @@
     this.paneResizeHitZones = [];
     this.hoverPaneResize = null;
     this.pointer = null;
+    this.hoveredLegendSeries = null;
     this.hoverDrawingId = null;
     this.selectedDrawingId = null;
     this.pendingDrawing = null;
@@ -4151,6 +4152,11 @@
       }
     }
     return null;
+  };
+
+  Chart.prototype.isLegendSeriesHovered = function (indicatorId, output) {
+    var hovered = this.hoveredLegendSeries;
+    return !!hovered && hovered.indicatorId === indicatorId && hovered.output === output;
   };
 
   Chart.prototype.openPineScriptEditor = function (options) {
@@ -8858,6 +8864,11 @@
   Chart.prototype.draw = function () {
     if (!this.ctx) return;
     var theme = this.theme();
+    var hoveredLegend = this.pointer && this.pointer.pointerType !== 'touch' ? this.hitTestLegend(this.pointer) : null;
+    this.hoveredLegendSeries = hoveredLegend ? {
+      indicatorId: hoveredLegend.indicatorId,
+      output: hoveredLegend.output
+    } : null;
     this.root.setAttribute('data-sce-theme', theme.name);
     this.updateToolbar();
     this.clear(theme);
@@ -9000,17 +9011,27 @@
       if (legendRows > 0 && y > rect.y + rect.height - 10) return;
       var x = legendX;
       var itemWidth = approximateTextWidth(item.label) + 24;
+      var hovered = this.isLegendSeriesHovered(item.indicatorId, item.output);
       this.legendHitZones.push({
         x: x - 3,
         y: y - 11,
         width: itemWidth,
         height: 22,
+        paneId: rect.paneId,
         indicatorId: item.indicatorId,
-        output: item.output
+        output: item.output,
+        color: item.color
       });
+      ctx.font = (hovered ? '700 ' : '') + '12px sans-serif';
       ctx.fillStyle = item.color;
+      ctx.shadowColor = hovered ? item.color : 'transparent';
+      ctx.shadowBlur = hovered ? 8 : 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
       ctx.fillRect(x, y - 4, 8, 8);
       ctx.fillText(item.label, x + 12, y);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
       y += 18;
       legendRows += 1;
     }, this);
@@ -9440,15 +9461,17 @@
         tipX: rect.scaleX + 1,
         tipY: entry.y
       };
-      var hovered = this.pointer &&
-        this.pointer.pointerType !== 'touch' &&
-        pointInSeriesAxisMarker(this.pointer, seriesMarker);
+      var highlighted = this.isLegendSeriesHovered(item.indicatorId, item.output);
       ctx.fillStyle = color;
       ctx.strokeStyle = colorWithAlpha(theme.background, 0.78) || theme.background;
       ctx.lineWidth = 1;
+      ctx.shadowColor = highlighted ? color : 'transparent';
+      ctx.shadowBlur = highlighted ? 8 : 0;
       drawSeriesAxisMarker(ctx, seriesMarker);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
       ctx.fillStyle = contrastTextColor(color);
-      ctx.font = (hovered ? '700 ' : '600 ') + markerFont;
+      ctx.font = '600 ' + markerFont;
       ctx.fillText(label, left + 6, centerY + 0.5);
     }, this);
     ctx.restore();
@@ -9672,6 +9695,7 @@
       var color = style.color || (close >= open ? theme.up : theme.down);
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
+      applySeriesGlow(ctx, style, color);
       ctx.beginPath();
       ctx.moveTo(x, yHigh); ctx.lineTo(x, yLow); ctx.stroke();
       if (renderItem.type === 'bar') {
@@ -9737,6 +9761,8 @@
           characterMode: renderItem.type === 'char'
         }, indicator.styles && indicator.styles[renderItem.output] || {});
         if (!style.color) style.color = theme.indicatorPalette[paletteIndex % theme.indicatorPalette.length];
+        style.legendGlow = self.isLegendSeriesHovered(indicator.id, renderItem.output);
+        if (style.legendGlow) style.opacity = 1;
         if (renderItem.type === 'fill') self.drawIndicatorFill(rect, range, theme, result.outputs[renderItem.firstOutput] || [], result.outputs[renderItem.secondOutput] || [], style);
         else if (renderItem.type === 'background') self.drawIndicatorBackground(rect, theme, data, style);
         else if (renderItem.type === 'shape' || renderItem.type === 'char') self.drawIndicatorShape(rect, range, theme, data, style);
@@ -9875,6 +9901,8 @@
         if (renderItem.type !== 'volume') return;
         var data = result.outputs[renderItem.output] || [];
         var style = merge({ opacity: 0.55 }, indicator.styles && indicator.styles[renderItem.output] || {});
+        style.legendGlow = self.isLegendSeriesHovered(indicator.id, renderItem.output);
+        if (style.legendGlow) style.opacity = 1;
         self.drawVolumeOverlay(rect, theme, data, style);
       });
     });
@@ -9891,6 +9919,7 @@
     ctx.strokeStyle = style.color;
     ctx.lineWidth = style.lineWidth || 2;
     ctx.setLineDash(lineDashForStyle(style.lineStyle));
+    applySeriesGlow(ctx, style, style.color);
     ctx.beginPath();
     var started = false;
     data.forEach(function (point) {
@@ -9994,6 +10023,7 @@
       if (useVolumeColor) ctx.fillStyle = this.volumeColorForPoint(point, theme, volumeColorSource);
       else ctx.fillStyle = point.value >= 0 ? theme.volumeUp : theme.volumeDown;
       if (!useVolumeColor && style.color) ctx.fillStyle = style.color;
+      applySeriesGlow(ctx, style, ctx.fillStyle);
       ctx.fillRect(x - barWidth / 2, Math.min(y, zeroY), barWidth, Math.max(1, Math.abs(zeroY - y)));
     }, this);
     ctx.restore();
@@ -10024,6 +10054,7 @@
       var x = this.xForTime(point.time, rect);
       var height = Math.max(1, (point.value / maxVolume) * overlayHeight);
       ctx.fillStyle = this.volumeColorForPoint(point, theme, volumeColorSource);
+      applySeriesGlow(ctx, style, ctx.fillStyle);
       ctx.fillRect(x - barWidth / 2, baseline - height, barWidth, height);
     }, this);
     ctx.restore();
@@ -10762,31 +10793,12 @@
     ctx.stroke();
   }
 
-  function pointInSeriesAxisMarker(pointer, marker) {
-    if (!pointer || !marker) return false;
-    if (
-      pointer.x >= marker.x &&
-      pointer.x <= marker.x + marker.width &&
-      pointer.y >= marker.y &&
-      pointer.y <= marker.y + marker.height
-    ) {
-      return true;
-    }
-    return pointInTriangle(
-      pointer,
-      { x: marker.x, y: marker.y },
-      { x: marker.x, y: marker.y + marker.height },
-      { x: marker.tipX, y: marker.tipY }
-    );
-  }
-
-  function pointInTriangle(point, a, b, c) {
-    var cross1 = (point.x - b.x) * (a.y - b.y) - (a.x - b.x) * (point.y - b.y);
-    var cross2 = (point.x - c.x) * (b.y - c.y) - (b.x - c.x) * (point.y - c.y);
-    var cross3 = (point.x - a.x) * (c.y - a.y) - (c.x - a.x) * (point.y - a.y);
-    var hasNegative = cross1 < 0 || cross2 < 0 || cross3 < 0;
-    var hasPositive = cross1 > 0 || cross2 > 0 || cross3 > 0;
-    return !(hasNegative && hasPositive);
+  function applySeriesGlow(ctx, style, color) {
+    var active = !!(style && style.legendGlow);
+    ctx.shadowColor = active ? (color || style.color) : 'transparent';
+    ctx.shadowBlur = active ? 8 : 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
   }
 
   function drawArrowHead(ctx, ax, ay, bx, by, color) {
