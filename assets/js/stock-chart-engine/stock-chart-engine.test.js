@@ -366,7 +366,7 @@ function createFakeDom() {
       delete store[key];
     }
   };
-  return { container, documentElement };
+  return { container, documentElement, store };
 }
 
 function formatTestNumber(value) {
@@ -594,7 +594,7 @@ function assertCalloutBubbleRendering(chart, drawing, expectedThemeName) {
   assert.strictEqual(commands.some((command) => command.type === 'fillRect'), false);
   assert.ok(label);
   assert.ok(/^600 14px /.test(label.font));
-  assert.strictEqual(label.fillStyle, '#ffffff');
+  assert.strictEqual(label.fillStyle, expectedThemeName === 'dark' ? '#f9fafb' : '#111827');
   assert.ok(Math.abs((bubbleBounds.maxX - bubbleBounds.minX) - expectedWidth) < 0.01);
   assert.ok(Math.abs((bubbleBounds.maxY - bubbleBounds.minY) - 34) < 0.01);
   assert.ok(Math.abs(label.x - (bubbleBounds.minX + expectedWidth / 2)) < 0.01);
@@ -656,8 +656,8 @@ function assertPriceLabelBadgeRendering(chart, drawing, expectedThemeName) {
   assert.strictEqual(commands[anchorCommandIndex + 1].type, 'lineTo');
   assert.ok(label);
   assert.strictEqual(label.text, Number(drawing.points[0].value).toFixed(2));
-  assert.ok(/^700 15px /.test(label.font));
-  assert.strictEqual(label.fillStyle, '#ffffff');
+  assert.ok(/^700 14px /.test(label.font));
+  assert.strictEqual(label.fillStyle, expectedThemeName === 'dark' ? '#f9fafb' : '#111827');
   assert.ok(Math.abs((badgeBounds.maxX - badgeBounds.minX) - expectedWidth) < 0.01);
   assert.ok(Math.abs((badgeBounds.maxY - badgeBounds.minY) - 30) < 0.01);
   assert.ok(Math.abs(label.x - (badgeBounds.minX + expectedWidth / 2)) < 0.01);
@@ -726,8 +726,8 @@ function assertPriceNoteBadgeRendering(chart, drawing, expectedThemeName) {
   assert.strictEqual(corners.length, 4);
   assert.strictEqual(commands.some((command) => command.type === 'fillRect'), false);
   assert.strictEqual(label.text, Number(drawing.points[0].value).toFixed(2));
-  assert.ok(/^700 15px /.test(label.font));
-  assert.strictEqual(label.fillStyle, '#ffffff');
+  assert.ok(/^700 14px /.test(label.font));
+  assert.strictEqual(label.fillStyle, expectedThemeName === 'dark' ? '#f9fafb' : '#111827');
   assert.ok(Math.abs((badgeBounds.maxX - badgeBounds.minX) - expectedWidth) < 0.01);
   assert.ok(Math.abs((badgeBounds.maxY - badgeBounds.minY) - 30) < 0.01);
   assert.ok(Math.abs(screenPoints[1].x - badgeBounds.minX) < 0.01);
@@ -745,6 +745,36 @@ function assertPriceNoteBadgeRendering(chart, drawing, expectedThemeName) {
     label,
     badgeBounds
   };
+}
+
+function assertSharedAnnotationTextDefaults(chart, expectedThemeName, points) {
+  const expectedColor = expectedThemeName === 'dark' ? '#f9fafb' : '#111827';
+  const originalCommands = chart.canvas.commands;
+  const originalSelectedDrawingId = chart.selectedDrawingId;
+  const originalHoverDrawingId = chart.hoverDrawingId;
+  const rect = chart.getPaneRect('price');
+  const range = chart.paneRange('price');
+  ['text', 'callout', 'price_label', 'price_note', 'signpost', 'anchored_note', 'note'].forEach((type) => {
+    const drawing = {
+      id: `shared-default-${expectedThemeName}-${type}`,
+      type,
+      paneId: 'price',
+      text: type === 'price_label' || type === 'price_note' ? '' : 'Default',
+      points: points.slice(0, StockChartEngine.drawingTools[type].points),
+      style: { color: '#2563eb', width: 2, textSize: 14, textColor: 'auto' }
+    };
+    chart.selectedDrawingId = null;
+    chart.hoverDrawingId = null;
+    chart.canvas.commands = [];
+    chart.drawDrawing(rect, range, chart.theme(), drawing);
+    const renderedText = chart.canvas.commands.find((command) => command.type === 'fillText');
+    assert.ok(renderedText, `${type} should render annotation text`);
+    assert.ok(/\b14px\b/.test(renderedText.font), `${type} should use the shared 14px default`);
+    assert.strictEqual(renderedText.fillStyle, expectedColor, `${type} should use the shared ${expectedThemeName} text color`);
+  });
+  chart.selectedDrawingId = originalSelectedDrawingId;
+  chart.hoverDrawingId = originalHoverDrawingId;
+  chart.canvas.commands = originalCommands;
 }
 
 const { documentElement } = createFakeDom();
@@ -3266,10 +3296,21 @@ chart.handleCanvasDoubleClick({ clientX: textPoint.x, clientY: textPoint.y, prev
 assert.strictEqual(chart.settingsPopup.getAttribute('hidden'), null);
 assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-text');
 assert.strictEqual(chart.settingsPopup.dataset.drawingId, textDrawingId);
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-field="drawingTextSize"'));
+assert.ok(chart.settingsPopup.innerHTML.includes('<option value="14" selected>14 px</option>'));
+assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-field="drawingTextColor" value="auto"'));
 const drawingTextEnterField = new FakeElement('textarea');
 drawingTextEnterField.setAttribute('data-sce-popup-field', 'drawingText');
 drawingTextEnterField.value = 'Multiline drawing text';
 chart.settingsPopup.appendChild(drawingTextEnterField);
+const drawingTextSizeField = new FakeElement('select');
+drawingTextSizeField.setAttribute('data-sce-popup-field', 'drawingTextSize');
+drawingTextSizeField.value = '20';
+chart.settingsPopup.appendChild(drawingTextSizeField);
+const drawingTextColorField = new FakeElement('input');
+drawingTextColorField.setAttribute('data-sce-popup-field', 'drawingTextColor');
+drawingTextColorField.value = '#ef4444';
+chart.settingsPopup.appendChild(drawingTextColorField);
 let drawingTextEnterPrevented = false;
 chart.settingsPopup.onkeydown({
   key: 'Enter',
@@ -3291,6 +3332,8 @@ chart.settingsPopup.onkeydown({
 assert.strictEqual(drawingTextEnterPrevented, true);
 assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), true);
 assert.strictEqual(chart.getDrawingById(textDrawingId).text, 'Multiline drawing text');
+assert.strictEqual(chart.getDrawingById(textDrawingId).style.textSize, 20);
+assert.strictEqual(chart.getDrawingById(textDrawingId).style.textColor, '#ef4444');
 assert.strictEqual(chart.hitTestDrawing({ x: textPoint.x + 82, y: textPoint.y - 8 }).drawing.id, textDrawingId);
 
 const noteHitId = chart.addDrawing('note', [
@@ -3524,6 +3567,54 @@ function drawingPointForScreen(point) {
     value: chart.valueForY(point.y, measurementRenderRect, measurementRenderRange)
   };
 }
+const annotationTextStyleTypes = ['text', 'callout', 'price_label', 'price_note', 'signpost', 'anchored_note', 'note'];
+const annotationTextStyleIds = annotationTextStyleTypes.map((type) => chart.addDrawing(
+  type,
+  measurementRenderPoints.slice(0, StockChartEngine.drawingTools[type].points),
+  { paneId: 'price', text: type === 'price_label' || type === 'price_note' ? '' : 'Styled text' }
+));
+annotationTextStyleIds.forEach((drawingId, index) => {
+  const drawing = chart.getDrawingById(drawingId);
+  assert.strictEqual(drawing.style.textSize, 14);
+  assert.strictEqual(drawing.style.textColor, 'auto');
+  chart.openDrawingSettingsPopup(drawing, { x: 140, y: 120 });
+  assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-field="drawingTextSize"'));
+  assert.ok(chart.settingsPopup.innerHTML.includes('<option value="14" selected>14 px</option>'));
+  assert.ok(chart.settingsPopup.innerHTML.includes('data-sce-popup-field="drawingTextColor" value="auto"'));
+  if (annotationTextStyleTypes[index] === 'price_label' || annotationTextStyleTypes[index] === 'price_note') {
+    assert.strictEqual(chart.settingsPopup.innerHTML.includes('data-sce-popup-field="drawingText"'), false);
+  }
+  chart.closeIndicatorSettingsPopup();
+});
+let accountSyncDocument = null;
+const stopAccountSyncCapture = chart.on('change', (event) => {
+  if (event.type === 'drawing:style') accountSyncDocument = event.document;
+});
+assert.strictEqual(chart.updateDrawingStyle(annotationTextStyleIds[0], {
+  textSize: 24,
+  textColor: '#22c55e'
+}), true);
+stopAccountSyncCapture();
+const accountSyncedDrawing = accountSyncDocument.drawings.find((drawing) => drawing.id === annotationTextStyleIds[0]);
+assert.strictEqual(accountSyncedDrawing.style.textSize, 24);
+assert.strictEqual(accountSyncedDrawing.style.textColor, '#22c55e');
+const textStyleStorage = new StockChartEngine.LocalStorageAdapter('text-style-persistence');
+assert.strictEqual(textStyleStorage.save('layout', chart.serialize()), true);
+const locallyStoredTextStyle = textStyleStorage.load('layout').drawings.find((drawing) => drawing.id === annotationTextStyleIds[0]);
+assert.strictEqual(locallyStoredTextStyle.style.textSize, 24);
+assert.strictEqual(locallyStoredTextStyle.style.textColor, '#22c55e');
+textStyleStorage.remove('layout');
+annotationTextStyleIds.forEach((drawingId) => {
+  chart.updateDrawingStyle(drawingId, { textSize: 24, textColor: '#22c55e' });
+  const drawing = chart.getDrawingById(drawingId);
+  chart.canvas.commands = [];
+  chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), drawing);
+  const renderedText = chart.canvas.commands.find((command) => command.type === 'fillText');
+  assert.ok(renderedText);
+  assert.ok(/\b24px\b/.test(renderedText.font));
+  assert.strictEqual(renderedText.fillStyle, '#22c55e');
+});
+annotationTextStyleIds.forEach((drawingId) => chart.removeDrawing(drawingId));
 function renderCalloutDirection(tailTip, bubbleAnchor) {
   const drawing = {
     id: `callout-${tailTip.x}-${tailTip.y}`,
@@ -3698,16 +3789,19 @@ const liveThemePriceNote = {
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
 assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
 assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'light');
+assertSharedAnnotationTextDefaults(chart, 'light', measurementRenderPoints);
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'dark');
 assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'dark');
 assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'dark');
+assertSharedAnnotationTextDefaults(chart, 'dark', measurementRenderPoints);
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
 assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
 assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'light');
+assertSharedAnnotationTextDefaults(chart, 'light', measurementRenderPoints);
 assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
 assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
 assert.ok(renderMeasurementTool('position_forecast').some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
@@ -3933,6 +4027,96 @@ assert.ok(
   textDeleteCenter
 ].forEach((sample) => {
   assert.strictEqual(chart.isPointOnDrawing(sample, textDeleteDrawing), false);
+});
+[
+  {
+    type: 'note',
+    message: 'note delete control should sit away from the note box'
+  },
+  {
+    type: 'anchored_note',
+    message: 'anchored-note delete control should sit away from the note box'
+  }
+].forEach((example) => {
+  const drawing = {
+    id: `${example.type}-delete-placement`,
+    type: example.type,
+    paneId: 'price',
+    text: 'Remove me',
+    points: [measurementRenderPoints[0]],
+    style: { color: '#2563eb', width: 2 }
+  };
+  const anchor = chart.drawingScreenPoints(drawing)[0];
+  const target = example.type === 'anchored_note'
+    ? { x: anchor.x + 54, y: anchor.y - 42 }
+    : anchor;
+  const width = Math.max(72, drawing.text.length * 7 + 18);
+  const boxCenter = {
+    x: target.x + width / 2,
+    y: target.y - 14
+  };
+  const zone = chart.drawingDeleteZone(drawing);
+  const center = {
+    x: zone.x + zone.size / 2,
+    y: zone.y + zone.size / 2
+  };
+  const offset = {
+    x: center.x - anchor.x,
+    y: center.y - anchor.y
+  };
+  const towardBox = {
+    x: boxCenter.x - anchor.x,
+    y: boxCenter.y - anchor.y
+  };
+  assert.ok(Math.hypot(offset.x, offset.y) >= 22);
+  assert.ok(Math.hypot(offset.x, offset.y) <= 26);
+  assert.ok(offset.x * towardBox.x + offset.y * towardBox.y < 0, example.message);
+  [
+    { x: zone.x, y: zone.y },
+    { x: zone.x + zone.size, y: zone.y },
+    { x: zone.x, y: zone.y + zone.size },
+    { x: zone.x + zone.size, y: zone.y + zone.size },
+    center
+  ].forEach((sample) => {
+    assert.strictEqual(chart.isPointOnDrawing(sample, drawing), false);
+  });
+});
+const signpostDeleteDrawing = {
+  id: 'signpost-delete-placement',
+  type: 'signpost',
+  paneId: 'price',
+  text: 'Remove me',
+  points: [measurementRenderPoints[0]],
+  style: { color: '#2563eb', width: 2 }
+};
+const signpostDeleteAnchor = chart.drawingScreenPoints(signpostDeleteDrawing)[0];
+const signpostDeleteZone = chart.drawingDeleteZone(signpostDeleteDrawing);
+const signpostDeleteCenter = {
+  x: signpostDeleteZone.x + signpostDeleteZone.size / 2,
+  y: signpostDeleteZone.y + signpostDeleteZone.size / 2
+};
+const signpostDeleteDistance = Math.hypot(
+  signpostDeleteCenter.x - signpostDeleteAnchor.x,
+  signpostDeleteCenter.y - signpostDeleteAnchor.y
+);
+const signpostWidth = Math.max(70, signpostDeleteDrawing.text.length * 7 + 24);
+const expectedSignpostDeleteDistance = signpostWidth / 2 + signpostDeleteZone.size / 2 + 12;
+assert.ok(signpostDeleteDistance >= expectedSignpostDeleteDistance - 2);
+assert.ok(signpostDeleteDistance <= expectedSignpostDeleteDistance + 2);
+assert.ok(
+  Math.abs(signpostDeleteCenter.x - signpostDeleteAnchor.x) >= 23 ||
+  Math.abs(signpostDeleteCenter.y - signpostDeleteAnchor.y) >= 23,
+  'signpost delete control should move beyond the text box edge'
+);
+[
+  { x: signpostDeleteZone.x, y: signpostDeleteZone.y },
+  { x: signpostDeleteZone.x + signpostDeleteZone.size, y: signpostDeleteZone.y },
+  { x: signpostDeleteZone.x, y: signpostDeleteZone.y + signpostDeleteZone.size },
+  { x: signpostDeleteZone.x + signpostDeleteZone.size, y: signpostDeleteZone.y + signpostDeleteZone.size },
+  signpostDeleteCenter
+].forEach((sample) => {
+  sample.pointerType = 'mouse';
+  assert.strictEqual(chart.isPointOnDrawing(sample, signpostDeleteDrawing), false);
 });
 const topEdgePriceLabel = {
   id: 'top-edge-price-label',
@@ -4314,6 +4498,10 @@ assertPriceNoteBadgeRendering(darkChart, {
   ],
   style: { color: '#2563eb', width: 2 }
 }, 'dark');
+assertSharedAnnotationTextDefaults(darkChart, 'dark', [
+  { time: data[data.length - 28].time, value: data[data.length - 28].close },
+  { time: data[data.length - 16].time, value: data[data.length - 16].close + 4 }
+]);
 const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' });
 const initialDarkIndicator = darkChart.document.indicators.find((indicator) => indicator.id === initialDarkIndicatorId);
 assert.strictEqual(initialDarkIndicator.styles.value.color, '#60a5fa');

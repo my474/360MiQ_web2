@@ -18,6 +18,8 @@
   var MAX_LAYOUT_PANES = 24;
   var MAX_LAYOUT_INDICATORS = 100;
   var MAX_LAYOUT_DRAWINGS = 2000;
+  var DEFAULT_DRAWING_TEXT_SIZE = 14;
+  var DEFAULT_DRAWING_TEXT_COLOR = 'auto';
   var DEFAULT_SERIES_COLOR_ORDER = [
     '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#059669',
     '#dc2626', '#4f46e5', '#65a30d', '#ea580c', '#0f766e', '#9333ea',
@@ -2218,6 +2220,11 @@
     migrated.drawings = Array.isArray(migrated.drawings)
       ? migrated.drawings.slice(0, MAX_LAYOUT_DRAWINGS)
       : [];
+    migrated.drawings.forEach(function (drawing) {
+      if (!drawing || typeof drawing !== 'object') return;
+      drawing.type = normalizeDrawingType(drawing.type);
+      drawing.style = sanitizeDrawingStyle(applyDrawingTextStyleDefaults(drawing.type, drawing.style || {}));
+    });
     migrated.settings = merge(createDefaultDocument().settings, migrated.settings || {});
     migrated.settings.chartType = normalizeChartType(migrated.settings.chartType);
     migrated.settings.period = normalizePeriod(savedPeriod || migrated.settings.period || migrated.interval);
@@ -6354,7 +6361,8 @@
   };
 
   Chart.prototype.togglePopupColorPalette = function () {
-    var palette = this.settingsPopup.querySelector('.sce-color-palette');
+    var palette = this.settingsPopup.querySelector('.sce-drawing-color-palette') ||
+      this.settingsPopup.querySelector('.sce-color-palette');
     if (!palette) return;
     if (palette.hasAttribute('hidden')) palette.removeAttribute('hidden');
     else palette.setAttribute('hidden', 'hidden');
@@ -6363,15 +6371,36 @@
   Chart.prototype.closePopupColorPalette = function () {
     var palette = this.settingsPopup.querySelector('.sce-color-palette');
     if (palette) palette.setAttribute('hidden', 'hidden');
+    var drawingPalette = this.settingsPopup.querySelector('.sce-drawing-color-palette');
+    if (drawingPalette) drawingPalette.setAttribute('hidden', 'hidden');
+    var textPalette = this.settingsPopup.querySelector('.sce-text-color-palette');
+    if (textPalette) textPalette.setAttribute('hidden', 'hidden');
   };
 
   Chart.prototype.pickPopupColor = function (color) {
     if (!color) return;
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="color"]') ||
       this.settingsPopup.querySelector('[data-sce-popup-field="drawingColor"]');
-    var swatch = this.settingsPopup.querySelector('.sce-color-swatch');
+    var swatch = this.settingsPopup.querySelector('.sce-drawing-color-swatch') ||
+      this.settingsPopup.querySelector('.sce-color-swatch');
     if (field) field.value = color;
     if (swatch) swatch.style.background = color;
+    this.closePopupColorPalette();
+  };
+
+  Chart.prototype.togglePopupTextColorPalette = function () {
+    var palette = this.settingsPopup.querySelector('.sce-text-color-palette');
+    if (!palette) return;
+    if (palette.hasAttribute('hidden')) palette.removeAttribute('hidden');
+    else palette.setAttribute('hidden', 'hidden');
+  };
+
+  Chart.prototype.pickPopupTextColor = function (color) {
+    if (!color) return;
+    var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingTextColor"]');
+    var swatch = this.settingsPopup.querySelector('.sce-text-color-swatch');
+    if (field) field.value = normalizeDrawingTextColor(color);
+    if (swatch) swatch.style.background = color === DEFAULT_DRAWING_TEXT_COLOR ? this.theme().text : color;
     this.closePopupColorPalette();
   };
 
@@ -6386,11 +6415,30 @@
     var lineStyle = normalizeLineStyle(style.lineStyle);
     var opacity = style.opacity == null ? 1 : style.opacity;
     var drawingKind = drawingRenderKind(drawing, tool);
+    var hasTextStyle = drawingSupportsTextStyle(drawing);
+    var textSize = drawingTextSize(style);
+    var textColor = normalizeDrawingTextColor(style.textColor);
+    var resolvedTextColor = drawingTextColor(style, this.theme());
     var hasPitchforkChannels = drawingKind === 'pitchfork' || drawingKind === 'schiffPitchfork' || drawingKind === 'modifiedSchiffPitchfork' || drawingKind === 'insidePitchfork';
     var channelRatios = normalizeInsidePitchforkRatios(style.channelRatios != null ? style.channelRatios : style.insideRatios).join(', ');
     pointer = pointer || this.drawingTextPopupPoint(drawing);
     var textControls = canEditText
       ? ['<label>Text<textarea rows="4" data-sce-popup-field="drawingText">', escapeHtml(drawing.text || ''), '</textarea></label>'].join('')
+      : '';
+    var textStyleControls = hasTextStyle
+      ? [
+        '<label>Text size<select data-sce-popup-field="drawingTextSize">',
+        drawingTextSizeOptionsHtml(textSize),
+        '</select></label>',
+        '<label>Text color<div class="sce-color-control">',
+        '<button type="button" class="sce-color-swatch sce-text-color-swatch" data-sce-popup-action="toggle-text-color" style="background:', escapeHtml(resolvedTextColor), '" aria-label="Choose text color"></button>',
+        '<input type="text" data-sce-popup-field="drawingTextColor" value="', escapeHtml(textColor), '">',
+        '<div class="sce-color-palette sce-text-color-palette" hidden>',
+        '<button type="button" data-sce-popup-action="pick-text-color" data-sce-color="auto"', textColor === 'auto' ? ' class="is-selected"' : '', ' aria-label="Automatic text color">A</button>',
+        colorPaletteHtml(resolvedTextColor, 'pick-text-color'),
+        '</div>',
+        '</div></label>'
+      ].join('')
       : '';
     var pitchforkChannelControls = hasPitchforkChannels
       ? '<label>Channel ratios<input type="text" data-sce-popup-field="pitchforkChannelRatios" value="' + escapeHtml(channelRatios) + '" aria-describedby="sce-inside-pitchfork-ratios-help"></label>' +
@@ -6403,10 +6451,11 @@
       '<button type="button" data-sce-popup-action="close" aria-label="Close">x</button>',
       '</div>',
       textControls,
+      textStyleControls,
       '<label>Color<div class="sce-color-control">',
-      '<button type="button" class="sce-color-swatch" data-sce-popup-action="toggle-color" style="background:', escapeHtml(color), '" aria-label="Choose color"></button>',
+      '<button type="button" class="sce-color-swatch sce-drawing-color-swatch" data-sce-popup-action="toggle-color" style="background:', escapeHtml(color), '" aria-label="Choose color"></button>',
       '<input type="text" data-sce-popup-field="drawingColor" value="', escapeHtml(color), '">',
-      '<div class="sce-color-palette" hidden>',
+      '<div class="sce-color-palette sce-drawing-color-palette" hidden>',
       colorPaletteHtml(color),
       '</div>',
       '</div></label>',
@@ -6434,7 +6483,7 @@
     delete this.settingsPopup.dataset.indicatorId;
     delete this.settingsPopup.dataset.output;
     this.bindDrawingSettingsPopup();
-    this.positionSettingsPopup(pointer, 306, (canEditText ? 376 : 304) + (hasPitchforkChannels ? 66 : 0));
+    this.positionSettingsPopup(pointer, 306, (canEditText ? 376 : 304) + (hasTextStyle ? 116 : 0) + (hasPitchforkChannels ? 66 : 0));
     var field = this.settingsPopup.querySelector('[data-sce-popup-field="drawingText"]');
     if (field && field.focus) {
       field.focus();
@@ -6475,6 +6524,8 @@
       if (!action) return;
       if (action === 'toggle-color') self.togglePopupColorPalette();
       if (action === 'pick-color') self.pickPopupColor(event.target.getAttribute('data-sce-color'));
+      if (action === 'toggle-text-color') self.togglePopupTextColorPalette();
+      if (action === 'pick-text-color') self.pickPopupTextColor(event.target.getAttribute('data-sce-color'));
       if (action === 'close') self.closeIndicatorSettingsPopup();
       if (action === 'remove') {
         self.removeDrawing(self.settingsPopup.dataset.drawingId);
@@ -6511,6 +6562,8 @@
     var width = this.settingsPopup.querySelector('[data-sce-popup-field="drawingWidth"]');
     var lineStyle = this.settingsPopup.querySelector('[data-sce-popup-field="drawingLineStyle"]');
     var opacity = this.settingsPopup.querySelector('[data-sce-popup-field="drawingOpacity"]');
+    var textSize = this.settingsPopup.querySelector('[data-sce-popup-field="drawingTextSize"]');
+    var textColor = this.settingsPopup.querySelector('[data-sce-popup-field="drawingTextColor"]');
     var channelRatios = this.settingsPopup.querySelector('[data-sce-popup-field="pitchforkChannelRatios"]');
     if (textField) this.updateDrawingText(drawingId, textField.value);
     var stylePatch = {
@@ -6519,6 +6572,8 @@
       lineStyle: lineStyle ? lineStyle.value : 'solid',
       opacity: opacity ? Number(opacity.value) : 1
     };
+    if (textSize) stylePatch.textSize = Number(textSize.value);
+    if (textColor) stylePatch.textColor = normalizeDrawingTextColor(textColor.value);
     if (channelRatios) stylePatch.channelRatios = normalizeInsidePitchforkRatios(channelRatios.value);
     this.updateDrawingStyle(drawingId, stylePatch);
     this.closeIndicatorSettingsPopup();
@@ -6539,7 +6594,7 @@
     var ownerStudy = options.ownerStudyId ? this.document.indicators.filter(function (indicator) {
       return indicator.id === options.ownerStudyId;
     })[0] : null;
-    var baseStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {});
+    var baseStyle = applyDrawingTextStyleDefaults(type, merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, options.style || {}));
     if (type === 'pitchfork' || type === 'schiff_pitchfork' || type === 'modified_schiff_pitchfork' || type === 'inside_pitchfork') {
       if (!baseStyle.color) baseStyle.color = '#ef4444';
       baseStyle.channelRatios = normalizeInsidePitchforkRatios(baseStyle.channelRatios != null ? baseStyle.channelRatios : baseStyle.insideRatios);
@@ -6740,7 +6795,7 @@
     options = options || {};
     type = normalizeDrawingType(type);
     var tool = drawingToolDefinition(type);
-    var pendingStyle = merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {});
+    var pendingStyle = applyDrawingTextStyleDefaults(type, merge({ color: null, width: 2, fill: 'rgba(37, 99, 235, 0.12)' }, options.style || {}));
     if (type === 'pitchfork' || type === 'schiff_pitchfork' || type === 'modified_schiff_pitchfork' || type === 'inside_pitchfork') {
       if (!pendingStyle.color) pendingStyle.color = '#ef4444';
       pendingStyle.channelRatios = normalizeInsidePitchforkRatios(pendingStyle.channelRatios != null ? pendingStyle.channelRatios : pendingStyle.insideRatios);
@@ -8672,6 +8727,7 @@
     var kind = drawingRenderKind(drawing, tool);
     var rect = this.getPaneRect(drawing.paneId);
     var bounds = pointBounds(points);
+    var textSize = drawingTextSize(drawing.style);
 
     if ((kind === 'hline' || kind === 'horizontalRay') && points[0]) {
       if (kind === 'horizontalRay' && pointer.x < points[0].x - tolerance) return false;
@@ -8684,17 +8740,17 @@
       return Math.abs(pointer.x - points[0].x) <= tolerance || Math.abs(pointer.y - points[0].y) <= tolerance;
     }
     if (kind === 'text') {
-      var textBounds = textDrawingBounds(drawing.text || tool.name, points[0]);
+      var textBounds = textDrawingBounds(drawing.text || tool.name, points[0], textSize);
       return pointerInBounds(pointer, textBounds, tolerance);
     }
     if (kind === 'note' || kind === 'anchoredNote') {
-      var noteHit = noteBoxGeometry(drawing.text || tool.name, points[0], kind === 'anchoredNote');
+      var noteHit = noteBoxGeometry(drawing.text || tool.name, points[0], kind === 'anchoredNote', textSize);
       if (pointerInBounds(pointer, noteHit.bounds, tolerance)) return true;
       return kind === 'anchoredNote' && distanceToSegment(pointer, points[0], noteHit.target) <= tolerance;
     }
     if (kind === 'priceLabel' && points[0]) {
       var priceLabel = priceDrawingLabel(drawing, points[0]);
-      var priceLabelHit = priceLabelGeometry(priceLabel, points[0], rect);
+      var priceLabelHit = priceLabelGeometry(priceLabel, points[0], rect, textSize);
       return pointerInBounds(pointer, priceLabelHit.badgeBounds, tolerance) ||
         pointInTriangle(pointer, points[0], priceLabelHit.tailBaseStart, priceLabelHit.tailBaseEnd) ||
         distanceToSegment(pointer, points[0], priceLabelHit.tailBaseStart) <= tolerance ||
@@ -8702,13 +8758,13 @@
     }
     if (kind === 'priceNote' && points[0]) {
       var priceNote = priceDrawingLabel(drawing, points[0]);
-      var priceNoteHit = priceNoteGeometry(priceNote, points[0], points[1] || points[0]);
+      var priceNoteHit = priceNoteGeometry(priceNote, points[0], points[1] || points[0], textSize);
       if (pointerInBounds(pointer, priceNoteHit.badgeBounds, tolerance)) return true;
       return points[1] && distanceToSegment(pointer, points[0], priceNoteHit.connectorPoint) <= tolerance;
     }
     if (kind === 'callout') {
       var calloutTarget = points[1] || { x: points[0].x + 56, y: points[0].y - 34 };
-      var calloutHit = calloutGeometry(drawing.text || tool.name, points[0], calloutTarget);
+      var calloutHit = calloutGeometry(drawing.text || tool.name, points[0], calloutTarget, textSize);
       return pointerInBounds(pointer, calloutHit.bubbleBounds, tolerance) ||
         pointInTriangle(pointer, points[0], calloutHit.tailBaseStart, calloutHit.tailBaseEnd) ||
         distanceToSegment(pointer, points[0], calloutHit.tailBaseStart) <= tolerance ||
@@ -8720,7 +8776,7 @@
     if (kind === 'signpost') {
       var signpostRange = rect ? this.paneRange(rect.paneId) : null;
       var signpostAnchor = signpostAnchorScreenPoint(this, drawing.points && drawing.points[0], points[0], rect, signpostRange);
-      var signpostHit = signpostGeometry(drawing.text || tool.name, points[0], signpostAnchor);
+      var signpostHit = signpostGeometry(drawing.text || tool.name, points[0], signpostAnchor, textSize);
       var inBubble = pointer.x >= signpostHit.bubbleX - tolerance && pointer.x <= signpostHit.bubbleX + signpostHit.width + tolerance &&
         pointer.y >= signpostHit.bubbleY - tolerance && pointer.y <= signpostHit.bubbleY + signpostHit.height + tolerance;
       if (inBubble) return true;
@@ -8775,19 +8831,33 @@
     var deleteDirectionPoints = points;
     var tool = drawingToolDefinition(drawing.type);
     var kind = drawingRenderKind(drawing, tool);
+    var textSize = drawingTextSize(drawing.style);
+    var centerDistance = 24;
     if (kind === 'priceLabel' && points.length === 1) {
       var priceLabel = priceDrawingLabel(drawing, anchor);
-      var priceGeometry = priceLabelGeometry(priceLabel, anchor, paneRect);
+      var priceGeometry = priceLabelGeometry(priceLabel, anchor, paneRect, textSize);
       deleteDirectionPoints = points.concat([{
         x: priceGeometry.x + priceGeometry.width / 2,
         y: priceGeometry.y + priceGeometry.height / 2
       }]);
     } else if (kind === 'text' && points.length === 1) {
-      var textBounds = textDrawingBounds(drawing.text || tool.name, anchor);
+      var textBounds = textDrawingBounds(drawing.text || tool.name, anchor, textSize);
       deleteDirectionPoints = points.concat([{
         x: (textBounds.minX + textBounds.maxX) / 2,
         y: (textBounds.minY + textBounds.maxY) / 2
       }]);
+    } else if ((kind === 'note' || kind === 'anchoredNote') && points.length === 1) {
+      var noteGeometry = noteBoxGeometry(drawing.text || tool.name, anchor, kind === 'anchoredNote', textSize);
+      deleteDirectionPoints = points.concat([{
+        x: (noteGeometry.bounds.minX + noteGeometry.bounds.maxX) / 2,
+        y: (noteGeometry.bounds.minY + noteGeometry.bounds.maxY) / 2
+      }]);
+    } else if (kind === 'signpost' && points.length === 1) {
+      var signpostRange = paneRect ? this.paneRange(paneRect.paneId) : null;
+      var signpostAnchor = signpostAnchorScreenPoint(this, drawing.points && drawing.points[0], anchor, paneRect, signpostRange);
+      var signpostGeometryValue = signpostGeometry(drawing.text || tool.name, anchor, signpostAnchor, textSize);
+      deleteDirectionPoints = points.concat([signpostAnchor]);
+      centerDistance = Math.max(signpostGeometryValue.width, signpostGeometryValue.height) / 2 + size / 2 + 12;
     }
     if (deleteDirectionPoints.length === 1) {
       return clampDrawingDeleteZone({ x: anchor.x - 9, y: anchor.y - 23, size: size }, paneRect);
@@ -8807,7 +8877,6 @@
     if (Math.abs(towardX) + Math.abs(towardY) < 0.001) towardY = 1;
     var awayAngle = Math.atan2(-towardY, -towardX);
     var angleOffsets = [0, -Math.PI / 4, Math.PI / 4, -Math.PI / 2, Math.PI / 2, Math.PI];
-    var centerDistance = 24;
     var preferredZone = null;
     var containedFallback = null;
 
@@ -10512,6 +10581,8 @@
     var kind = drawingRenderKind(drawing, tool);
     var style = merge({ color: theme.drawing, width: 2, fill: 'rgba(37, 99, 235, 0.12)', font: '12px sans-serif' }, drawing.style || {});
     if (!style.color) style.color = theme.drawing;
+    var textSize = drawingTextSize(style);
+    var textColor = drawingTextColor(style, theme);
     if (!points.length) return;
 
     function point(index) {
@@ -10574,27 +10645,28 @@
       ctx.fill();
       ctx.stroke();
     } else if (kind === 'text' && point(0)) {
-      ctx.fillStyle = style.color;
+      ctx.fillStyle = textColor;
+      ctx.font = drawingTextFont(textSize, 400);
       ctx.fillText(drawing.text || tool.name, point(0).x, point(0).y);
     } else if (kind === 'emoji' && point(0)) {
       ctx.fillStyle = style.color;
       ctx.font = '18px sans-serif';
       ctx.fillText(drawing.text || ':)', point(0).x, point(0).y);
     } else if (kind === 'note' && point(0)) {
-      drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, theme.background, false);
+      drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, textColor, false, textSize);
     } else if (kind === 'anchoredNote' && point(0)) {
-      drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, theme.background, true);
+      drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, textColor, true, textSize);
     } else if (kind === 'priceLabel' && point(0)) {
       var label = priceDrawingLabel(drawing, point(0));
-      drawPriceLabel(ctx, label, point(0), rect, style.color);
+      drawPriceLabel(ctx, label, point(0), rect, style.color, textColor, textSize);
     } else if (kind === 'priceNote' && point(0)) {
       var noteLabel = priceDrawingLabel(drawing, point(0));
-      drawPriceNote(ctx, noteLabel, point(0), point(1), style.color);
+      drawPriceNote(ctx, noteLabel, point(0), point(1), style.color, textColor, textSize);
     } else if (kind === 'callout' && point(0)) {
       var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
-      drawCallout(ctx, drawing.text || tool.name, point(0), target, style.color, theme);
+      drawCallout(ctx, drawing.text || tool.name, point(0), target, style.color, theme, textColor, textSize);
     } else if (kind === 'signpost' && point(0)) {
-      drawSignpost(ctx, drawing.text || tool.name, point(0), signpostAnchorScreenPoint(this, rawPoints[0], point(0), rect, range), style.color, theme.background);
+      drawSignpost(ctx, drawing.text || tool.name, point(0), signpostAnchorScreenPoint(this, rawPoints[0], point(0), rect, range), style.color, theme.background, textColor, textSize);
     } else if (kind.indexOf('marker') === 0 || kind === 'flag' || kind === 'iconMarker' || kind === 'stickerMarker') {
       drawMarker(ctx, point(0), kind, style.color);
       var markerText = markerDisplayText(drawing, tool);
@@ -11678,9 +11750,10 @@
     ctx.fill();
   }
 
-  function calloutGeometry(label, tailTip, bubbleAnchor) {
-    var width = Math.max(60, approximateTextWidth(label) + 24);
-    var height = 34;
+  function calloutGeometry(label, tailTip, bubbleAnchor, textSize) {
+    textSize = drawingTextSize({ textSize: textSize });
+    var width = Math.max(60, approximateTextWidthAtSize(label, textSize) + 24);
+    var height = Math.max(34, textSize + 20);
     var radius = 9;
     var tailHalfWidth = 6;
     var x = bubbleAnchor.x;
@@ -11739,8 +11812,8 @@
     };
   }
 
-  function drawCallout(ctx, label, tailTip, bubbleAnchor, color, theme) {
-    var geometry = calloutGeometry(label, tailTip, bubbleAnchor);
+  function drawCallout(ctx, label, tailTip, bubbleAnchor, color, theme, textColor, textSize) {
+    var geometry = calloutGeometry(label, tailTip, bubbleAnchor, textSize);
     var x = geometry.x;
     var y = geometry.y;
     var width = geometry.width;
@@ -11792,8 +11865,8 @@
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = contrastTextColor(color);
-    ctx.font = '600 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.font = drawingTextFont(textSize, 600);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, x + width / 2, y + height / 2 + 0.5);
@@ -11818,15 +11891,17 @@
     return { minX: x, maxX: x + width, minY: y, maxY: y + height };
   }
 
-  function textDrawingBounds(label, p) {
-    var width = Math.max(10, approximateTextWidth(label));
-    return boundsFromRect(p.x, p.y - 18, width, 22);
+  function textDrawingBounds(label, p, textSize) {
+    textSize = drawingTextSize({ textSize: textSize });
+    var width = Math.max(10, approximateTextWidthAtSize(label, textSize));
+    return boundsFromRect(p.x, p.y - textSize - 4, width, textSize + 8);
   }
 
-  function priceBadgeMetrics(label) {
+  function priceBadgeMetrics(label, textSize) {
+    textSize = drawingTextSize({ textSize: textSize });
     return {
-      width: Math.max(64, approximateTextWidth(label) + 22),
-      height: 30,
+      width: Math.max(64, approximateTextWidthAtSize(label, textSize) + 22),
+      height: Math.max(30, textSize + 16),
       radius: 6
     };
   }
@@ -11837,8 +11912,8 @@
     return formatNumber(Number(value));
   }
 
-  function priceLabelGeometry(label, anchor, rect) {
-    var metrics = priceBadgeMetrics(label);
+  function priceLabelGeometry(label, anchor, rect, textSize) {
+    var metrics = priceBadgeMetrics(label, textSize);
     var width = metrics.width;
     var height = metrics.height;
     var radius = metrics.radius;
@@ -11886,8 +11961,8 @@
     };
   }
 
-  function priceNoteGeometry(label, lineAnchor, boxAnchor) {
-    var metrics = priceBadgeMetrics(label);
+  function priceNoteGeometry(label, lineAnchor, boxAnchor, textSize) {
+    var metrics = priceBadgeMetrics(label, textSize);
     var x = boxAnchor.x;
     var y = boxAnchor.y - metrics.height;
     var right = x + metrics.width;
@@ -11925,8 +12000,8 @@
     };
   }
 
-  function drawPriceLabel(ctx, label, anchor, rect, color) {
-    var geometry = priceLabelGeometry(label, anchor, rect);
+  function drawPriceLabel(ctx, label, anchor, rect, color, textColor, textSize) {
+    var geometry = priceLabelGeometry(label, anchor, rect, textSize);
     var x = geometry.x;
     var y = geometry.y;
     var width = geometry.width;
@@ -11974,8 +12049,8 @@
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = contrastTextColor(color);
-    ctx.font = '700 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.font = drawingTextFont(textSize, 700);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, x + width / 2, y + height / 2 + 0.5);
@@ -12000,8 +12075,8 @@
     ctx.closePath();
   }
 
-  function drawNoteBox(ctx, label, p, color, background, anchored) {
-    var geometry = noteBoxGeometry(label, p, anchored);
+  function drawNoteBox(ctx, label, p, color, textColor, anchored, textSize) {
+    var geometry = noteBoxGeometry(label, p, anchored, textSize);
     var target = geometry.target;
     if (anchored) drawLine(ctx, p, target);
     ctx.fillStyle = colorWithAlpha(color, 0.12) || 'rgba(37, 99, 235, 0.12)';
@@ -12014,14 +12089,19 @@
     ctx.lineTo(target.x + geometry.width - 10, target.y - geometry.height + 10);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = color;
-    ctx.fillText(label, target.x + 8, target.y - 10);
+    ctx.fillStyle = textColor;
+    ctx.font = drawingTextFont(textSize, 400);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, target.x + 8, geometry.bounds.minY + geometry.height / 2 + 0.5);
+    ctx.textBaseline = 'alphabetic';
   }
 
-  function noteBoxGeometry(label, p, anchored) {
+  function noteBoxGeometry(label, p, anchored, textSize) {
+    textSize = drawingTextSize({ textSize: textSize });
     var target = anchored ? { x: p.x + 54, y: p.y - 42 } : p;
-    var width = Math.max(72, approximateTextWidth(label) + 18);
-    var height = 28;
+    var width = Math.max(72, approximateTextWidthAtSize(label, textSize) + 18);
+    var height = Math.max(28, textSize + 14);
     return {
       target: target,
       width: width,
@@ -12038,9 +12118,10 @@
     return { x: labelPoint.x, y: labelPoint.y - 30 };
   }
 
-  function signpostGeometry(label, p, anchor) {
-    var width = Math.max(70, approximateTextWidth(label) + 24);
-    var height = 30;
+  function signpostGeometry(label, p, anchor, textSize) {
+    textSize = drawingTextSize({ textSize: textSize });
+    var width = Math.max(70, approximateTextWidthAtSize(label, textSize) + 24);
+    var height = Math.max(30, textSize + 16);
     var bubbleX = p.x - width / 2;
     var bubbleY = p.y - height / 2;
     anchor = anchor || { x: p.x, y: bubbleY - 30 };
@@ -12055,8 +12136,8 @@
     };
   }
 
-  function drawSignpost(ctx, label, p, anchor, color, background) {
-    var geometry = signpostGeometry(label, p, anchor);
+  function drawSignpost(ctx, label, p, anchor, color, background, textColor, textSize) {
+    var geometry = signpostGeometry(label, p, anchor, textSize);
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.moveTo(p.x, geometry.anchor.y);
@@ -12066,12 +12147,17 @@
     roundedRectPath(ctx, geometry.bubbleX, geometry.bubbleY, geometry.width, geometry.height, 7);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fillText(label, geometry.bubbleX + 12, geometry.bubbleY + geometry.height / 2 + 4);
+    ctx.fillStyle = textColor;
+    ctx.font = drawingTextFont(textSize, 400);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, geometry.bubbleX + geometry.width / 2, geometry.bubbleY + geometry.height / 2 + 0.5);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
   }
 
-  function drawPriceNote(ctx, label, lineAnchor, boxAnchor, color) {
-    var geometry = priceNoteGeometry(label, lineAnchor, boxAnchor);
+  function drawPriceNote(ctx, label, lineAnchor, boxAnchor, color, textColor, textSize) {
+    var geometry = priceNoteGeometry(label, lineAnchor, boxAnchor, textSize);
     var originalFont = ctx.font;
     var originalTextAlign = ctx.textAlign;
     var originalTextBaseline = ctx.textBaseline;
@@ -12089,8 +12175,8 @@
     roundedRectPath(ctx, geometry.x, geometry.y, geometry.width, geometry.height, geometry.radius);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = contrastTextColor(color);
-    ctx.font = '700 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.font = drawingTextFont(textSize, 700);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, geometry.x + geometry.width / 2, geometry.y + geometry.height / 2 + 0.5);
@@ -12416,6 +12502,57 @@
     return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' || kind === 'signpost';
   }
 
+  function drawingSupportsTextStyleKind(kind) {
+    return kind === 'text' || kind === 'note' || kind === 'anchoredNote' || kind === 'callout' ||
+      kind === 'priceLabel' || kind === 'priceNote' || kind === 'signpost';
+  }
+
+  function drawingSupportsTextStyle(drawing) {
+    if (!drawing) return false;
+    var tool = drawingToolDefinition(drawing.type);
+    return drawingSupportsTextStyleKind(drawingRenderKind(drawing, tool));
+  }
+
+  function applyDrawingTextStyleDefaults(type, style) {
+    var output = merge({}, style || {});
+    var tool = drawingToolDefinition(type);
+    if (drawingSupportsTextStyleKind(tool.renderKind)) {
+      if (output.textSize == null) output.textSize = DEFAULT_DRAWING_TEXT_SIZE;
+      if (output.textColor == null || String(output.textColor).trim() === '') output.textColor = DEFAULT_DRAWING_TEXT_COLOR;
+    }
+    return output;
+  }
+
+  function normalizeDrawingTextColor(color) {
+    var normalized = String(color == null ? DEFAULT_DRAWING_TEXT_COLOR : color).trim();
+    return !normalized || normalized.toLowerCase() === 'auto' ? DEFAULT_DRAWING_TEXT_COLOR : normalized;
+  }
+
+  function drawingTextSize(style) {
+    return clamp(Number(style && style.textSize) || DEFAULT_DRAWING_TEXT_SIZE, 8, 48);
+  }
+
+  function drawingTextColor(style, theme) {
+    var color = normalizeDrawingTextColor(style && style.textColor);
+    return color === DEFAULT_DRAWING_TEXT_COLOR ? (theme && theme.text || DEFAULT_LIGHT_THEME.text) : color;
+  }
+
+  function drawingTextFont(size, weight) {
+    return (weight ? String(weight) + ' ' : '') + drawingTextSize({ textSize: size }) +
+      'px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  }
+
+  function approximateTextWidthAtSize(text, size) {
+    return approximateTextWidth(text) * drawingTextSize({ textSize: size }) / DEFAULT_DRAWING_TEXT_SIZE;
+  }
+
+  function drawingTextSizeOptionsHtml(selectedSize) {
+    var selected = drawingTextSize({ textSize: selectedSize });
+    return [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48].map(function (size) {
+      return '<option value="' + size + '"' + (size === selected ? ' selected' : '') + '>' + size + ' px</option>';
+    }).join('');
+  }
+
   function nearestSeriesPoint(data, time) {
     if (!data || !data.length) return null;
     if (time == null) return data[data.length - 1];
@@ -12583,6 +12720,8 @@
     if (output.width != null) output.width = clamp(Number(output.width) || 1, 1, 16);
     if (output.lineStyle != null) output.lineStyle = normalizeLineStyle(output.lineStyle);
     if (output.opacity != null) output.opacity = normalizeOpacity(output.opacity, 1);
+    if (output.textSize != null) output.textSize = drawingTextSize(output);
+    if (output.textColor != null) output.textColor = normalizeDrawingTextColor(output.textColor);
     if (output.insideRatios != null) output.insideRatios = normalizeInsidePitchforkRatios(output.insideRatios);
     if (output.channelRatios != null) output.channelRatios = normalizeInsidePitchforkRatios(output.channelRatios);
     delete output.lineWidth;
@@ -14245,10 +14384,11 @@
     });
   }
 
-  function colorPaletteHtml(selectedColor) {
+  function colorPaletteHtml(selectedColor, action) {
     var colors = DEFAULT_SERIES_COLOR_ORDER.concat(['#111827', '#f9fafb', '#facc15', '#22c55e', '#ef4444', '#38bdf8']);
+    action = action || 'pick-color';
     return colors.map(function (color) {
-      return '<button type="button" data-sce-popup-action="pick-color" data-sce-color="' + escapeHtml(color) + '" style="background:' + escapeHtml(color) + '"' + (color.toLowerCase() === String(selectedColor || '').toLowerCase() ? ' class="is-selected"' : '') + ' aria-label="' + escapeHtml(color) + '"></button>';
+      return '<button type="button" data-sce-popup-action="' + escapeHtml(action) + '" data-sce-color="' + escapeHtml(color) + '" style="background:' + escapeHtml(color) + '"' + (color.toLowerCase() === String(selectedColor || '').toLowerCase() ? ' class="is-selected"' : '') + ' aria-label="' + escapeHtml(color) + '"></button>';
     }).join('');
   }
 
