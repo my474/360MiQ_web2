@@ -414,6 +414,9 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   chart.drawScaleMarkers(rect, chart.paneRange(rect.paneId), theme);
   const persistentItems = chart.scaleMarkerItems(rect, chart.scaleMarkerTimeForPane(rect), theme);
   const persistentBackgrounds = chart.canvas.commands.filter((command) => command.type === 'fill');
+  const persistentTexts = chart.canvas.commands.filter((command) => (
+    command.type === 'fillText' && persistentItems.some((item) => item.label === command.text)
+  ));
   const seriesMarkerTips = chart.canvas.commands.filter((command) => (
     command.type === 'lineTo' && command.x === rect.scaleX + 1
   ));
@@ -425,6 +428,8 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   ));
   assert.ok(persistentItems.length > 0, `${expectedThemeName} chart should expose persistent scale markers`);
   assert.ok(persistentBackgrounds.length > 0, `${expectedThemeName} chart should draw persistent scale markers`);
+  assert.strictEqual(persistentTexts.length, persistentBackgrounds.length);
+  assert.ok(persistentTexts.every((command) => /^600 11px /.test(command.font)), `${expectedThemeName} scale markers should use semibold text at rest`);
   assert.ok(persistentBackgrounds.every((command) => !command.shadowBlur && !command.shadowOffsetY));
   assert.strictEqual(seriesMarkerTips.length, persistentBackgrounds.length, `${expectedThemeName} scale markers should use anchored arrow tags`);
   assert.strictEqual(seriesMarkerTops.length, persistentBackgrounds.length, `${expectedThemeName} series triangles should begin at the marker top`);
@@ -432,6 +437,40 @@ function assertCrosshairAxisMarkers(chart, expectedThemeName) {
   persistentItems.forEach((item) => {
     assert.ok(persistentBackgrounds.some((command) => command.fillStyle === item.color), `${expectedThemeName} scale marker should use its series color`);
   });
+  const firstSeriesRightCorner = chart.canvas.commands.find((command) => command.type === 'quadraticCurveTo');
+  const hoverLabel = persistentTexts[0].text;
+  const normalBodyLayout = {
+    x: seriesMarkerTops[0].x,
+    y: seriesMarkerTops[0].y,
+    width: firstSeriesRightCorner.x - seriesMarkerTops[0].x,
+    height: seriesMarkerBottoms[0].y - seriesMarkerTops[0].y
+  };
+  chart.pointer = {
+    x: normalBodyLayout.x + normalBodyLayout.width / 2,
+    y: normalBodyLayout.y + normalBodyLayout.height / 2,
+    pointerType: 'mouse'
+  };
+  chart.canvas.commands = [];
+  chart.drawScaleMarkers(rect, chart.paneRange(rect.paneId), theme);
+  const hoveredText = chart.canvas.commands.find((command) => (
+    command.type === 'fillText' && command.text === hoverLabel && /^700 11px /.test(command.font)
+  ));
+  const hoveredTop = chart.canvas.commands.find((command) => command.type === 'moveTo' && command.x === rect.scaleX + 9);
+  const hoveredBottom = chart.canvas.commands.find((command) => command.type === 'lineTo' && command.x === rect.scaleX + 9);
+  const hoveredRightCorner = chart.canvas.commands.find((command) => command.type === 'quadraticCurveTo');
+  assert.ok(hoveredText, `${expectedThemeName} scale marker should become bold on mouse hover`);
+  assert.deepStrictEqual({
+    x: hoveredTop.x,
+    y: hoveredTop.y,
+    width: hoveredRightCorner.x - hoveredTop.x,
+    height: hoveredBottom.y - hoveredTop.y
+  }, normalBodyLayout, `${expectedThemeName} scale marker hover should not change layout`);
+  chart.pointer.pointerType = 'touch';
+  chart.canvas.commands = [];
+  chart.drawScaleMarkers(rect, chart.paneRange(rect.paneId), theme);
+  assert.ok(chart.canvas.commands.some((command) => (
+    command.type === 'fillText' && command.text === hoverLabel && /^600 11px /.test(command.font)
+  )), `${expectedThemeName} touch input should not leave a series marker hovered`);
 
   chart.pointer = originalPointer;
   chart.canvas.commands = originalCommands;

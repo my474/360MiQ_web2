@@ -9395,7 +9395,8 @@
     var items = this.scaleMarkerItems(rect, time, theme);
     if (!items.length) return;
     ctx.save();
-    ctx.font = '600 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    var markerFont = '11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.font = '600 ' + markerFont;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.setLineDash([]);
@@ -9430,10 +9431,7 @@
       var left = rect.scaleX + 9;
       var width = Math.min(rect.scaleWidth - 13, Math.max(34, approximateTextWidth(label) + 12));
       var centerY = entry.top + height / 2;
-      ctx.fillStyle = color;
-      ctx.strokeStyle = colorWithAlpha(theme.background, 0.78) || theme.background;
-      ctx.lineWidth = 1;
-      drawSeriesAxisMarker(ctx, {
+      var seriesMarker = {
         x: left,
         y: entry.top,
         width: width,
@@ -9441,10 +9439,18 @@
         radius: 4,
         tipX: rect.scaleX + 1,
         tipY: entry.y
-      });
+      };
+      var hovered = this.pointer &&
+        this.pointer.pointerType !== 'touch' &&
+        pointInSeriesAxisMarker(this.pointer, seriesMarker);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = colorWithAlpha(theme.background, 0.78) || theme.background;
+      ctx.lineWidth = 1;
+      drawSeriesAxisMarker(ctx, seriesMarker);
       ctx.fillStyle = contrastTextColor(color);
+      ctx.font = (hovered ? '700 ' : '600 ') + markerFont;
       ctx.fillText(label, left + 6, centerY + 0.5);
-    });
+    }, this);
     ctx.restore();
   };
 
@@ -10754,6 +10760,33 @@
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+  }
+
+  function pointInSeriesAxisMarker(pointer, marker) {
+    if (!pointer || !marker) return false;
+    if (
+      pointer.x >= marker.x &&
+      pointer.x <= marker.x + marker.width &&
+      pointer.y >= marker.y &&
+      pointer.y <= marker.y + marker.height
+    ) {
+      return true;
+    }
+    return pointInTriangle(
+      pointer,
+      { x: marker.x, y: marker.y },
+      { x: marker.x, y: marker.y + marker.height },
+      { x: marker.tipX, y: marker.tipY }
+    );
+  }
+
+  function pointInTriangle(point, a, b, c) {
+    var cross1 = (point.x - b.x) * (a.y - b.y) - (a.x - b.x) * (point.y - b.y);
+    var cross2 = (point.x - c.x) * (b.y - c.y) - (b.x - c.x) * (point.y - c.y);
+    var cross3 = (point.x - a.x) * (c.y - a.y) - (c.x - a.x) * (point.y - a.y);
+    var hasNegative = cross1 < 0 || cross2 < 0 || cross3 < 0;
+    var hasPositive = cross1 > 0 || cross2 > 0 || cross3 > 0;
+    return !(hasNegative && hasPositive);
   }
 
   function drawArrowHead(ctx, ax, ay, bx, by, color) {
