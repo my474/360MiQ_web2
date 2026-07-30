@@ -8662,8 +8662,8 @@
     return null;
   };
 
-  Chart.prototype.isPointOnDrawing = function (pointer, drawing) {
-    var points = this.drawingScreenPoints(drawing);
+  Chart.prototype.isPointOnDrawing = function (pointer, drawing, screenPoints) {
+    var points = screenPoints || this.drawingScreenPoints(drawing);
     var tolerance = pointer && pointer.pointerType === 'touch' ? 18 : 8;
     if (!points.length) return false;
     points = points.filter(function (point) { return point.y != null; });
@@ -8755,14 +8755,105 @@
     var points = this.drawingScreenPoints(drawing);
     points = points.filter(function (point) { return point.y != null; });
     if (!points.length) return null;
-    var minX = points[0].x;
-    var minY = points[0].y;
-    points.forEach(function (point) {
-      minX = Math.min(minX, point.x);
-      minY = Math.min(minY, point.y);
+    var paneRect = this.getPaneRect(drawing.paneId);
+    var anchorIndex = 0;
+    if (paneRect && !pointInsideDrawingPane(points[0], paneRect)) {
+      for (var pointIndex = 1; pointIndex < points.length; pointIndex += 1) {
+        if (pointInsideDrawingPane(points[pointIndex], paneRect)) {
+          anchorIndex = pointIndex;
+          break;
+        }
+      }
+    }
+    var anchor = points[anchorIndex];
+    var size = 16;
+    if (points.length === 1) {
+      return clampDrawingDeleteZone({ x: anchor.x - 9, y: anchor.y - 23, size: size }, paneRect);
+    }
+
+    var otherX = 0;
+    var otherY = 0;
+    var otherCount = 0;
+    points.forEach(function (point, index) {
+      if (index === anchorIndex) return;
+      otherX += point.x;
+      otherY += point.y;
+      otherCount += 1;
     });
-    return { x: minX - 9, y: minY - 23, size: 16 };
+    var towardX = otherCount ? otherX / otherCount - anchor.x : 0;
+    var towardY = otherCount ? otherY / otherCount - anchor.y : 1;
+    if (Math.abs(towardX) + Math.abs(towardY) < 0.001) towardY = 1;
+    var awayAngle = Math.atan2(-towardY, -towardX);
+    var angleOffsets = [0, -Math.PI / 4, Math.PI / 4, -Math.PI / 2, Math.PI / 2, Math.PI];
+    var centerDistance = 24;
+    var preferredZone = null;
+    var containedFallback = null;
+
+    for (var angleIndex = 0; angleIndex < angleOffsets.length; angleIndex += 1) {
+      var angle = awayAngle + angleOffsets[angleIndex];
+      var zone = {
+        x: Math.round(anchor.x + Math.cos(angle) * centerDistance - size / 2),
+        y: Math.round(anchor.y + Math.sin(angle) * centerDistance - size / 2),
+        size: size
+      };
+      if (!preferredZone) preferredZone = zone;
+      if (paneRect && !drawingDeleteZoneInsidePane(zone, paneRect)) continue;
+      if (!containedFallback) containedFallback = zone;
+      if (!drawingDeleteZoneOverlaps(this, drawing, points, zone)) return zone;
+    }
+
+    return clampDrawingDeleteZone(containedFallback || preferredZone, paneRect);
   };
+
+  function pointInsideDrawingPane(point, rect) {
+    return point.x >= rect.x && point.x <= rect.x + rect.width &&
+      point.y >= rect.y && point.y <= rect.y + rect.height;
+  }
+
+  function drawingDeleteZoneInsidePane(zone, rect) {
+    var margin = 2;
+    return zone.x >= rect.x + margin &&
+      zone.y >= rect.y + margin &&
+      zone.x + zone.size <= rect.x + rect.width - margin &&
+      zone.y + zone.size <= rect.y + rect.height - margin;
+  }
+
+  function clampDrawingDeleteZone(zone, rect) {
+    if (!zone || !rect) return zone;
+    var margin = 2;
+    return {
+      x: clamp(zone.x, rect.x + margin, Math.max(rect.x + margin, rect.x + rect.width - zone.size - margin)),
+      y: clamp(zone.y, rect.y + margin, Math.max(rect.y + margin, rect.y + rect.height - zone.size - margin)),
+      size: zone.size
+    };
+  }
+
+  function drawingDeleteZoneOverlaps(chart, drawing, points, zone) {
+    var anchorClearance = 6;
+    for (var pointIndex = 0; pointIndex < points.length; pointIndex += 1) {
+      var point = points[pointIndex];
+      if (
+        point.x >= zone.x - anchorClearance &&
+        point.x <= zone.x + zone.size + anchorClearance &&
+        point.y >= zone.y - anchorClearance &&
+        point.y <= zone.y + zone.size + anchorClearance
+      ) {
+        return true;
+      }
+    }
+    var samplePoints = [
+      { x: zone.x, y: zone.y },
+      { x: zone.x + zone.size, y: zone.y },
+      { x: zone.x, y: zone.y + zone.size },
+      { x: zone.x + zone.size, y: zone.y + zone.size },
+      { x: zone.x + zone.size / 2, y: zone.y + zone.size / 2 }
+    ];
+    for (var sampleIndex = 0; sampleIndex < samplePoints.length; sampleIndex += 1) {
+      samplePoints[sampleIndex].pointerType = 'mouse';
+      if (chart.isPointOnDrawing(samplePoints[sampleIndex], drawing, points)) return true;
+    }
+    return false;
+  }
 
   Chart.prototype.clear = function (theme) {
     var ctx = this.ctx;

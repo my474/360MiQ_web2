@@ -3006,6 +3006,58 @@ const drawingDeleteZone = chart.drawingDeleteZone(chart.getDrawingById(drawingId
 const deleteControlStroke = chart.canvas.commands.find((command) => command.type === 'strokeRect' && command.x === drawingDeleteZone.x && command.y === drawingDeleteZone.y);
 assert.ok(deleteControlStroke);
 assert.deepStrictEqual(deleteControlStroke.lineDash, []);
+const deletePlacementRect = chart.getPaneRect('price');
+const deletePlacementRange = chart.paneRange('price');
+const deletePlacementVisibleBars = chart.visibleBars();
+const anchorOneDeleteDrawing = {
+  id: 'anchor-one-delete-placement',
+  type: 'trendline',
+  paneId: 'price',
+  visible: true,
+  points: [
+    {
+      time: deletePlacementVisibleBars[Math.floor(deletePlacementVisibleBars.length / 3)].time,
+      value: deletePlacementRange.min + (deletePlacementRange.max - deletePlacementRange.min) * 0.35
+    },
+    {
+      time: deletePlacementVisibleBars[Math.floor(deletePlacementVisibleBars.length * 2 / 3)].time,
+      value: deletePlacementRange.min + (deletePlacementRange.max - deletePlacementRange.min) * 0.65
+    }
+  ]
+};
+const anchorOneDeletePoints = chart.drawingScreenPoints(anchorOneDeleteDrawing);
+const anchorOneDeleteZone = chart.drawingDeleteZone(anchorOneDeleteDrawing);
+const anchorOneDeleteCenter = {
+  x: anchorOneDeleteZone.x + anchorOneDeleteZone.size / 2,
+  y: anchorOneDeleteZone.y + anchorOneDeleteZone.size / 2
+};
+const deletePlacementFromAnchorOne = {
+  x: anchorOneDeleteCenter.x - anchorOneDeletePoints[0].x,
+  y: anchorOneDeleteCenter.y - anchorOneDeletePoints[0].y
+};
+const deletePlacementTowardDrawing = {
+  x: anchorOneDeletePoints[1].x - anchorOneDeletePoints[0].x,
+  y: anchorOneDeletePoints[1].y - anchorOneDeletePoints[0].y
+};
+assert.ok(Math.hypot(deletePlacementFromAnchorOne.x, deletePlacementFromAnchorOne.y) <= 26);
+assert.ok(
+  deletePlacementFromAnchorOne.x * deletePlacementTowardDrawing.x +
+  deletePlacementFromAnchorOne.y * deletePlacementTowardDrawing.y < 0,
+  'multi-anchor delete control should sit on the side of anchor 1 facing away from the drawing'
+);
+assert.ok(anchorOneDeleteZone.x >= deletePlacementRect.x + 2);
+assert.ok(anchorOneDeleteZone.y >= deletePlacementRect.y + 2);
+assert.ok(anchorOneDeleteZone.x + anchorOneDeleteZone.size <= deletePlacementRect.x + deletePlacementRect.width - 2);
+assert.ok(anchorOneDeleteZone.y + anchorOneDeleteZone.size <= deletePlacementRect.y + deletePlacementRect.height - 2);
+[
+  { x: anchorOneDeleteZone.x, y: anchorOneDeleteZone.y },
+  { x: anchorOneDeleteZone.x + anchorOneDeleteZone.size, y: anchorOneDeleteZone.y },
+  { x: anchorOneDeleteZone.x, y: anchorOneDeleteZone.y + anchorOneDeleteZone.size },
+  { x: anchorOneDeleteZone.x + anchorOneDeleteZone.size, y: anchorOneDeleteZone.y + anchorOneDeleteZone.size },
+  anchorOneDeleteCenter
+].forEach((sample) => {
+  assert.strictEqual(chart.isPointOnDrawing(sample, anchorOneDeleteDrawing), false);
+});
 chart.handlePointerMove({ clientX: drawingDeleteZone.x + 4, clientY: drawingDeleteZone.y + 4 });
 assert.strictEqual(chart.canvas.style.cursor, 'pointer');
 chart.canvas.commands = [];
