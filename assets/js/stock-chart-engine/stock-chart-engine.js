@@ -8772,14 +8772,25 @@
     }
     var anchor = points[anchorIndex];
     var size = 16;
-    if (points.length === 1) {
+    var deleteDirectionPoints = points;
+    var tool = drawingToolDefinition(drawing.type);
+    var kind = drawingRenderKind(drawing, tool);
+    if (kind === 'priceLabel' && points.length === 1) {
+      var priceLabel = priceDrawingLabel(drawing, anchor);
+      var priceGeometry = priceLabelGeometry(priceLabel, anchor, paneRect);
+      deleteDirectionPoints = points.concat([{
+        x: priceGeometry.x + priceGeometry.width / 2,
+        y: priceGeometry.y + priceGeometry.height / 2
+      }]);
+    }
+    if (deleteDirectionPoints.length === 1) {
       return clampDrawingDeleteZone({ x: anchor.x - 9, y: anchor.y - 23, size: size }, paneRect);
     }
 
     var otherX = 0;
     var otherY = 0;
     var otherCount = 0;
-    points.forEach(function (point, index) {
+    deleteDirectionPoints.forEach(function (point, index) {
       if (index === anchorIndex) return;
       otherX += point.x;
       otherY += point.y;
@@ -11671,10 +11682,10 @@
   }
 
   function calloutGeometry(label, tailTip, bubbleAnchor) {
-    var width = Math.max(76, approximateTextWidth(label) + 32);
-    var height = 52;
-    var radius = 12;
-    var tailHalfWidth = 8;
+    var width = Math.max(60, approximateTextWidth(label) + 24);
+    var height = 34;
+    var radius = 9;
+    var tailHalfWidth = 6;
     var x = bubbleAnchor.x;
     var y = bubbleAnchor.y - height;
     var centerX = x + width / 2;
@@ -11786,9 +11797,9 @@
 
     ctx.fillStyle = contrastTextColor(color);
     ctx.font = '600 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(label, x + 16, y + height / 2 + 0.5);
+    ctx.fillText(label, x + width / 2, y + height / 2 + 0.5);
     ctx.font = originalFont;
     ctx.textAlign = originalTextAlign;
     ctx.textBaseline = originalTextBaseline;
@@ -11832,11 +11843,11 @@
   }
 
   function priceLabelGeometry(label, anchor, rect) {
-    var width = Math.max(92, approximateTextWidth(label) + 30);
-    var height = 36;
-    var radius = 7;
-    var tailLength = 22;
-    var tailHalfWidth = 6;
+    var width = Math.max(64, approximateTextWidth(label) + 22);
+    var height = 30;
+    var radius = 6;
+    var tailLength = 20;
+    var tailHalfWidth = 5;
     var minX = rect ? rect.x + 4 : anchor.x + 12;
     var maxX = rect ? Math.max(minX, rect.x + rect.width - width - 4) : minX;
     var x = rect ? clamp(anchor.x + 12, minX, maxX) : anchor.x + 12;

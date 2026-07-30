@@ -577,6 +577,14 @@ function assertCalloutBubbleRendering(chart, drawing, expectedThemeName) {
     ? 'rgba(18, 52, 86, 0.68)'
     : 'rgba(18, 52, 86, 0.58)';
   const label = commands.find((command) => command.type === 'fillText' && command.text === drawing.text);
+  const corners = commands.filter((command) => command.type === 'quadraticCurveTo');
+  const bubbleBounds = {
+    minX: Math.min(...corners.map((command) => command.cpx)),
+    maxX: Math.max(...corners.map((command) => command.cpx)),
+    minY: Math.min(...corners.map((command) => command.cpy)),
+    maxY: Math.max(...corners.map((command) => command.cpy))
+  };
+  const expectedWidth = Math.max(60, drawing.text.length * 7 + 24);
 
   assert.strictEqual(chart.theme().name, expectedThemeName);
   assert.strictEqual(drawing.points.length, 2);
@@ -587,6 +595,10 @@ function assertCalloutBubbleRendering(chart, drawing, expectedThemeName) {
   assert.ok(label);
   assert.ok(/^600 14px /.test(label.font));
   assert.strictEqual(label.fillStyle, '#ffffff');
+  assert.ok(Math.abs((bubbleBounds.maxX - bubbleBounds.minX) - expectedWidth) < 0.01);
+  assert.ok(Math.abs((bubbleBounds.maxY - bubbleBounds.minY) - 34) < 0.01);
+  assert.ok(Math.abs(label.x - (bubbleBounds.minX + expectedWidth / 2)) < 0.01);
+  assert.ok(Math.abs(label.y - (bubbleBounds.minY + 17.5)) < 0.01);
 
   chart.selectedDrawingId = originalSelectedDrawingId;
   chart.hoverDrawingId = originalHoverDrawingId;
@@ -620,6 +632,14 @@ function assertPriceLabelBadgeRendering(chart, drawing, expectedThemeName) {
     command.type === 'stroke' &&
     command.strokeStyle === drawing.style.color
   ));
+  const corners = commands.filter((command) => command.type === 'quadraticCurveTo');
+  const badgeBounds = {
+    minX: Math.min(...corners.map((command) => command.cpx)),
+    maxX: Math.max(...corners.map((command) => command.cpx)),
+    minY: Math.min(...corners.map((command) => command.cpy)),
+    maxY: Math.max(...corners.map((command) => command.cpy))
+  };
+  const expectedWidth = Math.max(64, label.text.length * 7 + 22);
 
   assert.strictEqual(chart.theme().name, expectedThemeName);
   assert.strictEqual(drawing.points.length, 1);
@@ -638,6 +658,10 @@ function assertPriceLabelBadgeRendering(chart, drawing, expectedThemeName) {
   assert.strictEqual(label.text, Number(drawing.points[0].value).toFixed(2));
   assert.ok(/^700 15px /.test(label.font));
   assert.strictEqual(label.fillStyle, '#ffffff');
+  assert.ok(Math.abs((badgeBounds.maxX - badgeBounds.minX) - expectedWidth) < 0.01);
+  assert.ok(Math.abs((badgeBounds.maxY - badgeBounds.minY) - 30) < 0.01);
+  assert.ok(Math.abs(label.x - (badgeBounds.minX + expectedWidth / 2)) < 0.01);
+  assert.ok(Math.abs(label.y - (badgeBounds.minY + 15.5)) < 0.01);
 
   chart.selectedDrawingId = originalSelectedDrawingId;
   chart.hoverDrawingId = originalHoverDrawingId;
@@ -646,6 +670,7 @@ function assertPriceLabelBadgeRendering(chart, drawing, expectedThemeName) {
     anchor,
     commands,
     label,
+    badgeBounds,
     tailBaseStart: commands[anchorCommandIndex - 1],
     tailBaseEnd: commands[anchorCommandIndex + 1]
   };
@@ -3455,10 +3480,10 @@ function renderCalloutDirection(tailTip, bubbleAnchor) {
     baseStart: commands[tailTipCommandIndex - 1],
     baseEnd: commands[tailTipCommandIndex + 1],
     bubble: {
-      x: label.x - 16,
-      y: label.y - 26.5,
-      width: 76,
-      height: 52
+      x: label.x - 30,
+      y: label.y - 17.5,
+      width: 60,
+      height: 34
     }
   };
 }
@@ -3708,6 +3733,35 @@ assert.strictEqual(chart.isPointOnDrawing({
   x: (priceLabelRendering.anchor.x + priceLabelRendering.tailBaseStart.x + priceLabelRendering.tailBaseEnd.x) / 3,
   y: (priceLabelRendering.anchor.y + priceLabelRendering.tailBaseStart.y + priceLabelRendering.tailBaseEnd.y) / 3
 }, liveThemePriceLabel), true);
+const priceLabelDeleteZone = chart.drawingDeleteZone(liveThemePriceLabel);
+const priceLabelDeleteCenter = {
+  x: priceLabelDeleteZone.x + priceLabelDeleteZone.size / 2,
+  y: priceLabelDeleteZone.y + priceLabelDeleteZone.size / 2
+};
+const priceLabelDeleteOffset = {
+  x: priceLabelDeleteCenter.x - priceLabelRendering.anchor.x,
+  y: priceLabelDeleteCenter.y - priceLabelRendering.anchor.y
+};
+const priceLabelTowardBadge = {
+  x: (priceLabelRendering.badgeBounds.minX + priceLabelRendering.badgeBounds.maxX) / 2 - priceLabelRendering.anchor.x,
+  y: (priceLabelRendering.badgeBounds.minY + priceLabelRendering.badgeBounds.maxY) / 2 - priceLabelRendering.anchor.y
+};
+assert.ok(Math.hypot(priceLabelDeleteOffset.x, priceLabelDeleteOffset.y) >= 22);
+assert.ok(Math.hypot(priceLabelDeleteOffset.x, priceLabelDeleteOffset.y) <= 26);
+assert.ok(
+  priceLabelDeleteOffset.x * priceLabelTowardBadge.x +
+  priceLabelDeleteOffset.y * priceLabelTowardBadge.y < 0,
+  'price-label delete control should use callout-style placement away from the badge'
+);
+[
+  { x: priceLabelDeleteZone.x, y: priceLabelDeleteZone.y },
+  { x: priceLabelDeleteZone.x + priceLabelDeleteZone.size, y: priceLabelDeleteZone.y },
+  { x: priceLabelDeleteZone.x, y: priceLabelDeleteZone.y + priceLabelDeleteZone.size },
+  { x: priceLabelDeleteZone.x + priceLabelDeleteZone.size, y: priceLabelDeleteZone.y + priceLabelDeleteZone.size },
+  priceLabelDeleteCenter
+].forEach((sample) => {
+  assert.strictEqual(chart.isPointOnDrawing(sample, liveThemePriceLabel), false);
+});
 const topEdgePriceLabel = {
   id: 'top-edge-price-label',
   type: 'price_label',
