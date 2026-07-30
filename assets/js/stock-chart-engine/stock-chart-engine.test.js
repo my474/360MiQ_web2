@@ -562,6 +562,38 @@ function assertLegendSeriesGlow(chart, expectedThemeName, indicatorId) {
   chart.canvas.commands = originalCommands;
 }
 
+function assertCalloutBubbleRendering(chart, drawing, expectedThemeName) {
+  const originalCommands = chart.canvas.commands;
+  const originalSelectedDrawingId = chart.selectedDrawingId;
+  const originalHoverDrawingId = chart.hoverDrawingId;
+  const rect = chart.getPaneRect(drawing.paneId);
+  const range = chart.paneRange(drawing.paneId);
+  chart.selectedDrawingId = null;
+  chart.hoverDrawingId = null;
+  chart.canvas.commands = [];
+  chart.drawDrawing(rect, range, chart.theme(), drawing);
+  const commands = chart.canvas.commands;
+  const expectedFill = expectedThemeName === 'dark'
+    ? 'rgba(18, 52, 86, 0.68)'
+    : 'rgba(18, 52, 86, 0.58)';
+  const label = commands.find((command) => command.type === 'fillText' && command.text === drawing.text);
+
+  assert.strictEqual(chart.theme().name, expectedThemeName);
+  assert.strictEqual(drawing.points.length, 2);
+  assert.ok(commands.some((command) => command.type === 'fill' && command.fillStyle === expectedFill));
+  assert.ok(commands.some((command) => command.type === 'stroke' && command.strokeStyle === '#123456'));
+  assert.strictEqual(commands.filter((command) => command.type === 'quadraticCurveTo').length, 4);
+  assert.strictEqual(commands.some((command) => command.type === 'fillRect'), false);
+  assert.ok(label);
+  assert.ok(/^600 14px /.test(label.font));
+  assert.strictEqual(label.fillStyle, '#ffffff');
+
+  chart.selectedDrawingId = originalSelectedDrawingId;
+  chart.hoverDrawingId = originalHoverDrawingId;
+  chart.canvas.commands = originalCommands;
+  return commands;
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -3156,6 +3188,24 @@ chart.moveSelectedDrawing(movedCommentTail);
 assert.strictEqual(commentCalloutDrawing.points[0].time, chart.dragState.originalPoints[0].time);
 assert.notStrictEqual(commentCalloutDrawing.points[1].time, chart.dragState.originalPoints[1].time);
 chart.dragState = null;
+const commentCalloutAfterBoxMove = chart.drawingScreenPoints(commentCalloutDrawing);
+const calloutBoxAnchorBeforeTailMove = Object.assign({}, commentCalloutDrawing.points[1]);
+chart.dragState = {
+  drawingId: commentCalloutId,
+  pointIndex: 0,
+  paneId: 'price',
+  startPointer: commentCalloutAfterBoxMove[0],
+  startValue: chart.valueFromPoint(commentCalloutAfterBoxMove[0], 'price'),
+  originalPoints: commentCalloutDrawing.points.map((point) => Object.assign({}, point)),
+  moved: false
+};
+chart.moveSelectedDrawing({
+  x: commentCalloutAfterBoxMove[0].x - 24,
+  y: commentCalloutAfterBoxMove[0].y + 18
+});
+assert.notStrictEqual(commentCalloutDrawing.points[0].time, chart.dragState.originalPoints[0].time);
+assert.deepStrictEqual(commentCalloutDrawing.points[1], calloutBoxAnchorBeforeTailMove);
+chart.dragState = null;
 
 chart.startDrawing('note');
 const noteRect = chart.getPaneRect('price');
@@ -3315,6 +3365,46 @@ function renderMeasurementTool(type, points) {
   });
   return chart.canvas.commands;
 }
+function drawingPointForScreen(point) {
+  return {
+    time: chart.timeForX(point.x, measurementRenderRect),
+    value: chart.valueForY(point.y, measurementRenderRect, measurementRenderRange)
+  };
+}
+function renderCalloutDirection(tailTip, bubbleAnchor) {
+  const drawing = {
+    id: `callout-${tailTip.x}-${tailTip.y}`,
+    type: 'callout',
+    paneId: 'price',
+    text: 'hello',
+    points: [drawingPointForScreen(tailTip), drawingPointForScreen(bubbleAnchor)],
+    style: { color: '#123456', width: 2 }
+  };
+  const commands = assertCalloutBubbleRendering(chart, drawing, chart.theme().name);
+  const screenPoints = chart.drawingScreenPoints(drawing);
+  const label = commands.find((command) => command.type === 'fillText' && command.text === 'hello');
+  const tailTipCommandIndex = commands.findIndex((command) => (
+    command.type === 'lineTo' &&
+    Math.abs(command.x - screenPoints[0].x) < 0.01 &&
+    Math.abs(command.y - screenPoints[0].y) < 0.01
+  ));
+  assert.ok(tailTipCommandIndex > 0);
+  assert.strictEqual(commands[tailTipCommandIndex - 1].type, 'lineTo');
+  assert.strictEqual(commands[tailTipCommandIndex + 1].type, 'lineTo');
+  return {
+    drawing,
+    commands,
+    screenPoints,
+    baseStart: commands[tailTipCommandIndex - 1],
+    baseEnd: commands[tailTipCommandIndex + 1],
+    bubble: {
+      x: label.x - 16,
+      y: label.y - 26.5,
+      width: 76,
+      height: 52
+    }
+  };
+}
 function renderSignature(type, points) {
   return renderMeasurementTool(type, points).filter((command) => [
     'fillRect',
@@ -3335,6 +3425,64 @@ function assertUniqueRenderSignatures(toolIds, points) {
   const signatures = toolIds.map((toolId) => JSON.stringify(renderSignature(toolId, points)));
   assert.strictEqual(new Set(signatures).size, signatures.length, `${toolIds.join(', ')} should not render identically`);
 }
+const dynamicCalloutBubbleAnchor = {
+  x: measurementRenderRect.x + measurementRenderRect.width * 0.45,
+  y: measurementRenderRect.y + Math.max(64, measurementRenderRect.height * 0.6)
+};
+[
+  {
+    side: 'top',
+    tailTip: { x: dynamicCalloutBubbleAnchor.x + 38, y: dynamicCalloutBubbleAnchor.y - 88 }
+  },
+  {
+    side: 'right',
+    tailTip: { x: dynamicCalloutBubbleAnchor.x + 126, y: dynamicCalloutBubbleAnchor.y - 26 }
+  },
+  {
+    side: 'bottom',
+    tailTip: { x: dynamicCalloutBubbleAnchor.x + 38, y: dynamicCalloutBubbleAnchor.y + 36 }
+  },
+  {
+    side: 'left',
+    tailTip: { x: dynamicCalloutBubbleAnchor.x - 50, y: dynamicCalloutBubbleAnchor.y - 26 }
+  }
+].forEach((example) => {
+  const rendered = renderCalloutDirection(example.tailTip, dynamicCalloutBubbleAnchor);
+  if (example.side === 'top') {
+    assert.ok(Math.abs(rendered.baseStart.y - rendered.bubble.y) < 0.01);
+    assert.ok(Math.abs(rendered.baseEnd.y - rendered.bubble.y) < 0.01);
+  } else if (example.side === 'right') {
+    assert.ok(Math.abs(rendered.baseStart.x - (rendered.bubble.x + rendered.bubble.width)) < 0.01);
+    assert.ok(Math.abs(rendered.baseEnd.x - (rendered.bubble.x + rendered.bubble.width)) < 0.01);
+  } else if (example.side === 'bottom') {
+    assert.ok(Math.abs(rendered.baseStart.y - (rendered.bubble.y + rendered.bubble.height)) < 0.01);
+    assert.ok(Math.abs(rendered.baseEnd.y - (rendered.bubble.y + rendered.bubble.height)) < 0.01);
+  } else {
+    assert.ok(Math.abs(rendered.baseStart.x - rendered.bubble.x) < 0.01);
+    assert.ok(Math.abs(rendered.baseEnd.x - rendered.bubble.x) < 0.01);
+  }
+});
+const liveThemeCallout = {
+  id: 'live-theme-callout',
+  type: 'callout',
+  paneId: 'price',
+  text: 'hello',
+  points: [
+    drawingPointForScreen({
+      x: dynamicCalloutBubbleAnchor.x - 50,
+      y: dynamicCalloutBubbleAnchor.y - 26
+    }),
+    drawingPointForScreen(dynamicCalloutBubbleAnchor)
+  ],
+  style: { color: '#123456', width: 2 }
+};
+assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
+documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
+assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
+assertCalloutBubbleRendering(chart, liveThemeCallout, 'dark');
+documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
+assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
+assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
 assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
 assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
 assert.ok(renderMeasurementTool('position_forecast').some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
@@ -3565,8 +3713,9 @@ chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), 
   points: measurementRenderPoints.slice(0, 2),
   style: { color: '#123456', width: 2, fill: 'rgba(18, 52, 86, 0.1)' }
 });
-assert.ok(chart.canvas.commands.some((command) => command.type === 'fillRect'));
+assert.ok(chart.canvas.commands.some((command) => command.type === 'fill'));
 assert.ok(chart.canvas.commands.some((command) => command.type === 'lineTo'));
+assert.strictEqual(chart.canvas.commands.filter((command) => command.type === 'quadraticCurveTo').length, 4);
 chart.canvas.commands = [];
 chart.drawDrawing(measurementRenderRect, measurementRenderRange, chart.theme(), {
   id: 'legacy-signpost-shape',
@@ -3784,6 +3933,17 @@ const darkChart = new StockChartEngine.Chart('#chart', {
 });
 assert.strictEqual(darkChart.root.getAttribute('data-sce-theme'), 'dark');
 assertCrosshairAxisMarkers(darkChart, 'dark');
+assertCalloutBubbleRendering(darkChart, {
+  id: 'initial-dark-callout',
+  type: 'callout',
+  paneId: 'price',
+  text: 'hello',
+  points: [
+    { time: data[data.length - 28].time, value: data[data.length - 28].close },
+    { time: data[data.length - 16].time, value: data[data.length - 16].close + 4 }
+  ],
+  style: { color: '#123456', width: 2 }
+}, 'dark');
 const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' });
 const initialDarkIndicator = darkChart.document.indicators.find((indicator) => indicator.id === initialDarkIndicatorId);
 assert.strictEqual(initialDarkIndicator.styles.value.color, '#60a5fa');

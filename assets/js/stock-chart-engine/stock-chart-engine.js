@@ -8706,8 +8706,11 @@
     }
     if (kind === 'callout') {
       var calloutTarget = points[1] || { x: points[0].x + 56, y: points[0].y - 34 };
-      return pointerInBounds(pointer, tagGeometry(drawing.text || tool.name, calloutTarget).bounds, tolerance) ||
-        distanceToSegment(pointer, points[0], calloutTarget) <= tolerance;
+      var calloutHit = calloutGeometry(drawing.text || tool.name, points[0], calloutTarget);
+      return pointerInBounds(pointer, calloutHit.bubbleBounds, tolerance) ||
+        pointInTriangle(pointer, points[0], calloutHit.tailBaseStart, calloutHit.tailBaseEnd) ||
+        distanceToSegment(pointer, points[0], calloutHit.tailBaseStart) <= tolerance ||
+        distanceToSegment(pointer, points[0], calloutHit.tailBaseEnd) <= tolerance;
     }
     if (kind === 'vwapAnchor' || kind.indexOf('marker') === 0 || kind === 'flag') {
       return pointer.x >= points[0].x - tolerance && pointer.x <= points[0].x + 130 && pointer.y >= points[0].y - 26 && pointer.y <= points[0].y + 14;
@@ -10573,8 +10576,7 @@
       drawPriceNote(ctx, noteLabel, point(1), style.color, theme.background);
     } else if (kind === 'callout' && point(0)) {
       var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
-      drawLine(ctx, point(0), target);
-      drawTag(ctx, drawing.text || tool.name, target, style.color, theme.background);
+      drawCallout(ctx, drawing.text || tool.name, point(0), target, style.color, theme);
     } else if (kind === 'signpost' && point(0)) {
       drawSignpost(ctx, drawing.text || tool.name, point(0), signpostAnchorScreenPoint(this, rawPoints[0], point(0), rect, range), style.color, theme.background);
     } else if (kind.indexOf('marker') === 0 || kind === 'flag' || kind === 'iconMarker' || kind === 'stickerMarker') {
@@ -11666,6 +11668,142 @@
     ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
     ctx.fillStyle = background || '#fff';
     ctx.fillText(label, p.x + 7, p.y - 7);
+  }
+
+  function calloutGeometry(label, tailTip, bubbleAnchor) {
+    var width = Math.max(76, approximateTextWidth(label) + 32);
+    var height = 52;
+    var radius = 12;
+    var tailHalfWidth = 8;
+    var x = bubbleAnchor.x;
+    var y = bubbleAnchor.y - height;
+    var centerX = x + width / 2;
+    var centerY = y + height / 2;
+    var dx = tailTip.x - centerX;
+    var dy = tailTip.y - centerY;
+    var side = Math.abs(dx) / Math.max(1, width / 2) >= Math.abs(dy) / Math.max(1, height / 2)
+      ? (dx < 0 ? 'left' : 'right')
+      : (dy < 0 ? 'top' : 'bottom');
+    var tailBaseStart;
+    var tailBaseEnd;
+
+    if (side === 'top' || side === 'bottom') {
+      var attachX = clamp(tailTip.x, x + radius + tailHalfWidth, x + width - radius - tailHalfWidth);
+      var edgeY = side === 'top' ? y : y + height;
+      tailBaseStart = {
+        x: attachX + (side === 'bottom' ? tailHalfWidth : -tailHalfWidth),
+        y: edgeY
+      };
+      tailBaseEnd = {
+        x: attachX + (side === 'bottom' ? -tailHalfWidth : tailHalfWidth),
+        y: edgeY
+      };
+    } else {
+      var attachY = clamp(tailTip.y, y + radius + tailHalfWidth, y + height - radius - tailHalfWidth);
+      var edgeX = side === 'left' ? x : x + width;
+      tailBaseStart = {
+        x: edgeX,
+        y: attachY + (side === 'left' ? tailHalfWidth : -tailHalfWidth)
+      };
+      tailBaseEnd = {
+        x: edgeX,
+        y: attachY + (side === 'left' ? -tailHalfWidth : tailHalfWidth)
+      };
+    }
+
+    return {
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      radius: radius,
+      side: side,
+      tailTip: tailTip,
+      tailBaseStart: tailBaseStart,
+      tailBaseEnd: tailBaseEnd,
+      bubbleBounds: boundsFromRect(x, y, width, height),
+      bounds: {
+        minX: Math.min(x, tailTip.x),
+        maxX: Math.max(x + width, tailTip.x),
+        minY: Math.min(y, tailTip.y),
+        maxY: Math.max(y + height, tailTip.y)
+      }
+    };
+  }
+
+  function drawCallout(ctx, label, tailTip, bubbleAnchor, color, theme) {
+    var geometry = calloutGeometry(label, tailTip, bubbleAnchor);
+    var x = geometry.x;
+    var y = geometry.y;
+    var width = geometry.width;
+    var height = geometry.height;
+    var radius = geometry.radius;
+    var right = x + width;
+    var bottom = y + height;
+    var baseStart = geometry.tailBaseStart;
+    var baseEnd = geometry.tailBaseEnd;
+    var originalFont = ctx.font;
+    var originalTextAlign = ctx.textAlign;
+    var originalTextBaseline = ctx.textBaseline;
+
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = colorWithAlpha(color, theme && theme.name === 'dark' ? 0.68 : 0.58) || color;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    if (geometry.side === 'top') {
+      ctx.lineTo(baseStart.x, y);
+      ctx.lineTo(tailTip.x, tailTip.y);
+      ctx.lineTo(baseEnd.x, y);
+    }
+    ctx.lineTo(right - radius, y);
+    ctx.quadraticCurveTo(right, y, right, y + radius);
+    if (geometry.side === 'right') {
+      ctx.lineTo(right, baseStart.y);
+      ctx.lineTo(tailTip.x, tailTip.y);
+      ctx.lineTo(right, baseEnd.y);
+    }
+    ctx.lineTo(right, bottom - radius);
+    ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+    if (geometry.side === 'bottom') {
+      ctx.lineTo(baseStart.x, bottom);
+      ctx.lineTo(tailTip.x, tailTip.y);
+      ctx.lineTo(baseEnd.x, bottom);
+    }
+    ctx.lineTo(x + radius, bottom);
+    ctx.quadraticCurveTo(x, bottom, x, bottom - radius);
+    if (geometry.side === 'left') {
+      ctx.lineTo(x, baseStart.y);
+      ctx.lineTo(tailTip.x, tailTip.y);
+      ctx.lineTo(x, baseEnd.y);
+    }
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = contrastTextColor(color);
+    ctx.font = '600 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + 16, y + height / 2 + 0.5);
+    ctx.font = originalFont;
+    ctx.textAlign = originalTextAlign;
+    ctx.textBaseline = originalTextBaseline;
+    ctx.restore();
+  }
+
+  function pointInTriangle(point, a, b, c) {
+    var area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    if (Math.abs(area) < 0.001) return false;
+    var cross1 = (point.x - b.x) * (a.y - b.y) - (a.x - b.x) * (point.y - b.y);
+    var cross2 = (point.x - c.x) * (b.y - c.y) - (b.x - c.x) * (point.y - c.y);
+    var cross3 = (point.x - a.x) * (c.y - a.y) - (c.x - a.x) * (point.y - a.y);
+    var hasNegative = cross1 < 0 || cross2 < 0 || cross3 < 0;
+    var hasPositive = cross1 > 0 || cross2 > 0 || cross3 > 0;
+    return !(hasNegative && hasPositive);
   }
 
   function boundsFromRect(x, y, width, height) {
