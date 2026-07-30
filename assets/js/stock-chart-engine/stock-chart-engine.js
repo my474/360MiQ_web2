@@ -6175,6 +6175,11 @@
       if (!closest(event.target, 'sce-color-control')) self.closePopupColorPalette();
     };
     this.settingsPopup.onkeydown = function (event) {
+      if (settingsInputAppliesOnEnter(event)) {
+        event.preventDefault();
+        self.applyIndicatorSettingsPopup();
+        return;
+      }
       if (event.key === 'Escape') {
         event.preventDefault();
         self.closeIndicatorSettingsPopup();
@@ -6480,9 +6485,14 @@
       if (action === 'apply') self.applyDrawingSettingsPopup();
     };
     this.settingsPopup.onkeydown = function (event) {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      if (
+        event.key === 'Enter' &&
+        !event.isComposing &&
+        ((event.ctrlKey || event.metaKey) || settingsInputAppliesOnEnter(event))
+      ) {
         event.preventDefault();
         self.applyDrawingSettingsPopup();
+        return;
       }
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -13869,6 +13879,15 @@
       element = element.parentNode;
     }
     return null;
+  }
+
+  function settingsInputAppliesOnEnter(event) {
+    if (!event || event.key !== 'Enter' || event.isComposing || event.keyCode === 229) return false;
+    var target = event.target;
+    if (!target || String(target.tagName || '').toUpperCase() !== 'INPUT') return false;
+    if (target.disabled || target.readOnly) return false;
+    var type = String(target.type || (target.getAttribute && target.getAttribute('type')) || 'text').toLowerCase();
+    return ['button', 'submit', 'reset', 'checkbox', 'radio', 'file', 'range', 'color', 'hidden'].indexOf(type) === -1;
   }
 
   function elementContains(root, target) {

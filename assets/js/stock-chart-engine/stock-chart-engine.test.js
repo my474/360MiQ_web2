@@ -2696,6 +2696,33 @@ assert.strictEqual(chart.settingsPopup.dataset.sceMobileSheet, 'open');
 assert.ok(chart.settingsPopup.innerHTML.indexOf('class="sheet-handle sce-settings-sheet-handle"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-action="close" role="button" aria-label="Close settings"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="opacity"') !== -1);
+const indicatorColorEnterField = new FakeElement('input');
+indicatorColorEnterField.setAttribute('type', 'text');
+indicatorColorEnterField.setAttribute('data-sce-popup-field', 'color');
+indicatorColorEnterField.value = '#123456';
+chart.settingsPopup.appendChild(indicatorColorEnterField);
+let indicatorEnterPrevented = false;
+chart.settingsPopup.onkeydown({
+  key: 'Enter',
+  target: indicatorColorEnterField,
+  isComposing: true,
+  preventDefault() {
+    indicatorEnterPrevented = true;
+  }
+});
+assert.strictEqual(indicatorEnterPrevented, false);
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), false);
+assert.notStrictEqual(chart.document.indicators.find((indicator) => indicator.id === rsiId).styles.value.color, '#123456');
+chart.settingsPopup.onkeydown({
+  key: 'Enter',
+  target: indicatorColorEnterField,
+  preventDefault() {
+    indicatorEnterPrevented = true;
+  }
+});
+assert.strictEqual(indicatorEnterPrevented, true);
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), true);
+assert.strictEqual(chart.document.indicators.find((indicator) => indicator.id === rsiId).styles.value.color, '#123456');
 const volumePaneIndicatorId = chart.addIndicator('VOLUME', { placement: 'new' });
 chart.updateIndicatorSettings(volumePaneIndicatorId, {
   inputs: { length: 20 },
@@ -2950,6 +2977,22 @@ assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingCo
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingWidth"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingOpacity"') !== -1);
 assert.ok(chart.settingsPopup.innerHTML.indexOf('data-sce-popup-field="drawingLineStyle"') !== -1);
+const drawingColorEnterField = new FakeElement('input');
+drawingColorEnterField.setAttribute('type', 'text');
+drawingColorEnterField.setAttribute('data-sce-popup-field', 'drawingColor');
+drawingColorEnterField.value = '#123456';
+chart.settingsPopup.appendChild(drawingColorEnterField);
+let drawingEnterPrevented = false;
+chart.settingsPopup.onkeydown({
+  key: 'Enter',
+  target: drawingColorEnterField,
+  preventDefault() {
+    drawingEnterPrevented = true;
+  }
+});
+assert.strictEqual(drawingEnterPrevented, true);
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), true);
+assert.strictEqual(chart.getDrawingById(drawingId).style.color, '#123456');
 assert.strictEqual(chart.updateDrawingStyle(drawingId, { color: '#ef4444', lineWidth: 5, lineStyle: 'dotted', opacity: 0.4 }), true);
 assert.strictEqual(chart.getDrawingById(drawingId).style.color, '#ef4444');
 assert.strictEqual(chart.getDrawingById(drawingId).style.width, 5);
@@ -2986,6 +3029,31 @@ chart.handleCanvasDoubleClick({ clientX: textPoint.x, clientY: textPoint.y, prev
 assert.strictEqual(chart.settingsPopup.getAttribute('hidden'), null);
 assert.strictEqual(chart.settingsPopup.dataset.mode, 'drawing-text');
 assert.strictEqual(chart.settingsPopup.dataset.drawingId, textDrawingId);
+const drawingTextEnterField = new FakeElement('textarea');
+drawingTextEnterField.setAttribute('data-sce-popup-field', 'drawingText');
+drawingTextEnterField.value = 'Multiline drawing text';
+chart.settingsPopup.appendChild(drawingTextEnterField);
+let drawingTextEnterPrevented = false;
+chart.settingsPopup.onkeydown({
+  key: 'Enter',
+  target: drawingTextEnterField,
+  preventDefault() {
+    drawingTextEnterPrevented = true;
+  }
+});
+assert.strictEqual(drawingTextEnterPrevented, false);
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), false);
+chart.settingsPopup.onkeydown({
+  key: 'Enter',
+  ctrlKey: true,
+  target: drawingTextEnterField,
+  preventDefault() {
+    drawingTextEnterPrevented = true;
+  }
+});
+assert.strictEqual(drawingTextEnterPrevented, true);
+assert.strictEqual(chart.settingsPopup.hasAttribute('hidden'), true);
+assert.strictEqual(chart.getDrawingById(textDrawingId).text, 'Multiline drawing text');
 assert.strictEqual(chart.hitTestDrawing({ x: textPoint.x + 82, y: textPoint.y - 8 }).drawing.id, textDrawingId);
 
 const noteHitId = chart.addDrawing('note', [
