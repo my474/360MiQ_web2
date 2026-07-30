@@ -4086,7 +4086,10 @@ const signpostDeleteDrawing = {
   type: 'signpost',
   paneId: 'price',
   text: 'Remove me',
-  points: [measurementRenderPoints[0]],
+  points: [drawingPointForScreen({
+    x: measurementRenderRect.x + measurementRenderRect.width / 2,
+    y: measurementRenderRect.y + measurementRenderRect.height / 2
+  })],
   style: { color: '#2563eb', width: 2 }
 };
 const signpostDeleteAnchor = chart.drawingScreenPoints(signpostDeleteDrawing)[0];
@@ -4099,15 +4102,17 @@ const signpostDeleteDistance = Math.hypot(
   signpostDeleteCenter.x - signpostDeleteAnchor.x,
   signpostDeleteCenter.y - signpostDeleteAnchor.y
 );
-const signpostWidth = Math.max(70, signpostDeleteDrawing.text.length * 7 + 24);
-const expectedSignpostDeleteDistance = signpostWidth / 2 + signpostDeleteZone.size / 2 + 12;
+const signpostHeight = 30;
+const expectedSignpostDeleteDistance = signpostHeight / 2 + signpostDeleteZone.size / 2 + 9;
 assert.ok(signpostDeleteDistance >= expectedSignpostDeleteDistance - 2);
 assert.ok(signpostDeleteDistance <= expectedSignpostDeleteDistance + 2);
 assert.ok(
-  Math.abs(signpostDeleteCenter.x - signpostDeleteAnchor.x) >= 23 ||
-  Math.abs(signpostDeleteCenter.y - signpostDeleteAnchor.y) >= 23,
-  'signpost delete control should move beyond the text box edge'
+  Math.abs(signpostDeleteCenter.x - signpostDeleteAnchor.x) <= 2,
+  'signpost delete control should stay centered along the closest text-box edge'
 );
+assert.ok(signpostDeleteCenter.y > signpostDeleteAnchor.y);
+assert.ok(signpostDeleteZone.y - (signpostDeleteAnchor.y + signpostHeight / 2) >= 8);
+assert.ok(signpostDeleteZone.y - (signpostDeleteAnchor.y + signpostHeight / 2) <= 10);
 [
   { x: signpostDeleteZone.x, y: signpostDeleteZone.y },
   { x: signpostDeleteZone.x + signpostDeleteZone.size, y: signpostDeleteZone.y },
@@ -4118,6 +4123,28 @@ assert.ok(
   sample.pointerType = 'mouse';
   assert.strictEqual(chart.isPointOnDrawing(sample, signpostDeleteDrawing), false);
 });
+const bottomEdgeSignpostDrawing = {
+  id: 'bottom-edge-signpost-delete-placement',
+  type: 'signpost',
+  paneId: 'price',
+  text: 'Remove me',
+  points: [drawingPointForScreen({
+    x: measurementRenderRect.x + measurementRenderRect.width / 2,
+    y: measurementRenderRect.y + measurementRenderRect.height - 30
+  })],
+  style: { color: '#2563eb', width: 2 }
+};
+const bottomEdgeSignpostAnchor = chart.drawingScreenPoints(bottomEdgeSignpostDrawing)[0];
+const bottomEdgeSignpostZone = chart.drawingDeleteZone(bottomEdgeSignpostDrawing);
+const bottomEdgeSignpostWidth = Math.max(70, bottomEdgeSignpostDrawing.text.length * 7 + 24);
+const bottomEdgeSignpostBoxLeft = bottomEdgeSignpostAnchor.x - bottomEdgeSignpostWidth / 2;
+assert.ok(bottomEdgeSignpostZone.x + bottomEdgeSignpostZone.size < bottomEdgeSignpostBoxLeft);
+assert.ok(bottomEdgeSignpostBoxLeft - (bottomEdgeSignpostZone.x + bottomEdgeSignpostZone.size) >= 8);
+assert.ok(bottomEdgeSignpostBoxLeft - (bottomEdgeSignpostZone.x + bottomEdgeSignpostZone.size) <= 10);
+assert.ok(
+  bottomEdgeSignpostZone.y >= measurementRenderRect.y &&
+  bottomEdgeSignpostZone.y + bottomEdgeSignpostZone.size <= measurementRenderRect.y + measurementRenderRect.height
+);
 const topEdgePriceLabel = {
   id: 'top-edge-price-label',
   type: 'price_label',

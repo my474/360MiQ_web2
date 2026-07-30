@@ -8856,8 +8856,52 @@
       var signpostRange = paneRect ? this.paneRange(paneRect.paneId) : null;
       var signpostAnchor = signpostAnchorScreenPoint(this, drawing.points && drawing.points[0], anchor, paneRect, signpostRange);
       var signpostGeometryValue = signpostGeometry(drawing.text || tool.name, anchor, signpostAnchor, textSize);
-      deleteDirectionPoints = points.concat([signpostAnchor]);
-      centerDistance = Math.max(signpostGeometryValue.width, signpostGeometryValue.height) / 2 + size / 2 + 12;
+      var signpostGap = 9;
+      var signpostCenterX = signpostGeometryValue.bubbleX + signpostGeometryValue.width / 2;
+      var signpostCenterY = signpostGeometryValue.bubbleY + signpostGeometryValue.height / 2;
+      var signpostPreferredSide;
+      if (Math.abs(signpostAnchor.x - signpostCenterX) > Math.abs(signpostAnchor.y - signpostCenterY)) {
+        signpostPreferredSide = signpostAnchor.x < signpostCenterX ? 'right' : 'left';
+      } else {
+        signpostPreferredSide = signpostAnchor.y < signpostCenterY ? 'bottom' : 'top';
+      }
+      var signpostSideOrder = signpostPreferredSide === 'top'
+        ? ['top', 'left', 'right', 'bottom']
+        : signpostPreferredSide === 'bottom'
+          ? ['bottom', 'left', 'right', 'top']
+          : signpostPreferredSide === 'left'
+            ? ['left', 'bottom', 'top', 'right']
+            : ['right', 'bottom', 'top', 'left'];
+      var signpostZones = {
+        top: {
+          x: Math.round(signpostCenterX - size / 2),
+          y: Math.round(signpostGeometryValue.bubbleY - signpostGap - size),
+          size: size
+        },
+        right: {
+          x: Math.round(signpostGeometryValue.bubbleX + signpostGeometryValue.width + signpostGap),
+          y: Math.round(signpostCenterY - size / 2),
+          size: size
+        },
+        bottom: {
+          x: Math.round(signpostCenterX - size / 2),
+          y: Math.round(signpostGeometryValue.bubbleY + signpostGeometryValue.height + signpostGap),
+          size: size
+        },
+        left: {
+          x: Math.round(signpostGeometryValue.bubbleX - signpostGap - size),
+          y: Math.round(signpostCenterY - size / 2),
+          size: size
+        }
+      };
+      var signpostFallback = null;
+      for (var signpostSideIndex = 0; signpostSideIndex < signpostSideOrder.length; signpostSideIndex += 1) {
+        var signpostZone = signpostZones[signpostSideOrder[signpostSideIndex]];
+        if (paneRect && !drawingDeleteZoneInsidePane(signpostZone, paneRect)) continue;
+        if (!signpostFallback) signpostFallback = signpostZone;
+        if (!drawingDeleteZoneOverlaps(this, drawing, points, signpostZone)) return signpostZone;
+      }
+      return clampDrawingDeleteZone(signpostFallback || signpostZones[signpostPreferredSide], paneRect);
     }
     if (deleteDirectionPoints.length === 1) {
       return clampDrawingDeleteZone({ x: anchor.x - 9, y: anchor.y - 23, size: size }, paneRect);
