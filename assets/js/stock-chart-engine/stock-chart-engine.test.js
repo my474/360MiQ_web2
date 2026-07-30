@@ -3895,6 +3895,45 @@ assert.ok(
 ].forEach((sample) => {
   assert.strictEqual(chart.isPointOnDrawing(sample, liveThemePriceLabel), false);
 });
+const textDeleteDrawing = {
+  id: 'text-delete-placement',
+  type: 'text',
+  paneId: 'price',
+  text: 'Remove me',
+  points: [measurementRenderPoints[0]],
+  style: { color: '#2563eb', width: 2 }
+};
+const textDeleteAnchor = chart.drawingScreenPoints(textDeleteDrawing)[0];
+const textDeleteZone = chart.drawingDeleteZone(textDeleteDrawing);
+const textDeleteCenter = {
+  x: textDeleteZone.x + textDeleteZone.size / 2,
+  y: textDeleteZone.y + textDeleteZone.size / 2
+};
+const textDeleteOffset = {
+  x: textDeleteCenter.x - textDeleteAnchor.x,
+  y: textDeleteCenter.y - textDeleteAnchor.y
+};
+const textWidth = Math.max(10, textDeleteDrawing.text.length * 7);
+const textTowardCenter = {
+  x: textWidth / 2,
+  y: -7
+};
+assert.ok(Math.hypot(textDeleteOffset.x, textDeleteOffset.y) >= 22);
+assert.ok(Math.hypot(textDeleteOffset.x, textDeleteOffset.y) <= 26);
+assert.ok(
+  textDeleteOffset.x * textTowardCenter.x +
+  textDeleteOffset.y * textTowardCenter.y < 0,
+  'text delete control should use price-label-style placement away from the rendered text'
+);
+[
+  { x: textDeleteZone.x, y: textDeleteZone.y },
+  { x: textDeleteZone.x + textDeleteZone.size, y: textDeleteZone.y },
+  { x: textDeleteZone.x, y: textDeleteZone.y + textDeleteZone.size },
+  { x: textDeleteZone.x + textDeleteZone.size, y: textDeleteZone.y + textDeleteZone.size },
+  textDeleteCenter
+].forEach((sample) => {
+  assert.strictEqual(chart.isPointOnDrawing(sample, textDeleteDrawing), false);
+});
 const topEdgePriceLabel = {
   id: 'top-edge-price-label',
   type: 'price_label',

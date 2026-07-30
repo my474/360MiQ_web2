@@ -8782,6 +8782,12 @@
         x: priceGeometry.x + priceGeometry.width / 2,
         y: priceGeometry.y + priceGeometry.height / 2
       }]);
+    } else if (kind === 'text' && points.length === 1) {
+      var textBounds = textDrawingBounds(drawing.text || tool.name, anchor);
+      deleteDirectionPoints = points.concat([{
+        x: (textBounds.minX + textBounds.maxX) / 2,
+        y: (textBounds.minY + textBounds.maxY) / 2
+      }]);
     }
     if (deleteDirectionPoints.length === 1) {
       return clampDrawingDeleteZone({ x: anchor.x - 9, y: anchor.y - 23, size: size }, paneRect);
