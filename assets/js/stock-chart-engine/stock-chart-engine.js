@@ -8694,9 +8694,11 @@
     }
     if (kind === 'priceLabel' && points[0]) {
       var priceLabel = priceDrawingLabel(drawing, points[0]);
-      var priceLabelTargetPoint = priceLabelTarget(priceLabel, points[0], rect);
-      return pointerInBounds(pointer, tagGeometry(priceLabel, priceLabelTargetPoint).bounds, tolerance) ||
-        distanceToSegment(pointer, points[0], priceLabelTargetPoint) <= tolerance;
+      var priceLabelHit = priceLabelGeometry(priceLabel, points[0], rect);
+      return pointerInBounds(pointer, priceLabelHit.badgeBounds, tolerance) ||
+        pointInTriangle(pointer, points[0], priceLabelHit.tailBaseStart, priceLabelHit.tailBaseEnd) ||
+        distanceToSegment(pointer, points[0], priceLabelHit.tailBaseStart) <= tolerance ||
+        distanceToSegment(pointer, points[0], priceLabelHit.tailBaseEnd) <= tolerance;
     }
     if (kind === 'priceNote' && points[0]) {
       var priceNote = priceDrawingLabel(drawing, points[0]);
@@ -10567,9 +10569,7 @@
       drawNoteBox(ctx, drawing.text || tool.name, point(0), style.color, theme.background, true);
     } else if (kind === 'priceLabel' && point(0)) {
       var label = priceDrawingLabel(drawing, point(0));
-      var labelTarget = priceLabelTarget(label, point(0), rect);
-      drawLine(ctx, point(0), labelTarget);
-      drawTag(ctx, label, labelTarget, style.color, theme.background);
+      drawPriceLabel(ctx, label, point(0), rect, style.color);
     } else if (kind === 'priceNote' && point(0)) {
       var noteLabel = priceDrawingLabel(drawing, point(0));
       if (point(1)) drawLine(ctx, point(0), point(1));
@@ -11831,17 +11831,112 @@
     return formatNumber(Number(value));
   }
 
-  function priceLabelTarget(label, anchor, rect) {
-    var geometry = tagGeometry(label, { x: 0, y: 0 });
-    var target = { x: anchor.x + 14, y: anchor.y - 18 };
-    if (!rect) return target;
-    var minX = rect.x + 4;
-    var maxX = Math.max(minX, rect.x + rect.width - geometry.width - 4);
-    var minY = rect.y + geometry.height + 4;
-    var maxY = Math.max(minY, rect.y + rect.height - 4);
-    target.x = clamp(target.x, minX, maxX);
-    target.y = clamp(target.y, minY, maxY);
-    return target;
+  function priceLabelGeometry(label, anchor, rect) {
+    var width = Math.max(92, approximateTextWidth(label) + 30);
+    var height = 36;
+    var radius = 7;
+    var tailLength = 22;
+    var tailHalfWidth = 6;
+    var minX = rect ? rect.x + 4 : anchor.x + 12;
+    var maxX = rect ? Math.max(minX, rect.x + rect.width - width - 4) : minX;
+    var x = rect ? clamp(anchor.x + 12, minX, maxX) : anchor.x + 12;
+    var availableAbove = rect ? anchor.y - (rect.y + 4) : height + tailLength;
+    var availableBelow = rect ? rect.y + rect.height - 4 - anchor.y : 0;
+    var above = availableAbove >= height + tailLength || availableAbove >= availableBelow;
+    var minY = rect ? rect.y + 4 : anchor.y - tailLength - height;
+    var maxY = rect ? Math.max(minY, rect.y + rect.height - height - 4) : minY;
+    var y = above ? anchor.y - tailLength - height : anchor.y + tailLength;
+    if (rect) y = clamp(y, minY, maxY);
+    var side = above ? 'bottom' : 'top';
+    var edgeY = side === 'bottom' ? y + height : y;
+    var attachX = clamp(anchor.x, x + radius + tailHalfWidth, x + width - radius - tailHalfWidth);
+    var tailBaseStart = {
+      x: attachX + (side === 'bottom' ? tailHalfWidth : -tailHalfWidth),
+      y: edgeY
+    };
+    var tailBaseEnd = {
+      x: attachX + (side === 'bottom' ? -tailHalfWidth : tailHalfWidth),
+      y: edgeY
+    };
+
+    return {
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      radius: radius,
+      side: side,
+      tailTip: anchor,
+      tailBaseStart: tailBaseStart,
+      tailBaseEnd: tailBaseEnd,
+      badgeBounds: boundsFromRect(x, y, width, height),
+      bounds: {
+        minX: Math.min(x, anchor.x),
+        maxX: Math.max(x + width, anchor.x),
+        minY: Math.min(y, anchor.y),
+        maxY: Math.max(y + height, anchor.y)
+      }
+    };
+  }
+
+  function drawPriceLabel(ctx, label, anchor, rect, color) {
+    var geometry = priceLabelGeometry(label, anchor, rect);
+    var x = geometry.x;
+    var y = geometry.y;
+    var width = geometry.width;
+    var height = geometry.height;
+    var radius = geometry.radius;
+    var right = x + width;
+    var bottom = y + height;
+    var baseStart = geometry.tailBaseStart;
+    var baseEnd = geometry.tailBaseEnd;
+    var originalFont = ctx.font;
+    var originalTextAlign = ctx.textAlign;
+    var originalTextBaseline = ctx.textBaseline;
+
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    if (geometry.side === 'top') {
+      ctx.lineTo(baseStart.x, y);
+      ctx.lineTo(anchor.x, anchor.y);
+      ctx.lineTo(baseEnd.x, y);
+    }
+    ctx.lineTo(right - radius, y);
+    ctx.quadraticCurveTo(right, y, right, y + radius);
+    ctx.lineTo(right, bottom - radius);
+    ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+    if (geometry.side === 'bottom') {
+      ctx.lineTo(baseStart.x, bottom);
+      ctx.lineTo(anchor.x, anchor.y);
+      ctx.lineTo(baseEnd.x, bottom);
+    }
+    ctx.lineTo(x + radius, bottom);
+    ctx.quadraticCurveTo(x, bottom, x, bottom - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = contrastTextColor(color);
+    ctx.font = '700 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + width / 2, y + height / 2 + 0.5);
+    ctx.font = originalFont;
+    ctx.textAlign = originalTextAlign;
+    ctx.textBaseline = originalTextBaseline;
+    ctx.restore();
   }
 
   function roundedRectPath(ctx, x, y, width, height, radius) {

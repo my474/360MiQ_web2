@@ -594,6 +594,63 @@ function assertCalloutBubbleRendering(chart, drawing, expectedThemeName) {
   return commands;
 }
 
+function assertPriceLabelBadgeRendering(chart, drawing, expectedThemeName) {
+  const originalCommands = chart.canvas.commands;
+  const originalSelectedDrawingId = chart.selectedDrawingId;
+  const originalHoverDrawingId = chart.hoverDrawingId;
+  const rect = chart.getPaneRect(drawing.paneId);
+  const range = chart.paneRange(drawing.paneId);
+  const anchor = chart.drawingScreenPoints(drawing)[0];
+  chart.selectedDrawingId = null;
+  chart.hoverDrawingId = null;
+  chart.canvas.commands = [];
+  chart.drawDrawing(rect, range, chart.theme(), drawing);
+  const commands = chart.canvas.commands;
+  const label = commands.find((command) => command.type === 'fillText');
+  const anchorCommandIndex = commands.findIndex((command) => (
+    command.type === 'lineTo' &&
+    Math.abs(command.x - anchor.x) < 0.01 &&
+    Math.abs(command.y - anchor.y) < 0.01
+  ));
+  const badgeFill = commands.find((command) => (
+    command.type === 'fill' &&
+    command.fillStyle === drawing.style.color
+  ));
+  const badgeStroke = commands.find((command) => (
+    command.type === 'stroke' &&
+    command.strokeStyle === drawing.style.color
+  ));
+
+  assert.strictEqual(chart.theme().name, expectedThemeName);
+  assert.strictEqual(drawing.points.length, 1);
+  assert.ok(badgeFill);
+  assert.ok(badgeStroke);
+  assert.strictEqual(badgeFill.shadowColor, 'transparent');
+  assert.strictEqual(badgeFill.shadowBlur, 0);
+  assert.strictEqual(badgeStroke.shadowColor, 'transparent');
+  assert.strictEqual(badgeStroke.shadowBlur, 0);
+  assert.strictEqual(commands.filter((command) => command.type === 'quadraticCurveTo').length, 4);
+  assert.strictEqual(commands.some((command) => command.type === 'fillRect'), false);
+  assert.ok(anchorCommandIndex > 0);
+  assert.strictEqual(commands[anchorCommandIndex - 1].type, 'lineTo');
+  assert.strictEqual(commands[anchorCommandIndex + 1].type, 'lineTo');
+  assert.ok(label);
+  assert.strictEqual(label.text, Number(drawing.points[0].value).toFixed(2));
+  assert.ok(/^700 15px /.test(label.font));
+  assert.strictEqual(label.fillStyle, '#ffffff');
+
+  chart.selectedDrawingId = originalSelectedDrawingId;
+  chart.hoverDrawingId = originalHoverDrawingId;
+  chart.canvas.commands = originalCommands;
+  return {
+    anchor,
+    commands,
+    label,
+    tailBaseStart: commands[anchorCommandIndex - 1],
+    tailBaseEnd: commands[anchorCommandIndex + 1]
+  };
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -3476,13 +3533,23 @@ const liveThemeCallout = {
   ],
   style: { color: '#123456', width: 2 }
 };
+const liveThemePriceLabel = {
+  id: 'live-theme-price-label',
+  type: 'price_label',
+  paneId: 'price',
+  points: [measurementRenderPoints[0]],
+  style: { color: '#2563eb', width: 2 }
+};
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
+assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'dark');
+assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'dark');
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
+assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
 assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
 assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
 assert.ok(renderMeasurementTool('position_forecast').some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
@@ -3631,6 +3698,28 @@ assert.strictEqual(StockChartEngine.drawingTools.price_label.points, 1);
 assert.strictEqual(StockChartEngine.drawingTools.price_note.points, 2);
 const priceLabelCommands = renderMeasurementTool('price_label', measurementRenderPoints.slice(0, 1));
 assert.ok(priceLabelCommands.some((command) => command.type === 'lineTo'));
+const priceLabelRendering = assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
+assert.ok(priceLabelRendering.label.y < priceLabelRendering.anchor.y);
+assert.strictEqual(chart.isPointOnDrawing({
+  x: priceLabelRendering.label.x,
+  y: priceLabelRendering.label.y - 0.5
+}, liveThemePriceLabel), true);
+assert.strictEqual(chart.isPointOnDrawing({
+  x: (priceLabelRendering.anchor.x + priceLabelRendering.tailBaseStart.x + priceLabelRendering.tailBaseEnd.x) / 3,
+  y: (priceLabelRendering.anchor.y + priceLabelRendering.tailBaseStart.y + priceLabelRendering.tailBaseEnd.y) / 3
+}, liveThemePriceLabel), true);
+const topEdgePriceLabel = {
+  id: 'top-edge-price-label',
+  type: 'price_label',
+  paneId: 'price',
+  points: [drawingPointForScreen({
+    x: measurementRenderRect.x + 80,
+    y: measurementRenderRect.y + 8
+  })],
+  style: { color: '#2563eb', width: 2 }
+};
+const topEdgePriceLabelRendering = assertPriceLabelBadgeRendering(chart, topEdgePriceLabel, 'light');
+assert.ok(topEdgePriceLabelRendering.label.y > topEdgePriceLabelRendering.anchor.y);
 const priceNoteCommands = renderMeasurementTool('price_note', measurementRenderPoints.slice(0, 2));
 const priceNoteScreenPoints = chart.drawingScreenPoints({ type: 'price_note', paneId: 'price', points: measurementRenderPoints.slice(0, 2) });
 assert.ok(commandIncludesPoint(priceNoteCommands, 'lineTo', priceNoteScreenPoints[1]));
@@ -3943,6 +4032,13 @@ assertCalloutBubbleRendering(darkChart, {
     { time: data[data.length - 16].time, value: data[data.length - 16].close + 4 }
   ],
   style: { color: '#123456', width: 2 }
+}, 'dark');
+assertPriceLabelBadgeRendering(darkChart, {
+  id: 'initial-dark-price-label',
+  type: 'price_label',
+  paneId: 'price',
+  points: [{ time: data[data.length - 28].time, value: data[data.length - 28].close }],
+  style: { color: '#2563eb', width: 2 }
 }, 'dark');
 const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' });
 const initialDarkIndicator = darkChart.document.indicators.find((indicator) => indicator.id === initialDarkIndicatorId);
