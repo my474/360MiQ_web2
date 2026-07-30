@@ -8702,9 +8702,9 @@
     }
     if (kind === 'priceNote' && points[0]) {
       var priceNote = priceDrawingLabel(drawing, points[0]);
-      var priceNoteLabelPoint = points[1] || points[0];
-      if (pointerInBounds(pointer, tagGeometry(priceNote, priceNoteLabelPoint).bounds, tolerance)) return true;
-      return points[1] && distanceToSegment(pointer, points[0], points[1]) <= tolerance;
+      var priceNoteHit = priceNoteGeometry(priceNote, points[0], points[1] || points[0]);
+      if (pointerInBounds(pointer, priceNoteHit.badgeBounds, tolerance)) return true;
+      return points[1] && distanceToSegment(pointer, points[0], priceNoteHit.connectorPoint) <= tolerance;
     }
     if (kind === 'callout') {
       var calloutTarget = points[1] || { x: points[0].x + 56, y: points[0].y - 34 };
@@ -10583,8 +10583,7 @@
       drawPriceLabel(ctx, label, point(0), rect, style.color);
     } else if (kind === 'priceNote' && point(0)) {
       var noteLabel = priceDrawingLabel(drawing, point(0));
-      if (point(1)) drawLine(ctx, point(0), point(1));
-      drawPriceNote(ctx, noteLabel, point(1), style.color, theme.background);
+      drawPriceNote(ctx, noteLabel, point(0), point(1), style.color);
     } else if (kind === 'callout' && point(0)) {
       var target = point(1) || { x: point(0).x + 56, y: point(0).y - 34 };
       drawCallout(ctx, drawing.text || tool.name, point(0), target, style.color, theme);
@@ -11673,14 +11672,6 @@
     ctx.fill();
   }
 
-  function drawTag(ctx, label, p, color, background) {
-    var geometry = tagGeometry(label, p);
-    ctx.fillStyle = color;
-    ctx.fillRect(geometry.bounds.minX, geometry.bounds.minY, geometry.width, geometry.height);
-    ctx.fillStyle = background || '#fff';
-    ctx.fillText(label, p.x + 7, p.y - 7);
-  }
-
   function calloutGeometry(label, tailTip, bubbleAnchor) {
     var width = Math.max(60, approximateTextWidth(label) + 24);
     var height = 34;
@@ -11826,13 +11817,11 @@
     return boundsFromRect(p.x, p.y - 18, width, 22);
   }
 
-  function tagGeometry(label, p) {
-    var width = Math.max(52, approximateTextWidth(label) + 14);
-    var height = 22;
+  function priceBadgeMetrics(label) {
     return {
-      width: width,
-      height: height,
-      bounds: boundsFromRect(p.x, p.y - height, width, height)
+      width: Math.max(64, approximateTextWidth(label) + 22),
+      height: 30,
+      radius: 6
     };
   }
 
@@ -11843,9 +11832,10 @@
   }
 
   function priceLabelGeometry(label, anchor, rect) {
-    var width = Math.max(64, approximateTextWidth(label) + 22);
-    var height = 30;
-    var radius = 6;
+    var metrics = priceBadgeMetrics(label);
+    var width = metrics.width;
+    var height = metrics.height;
+    var radius = metrics.radius;
     var tailLength = 20;
     var tailHalfWidth = 5;
     var minX = rect ? rect.x + 4 : anchor.x + 12;
@@ -11887,6 +11877,45 @@
         minY: Math.min(y, anchor.y),
         maxY: Math.max(y + height, anchor.y)
       }
+    };
+  }
+
+  function priceNoteGeometry(label, lineAnchor, boxAnchor) {
+    var metrics = priceBadgeMetrics(label);
+    var x = boxAnchor.x;
+    var y = boxAnchor.y - metrics.height;
+    var right = x + metrics.width;
+    var bottom = y + metrics.height;
+    var centerX = x + metrics.width / 2;
+    var centerY = y + metrics.height / 2;
+    var dx = lineAnchor.x - centerX;
+    var dy = lineAnchor.y - centerY;
+    var side = Math.abs(dx) / Math.max(1, metrics.width / 2) >= Math.abs(dy) / Math.max(1, metrics.height / 2)
+      ? (dx < 0 ? 'left' : 'right')
+      : (dy < 0 ? 'top' : 'bottom');
+    var connectorPoint;
+
+    if (side === 'top' || side === 'bottom') {
+      connectorPoint = {
+        x: clamp(lineAnchor.x, x + metrics.radius, right - metrics.radius),
+        y: side === 'top' ? y : bottom
+      };
+    } else {
+      connectorPoint = {
+        x: side === 'left' ? x : right,
+        y: clamp(lineAnchor.y, y + metrics.radius, bottom - metrics.radius)
+      };
+    }
+
+    return {
+      x: x,
+      y: y,
+      width: metrics.width,
+      height: metrics.height,
+      radius: metrics.radius,
+      side: side,
+      connectorPoint: connectorPoint,
+      badgeBounds: boundsFromRect(x, y, metrics.width, metrics.height)
     };
   }
 
@@ -12035,8 +12064,34 @@
     ctx.fillText(label, geometry.bubbleX + 12, geometry.bubbleY + geometry.height / 2 + 4);
   }
 
-  function drawPriceNote(ctx, label, p, color, background) {
-    drawTag(ctx, label, p, color, background);
+  function drawPriceNote(ctx, label, lineAnchor, boxAnchor, color) {
+    var geometry = priceNoteGeometry(label, lineAnchor, boxAnchor);
+    var originalFont = ctx.font;
+    var originalTextAlign = ctx.textAlign;
+    var originalTextBaseline = ctx.textBaseline;
+    drawLine(ctx, lineAnchor, geometry.connectorPoint);
+
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    roundedRectPath(ctx, geometry.x, geometry.y, geometry.width, geometry.height, geometry.radius);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = contrastTextColor(color);
+    ctx.font = '700 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, geometry.x + geometry.width / 2, geometry.y + geometry.height / 2 + 0.5);
+    ctx.font = originalFont;
+    ctx.textAlign = originalTextAlign;
+    ctx.textBaseline = originalTextBaseline;
+    ctx.restore();
   }
 
   function patternLabelsForType(type, kind, pointCount) {

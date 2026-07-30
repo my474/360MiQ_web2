@@ -676,6 +676,77 @@ function assertPriceLabelBadgeRendering(chart, drawing, expectedThemeName) {
   };
 }
 
+function assertPriceNoteBadgeRendering(chart, drawing, expectedThemeName) {
+  const originalCommands = chart.canvas.commands;
+  const originalSelectedDrawingId = chart.selectedDrawingId;
+  const originalHoverDrawingId = chart.hoverDrawingId;
+  const rect = chart.getPaneRect(drawing.paneId);
+  const range = chart.paneRange(drawing.paneId);
+  const screenPoints = chart.drawingScreenPoints(drawing);
+  chart.selectedDrawingId = null;
+  chart.hoverDrawingId = null;
+  chart.canvas.commands = [];
+  chart.drawDrawing(rect, range, chart.theme(), drawing);
+  const commands = chart.canvas.commands;
+  const label = commands.find((command) => command.type === 'fillText');
+  const lineStartIndex = commands.findIndex((command) => (
+    command.type === 'moveTo' &&
+    Math.abs(command.x - screenPoints[0].x) < 0.01 &&
+    Math.abs(command.y - screenPoints[0].y) < 0.01
+  ));
+  const connectorPoint = commands[lineStartIndex + 1];
+  const badgeFill = commands.find((command) => (
+    command.type === 'fill' &&
+    command.fillStyle === drawing.style.color
+  ));
+  const badgeStrokes = commands.filter((command) => (
+    command.type === 'stroke' &&
+    command.strokeStyle === drawing.style.color
+  ));
+  const badgeStroke = badgeStrokes[badgeStrokes.length - 1];
+  const corners = commands.filter((command) => command.type === 'quadraticCurveTo');
+  const badgeBounds = {
+    minX: Math.min(...corners.map((command) => command.cpx)),
+    maxX: Math.max(...corners.map((command) => command.cpx)),
+    minY: Math.min(...corners.map((command) => command.cpy)),
+    maxY: Math.max(...corners.map((command) => command.cpy))
+  };
+  const expectedWidth = Math.max(64, label.text.length * 7 + 22);
+
+  assert.strictEqual(chart.theme().name, expectedThemeName);
+  assert.strictEqual(drawing.points.length, 2);
+  assert.ok(lineStartIndex >= 0);
+  assert.strictEqual(connectorPoint.type, 'lineTo');
+  assert.ok(badgeFill);
+  assert.ok(badgeStroke);
+  assert.strictEqual(badgeFill.shadowColor, 'transparent');
+  assert.strictEqual(badgeFill.shadowBlur, 0);
+  assert.strictEqual(badgeStroke.shadowColor, 'transparent');
+  assert.strictEqual(badgeStroke.shadowBlur, 0);
+  assert.strictEqual(corners.length, 4);
+  assert.strictEqual(commands.some((command) => command.type === 'fillRect'), false);
+  assert.strictEqual(label.text, Number(drawing.points[0].value).toFixed(2));
+  assert.ok(/^700 15px /.test(label.font));
+  assert.strictEqual(label.fillStyle, '#ffffff');
+  assert.ok(Math.abs((badgeBounds.maxX - badgeBounds.minX) - expectedWidth) < 0.01);
+  assert.ok(Math.abs((badgeBounds.maxY - badgeBounds.minY) - 30) < 0.01);
+  assert.ok(Math.abs(screenPoints[1].x - badgeBounds.minX) < 0.01);
+  assert.ok(Math.abs(screenPoints[1].y - badgeBounds.maxY) < 0.01);
+  assert.ok(Math.abs(label.x - (badgeBounds.minX + expectedWidth / 2)) < 0.01);
+  assert.ok(Math.abs(label.y - (badgeBounds.minY + 15.5)) < 0.01);
+
+  chart.selectedDrawingId = originalSelectedDrawingId;
+  chart.hoverDrawingId = originalHoverDrawingId;
+  chart.canvas.commands = originalCommands;
+  return {
+    screenPoints,
+    commands,
+    connectorPoint,
+    label,
+    badgeBounds
+  };
+}
+
 const { documentElement } = createFakeDom();
 documentElement.setAttribute('data-theme', 'light');
 
@@ -3487,6 +3558,17 @@ function renderCalloutDirection(tailTip, bubbleAnchor) {
     }
   };
 }
+function renderPriceNoteDirection(lineAnchor, boxAnchor) {
+  const drawing = {
+    id: `price-note-${lineAnchor.x}-${lineAnchor.y}-${boxAnchor.x}-${boxAnchor.y}`,
+    type: 'price_note',
+    paneId: 'price',
+    points: [drawingPointForScreen(lineAnchor), drawingPointForScreen(boxAnchor)],
+    style: { color: '#2563eb', width: 2 }
+  };
+  const rendered = assertPriceNoteBadgeRendering(chart, drawing, chart.theme().name);
+  return Object.assign({ drawing }, rendered);
+}
 function renderSignature(type, points) {
   return renderMeasurementTool(type, points).filter((command) => [
     'fillRect',
@@ -3544,6 +3626,47 @@ const dynamicCalloutBubbleAnchor = {
     assert.ok(Math.abs(rendered.baseEnd.x - rendered.bubble.x) < 0.01);
   }
 });
+const dynamicPriceNoteBoxAnchor = {
+  x: measurementRenderRect.x + measurementRenderRect.width * 0.45,
+  y: measurementRenderRect.y + Math.max(80, measurementRenderRect.height * 0.6)
+};
+[
+  {
+    side: 'top',
+    lineAnchor: { x: dynamicPriceNoteBoxAnchor.x + 32, y: dynamicPriceNoteBoxAnchor.y - 76 }
+  },
+  {
+    side: 'right',
+    lineAnchor: { x: dynamicPriceNoteBoxAnchor.x + 112, y: dynamicPriceNoteBoxAnchor.y - 15 }
+  },
+  {
+    side: 'bottom',
+    lineAnchor: { x: dynamicPriceNoteBoxAnchor.x + 32, y: dynamicPriceNoteBoxAnchor.y + 48 }
+  },
+  {
+    side: 'left',
+    lineAnchor: { x: dynamicPriceNoteBoxAnchor.x - 54, y: dynamicPriceNoteBoxAnchor.y - 15 }
+  }
+].forEach((example) => {
+  const rendered = renderPriceNoteDirection(example.lineAnchor, dynamicPriceNoteBoxAnchor);
+  if (example.side === 'top') {
+    assert.ok(Math.abs(rendered.connectorPoint.y - rendered.badgeBounds.minY) < 0.01);
+  } else if (example.side === 'right') {
+    assert.ok(Math.abs(rendered.connectorPoint.x - rendered.badgeBounds.maxX) < 0.01);
+  } else if (example.side === 'bottom') {
+    assert.ok(Math.abs(rendered.connectorPoint.y - rendered.badgeBounds.maxY) < 0.01);
+  } else {
+    assert.ok(Math.abs(rendered.connectorPoint.x - rendered.badgeBounds.minX) < 0.01);
+  }
+  assert.strictEqual(chart.isPointOnDrawing({
+    x: (rendered.screenPoints[0].x + rendered.connectorPoint.x) / 2,
+    y: (rendered.screenPoints[0].y + rendered.connectorPoint.y) / 2
+  }, rendered.drawing), true);
+  assert.strictEqual(chart.isPointOnDrawing({
+    x: (rendered.badgeBounds.minX + rendered.badgeBounds.maxX) / 2,
+    y: (rendered.badgeBounds.minY + rendered.badgeBounds.maxY) / 2
+  }, rendered.drawing), true);
+});
 const liveThemeCallout = {
   id: 'live-theme-callout',
   type: 'callout',
@@ -3565,16 +3688,26 @@ const liveThemePriceLabel = {
   points: [measurementRenderPoints[0]],
   style: { color: '#2563eb', width: 2 }
 };
+const liveThemePriceNote = {
+  id: 'live-theme-price-note',
+  type: 'price_note',
+  paneId: 'price',
+  points: measurementRenderPoints.slice(0, 2),
+  style: { color: '#2563eb', width: 2 }
+};
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
 assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
+assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'light');
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'dark', isDark: true } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'dark');
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'dark');
 assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'dark');
+assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'dark');
 documentElement.dispatchEvent({ type: 'themechange', detail: { theme: 'light', isDark: false } });
 assert.strictEqual(chart.root.getAttribute('data-sce-theme'), 'light');
 assertCalloutBubbleRendering(chart, liveThemeCallout, 'light');
 assertPriceLabelBadgeRendering(chart, liveThemePriceLabel, 'light');
+assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'light');
 assert.ok(renderMeasurementTool('long_position').some((command) => command.type === 'fillText' && command.text.indexOf('Long ') === 0));
 assert.ok(renderMeasurementTool('short_position').some((command) => command.type === 'fillText' && command.text.indexOf('Short ') === 0));
 assert.ok(renderMeasurementTool('position_forecast').some((command) => command.type === 'fillText' && command.text.indexOf('Forecast ') === 0));
@@ -3774,13 +3907,51 @@ const topEdgePriceLabel = {
 };
 const topEdgePriceLabelRendering = assertPriceLabelBadgeRendering(chart, topEdgePriceLabel, 'light');
 assert.ok(topEdgePriceLabelRendering.label.y > topEdgePriceLabelRendering.anchor.y);
-const priceNoteCommands = renderMeasurementTool('price_note', measurementRenderPoints.slice(0, 2));
-const priceNoteScreenPoints = chart.drawingScreenPoints({ type: 'price_note', paneId: 'price', points: measurementRenderPoints.slice(0, 2) });
-assert.ok(commandIncludesPoint(priceNoteCommands, 'lineTo', priceNoteScreenPoints[1]));
-const priceNoteText = priceNoteCommands.filter((command) => command.type === 'fillText')[0];
-assert.ok(priceNoteText);
-assert.strictEqual(priceNoteText.text, Number(measurementRenderPoints[0].value).toFixed(2));
-assert.ok(Math.abs(priceNoteText.x - (priceNoteScreenPoints[1].x + 7)) < 0.01);
+const priceNoteRendering = assertPriceNoteBadgeRendering(chart, liveThemePriceNote, 'light');
+assert.ok(
+  Math.abs(priceNoteRendering.connectorPoint.x - priceNoteRendering.screenPoints[1].x) > 0.01 ||
+  Math.abs(priceNoteRendering.connectorPoint.y - priceNoteRendering.screenPoints[1].y) > 0.01,
+  'price-note line should attach to the rounded box edge instead of anchor 2 itself'
+);
+const movablePriceNoteId = chart.addDrawing('price_note', measurementRenderPoints.slice(0, 2), { paneId: 'price' });
+const movablePriceNote = chart.getDrawingById(movablePriceNoteId);
+const movablePriceNoteScreenPoints = chart.drawingScreenPoints(movablePriceNote);
+const priceNoteBoxAnchorBeforeLineMove = Object.assign({}, movablePriceNote.points[1]);
+chart.dragState = {
+  drawingId: movablePriceNoteId,
+  pointIndex: 0,
+  paneId: 'price',
+  startPointer: movablePriceNoteScreenPoints[0],
+  startValue: chart.valueFromPoint(movablePriceNoteScreenPoints[0], 'price'),
+  originalPoints: movablePriceNote.points.map((point) => Object.assign({}, point)),
+  moved: false
+};
+chart.moveSelectedDrawing({
+  x: movablePriceNoteScreenPoints[0].x - 28,
+  y: movablePriceNoteScreenPoints[0].y + 18
+});
+assert.notDeepStrictEqual(movablePriceNote.points[0], chart.dragState.originalPoints[0]);
+assert.deepStrictEqual(movablePriceNote.points[1], priceNoteBoxAnchorBeforeLineMove);
+chart.dragState = null;
+const priceNoteLineAnchorBeforeBoxMove = Object.assign({}, movablePriceNote.points[0]);
+const movedPriceNoteScreenPoints = chart.drawingScreenPoints(movablePriceNote);
+chart.dragState = {
+  drawingId: movablePriceNoteId,
+  pointIndex: 1,
+  paneId: 'price',
+  startPointer: movedPriceNoteScreenPoints[1],
+  startValue: chart.valueFromPoint(movedPriceNoteScreenPoints[1], 'price'),
+  originalPoints: movablePriceNote.points.map((point) => Object.assign({}, point)),
+  moved: false
+};
+chart.moveSelectedDrawing({
+  x: movedPriceNoteScreenPoints[1].x + 34,
+  y: movedPriceNoteScreenPoints[1].y - 22
+});
+assert.deepStrictEqual(movablePriceNote.points[0], priceNoteLineAnchorBeforeBoxMove);
+assert.notDeepStrictEqual(movablePriceNote.points[1], chart.dragState.originalPoints[1]);
+chart.dragState = null;
+chart.removeDrawing(movablePriceNoteId);
 const priceLabelDrawingId = chart.addDrawing('price_label', measurementRenderPoints.slice(0, 1), { text: 'Editable text should be ignored' });
 const priceLabelDrawing = chart.getDrawingById(priceLabelDrawingId);
 chart.openDrawingSettingsPopup(priceLabelDrawing, { x: 160, y: 140 });
@@ -4092,6 +4263,16 @@ assertPriceLabelBadgeRendering(darkChart, {
   type: 'price_label',
   paneId: 'price',
   points: [{ time: data[data.length - 28].time, value: data[data.length - 28].close }],
+  style: { color: '#2563eb', width: 2 }
+}, 'dark');
+assertPriceNoteBadgeRendering(darkChart, {
+  id: 'initial-dark-price-note',
+  type: 'price_note',
+  paneId: 'price',
+  points: [
+    { time: data[data.length - 28].time, value: data[data.length - 28].close },
+    { time: data[data.length - 16].time, value: data[data.length - 16].close + 4 }
+  ],
   style: { color: '#2563eb', width: 2 }
 }, 'dark');
 const initialDarkIndicatorId = darkChart.addIndicator('AO', { placement: 'new' });
