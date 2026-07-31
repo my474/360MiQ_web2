@@ -265,7 +265,7 @@ if ($current_user && $view !== 'reset') {
     <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260726.6">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260801.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <?php if (miq_account_config()['google_client_id'] !== ''): ?>
         <script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script>
@@ -301,9 +301,15 @@ if ($current_user && $view !== 'reset') {
                 <label for="register_email">Email</label>
                 <input id="register_email" name="email" class="form-control" type="email" autocomplete="email" value="<?php echo htmlspecialchars($register_email, ENT_QUOTES, 'UTF-8'); ?>" required>
                 <label for="register_password">Password</label>
-                <input id="register_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
+                <div class="miq-password-field">
+                    <input id="register_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
+                    <button class="miq-password-toggle" type="button" data-password-toggle="register_password" aria-controls="register_password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
+                </div>
                 <label for="confirm_password">Confirm password</label>
-                <input id="confirm_password" name="confirm_password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
+                <div class="miq-password-field">
+                    <input id="confirm_password" name="confirm_password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
+                    <button class="miq-password-toggle" type="button" data-password-toggle="confirm_password" aria-controls="confirm_password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
+                </div>
                 <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
             <?php if (miq_account_config()['google_client_id'] !== ''): ?>
@@ -324,7 +330,10 @@ if ($current_user && $view !== 'reset') {
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['reset'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="reset_password">New password</label>
-                <input id="reset_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
+                <div class="miq-password-field">
+                    <input id="reset_password" name="password" class="form-control" type="password" minlength="8" maxlength="1024" autocomplete="new-password" required>
+                    <button class="miq-password-toggle" type="button" data-password-toggle="reset_password" aria-controls="reset_password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
+                </div>
                 <button class="btn btn-primary btn-block" type="submit">Change password</button>
             </form>
         <?php elseif ($view === 'resend'): ?>
@@ -345,7 +354,10 @@ if ($current_user && $view !== 'reset') {
                 <label for="login_email">Email</label>
                 <input id="login_email" name="email" class="form-control" type="email" autocomplete="email" required>
                 <label for="login_password">Password</label>
-                <input id="login_password" name="password" class="form-control" type="password" autocomplete="current-password" required>
+                <div class="miq-password-field">
+                    <input id="login_password" name="password" class="form-control" type="password" autocomplete="current-password" required>
+                    <button class="miq-password-toggle" type="button" data-password-toggle="login_password" aria-controls="login_password" aria-label="Show password" aria-pressed="false" title="Show password"><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
+                </div>
                 <button class="btn btn-primary btn-block" type="submit">Sign in</button>
             </form>
             <div class="miq-account-divider"><span>or</span></div>

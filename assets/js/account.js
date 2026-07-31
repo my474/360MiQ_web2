@@ -371,6 +371,29 @@
         });
     }
 
+    function bindPasswordVisibility() {
+        Array.prototype.forEach.call(document.querySelectorAll('[data-password-toggle]'), function (button) {
+            var input = document.getElementById(button.getAttribute('data-password-toggle') || '');
+            if (!input) return;
+
+            button.addEventListener('click', function () {
+                var showPassword = input.type === 'password';
+                var label = showPassword ? 'Hide password' : 'Show password';
+                var icon = button.querySelector('i');
+
+                input.type = showPassword ? 'text' : 'password';
+                button.setAttribute('aria-pressed', showPassword ? 'true' : 'false');
+                button.setAttribute('aria-label', label);
+                button.title = label;
+
+                if (icon) {
+                    icon.classList.toggle('fa-eye', showPassword);
+                    icon.classList.toggle('fa-eye-slash', !showPassword);
+                }
+            });
+        });
+    }
+
     function bindSearchTracking() {
         Array.prototype.forEach.call(document.querySelectorAll('form[action="stockinfo"]'), function (form) {
             form.addEventListener('submit', function () {
@@ -850,6 +873,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         bindSearchTracking();
         bindDisplayNameSuggestions();
+        bindPasswordVisibility();
         renderGoogleButtons();
         renderPulse();
         renderSentimentCharts(false);
