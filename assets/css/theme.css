@@ -371,6 +371,7 @@
   .clean-navbar .miq-header-search {
     flex: 0 0 auto;
     margin-left: auto;
+    padding-right: 2px;
   }
 
   .clean-navbar .miq-header-search #ac2 {
