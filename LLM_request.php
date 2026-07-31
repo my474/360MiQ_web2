@@ -361,10 +361,12 @@ function ollama($prompt, $isSearch, $system_prompt)
     ];
 
     if ($isQwen) {
-        // Qwen 3.x enables raw reasoning by default; disable it for concise end-user chat.
-        $data['reasoning_effort'] = 'none';
+        // Keep Qwen's reasoning out of end-user content using Groq's broadly
+        // supported response format instead of model-specific effort controls.
+        $data['reasoning_format'] = 'hidden';
         $data['temperature'] = 0.7;
         $data['top_p'] = 0.8;
+        unset($data['presence_penalty'], $data['frequency_penalty']);
     }
 
     // Encode to JSON
