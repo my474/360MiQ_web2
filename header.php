@@ -73,6 +73,9 @@
       </li-->
       <!-- theme toggle -->
       <li class="nav-item">
+        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode" aria-label="Switch theme"><span class="theme-icon-light" aria-hidden="true">&#x2600;&#xFE0F;</span><span class="theme-icon-dark" aria-hidden="true">&#x1F319;</span></a>
+      </li>
+      <li class="nav-item">
         <?php if ($miq_nav_user): ?>
           <div class="dropdown miq-account-nav-item">
             <a class="nav-link dropdown-toggle miq-account-trigger" href="#" id="miqAccountMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Account">
@@ -97,9 +100,6 @@
         <?php else: ?>
           <a class="nav-link miq-signin-link" href="account.php?view=login&amp;return_to=<?php echo rawurlencode(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/'); ?>" title="Sign in or create an account" aria-label="Sign in"><i class="fas fa-user-circle" aria-hidden="true"></i><span class="miq-signin-label">Sign in</span></a>
         <?php endif; ?>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode" aria-label="Switch theme"><span class="theme-icon-light" aria-hidden="true">&#x2600;&#xFE0F;</span><span class="theme-icon-dark" aria-hidden="true">&#x1F319;</span></a>
       </li>
       <!--li class="navbar-toggler collapsed nav-item <?php echo (isset($page) && $page == 'about' ? 'active' : ''); ?>" style="border-width:0;padding-left:0;">
         <a class="nav-link" href="about-us">About us</a>
