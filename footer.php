@@ -3246,7 +3246,7 @@ document.addEventListener('click', function(e) {
 
 <!-- Theme scripts -->
 <script src="assets/js/highcharts-theme.js?v=20260709.9"></script>
-<script src="assets/js/theme.js"></script>
+<script src="assets/js/theme.js?v=20260731.1"></script>
 <script src="assets/js/schema-markup.js?v=20260625.1"></script>
 
 </footer>

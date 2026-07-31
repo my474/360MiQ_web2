@@ -1,5 +1,5 @@
 <?php $miq_nav_user = isset($miq_account_user) ? $miq_account_user : miq_account_current_user(); ?>
-<link rel="stylesheet" href="assets/css/account.css?v=20260731.2">
+<link rel="stylesheet" href="assets/css/account.css?v=20260731.3">
 <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar container not-selectable">
   <a class="navbar-brand" href="./"><img src="assets/img/Logo/360Logo.png" width="70" alt="360MiQ logo"></a>
   <span class="navbar-toggler collapsed navtitle" style="margin:0;padding:0">
@@ -73,7 +73,7 @@
       </li-->
       <!-- theme toggle -->
       <li class="nav-item">
-        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode" aria-label="Switch theme"><span class="theme-icon-light" aria-hidden="true">&#x2600;&#xFE0F;</span><span class="theme-icon-dark" aria-hidden="true">&#x1F319;</span></a>
+        <a class="nav-link" href="#" id="theme-toggle" title="Switch to dark mode" aria-label="Switch theme"><span class="miq-theme-icon" aria-hidden="true"><span class="theme-icon-light">&#x2600;&#xFE0F;</span><span class="theme-icon-dark">&#x1F319;</span></span><span class="miq-theme-label">Theme</span></a>
       </li>
       <li class="nav-item">
         <?php if ($miq_nav_user): ?>

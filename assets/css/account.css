@@ -14,12 +14,13 @@
         column-gap: .4rem;
         align-items: center;
         justify-content: start;
+        padding: .5rem 0;
     }
 
     .miq-signin-link > .fa-user-circle {
         width: 1.25rem;
         margin-right: 0;
-        font-size: .8rem;
+        font-size: 1rem;
         line-height: 1;
         text-align: center;
     }
