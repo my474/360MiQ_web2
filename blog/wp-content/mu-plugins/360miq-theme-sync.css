@@ -555,3 +555,27 @@ html[data-theme="dark"] .chatbot__message-window::-webkit-scrollbar-thumb {
     margin-bottom: 0;
   }
 }
+
+.widget_recent_entries .miq360-recent-analysis-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border: 1px solid #d5a33a;
+  border-radius: 999px;
+  background: #fff1cc;
+  color: #714b00;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+html[data-theme="dark"] .widget_recent_entries .miq360-recent-analysis-badge {
+  border-color: #a87919;
+  background: #3b2b09;
+  color: #ffe29a;
+}
