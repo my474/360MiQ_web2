@@ -53,12 +53,45 @@
         }
         .top-bar {
           width: 100%;
-          background: var(--bg);
+          background: var(--bg-card, #fff);
           padding: 10px 20px;
           display: flex;
           justify-content: flex-end;
+          align-items: center;
+          flex-wrap: wrap;
           z-index: 1000;
           gap: 10px;
+        }
+        .existing-user-help {
+            margin: 0 0 24px;
+            padding: 18px 20px;
+            background: var(--bg-card, #fff);
+            color: var(--text-primary, #000);
+            border: 1px solid var(--border-color, #dee2e6);
+            border-left: 4px solid #3b99e0;
+            border-radius: 6px;
+            text-align: left;
+        }
+        .existing-user-help h2 {
+            margin: 0 0 10px;
+            color: inherit;
+            font-size: 1.2rem;
+        }
+        .existing-user-help ol {
+            margin: 10px 0;
+            padding-left: 24px;
+        }
+        .existing-user-help .legacy-login-note {
+            margin: 12px 0 0;
+            color: var(--text-muted, #666);
+            font-size: 0.95rem;
+        }
+        .existing-user-help a {
+            color: var(--text-link, #007bff);
+        }
+        .existing-user-help a:hover,
+        .existing-user-help a:focus {
+            color: var(--text-link-hover, #0056b3);
         }
         .text-info {
             color: #3b99e0 !important;
@@ -90,6 +123,7 @@
 $page = 'writeforus';
 $write_for_us_login_url = 'account_sso.php?target=new-post';
 $write_for_us_register_url = 'account_sso.php?target=new-post&signup=1';
+$legacy_wordpress_login_url = '/blog/wp-login.php';
 include "./header.php";
 ?>
 
@@ -100,10 +134,22 @@ include "./header.php";
         <br><br>
         <div class="top-bar">
             <a href="<?php echo htmlspecialchars($write_for_us_login_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-outline-primary me-2">Sign in with 360MiQ</a>
-            <a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary">Create a 360MiQ account</a>
+            <a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary">Create or connect your account</a>
         </div>
         <h1 class="text-info">Write for Us – Share Your Investment Insights</h1>
     </div>
+
+  <aside class="existing-user-help" aria-labelledby="existing-wordpress-user-title">
+      <h2 id="existing-wordpress-user-title">Already have a WordPress contributor account?</h2>
+      <p>Connect it to the new 360MiQ login without losing your author profile, published articles, drafts, or permissions.</p>
+      <ol>
+          <li>Select <strong>Create or connect your account</strong>.</li>
+          <li>Register with the <strong>same email address</strong> used by your WordPress account, then verify that email.</li>
+          <li>Sign in with 360MiQ. Your existing WordPress account will be connected automatically.</li>
+      </ol>
+      <p>Your old WordPress password does not become your 360MiQ password. Choose a new 360MiQ password or use Google sign-in.</p>
+      <p class="legacy-login-note">Need access during the transition? <a href="<?php echo htmlspecialchars($legacy_wordpress_login_url, ENT_QUOTES, 'UTF-8'); ?>">Use the legacy WordPress login</a>.</p>
+  </aside>
 
   <p>Are you passionate about investing, trading strategies, or financial markets? Join our free community of contributors and share your expertise with a global audience eager to learn and grow. Use your 360MiQ account to open the article editor—there is no separate WordPress registration or password to manage. All submissions are saved for editorial review and cannot be published directly by a new contributor.</p>
   <br>
@@ -159,12 +205,12 @@ include "./header.php";
   <br>
   <h4>How to Submit</h4>
   <ol>
-      <li><a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>">Create a free 360MiQ account</a>, or <a href="<?php echo htmlspecialchars($write_for_us_login_url, ENT_QUOTES, 'UTF-8'); ?>">sign in with your existing account</a>. Google sign-in is supported.</li>
+      <li><a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>">Create or connect a free 360MiQ account</a>, or <a href="<?php echo htmlspecialchars($write_for_us_login_url, ENT_QUOTES, 'UTF-8'); ?>">sign in if you already have one</a>. Google sign-in is supported.</li>
       <li>Review your <strong>Public display name</strong> in Account Settings. This is the author name shown with articles created through 360MiQ SSO.</li>
       <li>Open the WordPress editor through the Write for Us link, write your article, and submit it for review.</li>
       <li>An editor will review the draft before anything is published.</li>
   </ol>
-  <p><strong>Existing WordPress contributors:</strong> use a 360MiQ account with the same email address to retain your existing WordPress profile and article history. Existing Contributor, Author, Editor and Administrator roles are preserved.</p>
+  <p><strong>Existing WordPress contributors:</strong> always use the same email address when connecting your 360MiQ account. Existing Contributor, Author, Editor and Administrator roles are preserved.</p>
   <p>Our editorial team will review your submission and respond within 1 business day.</p>
 
   <br>
