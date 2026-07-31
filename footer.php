@@ -1168,6 +1168,7 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
+<script src="/assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
 var isBlogPath = window.location.href.includes('/blog/');
@@ -1200,17 +1201,67 @@ const $chatbotMessages = $document.querySelector('.chatbot__messages');
 const $chatbotInput = $document.querySelector('.chatbot__input');
 const $chatbotSubmit = $document.querySelector('.chatbot__submit');
 var initialMessage;
+var chatScrollState = null;
 
 const botLoadingDelay = 200;
 const botReplyDelay = 500;
+
+const focusChatbotInput = () => {
+if ($chatbot.classList.contains('chatbot--closed'))
+    return;
+
+const pageX = window.pageXOffset || document.documentElement.scrollLeft || 0;
+const pageY = window.pageYOffset || document.documentElement.scrollTop || 0;
+const currentChatScrollState = ChatboxRuntime.captureScrollState($chatbotMessageWindow);
+
+try {
+    $chatbotInput.focus({ preventScroll: true });
+} catch (error) {
+    $chatbotInput.focus();
+}
+
+const restoreFocusScroll = () => {
+    ChatboxRuntime.restoreScrollState($chatbotMessageWindow, currentChatScrollState);
+    if ((window.pageXOffset || 0) != pageX || (window.pageYOffset || 0) != pageY)
+        window.scrollTo(pageX, pageY);
+};
+
+restoreFocusScroll();
+requestAnimationFrame(restoreFocusScroll);
+};
+
+const restoreChatboxScroll = state => {
+if (!state)
+    return;
+
+requestAnimationFrame(() => {
+    ChatboxRuntime.restoreScrollState($chatbotMessageWindow, state);
+    requestAnimationFrame(() => {
+        ChatboxRuntime.restoreScrollState($chatbotMessageWindow, state);
+    });
+});
+
+// Highcharts can finish reflowing after the chat becomes visible.
+setTimeout(() => {
+    if (!$chatbot.classList.contains('chatbot--closed'))
+        ChatboxRuntime.restoreScrollState($chatbotMessageWindow, state);
+}, 120);
+};
 
 document.addEventListener('keypress', event => {
 if (event.which == 13) validateMessage();
 }, false);
 
 $chatbotHeader.addEventListener('click', () => {
+const isOpening = $chatbot.classList.contains('chatbot--closed');
+
+if (!isOpening)
+    chatScrollState = ChatboxRuntime.captureScrollState($chatbotMessageWindow);
+
 toggle($chatbot, 'chatbot--closed');
-$chatbotInput.focus();
+
+if (!isOpening)
+    return;
 
 if (isFirstOpen)
 {
@@ -1219,7 +1270,10 @@ if (isFirstOpen)
     //restoreMessageWindow();
     isFirstOpen = false;
 }
-    
+
+focusChatbotInput();
+restoreChatboxScroll(chatScrollState);
+
 }, false);
 
 $chatbotSubmit.addEventListener('click', () => {
@@ -1484,7 +1538,7 @@ const resetInputField = () => {
 $chatbotInput.value = '';
 $chatbotInput.style.height = 'auto';
 setTimeout(() => {
-    $chatbotInput.focus();
+    focusChatbotInput();
 }, 100);
 };
 
@@ -1529,6 +1583,7 @@ $.ajax({
     }
 }); */
 var fulltext = text;
+var localStockCandidate = ChatboxRuntime.findLikelyStockCandidate(text);
 var exch = '';
 if (hasWhiteSpace(text))
 {
@@ -1572,7 +1627,25 @@ if (hasWhiteSpace(text))
         'ax': 'asx',
         'au': 'asx',
     }
-    
+
+    if (localStockCandidate != '')
+    {
+        const normalizedPrompt = ' ' + text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+        const placeNames = Object.keys(places).sort((a, b) => b.length - a.length);
+        for (let placeIndex = 0; placeIndex < placeNames.length; placeIndex++)
+        {
+            const placeName = placeNames[placeIndex];
+            if (normalizedPrompt.includes(' ' + placeName + ' '))
+            {
+                pl = placeName;
+                exch = places[placeName];
+                break;
+            }
+        }
+        text = localStockCandidate;
+    }
+    else
+    {
     const protectedText = text.replace(/\b[\w\d]+\.[\w\d]+\b/g, (match) => match.replace('.', '<<dot>>'));
 
     let docx = nlp(protectedText);
@@ -1626,7 +1699,7 @@ if (hasWhiteSpace(text))
             {
                 exch = places[itemlowercase];
             }
-            else if (tags[idx] != undefined && tags[idx][itemlowercase] != undefined && (tags[idx][itemlowercase].includes('Value') || tags[idx][itemlowercase].includes('Noun') || tags[idx][itemlowercase].includes('Adjective') || tags[idx][itemlowercase].includes('Gerund') || tags[idx][itemlowercase].includes('Organization') || tags[idx][itemlowercase].includes('ProperNoun')) && itemlowercase != 'stocks' && itemlowercase != 'stock')
+            else if (tags[idx] != undefined && tags[idx][itemlowercase] != undefined && (tags[idx][itemlowercase].includes('Value') || tags[idx][itemlowercase].includes('Noun') || tags[idx][itemlowercase].includes('Adjective') || tags[idx][itemlowercase].includes('Gerund') || tags[idx][itemlowercase].includes('Organization') || tags[idx][itemlowercase].includes('ProperNoun')) && !ChatboxRuntime.isIgnoredStockTerm(itemlowercase))
             {
                 if (!tags[idx][itemlowercase].includes('Pronoun') ||
                     (tags[idx][itemlowercase].includes('Pronoun') && stock == ''))
@@ -1720,7 +1793,11 @@ if (hasWhiteSpace(text))
         //if (stock != '')    
         //    stockDict[stock.trim()] = '';
     }
+    }
 }
+
+if (localStockCandidate != '')
+    text = localStockCandidate;
 
 if (text > 0 && isNumeric(text) && text.length <= 5 && exch != 'tyo')
 {
@@ -2702,7 +2779,7 @@ function doSearch(btn)
         
     var searchfilters = screenerURL + exchange + (isYTD ? YTD_result[1] : '') + (isFA ? FA_result[1] : '') + (isTG ? trendgauge2txt_result[1] : '') + (isTC ? trendchannel_result[1] : '') + (isRSIdiv ? RSIdivergence_result[1] : '') + (isRsiDaily ? RSId_result[1] : '') + (isRsiWeeky ? RSIw_result[1] : '') + (isMAxMA ? MAxMA_result[1] : '') + (isMA1 ? MA1_result[1] : '') + (isMA2 ? MA2_result[1] : '') + (isMA3 ? MA3_result[1] : '');
     window.open(searchfilters, '_blank'); // opens in a new tab
-    $chatbotInput.focus();
+    focusChatbotInput();
 }
 
 function saveChatState() {
