@@ -298,29 +298,6 @@ function ollama($prompt, $isSearch, $system_prompt)
 {
     $modelFile = '/home2/aamiqcom/cronjobs/latest_LLMmodel.txt';
     $model = is_file($modelFile) ? trim((string)file_get_contents($modelFile)) : 'llama-3.3-70b-versatile';
-    $isQwen = stripos($model, 'qwen') !== false;
-
-    $instructions = $isSearch == ''
-        ? $system_prompt . "Consider the data is your internal knowledge, no need to say 'Based on the provided data'. Just answer and explain concisely in 5 to 10 sentences. Format the answer into bullet points using ● and/or paragraphs. Use a $ sign in front of prices. Do not reveal your thinking or reasoning process. DO NOT give trading or investment recommendations, such as buy/sell/hold. You are an AI stock assistant. Only answer questions related to finance, investing, stock markets, stocks, macroeconomics, or business. If the question is unrelated to these topics, respond with 'I'm only able to answer stock-related questions.'"
-        : "Do not guess. Do not explain. Only return a stock symbol found in the user's message. Wrap the stock symbol in @@. If no symbol is mentioned or explicitly implied, return an empty string.";
-
-    // Groq recommends putting instructions in the user message for Qwen reasoning models.
-    // Other chat models receive the conventional system-first message ordering.
-    $messages = $isQwen
-        ? [[
-            'role' => 'user',
-            'content' => "Instructions:\n" . $instructions . "\n\nUser question:\n" . $prompt,
-        ]]
-        : [
-            [
-                'role' => 'system',
-                'content' => $instructions,
-            ],
-            [
-                'role' => 'user',
-                'content' => $prompt,
-            ],
-        ];
 
 
     // Replace with your actual API endpoint path
@@ -334,11 +311,20 @@ function ollama($prompt, $isSearch, $system_prompt)
         //'model' => 'llama3-70b-8192',
         //'model' => 'llama-3.3-70b-versatile',
         'model' => $model,
-        'messages' => $messages,
+        "messages" => [
+            [
+                "role"=> "user",
+                "content"=> $prompt
+            ],
+            [
+                "role"=> "system",
+                "content"=> $isSearch == '' ? $system_prompt."Consider the data is your internal knowlegde, no need to say 'Based on the provided data'. Just answer and explain concisely in 5 to 10 sentences. Format answer into bullet points using ● and/or paragraphs. Use $ sign in front of price. DO NOT give trading or investment recommendation, such as buy/sell/hold. You are an AI stock assistant. Only answer questions that are related to finance, investing, stock markets, stock, macroeconomics, or business. If the question is not related to these topics, respond with 'I'm only able to answer stock-related questions.'" : "Do not guess. Do not explain. Only return a stock symbol found in the user's message. Wrap the stock symbol in @@. If no symbol is mentioned or implied explicitly, return an empty string.",
+            ],
+        ],
         //'prompt' => $prompt . ' (Answer in 1 to 2 sentences and less than 40 words.)', //'Explain the risk-return tradeoff in finance.',
         //'prompt' => "User asked: \"$prompt\"\n\n(If the user question is not related to finance, investing, stock markets, stock, macroeconomics, or business, respond only with: \"I'm only able to answer finance-related questions.\") (Answer in 1 to 2 sentences and less than 40 words.)",
         //'system' => $isSearch == '' ? "Do not explain or reason. Just answer concisely in less than 2 to 3 sentences. You are a financial assistant. Only answer questions that are related to finance, investing, stock markets, stock, macroeconomics, or business. If the question is not related to these topics, respond with 'I'm only able to answer finance-related questions.'" : "Do not guess. Do not explain. Only return a stock symbol found in the user's message. Wrap the stock symbol in @@. If no symbol is mentioned or implied explicitly, return an empty string.",
-        'max_completion_tokens' => 1000,
+        'max_tokens' => 1000,
         //'options' => [
             'temperature' => 0.9,
             //'top_k' => 0,
@@ -357,32 +343,10 @@ function ollama($prompt, $isSearch, $system_prompt)
         //    'max_tokens' => 2000,
         //    'exclude'=> true
         // ]
-
     ];
-
-    if ($isQwen) {
-        // Keep Qwen's reasoning out of end-user content using Groq's broadly
-        // supported response format instead of model-specific effort controls.
-        $data['reasoning_format'] = 'hidden';
-        $data['temperature'] = 0.7;
-        $data['top_p'] = 0.8;
-        unset($data['presence_penalty'], $data['frequency_penalty']);
-    }
 
     // Encode to JSON
     $jsonData = json_encode($data);
-
-    $groqApiKey = 'gsk_tUjZSVYMvA96qNvroGOeWGdyb3FYCOsgqmKqmiNEJ4UBt01gSWi';
-    if ($groqApiKey === '') {
-        error_log('Groq API error: GROQ_API_KEY is not configured.');
-        return json_encode([
-            'choices' => [[
-                'message' => [
-                    'content' => '360MiQ AI is temporarily unavailable.'
-                ]
-            ]]
-        ]);
-    }
 
     // Setup cURL
     $ch = curl_init($url);
@@ -390,7 +354,7 @@ function ollama($prompt, $isSearch, $system_prompt)
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . $groqApiKey,
+        'Authorization: Bearer gsk_tUjZSVYMvA96qNvroGOeWGdyb3FYCOsgqmKqmiNEJ4UBt01gSWi',
     ]);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
 
