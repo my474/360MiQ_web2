@@ -298,6 +298,7 @@ function ollama($prompt, $isSearch, $system_prompt)
 {
     $modelFile = '/home2/aamiqcom/cronjobs/latest_LLMmodel.txt';
     $model = is_file($modelFile) ? trim((string)file_get_contents($modelFile)) : 'llama-3.3-70b-versatile';
+    $isQwen3 = stripos($model, 'qwen3') !== false;
 
 
     // Replace with your actual API endpoint path
@@ -332,7 +333,6 @@ function ollama($prompt, $isSearch, $system_prompt)
             //'repeat_penalty' => 1.1,
             'presence_penalty' => 0.4,          // Slight bias toward introducing new facts
             'frequency_penalty' => 0.2,         // Reduces repeated terms
-            'include_reasoning' => false,       // Return only the final answer
             //'stop' => ['\n', '. ', '? ', '! '], // Clean sentence-ending breaks
             //'mirostat' => 0,                    // Off for deterministic output
             //'num_ctx' => 2048,                  // Typical context window
@@ -345,6 +345,11 @@ function ollama($prompt, $isSearch, $system_prompt)
         //    'exclude'=> true
         // ]
     ];
+
+    if ($isQwen3) {
+        // Disable thinking so the token budget is reserved for the final answer.
+        $data['reasoning_effort'] = 'none';
+    }
 
     // Encode to JSON
     $jsonData = json_encode($data);
