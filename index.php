@@ -89,6 +89,23 @@ a:hover.recentpost {
     text-decoration: none;
 }
 
+.recentpost-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border: 1px solid #d5a33a;
+    border-radius: 999px;
+    background: #fff1cc;
+    color: #714b00;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    vertical-align: 1px;
+    white-space: nowrap;
+}
+
 .chartNote {
   text-align: left;
   margin: 0 5% 20px;
@@ -138,6 +155,13 @@ a:hover.recentpost {
 [data-theme="dark"] a.recentpost:hover {
   color: #6ea8ff;
 }
+
+[data-theme="dark"] .recentpost-badge {
+  border-color: #a87919;
+  background: #3b2b09;
+  color: #ffe29a;
+}
+
 [data-theme="dark"] div[id^="featuredposttitle"] a.recentpost {
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
@@ -329,8 +353,58 @@ var homeCriticalRequests = {
 var homeAjaxQueue = [];
 var homeAjaxQueueRunning = false;
 
+function renderRecentAnalysisPosts(result)
+{
+    var wrapper = document.createElement("div");
+    wrapper.style.padding = "20px 20px 10px 20px";
+    var rows = result.split(/\r?\n|\r/);
+
+    for (var i = 0; i < rows.length; i++)
+    {
+        var fields = rows[i].split("@");
+
+        if (fields.length < 3)
+            continue;
+
+        var isPinned = fields.pop() === "1";
+        var postName = fields.pop();
+        var postTitle = fields.join("@");
+
+        if (!postTitle || !postName)
+            continue;
+
+        var paragraph = document.createElement("p");
+        var link = document.createElement("a");
+        link.className = "recentpost";
+        link.href = "/blog/" + postName;
+        link.textContent = postTitle;
+        paragraph.appendChild(link);
+
+        if (isPinned)
+        {
+            var badge = document.createElement("span");
+            badge.className = "recentpost-badge";
+            badge.textContent = "Pinned";
+            badge.title = "Pinned for 5 days";
+            paragraph.appendChild(badge);
+        }
+
+        wrapper.appendChild(paragraph);
+    }
+
+    var container = document.getElementById("postcontainer");
+    container.innerHTML = "";
+    container.appendChild(wrapper);
+}
+
 function scheduleHomeAjax(options)
 {
+    if (options.url === "db_blogpost_get.php")
+    {
+        options.url = "db_blogpost_get.php?include_pin=1";
+        options.success = renderRecentAnalysisPosts;
+    }
+
     homeAjaxQueue.push(options);
 
     if (homeAjaxQueueRunning)

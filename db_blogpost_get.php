@@ -18,16 +18,20 @@
         define('A',true);
         include '/home2/aamiqcom/php_script/mysql_vars_blog.php';
 
-        $sqlQuery = "SELECT post_title, post_name
+        $includePinStatus = isset($_GET['include_pin']) && $_GET['include_pin'] === '1';
+
+        $sqlQuery = "SELECT post_title,
+                            post_name,
+                            CASE
+                                WHEN post_author NOT IN (0, 1, 2, 116)
+                                 AND post_date >= DATE_SUB(NOW(), INTERVAL 5 DAY)
+                                THEN 1
+                                ELSE 0
+                            END AS is_pinned
                      FROM `deC_posts`
                      WHERE post_status = 'publish'
                        AND post_type = 'post'
-                     ORDER BY CASE
-                                  WHEN post_author NOT IN (0, 1, 2, 116)
-                                   AND post_date >= DATE_SUB(NOW(), INTERVAL 5 DAY)
-                                  THEN 0
-                                  ELSE 1
-                              END,
+                     ORDER BY is_pinned DESC,
                               post_date DESC
                      LIMIT 8";
 
@@ -37,6 +41,9 @@
         {
             $post_name = rtrim($itemRow['post_name'], '/') . '/';
             $line = $itemRow['post_title']."@".$post_name;
+
+            if ($includePinStatus)
+                $line .= "@" . $itemRow['is_pinned'];
 
             if ($line != "" )
             {
