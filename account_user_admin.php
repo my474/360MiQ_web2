@@ -297,6 +297,7 @@ $csrf_token = miq_account_csrf_token();
     <title>User Administration - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/css/account.css?v=20260726.6">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.5">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>
 <body class="miq-user-admin-body">
 <?php $page = 'user-admin'; include __DIR__ . '/header.php'; ?>

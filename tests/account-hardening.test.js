@@ -59,10 +59,22 @@ assert.match(accountPage, /function miq_account_token_link\(\$kind, \$token, \$r
 assert.match(accountPage, /'&return_to=' \. rawurlencode\(\$safe_return_to\)/);
 assert.match(accountPage, /miq_account_send_verification_for_user\(\$user, \$return_to\)/);
 assert.match(accountPage, /Public display name/);
-const accountJqueryPosition = accountPage.indexOf('ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js');
-const accountHeaderPosition = accountPage.indexOf("include __DIR__ . '/header.php'");
-assert(accountJqueryPosition >= 0, 'The account page must load jQuery for the shared chat widget');
-assert(accountJqueryPosition < accountHeaderPosition, 'jQuery must load before the shared header and footer scripts');
+for (const file of [
+    'account.php',
+    'account_settings.php',
+    'account_user_admin.php',
+    'community.php',
+    'community_moderation.php',
+    'workspace.php'
+]) {
+    const page = file === 'account.php' ? accountPage : read(file);
+    const jqueryPosition = page.search(/<script src="https:\/\/ajax\.googleapis\.com\/ajax\/libs\/jquery\/3\.4\.0\/jquery\.min\.js"><\/script>/);
+    const headerPosition = page.indexOf("include __DIR__ . '/header.php'");
+    const footerPosition = page.indexOf("include __DIR__ . '/footer.php'");
+    assert(headerPosition >= 0 && footerPosition >= 0, `${file} must render the shared chat shell`);
+    assert(jqueryPosition >= 0, `${file} must load jQuery for the shared chat widget`);
+    assert(jqueryPosition < headerPosition, `${file} must load jQuery before the shared header and footer scripts`);
+}
 assert.match(mainSso, /function miq_sso_targets\(\)/);
 assert.match(mainSso, /'new-post' => '\/blog\/wp-admin\/post-new\.php'/);
 assert.match(mainSso, /\$handoff = 'account_sso\.php\?target='/);
