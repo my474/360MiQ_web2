@@ -53,7 +53,7 @@
         }
         .top-bar {
           width: 100%;
-          background: var(--bg-card, #fff);
+          background: var(--bg, #faf6f0);
           padding: 10px 20px;
           display: flex;
           justify-content: flex-end;
