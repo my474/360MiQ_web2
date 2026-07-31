@@ -7,6 +7,12 @@
     white-space: nowrap;
 }
 
+@media (max-width: 991.98px) {
+    .miq-signin-link > .fa-user-circle {
+        margin-right: .4rem;
+    }
+}
+
 @media (min-width: 992px) {
     .miq-signin-link .miq-signin-label {
         display: none;

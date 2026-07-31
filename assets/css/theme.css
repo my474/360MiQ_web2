@@ -505,6 +505,12 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+@media (max-width: 991.98px) {
+  #theme-toggle {
+    text-align: left;
+  }
+}
+
 #theme-toggle .theme-icon-dark {
   display: none;
 }
