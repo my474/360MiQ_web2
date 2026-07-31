@@ -364,8 +364,8 @@
 
 @media (min-width: 992px) {
   .clean-navbar .navbar-nav .nav-link {
-    padding-right: .6rem;
-    padding-left: .6rem;
+    padding-right: .5rem;
+    padding-left: .5rem;
   }
 
   .clean-navbar .miq-header-search {

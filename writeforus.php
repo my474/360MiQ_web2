@@ -35,7 +35,7 @@
         body {
             font-family: 'Montserrat', sans-serif;
         }
-        ul {
+        main.page ul {
             padding-left: 40px;
         }
         .note {
