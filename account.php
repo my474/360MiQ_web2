@@ -278,7 +278,7 @@ if ($current_user && $view !== 'reset') {
         <div class="miq-account-intro">
             <span class="miq-account-kicker">360MiQ Workspace</span>
             <h1><?php echo $view === 'register' ? 'Create your account' : ($view === 'reset' ? 'Reset your password' : ($view === 'resend' ? 'Resend verification email' : 'Sign in to your workspace')); ?></h1>
-            <p>Save <?php echo htmlspecialchars($account_feature_summary, ENT_QUOTES, 'UTF-8'); ?> across devices.</p>
+            <p>Save research across devices. Publish insights with us.</p>
         </div>
 
         <?php if ($flash): ?><div class="alert alert-<?php echo htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>
