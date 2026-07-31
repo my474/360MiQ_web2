@@ -63,45 +63,60 @@
 				)
                 order by post_date desc limit 5";
         else
-            $sqlQuery = "SELECT post_date, post_content, post_title, post_name, b.meta_value, c.display_name, fm.meta_value as featured_file
-                FROM aamiqcom_WP339.deC_posts AS p
-                LEFT JOIN aamiqcom_WP339.deC_usermeta b on p.post_author = b.user_id
-                JOIN aamiqcom_WP339.deC_users c on b.user_id = c.ID
-                JOIN aamiqcom_WP339.deC_term_relationships AS tr ON p.ID = tr.object_id
-                JOIN aamiqcom_WP339.deC_term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-                JOIN aamiqcom_WP339.deC_terms AS t ON tt.term_id = t.term_id
-                LEFT JOIN aamiqcom_WP339.deC_postmeta tm on p.ID = tm.post_id and tm.meta_key = '_thumbnail_id'
-                LEFT JOIN aamiqcom_WP339.deC_postmeta fm on tm.meta_value = fm.post_id and fm.meta_key = '_wp_attached_file'
-                WHERE (b.meta_key ='nickname' and b.meta_value = display_name) and tt.taxonomy = 'post_tag' AND t.name = '$data'
-                AND p.post_type = 'post' AND p.post_status = 'publish'
-                and post_date > DATE_SUB(NOW(), INTERVAL '60' DAY)
+            $sqlQuery = "SELECT post_date, post_content, post_title, post_name,
+					   b.meta_value, c.display_name,
+					   fm.meta_value AS featured_file
+				FROM aamiqcom_WP339.deC_posts AS a
+				LEFT JOIN aamiqcom_WP339.deC_usermeta AS b
+					ON a.post_author = b.user_id
+				JOIN aamiqcom_WP339.deC_users AS c
+					ON b.user_id = c.ID
+				JOIN aamiqcom_WP339.deC_term_relationships AS tr
+					ON a.ID = tr.object_id
+				JOIN aamiqcom_WP339.deC_term_taxonomy AS tt
+					ON tr.term_taxonomy_id = tt.term_taxonomy_id
+				JOIN aamiqcom_WP339.deC_terms AS t
+					ON tt.term_id = t.term_id
+				LEFT JOIN aamiqcom_WP339.deC_postmeta AS tm
+					ON a.ID = tm.post_id
+					AND tm.meta_key = '_thumbnail_id'
+				LEFT JOIN aamiqcom_WP339.deC_postmeta AS fm
+					ON tm.meta_value = fm.post_id
+					AND fm.meta_key = '_wp_attached_file'
+				WHERE b.meta_key = 'nickname'
+					AND b.meta_value = display_name
+					AND tt.taxonomy = 'post_tag'
+					AND t.name = '$data'
+					AND a.post_type = 'post'
+					AND a.post_status = 'publish'
+					AND post_date > DATE_SUB(NOW(), INTERVAL 60 DAY)
+					AND (
+						a.post_content LIKE '%<img%'
+						OR (fm.meta_value IS NOT NULL AND fm.meta_value <> '')
+						OR a.post_content LIKE '%wp:embed {\"url\":\"https://youtu%'
+					)
 
-                AND (
-                    p.post_content LIKE '%<img%'
-                    OR (fm.meta_value IS NOT NULL AND fm.meta_value <> '')
-                    OR p.post_content LIKE '%wp:embed {\"url\":\"https://youtu%'
-                )
-				
-				-- Exclude posts assigned to these categories
-				AND NOT EXISTS (
-				    SELECT 1
-					FROM aamiqcom_WP339.deC_term_relationships AS tr_ex
-					JOIN aamiqcom_WP339.deC_term_taxonomy AS tt_ex
-					    ON tr_ex.term_taxonomy_id = tt_ex.term_taxonomy_id
-					JOIN aamiqcom_WP339.deC_terms AS t_ex
-					    ON tt_ex.term_id = t_ex.term_id
-					WHERE tr_ex.object_id = a.ID
-						AND tt_ex.taxonomy = 'category'
-						AND t_ex.name IN (
-							'NSE Market Update',
-							'ASX Market Update',
-							'HK Stock Analysis',
-							'HKEX Market Update',
-							'SHSE Market Update',
-							'TSX Market Update'
-						)
-				)
-                order by post_date desc limit 5;";
+					-- Exclude posts assigned to these categories
+					AND NOT EXISTS (
+						SELECT 1
+						FROM aamiqcom_WP339.deC_term_relationships AS tr_ex
+						JOIN aamiqcom_WP339.deC_term_taxonomy AS tt_ex
+							ON tr_ex.term_taxonomy_id = tt_ex.term_taxonomy_id
+						JOIN aamiqcom_WP339.deC_terms AS t_ex
+							ON tt_ex.term_id = t_ex.term_id
+						WHERE tr_ex.object_id = a.ID
+							AND tt_ex.taxonomy = 'category'
+							AND t_ex.name IN (
+								'NSE Market Update',
+								'ASX Market Update',
+								'HK Stock Analysis',
+								'HKEX Market Update',
+								'SHSE Market Update',
+								'TSX Market Update'
+							)
+					)
+				ORDER BY post_date DESC
+				LIMIT 5";
             
     	$result = mysqli_query($connection, $sqlQuery);	
     
