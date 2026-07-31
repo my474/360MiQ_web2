@@ -449,7 +449,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L1",
       "id": "account_user_admin_php",
-      "community": 47
+      "community": 46
     },
     {
       "label": "miq_user_admin_h()",
@@ -457,7 +457,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L18",
       "id": "account_user_admin_miq_user_admin_h",
-      "community": 47
+      "community": 46
     },
     {
       "label": "miq_user_admin_utc()",
@@ -465,7 +465,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L23",
       "id": "account_user_admin_miq_user_admin_utc",
-      "community": 47
+      "community": 46
     },
     {
       "label": "miq_user_admin_duration()",
@@ -473,7 +473,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L32",
       "id": "account_user_admin_miq_user_admin_duration",
-      "community": 47
+      "community": 46
     },
     {
       "label": "miq_user_admin_redirect()",
@@ -481,7 +481,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L60",
       "id": "account_user_admin_miq_user_admin_redirect",
-      "community": 47
+      "community": 46
     },
     {
       "label": "community.php",
@@ -1017,7 +1017,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L1",
       "id": "db_valuationbandsindex_get_php",
-      "community": 48
+      "community": 47
     },
     {
       "label": "datestr2num()",
@@ -1025,7 +1025,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L145",
       "id": "db_valuationbandsindex_get_datestr2num",
-      "community": 48
+      "community": 47
     },
     {
       "label": "str2num()",
@@ -1033,7 +1033,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L152",
       "id": "db_valuationbandsindex_get_str2num",
-      "community": 48
+      "community": 47
     },
     {
       "label": "datestrFormat()",
@@ -1041,7 +1041,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L162",
       "id": "db_valuationbandsindex_get_datestrformat",
-      "community": 48
+      "community": 47
     },
     {
       "label": "endsWith()",
@@ -1049,7 +1049,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L190",
       "id": "db_valuationbandsindex_get_endswith",
-      "community": 48
+      "community": 47
     },
     {
       "label": "db_valuationbands_get.php",
@@ -1201,7 +1201,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L1",
       "id": "llm_request_php",
-      "community": 42
+      "community": 48
     },
     {
       "label": "ollama()",
@@ -1209,7 +1209,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L297",
       "id": "llm_request_ollama",
-      "community": 42
+      "community": 48
     },
     {
       "label": "stripReasoningTrace()",
@@ -1217,31 +1217,23 @@
       "source_file": "LLM_request.php",
       "source_location": "L435",
       "id": "llm_request_stripreasoningtrace",
-      "community": 42
-    },
-    {
-      "label": "getGroqApiKey()",
-      "file_type": "code",
-      "source_file": "LLM_request.php",
-      "source_location": "L451",
-      "id": "llm_request_getgroqapikey",
-      "community": 42
+      "community": 48
     },
     {
       "label": "signage()",
       "file_type": "code",
       "source_file": "LLM_request.php",
-      "source_location": "L474",
+      "source_location": "L451",
       "id": "llm_request_signage",
-      "community": 42
+      "community": 48
     },
     {
       "label": "smartRound()",
       "file_type": "code",
       "source_file": "LLM_request.php",
-      "source_location": "L485",
+      "source_location": "L462",
       "id": "llm_request_smartround",
-      "community": 42
+      "community": 48
     },
     {
       "label": "LLM_SQLiteCreateTable.php",
@@ -1369,7 +1361,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L1",
       "id": "stockinfo_php",
-      "community": 43
+      "community": 42
     },
     {
       "label": "HKcode()",
@@ -1377,7 +1369,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L194",
       "id": "stockinfo_hkcode",
-      "community": 43
+      "community": 42
     },
     {
       "label": "endsWith()",
@@ -1385,7 +1377,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L204",
       "id": "stockinfo_endswith",
-      "community": 43
+      "community": 42
     },
     {
       "label": "exchFn()",
@@ -1393,7 +1385,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L207",
       "id": "stockinfo_exchfn",
-      "community": 43
+      "community": 42
     },
     {
       "label": "mcapFn()",
@@ -1401,7 +1393,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L214",
       "id": "stockinfo_mcapfn",
-      "community": 43
+      "community": 42
     },
     {
       "label": "trendgauge2txt()",
@@ -1409,7 +1401,7 @@
       "source_file": "stockinfo.php",
       "source_location": "L228",
       "id": "stockinfo_trendgauge2txt",
-      "community": 43
+      "community": 42
     },
     {
       "label": "stock_json.php",
@@ -1985,7 +1977,7 @@
       "source_file": "account\\db.php",
       "source_location": "L1",
       "id": "account_db_php",
-      "community": 44
+      "community": 43
     },
     {
       "label": "miq_account_db()",
@@ -1993,7 +1985,7 @@
       "source_file": "account\\db.php",
       "source_location": "L4",
       "id": "db_miq_account_db",
-      "community": 44
+      "community": 43
     },
     {
       "label": "miq_account_table()",
@@ -2001,7 +1993,7 @@
       "source_file": "account\\db.php",
       "source_location": "L50",
       "id": "db_miq_account_table",
-      "community": 44
+      "community": 43
     },
     {
       "label": "miq_account_query()",
@@ -2009,7 +2001,7 @@
       "source_file": "account\\db.php",
       "source_location": "L71",
       "id": "db_miq_account_query",
-      "community": 44
+      "community": 43
     },
     {
       "label": "miq_account_fetch_all()",
@@ -2017,7 +2009,7 @@
       "source_file": "account\\db.php",
       "source_location": "L95",
       "id": "db_miq_account_fetch_all",
-      "community": 44
+      "community": 43
     },
     {
       "label": "miq_account_fetch_one()",
@@ -2025,7 +2017,7 @@
       "source_file": "account\\db.php",
       "source_location": "L109",
       "id": "db_miq_account_fetch_one",
-      "community": 44
+      "community": 43
     },
     {
       "label": "lifecycle.php",
@@ -5049,7 +5041,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L1",
       "id": "assets_js_price_display_policy_js",
-      "community": 45
+      "community": 44
     },
     {
       "label": "numberOrNull()",
@@ -5057,7 +5049,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L7",
       "id": "price_display_policy_numberornull",
-      "community": 45
+      "community": 44
     },
     {
       "label": "formatPercent()",
@@ -5065,7 +5057,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L15",
       "id": "price_display_policy_formatpercent",
-      "community": 45
+      "community": 44
     },
     {
       "label": "percentChange()",
@@ -5073,7 +5065,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L32",
       "id": "price_display_policy_percentchange",
-      "community": 45
+      "community": 44
     },
     {
       "label": "pointPercentChange()",
@@ -5081,7 +5073,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L41",
       "id": "price_display_policy_pointpercentchange",
-      "community": 45
+      "community": 44
     },
     {
       "label": "extractLastPercent()",
@@ -5089,7 +5081,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L65",
       "id": "price_display_policy_extractlastpercent",
-      "community": 45
+      "community": 44
     },
     {
       "label": "priceDeviation.js",
@@ -6033,7 +6025,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1",
       "id": "assets_js_valuationbands_js",
-      "community": 46
+      "community": 45
     },
     {
       "label": "valuationBands()",
@@ -6041,7 +6033,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1",
       "id": "valuationbands_valuationbands",
-      "community": 46
+      "community": 45
     },
     {
       "label": "earningSurpriseChart()",
@@ -6049,7 +6041,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1121",
       "id": "valuationbands_earningsurprisechart",
-      "community": 46
+      "community": 45
     },
     {
       "label": "earningSurpriseComment()",
@@ -6057,7 +6049,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1286",
       "id": "valuationbands_earningsurprisecomment",
-      "community": 46
+      "community": 45
     },
     {
       "label": "Pxband()",
@@ -6065,7 +6057,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1355",
       "id": "valuationbands_pxband",
-      "community": 46
+      "community": 45
     },
     {
       "label": "valuationComment()",
@@ -6073,7 +6065,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1954",
       "id": "valuationbands_valuationcomment",
-      "community": 46
+      "community": 45
     },
     {
       "label": "workspace.js",
@@ -13308,18 +13300,6 @@
       "source_location": "L451",
       "weight": 1.0,
       "_src": "llm_request_php",
-      "_tgt": "llm_request_getgroqapikey",
-      "source": "llm_request_php",
-      "target": "llm_request_getgroqapikey",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "LLM_request.php",
-      "source_location": "L474",
-      "weight": 1.0,
-      "_src": "llm_request_php",
       "_tgt": "llm_request_signage",
       "source": "llm_request_php",
       "target": "llm_request_signage",
@@ -13329,24 +13309,12 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "LLM_request.php",
-      "source_location": "L485",
+      "source_location": "L462",
       "weight": 1.0,
       "_src": "llm_request_php",
       "_tgt": "llm_request_smartround",
       "source": "llm_request_php",
       "target": "llm_request_smartround",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "LLM_request.php",
-      "source_location": "L375",
-      "weight": 1.0,
-      "_src": "llm_request_ollama",
-      "_tgt": "llm_request_getgroqapikey",
-      "source": "llm_request_ollama",
-      "target": "llm_request_getgroqapikey",
       "confidence_score": 1.0
     },
     {

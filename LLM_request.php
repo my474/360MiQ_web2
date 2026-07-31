@@ -372,7 +372,7 @@ function ollama($prompt, $isSearch, $system_prompt)
     // Encode to JSON
     $jsonData = json_encode($data);
 
-    $groqApiKey = getGroqApiKey();
+    $groqApiKey = 'gsk_tUjZSVYMvA96qNvroGOeWGdyb3FYCOsgqmKqmiNEJ4UBt01gSWi';
     if ($groqApiKey === '') {
         error_log('Groq API error: GROQ_API_KEY is not configured.');
         return json_encode([
@@ -446,29 +446,6 @@ function stripReasoningTrace($text)
     }
 
     return trim($text);
-}
-
-function getGroqApiKey()
-{
-    $candidates = [
-        getenv('GROQ_API_KEY'),
-        $_SERVER['GROQ_API_KEY'] ?? '',
-        $_ENV['GROQ_API_KEY'] ?? '',
-    ];
-
-    foreach ($candidates as $candidate) {
-        $candidate = trim((string)$candidate);
-        if ($candidate !== '') {
-            return $candidate;
-        }
-    }
-
-    $keyFile = '/home2/aamiqcom/cronjobs/groq_api_key.txt';
-    if (is_readable($keyFile)) {
-        return trim((string)file_get_contents($keyFile));
-    }
-
-    return '';
 }
 
 function signage($value)
