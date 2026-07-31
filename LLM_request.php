@@ -332,6 +332,7 @@ function ollama($prompt, $isSearch, $system_prompt)
             //'repeat_penalty' => 1.1,
             'presence_penalty' => 0.4,          // Slight bias toward introducing new facts
             'frequency_penalty' => 0.2,         // Reduces repeated terms
+            'include_reasoning' => false,       // Return only the final answer
             //'stop' => ['\n', '. ', '? ', '! '], // Clean sentence-ending breaks
             //'mirostat' => 0,                    // Off for deterministic output
             //'num_ctx' => 2048,                  // Typical context window
