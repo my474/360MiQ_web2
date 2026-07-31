@@ -507,16 +507,25 @@
 
 @media (max-width: 991.98px) {
   #theme-toggle {
-    text-align: left;
+    display: grid;
+    grid-template-columns: 1.25rem max-content;
+    column-gap: .4rem;
+    align-items: center;
+    justify-content: start;
+    top: 0;
+    font-size: .8rem;
+    line-height: 1.5;
+    text-align: center;
   }
 
   #theme-toggle::after {
     content: "Theme";
     display: inline-block;
-    margin-left: .4rem;
+    margin-left: 0;
     color: rgba(0, 0, 0, .5);
     font-size: .8rem;
     font-weight: 600;
+    text-align: left;
     text-transform: uppercase;
   }
 
