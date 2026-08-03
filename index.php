@@ -385,7 +385,7 @@ function renderRecentAnalysisPosts(result)
             var badge = document.createElement("span");
             badge.className = "recentpost-badge";
             badge.textContent = "Pinned";
-            badge.title = "Pinned for 5 days";
+            badge.title = "Pinned for 7 days";
             paragraph.appendChild(badge);
         }
 

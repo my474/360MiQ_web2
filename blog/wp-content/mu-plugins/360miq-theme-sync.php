@@ -91,7 +91,7 @@ if ( ! function_exists( 'miq360_blog_recent_analyses_orderby' ) ) {
 
 		return "CASE
 					WHEN {$wpdb->posts}.post_author NOT IN (0, 1, 2, 116)
-					 AND {$wpdb->posts}.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 5 DAY)
+					 AND {$wpdb->posts}.post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
 					THEN 0
 					ELSE 1
 				END ASC,
@@ -111,7 +111,7 @@ if ( ! function_exists( 'miq360_blog_is_pinned_analysis' ) ) {
 
 		$published_at = (int) get_post_time( 'U', true, $post );
 
-		return $published_at >= ( time() - ( 5 * DAY_IN_SECONDS ) );
+		return $published_at >= ( time() - ( 7 * DAY_IN_SECONDS ) );
 	}
 }
 
@@ -175,7 +175,7 @@ if ( ! function_exists( 'miq360_blog_render_recent_analyses_widget' ) ) {
 			echo esc_html( $link_title );
 
 			if ( miq360_blog_is_pinned_analysis( $recent_post ) ) {
-				echo '<span class="miq360-recent-analysis-badge" title="Pinned for 5 days">Pinned</span>';
+				echo '<span class="miq360-recent-analysis-badge" title="Pinned for 7 days">Pinned</span>';
 			}
 
 			echo '</a>';
