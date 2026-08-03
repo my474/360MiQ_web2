@@ -95,7 +95,8 @@ if ( ! function_exists( 'miq360_blog_recent_analyses_orderby' ) ) {
 					THEN 0
 					ELSE 1
 				END ASC,
-				{$wpdb->posts}.post_date DESC";
+				{$wpdb->posts}.post_date_gmt DESC,
+				{$wpdb->posts}.ID DESC";
 	}
 }
 add_filter( 'posts_orderby', 'miq360_blog_recent_analyses_orderby', 10, 2 );

@@ -24,7 +24,7 @@
                             post_name,
                             CASE
                                 WHEN post_author NOT IN (0, 1, 2, 116)
-                                 AND post_date >= DATE_SUB(NOW(), INTERVAL 5 DAY)
+                                 AND post_date_gmt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 5 DAY)
                                 THEN 1
                                 ELSE 0
                             END AS is_pinned
@@ -32,7 +32,8 @@
                      WHERE post_status = 'publish'
                        AND post_type = 'post'
                      ORDER BY is_pinned DESC,
-                              post_date DESC
+                              post_date_gmt DESC,
+                              ID DESC
                      LIMIT 8";
 
         $result = mysqli_query($connection, $sqlQuery);
