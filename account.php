@@ -291,7 +291,6 @@ if ($current_user && $view !== 'reset') {
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="display_name">Public display name</label>
                 <input id="display_name" name="display_name" class="form-control" maxlength="80" autocomplete="name" value="<?php echo htmlspecialchars($register_display_name, ENT_QUOTES, 'UTF-8'); ?>" required>
-                <small>This name is shown with community activity and published articles. Use a personal name or handle; names resembling 360MiQ or official support accounts are not allowed.</small>
                 <?php if (!empty($display_name_suggestions)): ?>
                     <div class="miq-display-name-suggestions" aria-live="polite">
                         <span>Available suggestions:</span>
