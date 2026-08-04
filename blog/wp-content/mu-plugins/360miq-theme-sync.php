@@ -173,12 +173,11 @@ if ( ! function_exists( 'miq360_blog_render_recent_analyses_widget' ) ) {
 			echo '<li>';
 			echo '<a href="' . esc_url( get_permalink( $recent_post->ID ) ) . '"' . $aria_current . '>';
 			echo esc_html( $link_title );
+			echo '</a>';
 
 			if ( miq360_blog_is_pinned_analysis( $recent_post ) ) {
 				echo '<span class="miq360-recent-analysis-badge" title="Pinned for 7 days">Pinned</span>';
 			}
-
-			echo '</a>';
 
 			if ( $show_date ) {
 				echo '<span class="post-date">' . esc_html( get_the_date( '', $recent_post->ID ) ) . '</span>';
