@@ -543,6 +543,7 @@ html[data-theme="dark"] .miq-display-name-suggestions {
 .miq-google-form {
     display: flex;
     justify-content: center;
+    color-scheme: light;
 }
 
 .miq-google-button {
@@ -550,6 +551,16 @@ html[data-theme="dark"] .miq-display-name-suggestions {
     min-height: 40px;
     align-items: center;
     justify-content: center;
+    background-color: transparent;
+    color-scheme: light;
+    line-height: 0;
+}
+
+.miq-google-button iframe {
+    display: block;
+    border: 0;
+    background-color: transparent;
+    color-scheme: light;
 }
 
 .miq-google-unavailable {

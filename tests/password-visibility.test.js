@@ -25,6 +25,9 @@ assert.strictEqual((accountPage.match(/data-password-toggle=/g) || []).length, p
 assert.match(accountStyles, /\.miq-password-field\s*>\s*\.form-control\s*\{[^}]*padding-right:\s*46px/s);
 assert.match(accountStyles, /\.miq-password-toggle\s*\{[^}]*color:\s*#667085/s);
 assert.match(accountStyles, /html\[data-theme="dark"\]\s+\.miq-password-toggle\s*\{[^}]*color:\s*#c5c9d6/s);
+assert.match(accountStyles, /\.miq-google-form\s*\{[^}]*color-scheme:\s*light/s);
+assert.match(accountStyles, /\.miq-google-button\s*\{[^}]*background-color:\s*transparent/s);
+assert.match(accountStyles, /\.miq-google-button\s+iframe\s*\{[^}]*color-scheme:\s*light/s);
 
 [accountStyles, workspaceStyles, themeStyles, toolPage].forEach((styles) => {
     assert.match(styles, /:-webkit-autofill/);
@@ -33,6 +36,8 @@ assert.match(accountStyles, /html\[data-theme="dark"\]\s+\.miq-password-toggle\s
     assert.match(styles, /box-shadow:\s*0 0 0 1000px [^;]+ inset !important/);
 });
 assert.match(themeStyles, /color-scheme:\s*dark/);
+assert.match(themeStyles, /\[data-theme="dark"\]\s+input,[\s\S]*\[data-theme="dark"\]\s+textarea\s*\{[^}]*color-scheme:\s*dark/s);
+assert.doesNotMatch(themeStyles, /\[data-theme="dark"\]\s*\{\s*color-scheme:\s*dark/);
 assert.match(themeScript, /htmlEl\.setAttribute\('data-theme', theme\)/);
 
 function createThemeRuntime(initialTheme) {

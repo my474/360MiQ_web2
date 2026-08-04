@@ -99,7 +99,6 @@
 .legend-row { background: #fff; }
 
 [data-theme="dark"] {
-  color-scheme: dark;
   --miq-autofill-bg: var(--bg-primary);
   --miq-autofill-text: var(--text-primary);
   /* ---------- Backgrounds ---------- */
@@ -190,6 +189,13 @@
   --chart-range-selector-input-text: #cccccc;
   --chart-anychart-grid: #3a3a4e;
   --chart-anychart-bg: #2a2a3e;
+}
+
+/* Keep native form controls dark without forcing third-party frames into a dark color scheme. */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  color-scheme: dark;
 }
 
 /* Keep browser autofill aligned with dark theme controls across pages. */
