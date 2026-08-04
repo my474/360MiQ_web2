@@ -1490,9 +1490,28 @@ html[data-theme="dark"] .miq-moderation-page .form-control:focus {
     box-shadow: 0 0 0 .2rem rgba(107, 183, 255, .2);
 }
 
-html[data-theme="dark"] .miq-community-page input:-webkit-autofill {
-    -webkit-text-fill-color: #f1f3f7;
-    -webkit-box-shadow: 0 0 0 1000px #2b2d47 inset;
+html[data-theme="dark"] .miq-community-page input:-webkit-autofill,
+html[data-theme="dark"] .miq-community-page input:-webkit-autofill:hover,
+html[data-theme="dark"] .miq-community-page input:-webkit-autofill:focus,
+html[data-theme="dark"] .miq-community-page input:-webkit-autofill:active {
+    background-color: #2b2d47 !important;
+    background-image: none !important;
+    -webkit-text-fill-color: #f1f3f7 !important;
+    -webkit-box-shadow: 0 0 0 1000px #2b2d47 inset !important;
+    box-shadow: 0 0 0 1000px #2b2d47 inset !important;
+    caret-color: #f1f3f7;
+}
+
+html[data-theme="dark"] .miq-community-page input:autofill,
+html[data-theme="dark"] .miq-community-page input:autofill:hover,
+html[data-theme="dark"] .miq-community-page input:autofill:focus,
+html[data-theme="dark"] .miq-community-page input:autofill:active {
+    background-color: #2b2d47 !important;
+    background-image: none !important;
+    color: #f1f3f7 !important;
+    -webkit-text-fill-color: #f1f3f7 !important;
+    box-shadow: 0 0 0 1000px #2b2d47 inset !important;
+    caret-color: #f1f3f7;
 }
 
 .miq-management-create,

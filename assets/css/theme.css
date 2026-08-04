@@ -99,6 +99,9 @@
 .legend-row { background: #fff; }
 
 [data-theme="dark"] {
+  color-scheme: dark;
+  --miq-autofill-bg: var(--bg-primary);
+  --miq-autofill-text: var(--text-primary);
   /* ---------- Backgrounds ---------- */
   --bg-primary: #1a1a2e;
   --bg-secondary: #1a1a1a;
@@ -187,6 +190,31 @@
   --chart-range-selector-input-text: #cccccc;
   --chart-anychart-grid: #3a3a4e;
   --chart-anychart-bg: #2a2a3e;
+}
+
+/* Keep browser autofill aligned with dark theme controls across pages. */
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] input:-webkit-autofill:hover,
+[data-theme="dark"] input:-webkit-autofill:focus,
+[data-theme="dark"] input:-webkit-autofill:active {
+  background-color: var(--miq-autofill-bg) !important;
+  background-image: none !important;
+  -webkit-text-fill-color: var(--miq-autofill-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--miq-autofill-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--miq-autofill-bg) inset !important;
+  caret-color: var(--miq-autofill-text);
+}
+
+[data-theme="dark"] input:autofill,
+[data-theme="dark"] input:autofill:hover,
+[data-theme="dark"] input:autofill:focus,
+[data-theme="dark"] input:autofill:active {
+  background-color: var(--miq-autofill-bg) !important;
+  background-image: none !important;
+  color: var(--miq-autofill-text) !important;
+  -webkit-text-fill-color: var(--miq-autofill-text) !important;
+  box-shadow: 0 0 0 1000px var(--miq-autofill-bg) inset !important;
+  caret-color: var(--miq-autofill-text);
 }
 
 /* ============================

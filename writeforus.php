@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
-    <link rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="assets/css/theme.css?v=20260804.1">
     <!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"-->
     <script src="assets/js/Utils.js"></script>
     <!--<script src="assets/js/LanguageTimezone.js"></script>

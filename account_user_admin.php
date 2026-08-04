@@ -295,8 +295,8 @@ $csrf_token = miq_account_csrf_token();
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="Administrator-only 360MiQ account activity and user controls.">
     <title>User Administration - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css?v=20260726.6">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260726.5">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260804.1">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260804.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>
 <body class="miq-user-admin-body">

@@ -265,7 +265,7 @@ if ($current_user && $view !== 'reset') {
     <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260801.1">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260804.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <?php if (miq_account_config()['google_client_id'] !== ''): ?>
         <script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script>

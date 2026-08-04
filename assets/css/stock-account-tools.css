@@ -174,6 +174,8 @@
 }
 
 html[data-theme="dark"] .miq-stock-tools {
+    --miq-autofill-bg: #30324e;
+    --miq-autofill-text: #f5f7fa;
     border-color: #394362;
     background: #20213a;
     color: #f1f3f7;

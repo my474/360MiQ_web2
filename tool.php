@@ -451,6 +451,11 @@ figure {
     color: #e8e8e8;
 }
 
+[data-theme="dark"] #tab-1 {
+    --miq-autofill-bg: #242438;
+    --miq-autofill-text: #e8e8e8;
+}
+
 [data-theme="dark"] #tab-1 .form-control::placeholder {
     color: #9a9aaa;
 }
@@ -487,6 +492,21 @@ figure {
 [data-theme="dark"] #raceInput:-webkit-autofill:hover,
 [data-theme="dark"] #raceInput:-webkit-autofill:focus,
 [data-theme="dark"] #raceInput:-webkit-autofill:active {
+    background-color: #242438 !important;
+    background-image: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 0 0 1000px #242438 inset !important;
+    -webkit-box-shadow: 0 0 0 1000px #242438 inset !important;
+    caret-color: #ffffff;
+}
+
+[data-theme="dark"] #raceInput:autofill,
+[data-theme="dark"] #raceInput:autofill:hover,
+[data-theme="dark"] #raceInput:autofill:focus,
+[data-theme="dark"] #raceInput:autofill:active {
+    background-color: #242438 !important;
+    background-image: none !important;
+    color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
     box-shadow: 0 0 0 1000px #242438 inset !important;
     caret-color: #ffffff;
@@ -566,6 +586,11 @@ figure {
     background-color: #1e1e32;
     border-color: #6f74a8;
     color: #e8e8e8;
+}
+
+[data-theme="dark"] #tab-2 {
+    --miq-autofill-bg: #1e1e32;
+    --miq-autofill-text: #e8e8e8;
 }
 
 [data-theme="dark"] #tab-2 .form-control::placeholder {
@@ -1017,6 +1042,11 @@ select optgroup {
   background: #111827;
   border-color: #293244;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .stock-chart-search-card {
+  --miq-autofill-bg: #172033;
+  --miq-autofill-text: #f8fafc;
 }
 
 [data-theme="dark"] .stock-chart-search-card label {

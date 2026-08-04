@@ -10,6 +10,9 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const accountPage = read('account.php');
 const accountScript = read('assets/js/account.js');
 const accountStyles = read('assets/css/account.css');
+const workspaceStyles = read('assets/css/workspace.css');
+const themeStyles = read('assets/css/theme.css');
+const toolPage = read('tool.php');
 const themeScript = read('assets/js/theme.js');
 const passwordIds = ['register_password', 'confirm_password', 'reset_password', 'login_password'];
 
@@ -22,6 +25,14 @@ assert.strictEqual((accountPage.match(/data-password-toggle=/g) || []).length, p
 assert.match(accountStyles, /\.miq-password-field\s*>\s*\.form-control\s*\{[^}]*padding-right:\s*46px/s);
 assert.match(accountStyles, /\.miq-password-toggle\s*\{[^}]*color:\s*#667085/s);
 assert.match(accountStyles, /html\[data-theme="dark"\]\s+\.miq-password-toggle\s*\{[^}]*color:\s*#c5c9d6/s);
+
+[accountStyles, workspaceStyles, themeStyles, toolPage].forEach((styles) => {
+    assert.match(styles, /:-webkit-autofill/);
+    assert.match(styles, /:autofill/);
+    assert.match(styles, /-webkit-text-fill-color:\s*[^;]+!important/);
+    assert.match(styles, /box-shadow:\s*0 0 0 1000px [^;]+ inset !important/);
+});
+assert.match(themeStyles, /color-scheme:\s*dark/);
 assert.match(themeScript, /htmlEl\.setAttribute\('data-theme', theme\)/);
 
 function createThemeRuntime(initialTheme) {
