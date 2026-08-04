@@ -273,6 +273,19 @@ if (!class_exists('MiqAccountDisplayNameTakenException')) {
     }
 }
 
+if (!class_exists('MiqAccountDisplayNamePolicyException')) {
+    class MiqAccountDisplayNamePolicyException extends InvalidArgumentException
+    {
+        public $reason;
+
+        public function __construct($reason = 'official')
+        {
+            $this->reason = (string) $reason;
+            parent::__construct('That display name cannot be used because it could be mistaken for 360MiQ or an official 360MiQ account. Please choose a personal name or handle.');
+        }
+    }
+}
+
 if (!class_exists('MiqAccountRateLimitException')) {
     class MiqAccountRateLimitException extends RuntimeException
     {
@@ -293,6 +306,105 @@ function miq_account_display_name($name, $email)
     }
     $name = miq_account_clean_display_name($name);
     return $name !== '' ? $name : 'Investor';
+}
+
+function miq_account_display_name_policy_text($name)
+{
+    $value = (string) $name;
+    if (class_exists('Normalizer')) {
+        $normalized = \Normalizer::normalize($value, \Normalizer::FORM_KD);
+        if (is_string($normalized)) {
+            $value = $normalized;
+        }
+    }
+
+    // Cover the most common Latin/Cyrillic/Greek look-alikes used in brand impersonation.
+    $value = strtr($value, array(
+        'А' => 'A', 'а' => 'a', 'В' => 'B', 'в' => 'b', 'С' => 'C', 'с' => 'c',
+        'Е' => 'E', 'е' => 'e', 'Н' => 'H', 'н' => 'h', 'І' => 'I', 'і' => 'i',
+        'Ј' => 'J', 'ј' => 'j', 'К' => 'K', 'к' => 'k', 'М' => 'M', 'м' => 'm',
+        'О' => 'O', 'о' => 'o', 'Р' => 'P', 'р' => 'p', 'Т' => 'T', 'т' => 't',
+        'Х' => 'X', 'х' => 'x', 'Ү' => 'Y', 'ү' => 'y', 'Ζ' => 'Z', 'ζ' => 'z',
+        'Ι' => 'I', 'ι' => 'i', 'Ο' => 'O', 'ο' => 'o', 'Ρ' => 'P', 'ρ' => 'p',
+        'Χ' => 'X', 'χ' => 'x', 'Υ' => 'Y', 'υ' => 'y', 'ı' => 'i', 'ɪ' => 'i',
+        '０' => '0', '１' => '1', '２' => '2', '３' => '3', '４' => '4',
+        '５' => '5', '６' => '6', '７' => '7', '８' => '8', '９' => '9',
+        'Ｍ' => 'M', 'ｍ' => 'm', 'Ｉ' => 'I', 'ｉ' => 'i', 'Ｑ' => 'Q', 'ｑ' => 'q',
+        'Ԛ' => 'Q', 'ԛ' => 'q'
+    ));
+    $value = preg_replace('/([a-z])([A-Z])/', '$1 $2', $value);
+    $value = strtolower($value);
+    $value = preg_replace('/[\x{0300}-\x{036f}]/u', '', $value);
+    return is_string($value) ? $value : (string) $name;
+}
+
+function miq_account_display_name_policy_key($name)
+{
+    $value = miq_account_display_name_policy_text($name);
+    $value = preg_replace('/[^a-z0-9]+/', '', $value);
+    return is_string($value) ? $value : '';
+}
+
+function miq_account_display_name_policy_violation($name)
+{
+    $policy_text = miq_account_display_name_policy_text($name);
+    $policy_key = miq_account_display_name_policy_key($name);
+    $brand_key = strtr($policy_key, array('o' => '0', '1' => 'i', 'l' => 'i'));
+
+    if (
+        strpos($policy_key, '360miq') !== false
+        || strpos($brand_key, '360miq') !== false
+        || strpos($policy_key, 'threesixtymiq') !== false
+    ) {
+        return 'brand';
+    }
+
+    $tokens = preg_split('/[^a-z0-9]+/', $policy_text, -1, PREG_SPLIT_NO_EMPTY);
+    $reserved_official_terms = array(
+        'admin', 'administrator', 'billing', 'compliance', 'customer service',
+        'customer support', 'employee', 'finance', 'help desk', 'helpdesk',
+        'legal', 'moderator', 'newsroom', 'official', 'office', 'press',
+        'privacy', 'sales', 'security', 'service desk', 'servicedesk',
+        'staff', 'support', 'team', 'technical support', 'trust and safety',
+        'verified', 'verification'
+    );
+    $joined_tokens = implode(' ', $tokens);
+    $joined_key = implode('', $tokens);
+    foreach ($reserved_official_terms as $term) {
+        $term_tokens = preg_split('/[^a-z0-9]+/', $term, -1, PREG_SPLIT_NO_EMPTY);
+        $term_key = implode('', $term_tokens);
+        if ($joined_tokens === $term || $joined_key === $term_key || in_array($term, $tokens, true)) {
+            return 'official';
+        }
+    }
+
+    // These combinations are particularly likely to be read as an official support identity.
+    $official_combinations = array(
+        array('account', 'team'),
+        array('community', 'team'),
+        array('customer', 'care'),
+        array('help', 'center'),
+        array('help', 'centre'),
+        array('support', 'team'),
+        array('system', 'admin'),
+        array('account', 'recovery'),
+        array('trust', 'safety')
+    );
+    foreach ($official_combinations as $combination) {
+        if (count(array_intersect($combination, $tokens)) === count($combination)) {
+            return 'official';
+        }
+    }
+
+    return null;
+}
+
+function miq_account_validate_display_name_policy($name)
+{
+    $violation = miq_account_display_name_policy_violation($name);
+    if ($violation !== null) {
+        throw new MiqAccountDisplayNamePolicyException($violation);
+    }
 }
 
 function miq_account_display_name_exists($display_name, $exclude_user_id = 0)
@@ -335,6 +447,7 @@ function miq_account_display_name_suggestions($name, $email, $exclude_user_id = 
 function miq_account_resolve_display_name($name, $email, $allow_suggested_suffix = false, $exclude_user_id = 0)
 {
     $candidate = miq_account_display_name($name, $email);
+    miq_account_validate_display_name_policy($candidate);
     if (!miq_account_display_name_exists($candidate, $exclude_user_id)) {
         return $candidate;
     }
