@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-07-31)
+# Graph Report - .  (2026-08-04)
 
 ## Corpus Check
-- 153 files · ~784,560 words
+- 153 files · ~785,247 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1488 nodes · 2832 edges · 153 communities detected
+- 1495 nodes · 2844 edges · 153 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -202,11 +202,11 @@ Cohesion: 0.09
 Nodes (57): addSvgClass(), applyHighchartsTheme(), bindHighchartsLegendTheme(), bindLeftYAxisTitleTheme(), bindSentimentAxisThemeToggle(), collectAxisCandidates(), ensureAxisStyleColor(), exportMenuStyle() (+49 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.1
-Nodes (39): miq_account_access_error(), miq_account_bootstrap(), miq_account_check_csrf(), miq_account_clean_display_name(), miq_account_client_ip(), miq_account_create_token(), miq_account_create_user(), miq_account_csrf_token() (+31 more)
+Cohesion: 0.08
+Nodes (44): miq_account_access_error(), miq_account_bootstrap(), miq_account_check_csrf(), miq_account_clean_display_name(), miq_account_client_ip(), miq_account_create_token(), miq_account_create_user(), miq_account_csrf_token() (+36 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.1
+Cohesion: 0.09
 Nodes (39): accountAction(), applyLivePulseContext(), bindPulseExplanation(), bindSearchTracking(), clearElement(), clearPendingPulseVote(), getChart(), getScript() (+31 more)
 
 ### Community 7 - "Community 7"
@@ -975,4 +975,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 4` be split into smaller, more focused modules?**
   _Cohesion score 0.09 - nodes in this community are weakly interconnected._
 - **Should `Community 5` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
