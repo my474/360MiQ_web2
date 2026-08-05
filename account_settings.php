@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta property="og:title" content="Account Settings - 360MiQ.com" />
     <meta name="description" content="Manage your 360MiQ account, privacy, and workspace data." />
     <title>Account Settings - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css?v=20260804.2">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260806.1">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260804.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <?php if (miq_account_config()['google_client_id'] !== ''): ?><script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script><?php endif; ?>
