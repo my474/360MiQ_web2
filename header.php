@@ -190,7 +190,9 @@ $(document).on('click', '.color-item', function(event) {
 }
 
 @media (min-width: 1199.98px) {
-    .navbar-nav li:hover>.dropdown-menu {
+    .navbar-nav li:hover>.dropdown-menu,
+    .navbar-nav .dropdown:hover>.dropdown-menu,
+    .navbar-nav .dropdown.show>.dropdown-menu {
       opacity: 1;
       transform: translateY(-11px);
       visibility: visible;
