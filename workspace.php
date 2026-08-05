@@ -14,7 +14,11 @@ if (!$user) {
     <meta property="og:title" content="My Workspace - 360MiQ.com" />
     <meta name="description" content="<?php echo $community_enabled ? 'Your saved charts, Pine scripts, screener presets, searches, and community ideas on 360MiQ.com.' : 'Your saved charts, Pine scripts, screener presets, and searches on 360MiQ.com.'; ?>" />
     <title>My Workspace - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css?v=20260804.1">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,400i,700,700i,600,600i&amp;display=swap">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260804.2">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260804.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>
