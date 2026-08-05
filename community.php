@@ -26,7 +26,7 @@ $trend_subject = $context_code !== '' ? $context_code : 'Global market';
     <title>Community Ideas - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260806.2">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260806.3">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260804.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>

@@ -82,6 +82,28 @@
     display: none;
 }
 
+.miq-account-dropdown-header {
+    max-width: 240px;
+    overflow: hidden;
+    color: #667085;
+    cursor: default;
+    line-height: 1.35;
+    pointer-events: none;
+}
+
+.miq-account-dropdown-header > span,
+.miq-account-dropdown-header > strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.miq-account-dropdown-header > strong {
+    color: #1d2939;
+    font-size: 14px;
+}
+
 .miq-account-nav-item .dropdown-menu {
     min-width: 210px;
 }
@@ -671,6 +693,14 @@ html[data-theme="dark"] .miq-account-nav-item .dropdown-item {
 html[data-theme="dark"] .miq-account-nav-item .dropdown-item:hover,
 html[data-theme="dark"] .miq-account-nav-item .dropdown-item:focus {
     background: #303250;
+}
+
+html[data-theme="dark"] .miq-account-dropdown-header {
+    color: #aab4c3;
+}
+
+html[data-theme="dark"] .miq-account-dropdown-header > strong {
+    color: #f1f3f7;
 }
 
 .miq-account-unread,
