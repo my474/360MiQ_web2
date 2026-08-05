@@ -765,6 +765,10 @@
         });
     }
 
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) load();
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         Array.prototype.forEach.call(document.querySelectorAll('[data-workspace-tab]'), function (button) {
             button.addEventListener('click', function () {

@@ -168,6 +168,7 @@
         payload.csrf_token = state.csrfToken || '';
         options.headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(payload);
+        if (action === 'save_search') options.keepalive = true;
         return fetch(state.apiUrl, options).then(parseResponse);
     }
 
