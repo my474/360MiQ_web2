@@ -2006,7 +2006,11 @@ var anychartReady = loadStockScript('assets/js/anychart-bundle.min.js')
 <script>
 window.__STOCKINFO_PAGE_CONFIG = {
     "stockcode": <?php echo json_encode($stockcode, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-    "stockinfo": <?php echo json_encode($line, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
+    "stockinfo": <?php echo json_encode($line, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+    "resolved": <?php echo $line !== '' ? 'true' : 'false'; ?>,
+    "exchange": <?php echo json_encode($exchange, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+    "name_en": <?php echo json_encode(isset($name_en) ? $name_en : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+    "name_tc": <?php echo json_encode(isset($name_tc) ? $name_tc : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
 <script src="assets/js/ValuationBands.js?v=20260625.1"></script>

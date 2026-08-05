@@ -403,6 +403,16 @@
         });
     }
 
+    function bindStockViewTracking() {
+        var page = window.__STOCKINFO_PAGE_CONFIG;
+        if (!state.loggedIn || !page || page.resolved !== true || !page.stockcode) return;
+        saveSearch(page.stockcode, {
+            exchange: page.exchange || '',
+            name_en: page.name_en || '',
+            name_tc: page.name_tc || ''
+        });
+    }
+
     function sentimentSvgElement(name, attributes, text) {
         var element = document.createElementNS('http://www.w3.org/2000/svg', name);
         Object.keys(attributes || {}).forEach(function (key) {
@@ -872,6 +882,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         bindSearchTracking();
+        bindStockViewTracking();
         bindDisplayNameSuggestions();
         bindPasswordVisibility();
         renderGoogleButtons();
