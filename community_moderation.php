@@ -26,7 +26,7 @@ header('X-Robots-Tag: noindex, nofollow');
     <?php include __DIR__ . '/meta.php'; ?>
     <meta name="robots" content="noindex, nofollow">
     <title>Community Moderation - 360MiQ.com</title>
-    <link rel="stylesheet" href="assets/css/account.css?v=20260806.1">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260806.2">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260804.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>

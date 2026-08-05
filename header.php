@@ -1,5 +1,5 @@
 <?php $miq_nav_user = isset($miq_account_user) ? $miq_account_user : miq_account_current_user(); ?>
-<link rel="stylesheet" href="assets/css/account.css?v=20260806.1">
+<link rel="stylesheet" href="assets/css/account.css?v=20260806.2">
 <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar container-fluid not-selectable">
   <a class="navbar-brand" href="./"><img src="assets/img/Logo/360Logo.png" width="70" alt="360MiQ logo"></a>
   <span class="navbar-toggler collapsed navtitle" style="margin:0;padding:0">
@@ -78,8 +78,8 @@
       <li class="nav-item">
         <?php if ($miq_nav_user): ?>
           <div class="dropdown miq-account-nav-item">
-            <a class="nav-link dropdown-toggle miq-account-trigger" href="#" id="miqAccountMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Account">
-              <span class="miq-account-avatar" aria-hidden="true"><i class="fas fa-user"></i></span><span class="miq-account-name"><?php echo htmlspecialchars($miq_nav_user['display_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+            <a class="nav-link dropdown-toggle miq-account-trigger" href="#" id="miqAccountMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Account menu" title="Account">
+              <i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i><span class="miq-account-name"><?php echo htmlspecialchars($miq_nav_user['display_name'], ENT_QUOTES, 'UTF-8'); ?></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="miqAccountMenu">
               <a class="dropdown-item" href="workspace"><i class="fas fa-layer-group fa-fw"></i> My Workspace</a>
