@@ -223,6 +223,13 @@
   caret-color: var(--miq-autofill-text);
 }
 
+/* Keep the document canvas aligned with the active theme, including page gutters. */
+html[data-theme],
+html[data-theme] body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 /* ============================
    CHATBOT / BOTTOM-NAV / SHEET
    ============================ */
