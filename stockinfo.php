@@ -2015,7 +2015,7 @@ window.__STOCKINFO_PAGE_CONFIG = {
 </script>
 <script src="assets/js/ValuationBands.js?v=20260625.1"></script>
 <script src="assets/js/pages/stockinfo-main.js?v=20260619.2"></script>
-<script src="assets/js/stock-account-tools.js?v=20260726.1" defer></script>
+<script src="assets/js/stock-account-tools.js?v=20260806.2" defer></script>
 <script>
 (function () {
     function currentStockCode() {

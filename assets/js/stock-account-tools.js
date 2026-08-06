@@ -28,6 +28,12 @@
         return node.innerHTML;
     }
 
+    function formatPrice(value) {
+        var parsed = Number(value);
+        if (!Number.isFinite(parsed)) return value == null ? '' : String(value);
+        return parsed.toLocaleString(undefined, { maximumFractionDigits: 6 });
+    }
+
     function status(message, isError) {
         var element = root.querySelector('[data-stock-tools-status]');
         if (!element) return;
@@ -74,8 +80,8 @@
             var nextStatus = alert.status === 'active' ? 'disabled' : 'active';
             var actionLabel = alert.status === 'active' ? 'Pause' : 'Reactivate';
             return '<div class="miq-stock-mini-item"><div class="miq-stock-mini-copy"><strong>' +
-                escapeHtml(alert.condition_type === 'above' ? '≥ ' : '≤ ') + escapeHtml(alert.target_price) +
-                '</strong><span>' + escapeHtml(alert.status) + (alert.last_price !== null ? ' · last ' + escapeHtml(alert.last_price) : '') +
+                escapeHtml(alert.condition_type === 'above' ? '≥ ' : '≤ ') + escapeHtml(formatPrice(alert.target_price)) +
+                '</strong><span>' + escapeHtml(alert.status) + (alert.last_price != null ? ' · last ' + escapeHtml(formatPrice(alert.last_price)) : '') +
                 '</span></div><div class="miq-stock-mini-actions"><button class="btn btn-link" type="button" data-alert-status="' +
                 Number(alert.id) + '" data-next-status="' + nextStatus + '">' + actionLabel +
                 '</button><button class="btn btn-link text-danger" type="button" data-alert-delete="' + Number(alert.id) + '">Delete</button></div></div>';
