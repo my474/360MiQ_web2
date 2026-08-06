@@ -336,6 +336,19 @@ html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:focus {
   color: #9ecbff !important;
 }
 
+@media all and (max-width: 49.99em) {
+  html[data-theme="dark"] .site-header .toggle-navigation svg g {
+    fill: var(--miq-blog-dark-text) !important;
+  }
+
+  html[data-theme="dark"] .site-header .toggle-navigation:hover svg g,
+  html[data-theme="dark"] .site-header .toggle-navigation:active svg g,
+  html[data-theme="dark"] .site-header .toggle-navigation:focus svg g,
+  html[data-theme="dark"] .site-header .toggle-navigation.open svg g {
+    fill: var(--miq-blog-dark-blue-hover) !important;
+  }
+}
+
 html[data-theme="dark"] .post-author,
 html[data-theme="dark"] .comment-list li.comment.bypostauthor,
 html[data-theme="dark"] .comment-list li.pingback.bypostauthor,
