@@ -376,7 +376,7 @@ var daydict = {"0":"00", "1":"01", "2":"02", "3":"03", "4":"04", "5":"05", "6":"
 </div></div>
 </section>
 <style>
-.dropdown-header { 
+.dropdown-menu.screener .dropdown-header {
     color: #FFFFFF;
     background-color: #2636E3;
     font-weight: bold;
