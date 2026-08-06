@@ -47,6 +47,19 @@
   --text-langbtn-hover: #000000;
   --text-recentpost: #000;
 
+  /* ---------- Buttons ---------- */
+  --button-primary-bg: #007bff;
+  --button-primary-border: #007bff;
+  --button-primary-hover-bg: #0069d9;
+  --button-primary-hover-border: #0062cc;
+  --button-outline-color: #007bff;
+  --button-outline-border: #007bff;
+  --button-outline-hover-bg: #007bff;
+  --button-outline-hover-border: #007bff;
+  --button-outline-subtle-border: rgba(0, 123, 255, .25);
+  --button-outline-active-bg: rgba(0, 123, 255, .13);
+  --button-outline-active-shadow: rgba(0, 123, 255, .24);
+
   /* ---------- Borders ---------- */
   --border-color: #dee2e6;
   --border-chatbot-header: #eee;
@@ -142,6 +155,19 @@
   --text-langbtn: #aaaaaa;
   --text-langbtn-hover: #ffffff;
   --text-recentpost: #cccccc;
+
+  /* ---------- Buttons: match the dark header search control ---------- */
+  --button-primary-bg: var(--text-link-bright);
+  --button-primary-border: var(--text-link-bright);
+  --button-primary-hover-bg: var(--text-link-bright);
+  --button-primary-hover-border: var(--text-link-bright);
+  --button-outline-color: var(--text-link-bright);
+  --button-outline-border: var(--text-link-bright);
+  --button-outline-hover-bg: var(--text-link-bright);
+  --button-outline-hover-border: var(--text-link-bright);
+  --button-outline-subtle-border: rgba(102, 199, 255, .35);
+  --button-outline-active-bg: rgba(102, 199, 255, .15);
+  --button-outline-active-shadow: rgba(102, 199, 255, .28);
 
   /* ---------- Borders ---------- */
   --border-color: #3a3a4e;
@@ -487,8 +513,8 @@ html[data-theme] body {
 
 [data-theme="dark"] .navbar .btn-outline-primary,
 [data-theme="dark"] .navbar .btn-outline-primary .fa-search {
-  border-color: var(--text-link-bright) !important;
-  color: var(--text-link-bright) !important;
+  border-color: var(--button-outline-border) !important;
+  color: var(--button-outline-color) !important;
 }
 
 [data-theme="dark"] .navbar .btn-outline-primary:hover,
@@ -497,8 +523,8 @@ html[data-theme] body {
 [data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled):active,
 [data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled).active,
 [data-theme="dark"] .navbar .show > .btn-outline-primary.dropdown-toggle {
-  background-color: var(--text-link-bright) !important;
-  border-color: var(--text-link-bright) !important;
+  background-color: var(--button-outline-hover-bg) !important;
+  border-color: var(--button-outline-hover-border) !important;
   color: #ffffff !important;
 }
 
@@ -507,6 +533,45 @@ html[data-theme] body {
 [data-theme="dark"] .navbar .btn-outline-primary:active .fa-search,
 [data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled):active .fa-search,
 [data-theme="dark"] .navbar .btn-outline-primary:not(:disabled):not(.disabled).active .fa-search {
+  color: #ffffff !important;
+}
+
+/* Keep blue controls consistent with the dark-mode header search button. */
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .btn-primary:disabled,
+[data-theme="dark"] .btn-primary.disabled {
+  background-color: var(--button-primary-bg) !important;
+  border-color: var(--button-primary-border) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-primary:hover,
+[data-theme="dark"] .btn-primary:focus,
+[data-theme="dark"] .btn-primary:active,
+[data-theme="dark"] .btn-primary:not(:disabled):not(.disabled):active,
+[data-theme="dark"] .btn-primary:not(:disabled):not(.disabled).active,
+[data-theme="dark"] .show > .btn-primary.dropdown-toggle {
+  background-color: var(--button-primary-hover-bg) !important;
+  border-color: var(--button-primary-hover-border) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-outline-primary,
+[data-theme="dark"] .btn-outline-primary:disabled,
+[data-theme="dark"] .btn-outline-primary.disabled {
+  background-color: transparent !important;
+  border-color: var(--button-outline-border) !important;
+  color: var(--button-outline-color) !important;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover,
+[data-theme="dark"] .btn-outline-primary:focus,
+[data-theme="dark"] .btn-outline-primary:active,
+[data-theme="dark"] .btn-outline-primary:not(:disabled):not(.disabled):active,
+[data-theme="dark"] .btn-outline-primary:not(:disabled):not(.disabled).active,
+[data-theme="dark"] .show > .btn-outline-primary.dropdown-toggle {
+  background-color: var(--button-outline-hover-bg) !important;
+  border-color: var(--button-outline-hover-border) !important;
   color: #ffffff !important;
 }
 
