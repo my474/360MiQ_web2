@@ -115,6 +115,12 @@ function miq_sso_begin()
 
 if (isset($_GET['mode']) && $_GET['mode'] === 'consume') {
     $provided_secret = isset($_SERVER['HTTP_X_MIQ_SSO_SECRET']) ? $_SERVER['HTTP_X_MIQ_SSO_SECRET'] : '';
+    if ($provided_secret === '' && isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $authorization = trim((string) $_SERVER['HTTP_AUTHORIZATION']);
+        if (preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches)) {
+            $provided_secret = trim($matches[1]);
+        }
+    }
     if (miq_sso_shared_secret() === '' || !hash_equals(miq_sso_shared_secret(), (string) $provided_secret)) {
         miq_sso_json(array('error' => 'SSO is not configured.'), 403);
     }

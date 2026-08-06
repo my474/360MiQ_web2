@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 360MiQ Main Site SSO
  * Description: Maps authenticated 360MiQ main-site accounts to WordPress contributor accounts.
- * Version: 1.2.0
+ * Version: 1.3.0
  */
 
 if (!defined('ABSPATH')) {
@@ -218,7 +218,10 @@ function miq_main_site_sso_bootstrap()
         'timeout' => 8,
         'redirection' => 0,
         'sslverify' => true,
-        'headers' => array('X-MIQ-SSO-Secret' => miq_main_site_sso_secret()),
+        'headers' => array(
+            'X-MIQ-SSO-Secret' => miq_main_site_sso_secret(),
+            'Authorization' => 'Bearer ' . miq_main_site_sso_secret(),
+        ),
         'body' => array('token' => $token),
     ));
     if (is_wp_error($response)) {
@@ -228,8 +231,28 @@ function miq_main_site_sso_bootstrap()
 
     $response_code = wp_remote_retrieve_response_code($response);
     if ($response_code !== 200) {
-        error_log('[360MiQ SSO] token consume request returned HTTP ' . (int) $response_code . ' for issuer ' . $issuer);
-        wp_die(esc_html__('The main-site login service rejected this handoff. Please start again from the Article Editor link.', 'miq-main-site-sso'));
+        $response_payload = json_decode(wp_remote_retrieve_body($response), true);
+        $response_error = isset($response_payload['error']) ? sanitize_text_field((string) $response_payload['error']) : '';
+        $known_errors = array(
+            'SSO is not configured.',
+            'Invalid SSO token.',
+            'SSO token is invalid or expired.',
+            'SSO handoff failed.',
+        );
+        if (!in_array($response_error, $known_errors, true)) {
+            $response_error = '';
+        }
+        error_log(
+            '[360MiQ SSO] token consume request returned HTTP '
+            . (int) $response_code
+            . ' for issuer '
+            . $issuer
+            . ($response_error !== '' ? ': ' . $response_error : '')
+        );
+        wp_die(esc_html(sprintf(
+            __('The main-site login service rejected this handoff (HTTP %d). Please start again from the Article Editor link.', 'miq-main-site-sso'),
+            (int) $response_code
+        )));
     }
 
     $payload = json_decode(wp_remote_retrieve_body($response), true);
