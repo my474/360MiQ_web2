@@ -849,7 +849,7 @@ html[data-theme="dark"] .miq-sso-error-note {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: .25rem 1.5rem !important;
+    padding: .35rem 1.5rem !important;
     color: #212529 !important;
     font-size: 1rem !important;
     font-weight: 400 !important;

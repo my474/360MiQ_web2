@@ -1,5 +1,5 @@
 <?php $miq_nav_user = isset($miq_account_user) ? $miq_account_user : miq_account_current_user(); ?>
-<link rel="stylesheet" href="assets/css/account.css?v=20260806.5">
+<link rel="stylesheet" href="assets/css/account.css?v=20260806.6">
 <nav class="navbar navbar-light navbar-expand-lg fixed-top bg-white clean-navbar container-fluid not-selectable">
   <a class="navbar-brand" href="./"><img src="assets/img/Logo/360Logo.png" width="70" alt="360MiQ logo"></a>
   <span class="navbar-toggler collapsed navtitle" style="margin:0;padding:0">
