@@ -20,6 +20,7 @@
   display: inline-flex;
   align-items: center;
   margin-bottom: 0.75em;
+  vertical-align: top;
 }
 
 .menu-primary-items .miq360-account-link,
@@ -97,6 +98,19 @@
   transform: translateY(0);
   transition: all 0.3s ease;
   visibility: hidden;
+}
+
+.miq360-account-menu::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  border-radius: 6px 6px 0 0;
+  background: #20a4e6;
+  background-image: linear-gradient(to right, #20a4e6, #17e6c3);
 }
 
 .miq360-account-item:hover > .miq360-account-menu,
@@ -793,6 +807,11 @@ html[data-theme="dark"] .chatbot__message-window::-webkit-scrollbar-thumb {
   .menu-unset ul .miq360-account-item {
     margin-left: 0.75em;
     margin-right: 0.75em;
+  }
+
+  .menu-primary-items .miq360-account-link,
+  .menu-unset ul .miq360-account-link {
+    top: 6px;
   }
 
   .miq360-account-item {
