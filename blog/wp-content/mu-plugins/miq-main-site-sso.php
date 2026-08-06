@@ -221,8 +221,15 @@ function miq_main_site_sso_bootstrap()
         'headers' => array('X-MIQ-SSO-Secret' => miq_main_site_sso_secret()),
         'body' => array('token' => $token),
     ));
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-        wp_die(esc_html__('The main-site login could not be verified.', 'miq-main-site-sso'));
+    if (is_wp_error($response)) {
+        error_log('[360MiQ SSO] token consume request failed: ' . $response->get_error_code());
+        wp_die(esc_html__('WordPress could not reach the main-site login service. Please try again later.', 'miq-main-site-sso'));
+    }
+
+    $response_code = wp_remote_retrieve_response_code($response);
+    if ($response_code !== 200) {
+        error_log('[360MiQ SSO] token consume request returned HTTP ' . (int) $response_code . ' for issuer ' . $issuer);
+        wp_die(esc_html__('The main-site login service rejected this handoff. Please start again from the Article Editor link.', 'miq-main-site-sso'));
     }
 
     $payload = json_decode(wp_remote_retrieve_body($response), true);
