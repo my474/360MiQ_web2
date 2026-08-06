@@ -285,7 +285,7 @@ function trendgauge2txt($stockcode, $trendvalue) {
     <link rel="stylesheet" href="assets/css/inlinehelp.css">
     <link rel="stylesheet" href="assets/css/help-tip2.css">
     <link rel="stylesheet" href="assets/css/toggleSwitch.css">
-    <link rel="stylesheet" href="assets/css/stock-account-tools.css?v=20260806.3">
+    <link rel="stylesheet" href="assets/css/stock-account-tools.css?v=20260806.4">
     <!--script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script-->
     <!--script defer data-cfasync="false" src="assets/js/bot-detector.js"-->
     <script>

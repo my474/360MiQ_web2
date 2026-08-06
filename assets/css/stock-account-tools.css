@@ -53,24 +53,21 @@
 
 .miq-stock-tools-workspace-link {
     white-space: nowrap;
+    color: var(--text-link, #007bff) !important;
 }
 
-html[data-theme="dark"] .miq-stock-tools-workspace-link {
-    color: var(--text-link, #6ea8ff) !important;
+.miq-stock-tools-workspace-link:hover,
+.miq-stock-tools-workspace-link:focus {
+    color: var(--text-link-hover, #0056b3) !important;
 }
 
-html[data-theme="dark"] .miq-stock-tools-workspace-link:hover,
-html[data-theme="dark"] .miq-stock-tools-workspace-link:focus {
-    color: var(--text-link-hover, #8ec8ff) !important;
+.miq-stock-tools button[data-alert-status] {
+    color: var(--text-link, #007bff) !important;
 }
 
-html[data-theme="dark"] .miq-stock-tools button[data-alert-status] {
-    color: var(--text-link, #6ea8ff) !important;
-}
-
-html[data-theme="dark"] .miq-stock-tools button[data-alert-status]:hover,
-html[data-theme="dark"] .miq-stock-tools button[data-alert-status]:focus {
-    color: var(--text-link-hover, #8ec8ff) !important;
+.miq-stock-tools button[data-alert-status]:hover,
+.miq-stock-tools button[data-alert-status]:focus {
+    color: var(--text-link-hover, #0056b3) !important;
 }
 
 .miq-stock-tools-grid {
