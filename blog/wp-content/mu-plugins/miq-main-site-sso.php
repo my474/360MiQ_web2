@@ -220,6 +220,52 @@ function miq_main_site_sso_limit_post_list($query)
 }
 add_action('pre_get_posts', 'miq_main_site_sso_limit_post_list');
 
+function miq_main_site_sso_scope_post_counts($counts, $post_type, $perm)
+{
+    if (!is_admin()) {
+        return $counts;
+    }
+
+    global $pagenow, $wpdb;
+    if ($pagenow !== 'edit.php') {
+        return $counts;
+    }
+
+    $post_type_object = get_post_type_object($post_type);
+    if (!$post_type_object || current_user_can($post_type_object->cap->edit_others_posts)) {
+        return $counts;
+    }
+
+    $user_id = get_current_user_id();
+    if ($user_id <= 0) {
+        return $counts;
+    }
+
+    $scoped_counts = array_fill_keys(get_post_stati(), 0);
+    $rows = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT post_status, COUNT(*) AS num_posts
+            FROM {$wpdb->posts}
+            WHERE post_type = %s
+            AND post_author = %d
+            GROUP BY post_status",
+            $post_type,
+            $user_id
+        ),
+        ARRAY_A
+    );
+
+    foreach ((array) $rows as $row) {
+        $status = (string) ($row['post_status'] ?? '');
+        if (array_key_exists($status, $scoped_counts)) {
+            $scoped_counts[$status] = (int) $row['num_posts'];
+        }
+    }
+
+    return (object) $scoped_counts;
+}
+add_filter('wp_count_posts', 'miq_main_site_sso_scope_post_counts', 10, 3);
+
 function miq_main_site_sso_hide_all_post_views($views)
 {
     $screen = function_exists('get_current_screen') ? get_current_screen() : null;
