@@ -847,6 +847,8 @@ html[data-theme="dark"] .miq-sso-error-note {
     display: flex;
     align-items: center;
     gap: 6px;
+    padding: .25rem 1.5rem;
+    line-height: 1.5;
 }
 
 .miq-account-nav-item .dropdown-item i {
