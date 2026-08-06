@@ -602,6 +602,7 @@ html[data-theme="dark"] .chatbot__message-window::-webkit-scrollbar-thumb {
   .menu-primary-items .miq360-account-item,
   .menu-unset ul .miq360-account-item {
     margin-left: 0.75em;
+    margin-right: 0.75em;
   }
 
   .miq360-account-item {
