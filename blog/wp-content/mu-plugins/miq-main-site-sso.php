@@ -279,6 +279,38 @@ function miq_main_site_sso_hide_all_post_views($views)
     }
 
     unset($views['all']);
+
+    foreach (array('publish', 'draft', 'pending') as $status_name) {
+        if (isset($views[$status_name])) {
+            continue;
+        }
+
+        $status = get_post_status_object($status_name);
+        if (!$status) {
+            continue;
+        }
+
+        $status_label = sprintf(
+            translate_nooped_plural($status->label_count, 0),
+            number_format_i18n(0)
+        );
+        $status_args = array(
+            'post_status' => $status_name,
+            'post_type'   => $screen->post_type ?: 'post',
+        );
+        $requested_status = isset($_REQUEST['post_status']) && is_string($_REQUEST['post_status'])
+            ? sanitize_key(wp_unslash($_REQUEST['post_status']))
+            : '';
+        $is_current = $requested_status === $status_name;
+
+        $views[$status_name] = sprintf(
+            '<a href="%s"%s>%s</a>',
+            esc_url(add_query_arg($status_args, 'edit.php')),
+            $is_current ? ' class="current" aria-current="page"' : '',
+            $status_label
+        );
+    }
+
     return $views;
 }
 
