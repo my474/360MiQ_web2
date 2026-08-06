@@ -86,13 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/css/account.css?v=20260806.3">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260804.1">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260806.2">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <?php if (miq_account_config()['google_client_id'] !== ''): ?><script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script><?php endif; ?>
 </head>
 <body>
 <?php $page = 'account'; include __DIR__ . '/header.php'; ?>
-<main class="miq-workspace-page container">
+<main class="miq-workspace-page miq-account-settings-page container">
     <div class="miq-workspace-heading"><div><span class="miq-account-kicker">Account controls</span><h1>Account settings</h1><p><?php echo htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8'); ?></p></div><a class="btn btn-outline-primary" href="workspace">Back to Workspace</a></div>
     <?php foreach ($messages as $message): ?><div class="alert alert-success"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></div><?php endforeach; ?>
     <?php foreach ($errors as $error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div><?php endforeach; ?>

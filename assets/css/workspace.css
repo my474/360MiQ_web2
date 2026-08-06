@@ -1758,6 +1758,21 @@ html[data-theme="dark"] .miq-community-page input:autofill:active {
     gap: 8px;
 }
 
+.miq-account-settings-page .miq-workspace-panel form > label {
+    display: block;
+    margin: 16px 0 6px;
+}
+
+.miq-account-settings-page .miq-workspace-panel form > small {
+    display: block;
+    margin-top: 8px;
+}
+
+.miq-account-settings-page .miq-workspace-panel form > .btn {
+    display: block;
+    margin-top: 18px;
+}
+
 html[data-theme="dark"] .miq-management-card,
 html[data-theme="dark"] .miq-note-editor,
 html[data-theme="dark"] .miq-notification-row.is-unread {
