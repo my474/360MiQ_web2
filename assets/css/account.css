@@ -106,6 +106,7 @@
 
 .miq-account-nav-item .dropdown-menu {
     min-width: 210px;
+    padding: .5rem 0 !important;
 }
 
 .miq-account-nav-item .dropdown-item i {
@@ -687,12 +688,13 @@ html[data-theme="dark"] .miq-account-nav-item .dropdown-menu {
 }
 
 html[data-theme="dark"] .miq-account-nav-item .dropdown-item {
-    color: #f1f3f7;
+    color: #bbbbbb !important;
 }
 
 html[data-theme="dark"] .miq-account-nav-item .dropdown-item:hover,
 html[data-theme="dark"] .miq-account-nav-item .dropdown-item:focus {
     background: #303250;
+    color: #ffffff !important;
 }
 
 html[data-theme="dark"] .miq-account-dropdown-header {
@@ -847,8 +849,16 @@ html[data-theme="dark"] .miq-sso-error-note {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: .25rem 1.5rem;
-    line-height: 1.5;
+    padding: .25rem 1.5rem !important;
+    color: #212529 !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+}
+
+.miq-account-nav-item .dropdown-item:hover,
+.miq-account-nav-item .dropdown-item:focus {
+    color: #16181b !important;
 }
 
 .miq-account-nav-item .dropdown-item i {

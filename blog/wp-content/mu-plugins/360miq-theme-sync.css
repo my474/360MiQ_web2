@@ -193,7 +193,7 @@ html[data-theme="dark"] .site-header .miq360-account-link .miq-account-chevron {
   width: 100%;
   margin: 0 !important;
   padding: 3px 6px !important;
-  color: #344054 !important;
+  color: #333333 !important;
   font-size: 0.75em;
   font-weight: 400;
   line-height: 2;
@@ -215,7 +215,7 @@ html[data-theme="dark"] .site-header .miq360-account-link .miq-account-chevron {
 .menu-unset ul .miq360-account-menu-item:active,
 .menu-unset ul .miq360-account-menu-item:focus {
   background: rgba(59, 153, 224, 0.1);
-  color: #3b99e0 !important;
+  color: #20a4e6 !important;
   outline: none;
 }
 
@@ -549,7 +549,7 @@ html[data-theme="dark"] .miq360-account-menu-header span {
 html[data-theme="dark"] .miq360-account-menu-header strong,
 html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item,
 html[data-theme="dark"] .menu-unset ul .miq360-account-menu-item {
-  color: var(--miq-blog-dark-text) !important;
+  color: #bbbbbb !important;
 }
 
 html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item:hover,
