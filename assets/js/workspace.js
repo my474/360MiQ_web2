@@ -17,6 +17,12 @@
         });
     }
 
+    function formatPrice(value) {
+        var parsed = Number(value);
+        if (!Number.isFinite(parsed)) return value == null ? '' : String(value);
+        return parsed.toLocaleString(undefined, { maximumFractionDigits: 6 });
+    }
+
     function showStatus(message, type) {
         if (!status) return;
         status.hidden = !message;
@@ -217,9 +223,9 @@
         var alerts = workspaceItems('alerts').filter(function (alert) { return alert.status === 'triggered'; }).slice(0, 5);
         var body = alerts.length ? '<div class="miq-dashboard-compact-list">' + alerts.map(function (alert) {
             return '<a href="stockinfo?code=' + encodeURIComponent(alert.code) + '"><strong>' + escapeHtml(alert.code) +
-                ' ' + (alert.condition_type === 'above' ? '≥ ' : '≤ ') + escapeHtml(alert.target_price) +
+                ' ' + (alert.condition_type === 'above' ? '≥ ' : '≤ ') + escapeHtml(formatPrice(alert.target_price)) +
                 '</strong><small>Triggered ' + escapeHtml(humanDate(alert.triggered_at)) +
-                (alert.last_price != null ? ' · last ' + escapeHtml(alert.last_price) : '') + '</small></a>';
+                (alert.last_price != null ? ' · last ' + escapeHtml(formatPrice(alert.last_price)) : '') + '</small></a>';
         }).join('') + '</div>' : '<div class="miq-dashboard-mini-empty">No newly triggered alerts.</div>';
         return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Monitoring</span><h2>Triggered alerts</h2></div><a href="workspace?tab=alerts">View all</a></div>' + body + '</section>';
     }
@@ -384,8 +390,8 @@
             var next = alert.status === 'active' ? 'disabled' : 'active';
             return '<article class="miq-management-card miq-alert-row" data-alert-id="' + Number(alert.id) + '"><div><a href="stockinfo?code=' +
                 encodeURIComponent(alert.code) + '"><strong>' + escapeHtml(alert.code) + '</strong></a><span>' +
-                (alert.condition_type === 'above' ? 'At or above ' : 'At or below ') + escapeHtml(alert.target_price) +
-                '</span><small>Last price ' + escapeHtml(alert.last_price == null ? 'not checked' : alert.last_price) +
+                (alert.condition_type === 'above' ? 'At or above ' : 'At or below ') + escapeHtml(formatPrice(alert.target_price)) +
+                '</span><small>Last price ' + escapeHtml(alert.last_price == null ? 'not checked' : formatPrice(alert.last_price)) +
                 (alert.triggered_at ? ' · triggered ' + escapeHtml(humanDate(alert.triggered_at)) : '') + '</small></div><span class="miq-alert-status is-' +
                 escapeHtml(alert.status) + '">' + escapeHtml(alert.status) + '</span><div class="miq-management-actions"><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="alert-status" data-next-status="' +
                 next + '">' + (alert.status === 'active' ? 'Pause' : 'Reactivate') + '</button><button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="alert-delete">Delete</button></div></article>';

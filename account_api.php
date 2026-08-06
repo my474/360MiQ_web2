@@ -525,9 +525,15 @@ function miq_api_workspace($user)
     }
     $lists = miq_api_watchlists($user_id);
     $watchlist_codes = array();
+    $watchlist_code_set = array();
     foreach ($lists as $list) {
         foreach ($list['items'] as $item) {
-            $watchlist_codes[] = $item['code'];
+            $code = strtoupper(trim((string) ($item['code'] ?? '')));
+            if ($code === '') {
+                continue;
+            }
+            $watchlist_codes[] = $code;
+            $watchlist_code_set[$code] = true;
         }
     }
     $alerts = miq_api_workspace_optional(function () use ($user_id) {
@@ -538,15 +544,25 @@ function miq_api_workspace($user)
             array($user_id)
         ));
     }, array());
+    $quote_codes = $watchlist_codes;
     foreach ($alerts as $alert) {
         if ($alert['status'] === 'active') {
-            $watchlist_codes[] = $alert['code'];
+            $code = strtoupper(trim((string) ($alert['code'] ?? '')));
+            if ($code !== '') {
+                $quote_codes[] = $code;
+            }
         }
     }
+    $quote_codes = array_values(array_unique($quote_codes));
     $quotes = array();
+    $watchlist_quotes = array();
     try {
-        $quotes = miq_stock_quotes($watchlist_codes);
+        $quotes = miq_stock_quotes($quote_codes);
         miq_account_evaluate_price_alerts($quotes, $user_id);
+        $watchlist_quotes = array_values(array_filter($quotes, function ($quote) use ($watchlist_code_set) {
+            $code = strtoupper(trim((string) ($quote['code'] ?? '')));
+            return $code !== '' && isset($watchlist_code_set[$code]);
+        }));
         if ($alerts) {
             $alerts_table = miq_account_table('price_alerts');
             $alerts = miq_account_fetch_all(miq_account_query(
@@ -604,7 +620,7 @@ function miq_api_workspace($user)
         'screener_presets' => miq_account_fetch_all(miq_account_query("SELECT client_key, name, is_default, revision, updated_at FROM {$screener_presets} WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC LIMIT 50", 'i', array($user_id))),
         'ideas' => $idea_rows,
         'watchlists' => $lists,
-        'watchlist_quotes' => $quotes,
+        'watchlist_quotes' => $watchlist_quotes,
         'notes' => $notes,
         'alerts' => $alerts,
         'preferences' => miq_account_user_preferences($user_id),
