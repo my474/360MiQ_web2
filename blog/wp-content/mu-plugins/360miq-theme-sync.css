@@ -546,7 +546,10 @@ html[data-theme="dark"] .miq360-account-menu-header span {
   color: var(--miq-blog-dark-muted);
 }
 
-html[data-theme="dark"] .miq360-account-menu-header strong,
+html[data-theme="dark"] .miq360-account-menu-header strong {
+  color: #f1f3f7 !important;
+}
+
 html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item,
 html[data-theme="dark"] .menu-unset ul .miq360-account-menu-item {
   color: #bbbbbb !important;
