@@ -76,7 +76,7 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 		}
 		$account .= '><i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i>';
 		if ( $is_authenticated ) {
-			$account .= '<i class="fas fa-chevron-down miq-account-chevron" aria-hidden="true"></i>';
+			$account .= '<span class="miq-account-chevron" aria-hidden="true"></span>';
 		}
 		$account .= '</a>';
 
