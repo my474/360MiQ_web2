@@ -598,7 +598,7 @@ function miq_api_workspace($user)
         }
     }
     return array(
-        'searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC LIMIT 20", 'i', array($user_id))),
+        'searches' => miq_account_fetch_all(miq_account_query("SELECT id, code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC, id DESC LIMIT 20", 'i', array($user_id))),
         'charts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, kind, visibility, revision, last_client_updated_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
         'scripts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, visibility, revision, status, last_client_updated_at, updated_at FROM {$scripts} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 50", 'i', array($user_id))),
         'screener_presets' => miq_account_fetch_all(miq_account_query("SELECT client_key, name, is_default, revision, updated_at FROM {$screener_presets} WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC LIMIT 50", 'i', array($user_id))),
@@ -721,12 +721,17 @@ try {
         $code = miq_api_clean_code($body['code'] ?? '');
         if ($code === '') miq_api_json(array('error' => 'A stock code is required.'), 422);
         $searches = miq_account_table('recent_searches');
+        $exchange = miq_api_clean_text($body['exchange'] ?? '', 32);
+        $display_name = miq_api_clean_text($body['display_name'] ?? '', 160);
+
+        // Replace the touched symbol so the auto-increment id provides a
+        // stable tie-breaker when several searches share the same second.
         miq_account_query(
-            "INSERT INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE exchange = VALUES(exchange), display_name = VALUES(display_name), searched_at = UTC_TIMESTAMP()",
+            "REPLACE INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())",
             'isss',
-            array($user_id, $code, miq_api_clean_text($body['exchange'] ?? '', 32), miq_api_clean_text($body['display_name'] ?? '', 160))
+            array($user_id, $code, $exchange, $display_name)
         )->close();
-        miq_account_query("DELETE FROM {$searches} WHERE user_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC LIMIT 50) recent_ids)", 'ii', array($user_id, $user_id))->close();
+        miq_account_query("DELETE FROM {$searches} WHERE user_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC, id DESC LIMIT 50) recent_ids)", 'ii', array($user_id, $user_id))->close();
         miq_api_json(array('saved' => true));
     }
 

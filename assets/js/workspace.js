@@ -51,6 +51,16 @@
         return Array.isArray(workspace[key]) ? workspace[key] : [];
     }
 
+    function recentSearches() {
+        return workspaceItems('searches').slice().sort(function (left, right) {
+            var leftDate = parseWorkspaceDate(left.searched_at);
+            var rightDate = parseWorkspaceDate(right.searched_at);
+            var dateDifference = (rightDate ? rightDate.getTime() : 0) - (leftDate ? leftDate.getTime() : 0);
+            if (dateDifference !== 0) return dateDifference;
+            return Number(right.id || 0) - Number(left.id || 0);
+        });
+    }
+
     function workspaceCount(key) {
         var counts = workspace.counts || {};
         if (counts[key] != null) return Number(counts[key]);
@@ -93,7 +103,7 @@
                 href: 'screener?preset=' + encodeURIComponent(item.client_key)
             });
         });
-        workspaceItems('searches').slice(0, 2).forEach(function (item) {
+        recentSearches().slice(0, 2).forEach(function (item) {
             items.push({
                 type: 'Recent stock',
                 title: item.code,
@@ -144,7 +154,7 @@
     }
 
     function renderRecentStocks() {
-        var searches = workspaceItems('searches').slice(0, 8);
+        var searches = recentSearches().slice(0, 8);
         var body = searches.length
             ? '<div class="miq-dashboard-stock-list">' + searches.map(function (item) {
                 return '<a href="stockinfo?code=' + encodeURIComponent(item.code) + '" title="' + escapeHtml(item.display_name || item.code) + '">' + escapeHtml(item.code) + '</a>';

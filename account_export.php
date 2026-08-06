@@ -33,7 +33,7 @@ $admin_actions = miq_account_table('user_admin_actions');
 $payload = array(
     'exported_at' => gmdate('c'),
     'profile' => array('email' => $user['email'], 'display_name' => $user['display_name'], 'created_role' => $user['role']),
-    'recent_searches' => miq_account_fetch_all(miq_account_query("SELECT code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC", 'i', array($user_id))),
+    'recent_searches' => miq_account_fetch_all(miq_account_query("SELECT id, code, exchange, display_name, searched_at FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC, id DESC", 'i', array($user_id))),
     'screener_presets' => miq_account_fetch_all(miq_account_query("SELECT client_key, name, config_json, is_default, revision, client_updated_at, created_at, updated_at FROM {$screener_presets} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
     'saved_charts' => miq_account_fetch_all(miq_account_query("SELECT id, asset_key, name, code, kind, layout_json, visibility, revision, last_client_updated_at, created_at, updated_at FROM {$charts} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
     'chart_versions' => miq_account_fetch_all(miq_account_query("SELECT chart_id, revision, layout_json, created_at FROM {$chart_versions} WHERE user_id = ? ORDER BY created_at DESC", 'i', array($user_id))),
