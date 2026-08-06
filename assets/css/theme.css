@@ -156,11 +156,11 @@
   --text-langbtn-hover: #ffffff;
   --text-recentpost: #cccccc;
 
-  /* ---------- Buttons: match the dark header search control ---------- */
-  --button-primary-bg: var(--text-link-bright);
-  --button-primary-border: var(--text-link-bright);
-  --button-primary-hover-bg: var(--text-link-bright);
-  --button-primary-hover-border: var(--text-link-bright);
+  /* ---------- Buttons: restore solid controls to Bootstrap blue ---------- */
+  --button-primary-bg: #007bff;
+  --button-primary-border: #007bff;
+  --button-primary-hover-bg: #0069d9;
+  --button-primary-hover-border: #0062cc;
   --button-outline-color: var(--text-link-bright);
   --button-outline-border: var(--text-link-bright);
   --button-outline-hover-bg: var(--text-link-bright);
@@ -536,7 +536,7 @@ html[data-theme] body {
   color: #ffffff !important;
 }
 
-/* Keep blue controls consistent with the dark-mode header search button. */
+/* Keep solid controls on Bootstrap blue while outlined controls retain the header accent. */
 [data-theme="dark"] .btn-primary,
 [data-theme="dark"] .btn-primary:disabled,
 [data-theme="dark"] .btn-primary.disabled {
@@ -570,8 +570,8 @@ html[data-theme] body {
 [data-theme="dark"] .btn-outline-primary:not(:disabled):not(.disabled):active,
 [data-theme="dark"] .btn-outline-primary:not(:disabled):not(.disabled).active,
 [data-theme="dark"] .show > .btn-outline-primary.dropdown-toggle {
-  background-color: var(--button-outline-hover-bg) !important;
-  border-color: var(--button-outline-hover-border) !important;
+  background-color: var(--button-primary-bg) !important;
+  border-color: var(--button-primary-border) !important;
   color: #ffffff !important;
 }
 

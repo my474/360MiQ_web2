@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
-    <link rel="stylesheet" href="assets/css/theme.css?v=20260806.2">
+    <link rel="stylesheet" href="assets/css/theme.css?v=20260806.3">
     <!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"-->
     <script src="assets/js/Utils.js"></script>
     <!--<script src="assets/js/LanguageTimezone.js"></script>
@@ -102,8 +102,8 @@
         }
 
         .btn-outline-primary:hover {
-            background-color: var(--button-outline-hover-bg, #007bff) !important;
-            border-color: var(--button-outline-hover-border, #007bff) !important;
+            background-color: var(--button-primary-bg, #007bff) !important;
+            border-color: var(--button-primary-border, #007bff) !important;
             color: #fff !important;
         }
     </style>
