@@ -779,20 +779,53 @@ html[data-theme] body {
 
 [data-theme="dark"] .code-link,
 [data-theme="dark"] .code-link2,
-[data-theme="dark"] .showNote {
-  color: #6ea8ff !important;
+[data-theme="dark"] .showNote,
+[data-theme="dark"] .miq-community-pulse-link,
+[data-theme="dark"] .miq-workspace-page .miq-dashboard-panel-heading > a,
+[data-theme="dark"] .miq-workspace-page .miq-dashboard-stock-list > a,
+[data-theme="dark"] .miq-workspace-page .miq-asset-title,
+[data-theme="dark"] .miq-workspace-page .miq-management-card a:not(.btn):not(.text-danger),
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-table td > a,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-controls summary,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-pagination a:not(.is-active),
+[data-theme="dark"] .miq-workspace-page .btn-link:not(.text-danger),
+[data-theme="dark"] .miq-community-page .btn-link:not(.text-danger),
+[data-theme="dark"] .miq-account-page .btn-link:not(.text-danger) {
+  color: var(--text-link) !important;
 }
 
 [data-theme="dark"] a:not([class]),
 [data-theme="dark"] a.code-link,
 [data-theme="dark"] a.code-link2 {
-  color: #6ea8ff !important;
+  color: var(--text-link) !important;
 }
 
 [data-theme="dark"] a:not([class]):hover,
 [data-theme="dark"] a.code-link:hover,
-[data-theme="dark"] a.code-link2:hover {
-  color: #007bff !important;
+[data-theme="dark"] a.code-link2:hover,
+[data-theme="dark"] .miq-community-pulse-link:hover,
+[data-theme="dark"] .miq-community-pulse-link:focus,
+[data-theme="dark"] .miq-workspace-page .miq-dashboard-panel-heading > a:hover,
+[data-theme="dark"] .miq-workspace-page .miq-dashboard-panel-heading > a:focus,
+[data-theme="dark"] .miq-workspace-page .miq-dashboard-stock-list > a:hover,
+[data-theme="dark"] .miq-workspace-page .miq-dashboard-stock-list > a:focus,
+[data-theme="dark"] .miq-workspace-page .miq-asset-title:hover,
+[data-theme="dark"] .miq-workspace-page .miq-asset-title:focus,
+[data-theme="dark"] .miq-workspace-page .miq-management-card a:not(.btn):not(.text-danger):hover,
+[data-theme="dark"] .miq-workspace-page .miq-management-card a:not(.btn):not(.text-danger):focus,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-table td > a:hover,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-table td > a:focus,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-controls summary:hover,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-controls summary:focus,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-pagination a:not(.is-active):hover,
+[data-theme="dark"] .miq-workspace-page .miq-user-admin-pagination a:not(.is-active):focus,
+[data-theme="dark"] .miq-workspace-page .btn-link:not(.text-danger):hover,
+[data-theme="dark"] .miq-workspace-page .btn-link:not(.text-danger):focus,
+[data-theme="dark"] .miq-community-page .btn-link:not(.text-danger):hover,
+[data-theme="dark"] .miq-community-page .btn-link:not(.text-danger):focus,
+[data-theme="dark"] .miq-account-page .btn-link:not(.text-danger):hover,
+[data-theme="dark"] .miq-account-page .btn-link:not(.text-danger):focus {
+  color: var(--text-link-hover) !important;
 }
 
 [data-theme="dark"] .page-footer.dark a {
