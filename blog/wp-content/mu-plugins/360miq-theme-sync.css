@@ -24,7 +24,9 @@
 
 .menu-primary-items .miq360-account-link,
 .menu-unset ul .miq360-account-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   background: transparent;
   border: none;
   color: #3b99e0;
@@ -55,6 +57,18 @@
   position: relative;
 }
 
+.miq-account-chevron {
+  font-size: 0.55rem;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.miq360-account-item:hover .miq-account-chevron,
+.miq360-account-item:focus-within .miq-account-chevron,
+.miq360-account-item.is-open .miq-account-chevron {
+  transform: rotate(180deg);
+}
+
 .menu-primary-items .miq360-account-link.is-guest,
 .menu-unset ul .miq360-account-link.is-guest {
   color: #333333;
@@ -66,7 +80,7 @@
 }
 
 .miq360-account-menu {
-  display: none;
+  display: block;
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
@@ -78,11 +92,19 @@
   border-radius: 6px;
   background: #ffffff;
   box-shadow: 0 8px 24px rgba(16, 24, 40, 0.18);
+  opacity: 0;
   text-align: left;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  visibility: hidden;
 }
 
+.miq360-account-item:hover > .miq360-account-menu,
+.miq360-account-item:focus-within > .miq360-account-menu,
 .miq360-account-item.is-open > .miq360-account-menu {
-  display: block;
+  opacity: 1;
+  transform: translateY(-11px);
+  visibility: visible;
 }
 
 .miq360-account-menu-header {
@@ -506,6 +528,14 @@ html[data-theme="dark"] .miq360-account-menu-divider {
     min-width: 0;
     margin: 0.5rem 0 0;
     box-shadow: none;
+    transform: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .miq360-account-item:hover > .miq360-account-menu,
+  .miq360-account-item:focus-within > .miq360-account-menu,
+  .miq360-account-item.is-open > .miq360-account-menu {
+    transform: none;
   }
 }
 

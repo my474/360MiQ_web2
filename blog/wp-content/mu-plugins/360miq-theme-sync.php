@@ -74,7 +74,11 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 		if ( $is_authenticated ) {
 			$account .= ' aria-haspopup="true" aria-expanded="false" aria-controls="miq360-blog-account-menu"';
 		}
-		$account .= '><i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i></a>';
+		$account .= '><i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i>';
+		if ( $is_authenticated ) {
+			$account .= '<i class="fas fa-chevron-down miq-account-chevron" aria-hidden="true"></i>';
+		}
+		$account .= '</a>';
 
 		if ( $is_authenticated ) {
 			$display_name = $current_user instanceof WP_User && $current_user->display_name !== ''
