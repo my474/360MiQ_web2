@@ -16,6 +16,41 @@
   margin-bottom: 0.75em;
 }
 
+.miq360-account-item {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.75em;
+}
+
+.menu-primary-items .miq360-account-link,
+.menu-unset ul .miq360-account-link {
+  display: inline-block;
+  background: transparent;
+  border: none;
+  color: #3b99e0;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: inherit;
+  min-width: 1.5rem;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  top: 3px;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.menu-primary-items .miq360-account-link:hover,
+.menu-primary-items .miq360-account-link:active,
+.menu-primary-items .miq360-account-link:focus,
+.menu-unset ul .miq360-account-link:hover,
+.menu-unset ul .miq360-account-link:active,
+.menu-unset ul .miq360-account-link:focus {
+  background: rgba(59, 153, 224, 0.12);
+  color: #3b99e0;
+  outline: none;
+}
+
 .menu-primary-items #theme-toggle.miq360-theme-toggle,
 .menu-unset ul #theme-toggle.miq360-theme-toggle,
 .menu-primary-items .miq360-theme-toggle,
@@ -551,6 +586,10 @@ html[data-theme="dark"] .chatbot__message-window::-webkit-scrollbar-thumb {
 }
 
 @media all and (min-width: 50em) {
+  .miq360-account-item {
+    margin-bottom: 0;
+  }
+
   .miq360-theme-toggle-item {
     margin-bottom: 0;
   }

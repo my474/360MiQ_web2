@@ -59,11 +59,21 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 			return $items;
 		}
 
+		$main_site_url = function_exists( 'miq_main_site_sso_main_site_url' )
+			? miq_main_site_sso_main_site_url( 'production' )
+			: 'https://360miq.com';
+		$account_url = trailingslashit( $main_site_url ) . 'workspace';
+		$account  = '<li class="menu-item miq360-account-item">';
+		$account .= '<a href="' . esc_url( $account_url ) . '" class="miq360-account-link nav-link" aria-label="Account" title="Account">';
+		$account .= '<i class="fas fa-user-circle" aria-hidden="true"></i>';
+		$account .= '</a>';
+		$account .= '</li>';
+
 		$toggle  = '<li class="menu-item miq360-theme-toggle-item">';
 		$toggle .= '<a href="#" id="theme-toggle" class="miq360-theme-toggle nav-link" aria-label="Switch theme" title="Switch theme"></a>';
 		$toggle .= '</li>';
 
-		return $items . $toggle;
+		return $items . $account . $toggle;
 	}
 }
 add_filter( 'wp_nav_menu_items', 'miq360_blog_theme_sync_menu_toggle', 10, 2 );
