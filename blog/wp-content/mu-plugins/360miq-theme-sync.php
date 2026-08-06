@@ -96,7 +96,7 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notes' ) . '"><i class="fas fa-book-open fa-fw" aria-hidden="true"></i> Research Notes</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=alerts' ) . '"><i class="fas fa-bell fa-fw" aria-hidden="true"></i> Price Alerts</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notifications' ) . '"><i class="fas fa-inbox fa-fw" aria-hidden="true"></i> Notifications</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'writeforus' ) . '"><i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i> Write for Us</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( admin_url( 'post-new.php' ) ) . '"><i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i> Article Editor</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_settings' ) . '"><i class="fas fa-cog fa-fw" aria-hidden="true"></i> Settings</a>';
 			$account .= '<div class="miq360-account-menu-divider" role="separator"></div>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $logout_url ) . '"><i class="fas fa-sign-out-alt fa-fw" aria-hidden="true"></i> Sign out</a>';
