@@ -190,6 +190,60 @@ function miq_main_site_sso_avatar_url($url, $id_or_email, $args)
 }
 add_filter('get_avatar_url', 'miq_main_site_sso_avatar_url', 10, 3);
 
+/**
+ * Keep contributors focused on their own submissions in the admin post list.
+ *
+ * The role's capability checks still protect editing and publishing. This
+ * additionally scopes the list query, including requests that try to open
+ * the core "All" view manually.
+ */
+function miq_main_site_sso_limit_post_list($query)
+{
+    if (!is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    global $pagenow;
+    if ($pagenow !== 'edit.php') {
+        return;
+    }
+
+    $post_type = $query->get('post_type') ?: 'post';
+    $post_type_object = get_post_type_object($post_type);
+    if (!$post_type_object) {
+        return;
+    }
+
+    if (!current_user_can($post_type_object->cap->edit_others_posts)) {
+        $query->set('author', get_current_user_id());
+    }
+}
+add_action('pre_get_posts', 'miq_main_site_sso_limit_post_list');
+
+function miq_main_site_sso_hide_all_post_views($views)
+{
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$screen || $screen->base !== 'edit') {
+        return $views;
+    }
+
+    $post_type_object = get_post_type_object($screen->post_type ?: 'post');
+    if (!$post_type_object || current_user_can($post_type_object->cap->edit_others_posts)) {
+        return $views;
+    }
+
+    unset($views['all']);
+    return $views;
+}
+
+function miq_main_site_sso_register_post_view_filters()
+{
+    foreach (get_post_types(array('show_ui' => true), 'names') as $post_type) {
+        add_filter('views_edit-' . $post_type, 'miq_main_site_sso_hide_all_post_views', 20);
+    }
+}
+add_action('admin_init', 'miq_main_site_sso_register_post_view_filters');
+
 function miq_main_site_sso_bootstrap()
 {
     if (empty($_GET['miq_sso']) || $_GET['miq_sso'] !== '1' || empty($_GET['token'])) {
