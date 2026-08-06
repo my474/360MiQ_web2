@@ -230,6 +230,7 @@
             '<a class="btn btn-primary" href="tool?tab=3">Open Advanced Chart</a>' +
             '<a class="btn btn-outline-primary" href="screener">Run Stock Screener</a>' +
             '<a class="btn btn-outline-primary" href="market">View Markets</a>' +
+            '<a class="btn btn-outline-primary" href="writeforus">Write for Us</a>' +
             (communityEnabled ? '<a class="btn btn-outline-primary" href="community">Community Ideas</a>' : '') + '</div>';
         var metrics = '<section class="miq-dashboard-metrics miq-workspace-panel-wide" aria-label="Workspace totals">' +
             dashboardMetric(workspaceCount('watchlist_items'), 'Watchlist stocks', 'Track daily movers', 'workspace?tab=watchlists') +
