@@ -133,7 +133,7 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 			$article_editor_url = $needs_sso_handoff
 				? $main_site_path . 'account_sso.php?target=new-post'
 				: admin_url( 'post-new.php' );
-            $account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $article_editor_url ) . '"><i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i> Write an Article</a>';
+            $account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $article_editor_url ) . '"><i class="fas fa-pen-alt fa-fw" aria-hidden="true"></i> Write an Article</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_settings' ) . '"><i class="fas fa-cog fa-fw" aria-hidden="true"></i> Settings</a>';
 			$account .= '<div class="miq360-account-menu-divider" role="separator"></div>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $logout_url ) . '"><i class="fas fa-sign-out-alt fa-fw" aria-hidden="true"></i> Sign out</a>';

@@ -94,7 +94,7 @@
               <a class="dropdown-item" href="workspace?tab=alerts"><i class="fas fa-bell fa-fw"></i> Price Alerts</a>
               <?php if (miq_community_enabled()): ?><a class="dropdown-item" href="community"><i class="fas fa-users fa-fw"></i> Community Ideas</a><?php endif; ?>
               <a class="dropdown-item" href="workspace?tab=notifications"><i class="fas fa-inbox fa-fw"></i> Notifications<?php if (!empty($miq_account_unread_notifications)): ?><span class="miq-account-unread"><?php echo (int) $miq_account_unread_notifications; ?></span><?php endif; ?></a>
-                    <a class="dropdown-item" href="account_sso.php?target=new-post"><i class="fas fa-pencil-alt fa-fw"></i> Write an Article</a>
+                    <a class="dropdown-item" href="account_sso.php?target=new-post"><i class="fas fa-pen-alt fa-fw"></i> Write an Article</a>
               <a class="dropdown-item" href="account_settings"><i class="fas fa-cog fa-fw"></i> Settings</a>
               <?php if (miq_account_is_admin($miq_nav_user)): ?><a class="dropdown-item" href="account_user_admin"><i class="fas fa-user-shield fa-fw"></i> User Administration</a><?php endif; ?>
               <?php if (miq_community_enabled() && miq_account_is_moderator($miq_nav_user)): ?><a class="dropdown-item" href="community_moderation"><i class="fas fa-shield-alt fa-fw"></i> Moderation Queue</a><?php endif; ?>
