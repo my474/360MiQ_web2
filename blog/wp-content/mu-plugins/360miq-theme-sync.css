@@ -811,7 +811,8 @@ html[data-theme="dark"] .chatbot__message-window::-webkit-scrollbar-thumb {
 
   .menu-primary-items .miq360-account-link,
   .menu-unset ul .miq360-account-link {
-    top: 6px;
+    top: 0;
+    min-height: 36px;
   }
 
   .miq360-account-item {
