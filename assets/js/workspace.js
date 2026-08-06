@@ -109,6 +109,7 @@
                 title: item.code,
                 detail: item.display_name || item.exchange || 'Stock research',
                 date: item.searched_at,
+                order: Number(item.id || 0),
                 href: 'stockinfo?code=' + encodeURIComponent(item.code)
             });
         });
@@ -135,7 +136,9 @@
         return items.sort(function (left, right) {
             var leftDate = parseWorkspaceDate(left.date);
             var rightDate = parseWorkspaceDate(right.date);
-            return (rightDate ? rightDate.getTime() : 0) - (leftDate ? leftDate.getTime() : 0);
+            var dateDifference = (rightDate ? rightDate.getTime() : 0) - (leftDate ? leftDate.getTime() : 0);
+            if (dateDifference !== 0) return dateDifference;
+            return Number(right.order || 0) - Number(left.order || 0);
         }).slice(0, 4);
     }
 
@@ -435,7 +438,7 @@
                     assetMeta(['revision ' + Number(item.revision || 1), 'updated ' + humanDate(item.updated_at)]);
             });
         } else if (tab === 'searches') {
-            content.innerHTML = renderSimpleList('Recent searches', workspace.searches, function (item) {
+            content.innerHTML = renderSimpleList('Recent searches', recentSearches(), function (item) {
                 return '<a href="stockinfo?code=' + encodeURIComponent(item.code) + '">' + escapeHtml(item.code) + '</a>' + assetMeta([item.display_name || item.exchange || '', humanDate(item.searched_at)]);
             });
         } else if (tab === 'watchlists') {
