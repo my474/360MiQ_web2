@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 360MiQ Main Site SSO
  * Description: Maps authenticated 360MiQ main-site accounts to WordPress contributor accounts.
- * Version: 1.3.0
+ * Version: 1.4.0
  */
 
 if (!defined('ABSPATH')) {
@@ -213,17 +213,30 @@ function miq_main_site_sso_bootstrap()
         wp_die(esc_html__('The main-site login source could not be verified.', 'miq-main-site-sso'));
     }
 
-    $endpoint = miq_main_site_sso_main_site_url($issuer) . '/account_sso.php?mode=consume';
-    $response = wp_remote_post($endpoint, array(
-        'timeout' => 8,
-        'redirection' => 0,
-        'sslverify' => true,
-        'headers' => array(
-            'X-MIQ-SSO-Secret' => miq_main_site_sso_secret(),
-            'Authorization' => 'Bearer ' . miq_main_site_sso_secret(),
-        ),
-        'body' => array('token' => $token),
-    ));
+    $endpoint_issuers = array($issuer);
+    if ($issuer === 'full') {
+        // Some deployments expose the full site under /full but keep the
+        // account database and SSO consumer at the production path.
+        $endpoint_issuers[] = 'production';
+    }
+
+    $response = null;
+    foreach ($endpoint_issuers as $endpoint_issuer) {
+        $endpoint = miq_main_site_sso_main_site_url($endpoint_issuer) . '/account_sso.php?mode=consume';
+        $response = wp_remote_post($endpoint, array(
+            'timeout' => 8,
+            'redirection' => 0,
+            'sslverify' => true,
+            'headers' => array(
+                'X-MIQ-SSO-Secret' => miq_main_site_sso_secret(),
+                'Authorization' => 'Bearer ' . miq_main_site_sso_secret(),
+            ),
+            'body' => array('token' => $token),
+        ));
+        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+            break;
+        }
+    }
     if (is_wp_error($response)) {
         error_log('[360MiQ SSO] token consume request failed: ' . $response->get_error_code());
         wp_die(esc_html__('WordPress could not reach the main-site login service. Please try again later.', 'miq-main-site-sso'));
