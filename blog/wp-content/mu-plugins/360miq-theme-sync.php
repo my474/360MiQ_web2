@@ -53,6 +53,30 @@ if ( ! function_exists( 'miq360_blog_theme_sync_assets' ) ) {
 }
 add_action( 'wp_enqueue_scripts', 'miq360_blog_theme_sync_assets', 99 );
 
+if ( ! function_exists( 'miq360_blog_theme_sync_main_site_user' ) ) {
+	function miq360_blog_theme_sync_main_site_user() {
+		static $resolved = false;
+		static $user     = null;
+
+		if ( $resolved ) {
+			return $user;
+		}
+
+		$resolved          = true;
+		$account_bootstrap = dirname( __DIR__, 3 ) . '/account/bootstrap.php';
+		if ( ! is_file( $account_bootstrap ) ) {
+			return null;
+		}
+
+		require_once $account_bootstrap;
+		if ( function_exists( 'miq_account_current_user' ) ) {
+			$user = miq_account_current_user();
+		}
+
+		return $user;
+	}
+}
+
 if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 	function miq360_blog_theme_sync_menu_toggle( $items, $args ) {
 		if ( is_admin() || empty( $args->theme_location ) || 'primary' !== $args->theme_location ) {
@@ -63,8 +87,12 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 			? miq_main_site_sso_main_site_url( 'production' )
 			: 'https://360miq.com';
 		$main_site_path = trailingslashit( $main_site_url );
-		$is_authenticated = function_exists( 'is_user_logged_in' ) && is_user_logged_in();
-		$current_user = $is_authenticated && function_exists( 'wp_get_current_user' ) ? wp_get_current_user() : null;
+		$wp_authenticated   = function_exists( 'is_user_logged_in' ) && is_user_logged_in();
+		$current_user       = $wp_authenticated && function_exists( 'wp_get_current_user' ) ? wp_get_current_user() : null;
+		$main_site_user     = $wp_authenticated ? null : miq360_blog_theme_sync_main_site_user();
+		$is_authenticated   = $wp_authenticated || $main_site_user !== null;
+		$main_site_identity = $current_user instanceof WP_User ? $current_user : $main_site_user;
+		$needs_sso_handoff  = ! $wp_authenticated && $main_site_user !== null;
 		$account_state = $is_authenticated ? 'is-authenticated' : 'is-guest';
 		$account_url = $is_authenticated
 			? '#'
@@ -81,9 +109,15 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 		$account .= '</a>';
 
 		if ( $is_authenticated ) {
-			$display_name = $current_user instanceof WP_User && $current_user->display_name !== ''
-				? $current_user->display_name
-				: ( $current_user instanceof WP_User ? $current_user->user_login : 'Account' );
+			if ( is_array( $main_site_identity ) && ! empty( $main_site_identity['display_name'] ) ) {
+				$display_name = $main_site_identity['display_name'];
+			} elseif ( $main_site_identity instanceof WP_User && $main_site_identity->display_name !== '' ) {
+				$display_name = $main_site_identity->display_name;
+			} elseif ( $main_site_identity instanceof WP_User ) {
+				$display_name = $main_site_identity->user_login;
+			} else {
+				$display_name = 'Account';
+			}
 			$logout_url = function_exists( 'wp_logout_url' )
 				? wp_logout_url( $main_site_path . 'account_logout' )
 				: $main_site_path . 'account_logout';
@@ -96,7 +130,10 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notes' ) . '"><i class="fas fa-book-open fa-fw" aria-hidden="true"></i> Research Notes</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=alerts' ) . '"><i class="fas fa-bell fa-fw" aria-hidden="true"></i> Price Alerts</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notifications' ) . '"><i class="fas fa-inbox fa-fw" aria-hidden="true"></i> Notifications</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( admin_url( 'post-new.php' ) ) . '"><i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i> Article Editor</a>';
+			$article_editor_url = $needs_sso_handoff
+				? $main_site_path . 'account_sso.php?target=new-post'
+				: admin_url( 'post-new.php' );
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $article_editor_url ) . '"><i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i> Article Editor</a>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_settings' ) . '"><i class="fas fa-cog fa-fw" aria-hidden="true"></i> Settings</a>';
 			$account .= '<div class="miq360-account-menu-divider" role="separator"></div>';
 			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $logout_url ) . '"><i class="fas fa-sign-out-alt fa-fw" aria-hidden="true"></i> Sign out</a>';
