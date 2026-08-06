@@ -73,7 +73,7 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 		$toggle .= '<a href="#" id="theme-toggle" class="miq360-theme-toggle nav-link" aria-label="Switch theme" title="Switch theme"></a>';
 		$toggle .= '</li>';
 
-		return $items . $account . $toggle;
+		return $items . $toggle . $account;
 	}
 }
 add_filter( 'wp_nav_menu_items', 'miq360_blog_theme_sync_menu_toggle', 10, 2 );
