@@ -83,7 +83,7 @@
 .miq360-account-menu {
   display: block;
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 12px);
   right: 0;
   z-index: 1000;
   min-width: 240px;
@@ -117,7 +117,7 @@
 .miq360-account-item:focus-within > .miq360-account-menu,
 .miq360-account-item.is-open > .miq360-account-menu {
   opacity: 1;
-  transform: translateY(-11px);
+  transform: translateY(-12px);
   visibility: visible;
 }
 
