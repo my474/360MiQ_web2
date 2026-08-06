@@ -51,6 +51,109 @@
   outline: none;
 }
 
+.miq360-account-item {
+  position: relative;
+}
+
+.menu-primary-items .miq360-account-link.is-guest,
+.menu-unset ul .miq360-account-link.is-guest {
+  color: #333333;
+}
+
+.menu-primary-items .miq360-account-link.is-authenticated,
+.menu-unset ul .miq360-account-link.is-authenticated {
+  color: #3b99e0;
+}
+
+.miq360-account-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 1000;
+  min-width: 240px;
+  margin: 0;
+  padding: 0.5rem 0;
+  border: 1px solid rgba(52, 64, 84, 0.25);
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.18);
+  text-align: left;
+}
+
+.miq360-account-item.is-open > .miq360-account-menu {
+  display: block;
+}
+
+.miq360-account-menu-header {
+  padding: 0.55rem 1rem 0.65rem;
+  pointer-events: none;
+}
+
+.miq360-account-menu-header span,
+.miq360-account-menu-header strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.miq360-account-menu-header span {
+  color: #667085;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.miq360-account-menu-header strong {
+  margin-top: 0.15rem;
+  color: #1d2939;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.menu-primary-items .miq360-account-menu-item,
+.menu-unset ul .miq360-account-menu-item {
+  display: flex !important;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0.45rem 1rem !important;
+  color: #344054 !important;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.menu-primary-items .miq360-account-menu-item:hover,
+.menu-primary-items .miq360-account-menu-item:active,
+.menu-primary-items .miq360-account-menu-item:focus,
+.menu-unset ul .miq360-account-menu-item:hover,
+.menu-unset ul .miq360-account-menu-item:active,
+.menu-unset ul .miq360-account-menu-item:focus {
+  background: rgba(59, 153, 224, 0.1);
+  color: #3b99e0 !important;
+  outline: none;
+}
+
+.miq360-account-menu-item i {
+  width: 1.25em;
+  color: #3b99e0;
+  flex: 0 0 1.25em;
+  text-align: center;
+}
+
+.miq360-account-menu-divider {
+  margin: 0.45rem 0;
+  border-top: 1px solid rgba(52, 64, 84, 0.18);
+}
+
 .menu-primary-items #theme-toggle.miq360-theme-toggle,
 .menu-unset ul #theme-toggle.miq360-theme-toggle,
 .menu-primary-items .miq360-theme-toggle,
@@ -252,6 +355,16 @@ html[data-theme="dark"] .site-header .menu-unset ul a:visited {
   color: #bbbbbb !important;
 }
 
+html[data-theme="dark"] .site-header .menu-primary-items .miq360-account-link.is-guest,
+html[data-theme="dark"] .site-header .menu-unset ul .miq360-account-link.is-guest {
+  color: #bbbbbb !important;
+}
+
+html[data-theme="dark"] .site-header .menu-primary-items .miq360-account-link.is-authenticated,
+html[data-theme="dark"] .site-header .menu-unset ul .miq360-account-link.is-authenticated {
+  color: #3b99e0 !important;
+}
+
 html[data-theme="dark"] .site-header .menu-primary-items a:hover,
 html[data-theme="dark"] .site-header .menu-primary-items a:active,
 html[data-theme="dark"] .site-header .menu-primary-items a:focus,
@@ -336,6 +449,46 @@ html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:focus {
   color: #9ecbff !important;
 }
 
+html[data-theme="dark"] .site-header .menu-primary-items .miq360-account-link.is-authenticated:hover,
+html[data-theme="dark"] .site-header .menu-primary-items .miq360-account-link.is-authenticated:active,
+html[data-theme="dark"] .site-header .menu-primary-items .miq360-account-link.is-authenticated:focus,
+html[data-theme="dark"] .site-header .menu-unset ul .miq360-account-link.is-authenticated:hover,
+html[data-theme="dark"] .site-header .menu-unset ul .miq360-account-link.is-authenticated:active,
+html[data-theme="dark"] .site-header .menu-unset ul .miq360-account-link.is-authenticated:focus {
+  background: rgba(255, 255, 255, 0.1);
+  color: #3b99e0 !important;
+}
+
+html[data-theme="dark"] .miq360-account-menu {
+  border-color: var(--miq-blog-dark-border);
+  background: var(--miq-blog-dark-surface);
+  box-shadow: 0 8px 24px var(--miq-blog-dark-shadow);
+}
+
+html[data-theme="dark"] .miq360-account-menu-header span {
+  color: var(--miq-blog-dark-muted);
+}
+
+html[data-theme="dark"] .miq360-account-menu-header strong,
+html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item,
+html[data-theme="dark"] .menu-unset ul .miq360-account-menu-item {
+  color: var(--miq-blog-dark-text) !important;
+}
+
+html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item:hover,
+html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item:active,
+html[data-theme="dark"] .menu-primary-items .miq360-account-menu-item:focus,
+html[data-theme="dark"] .menu-unset ul .miq360-account-menu-item:hover,
+html[data-theme="dark"] .menu-unset ul .miq360-account-menu-item:active,
+html[data-theme="dark"] .menu-unset ul .miq360-account-menu-item:focus {
+  background: var(--miq-blog-dark-surface-strong);
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .miq360-account-menu-divider {
+  border-top-color: var(--miq-blog-dark-border);
+}
+
 @media all and (max-width: 49.99em) {
   html[data-theme="dark"] .site-header .toggle-navigation svg g {
     fill: var(--miq-blog-dark-text) !important;
@@ -346,6 +499,13 @@ html[data-theme="dark"] .menu-unset ul .miq360-theme-toggle:focus {
   html[data-theme="dark"] .site-header .toggle-navigation:focus svg g,
   html[data-theme="dark"] .site-header .toggle-navigation.open svg g {
     fill: var(--miq-blog-dark-blue-hover) !important;
+  }
+
+  .miq360-account-menu {
+    position: static;
+    min-width: 0;
+    margin: 0.5rem 0 0;
+    box-shadow: none;
   }
 }
 

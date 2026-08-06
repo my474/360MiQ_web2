@@ -62,11 +62,43 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 		$main_site_url = function_exists( 'miq_main_site_sso_main_site_url' )
 			? miq_main_site_sso_main_site_url( 'production' )
 			: 'https://360miq.com';
-		$account_url = trailingslashit( $main_site_url ) . 'workspace';
-		$account  = '<li class="menu-item miq360-account-item">';
-		$account .= '<a href="' . esc_url( $account_url ) . '" class="miq360-account-link nav-link" aria-label="Account" title="Account">';
-		$account .= '<i class="fas fa-user-circle" aria-hidden="true"></i>';
-		$account .= '</a>';
+		$main_site_path = trailingslashit( $main_site_url );
+		$is_authenticated = function_exists( 'is_user_logged_in' ) && is_user_logged_in();
+		$current_user = $is_authenticated && function_exists( 'wp_get_current_user' ) ? wp_get_current_user() : null;
+		$account_state = $is_authenticated ? 'is-authenticated' : 'is-guest';
+		$account_url = $is_authenticated
+			? '#'
+			: $main_site_path . 'account.php?view=login&amp;return_to=' . rawurlencode( '/blog/' );
+		$account  = '<li class="menu-item miq360-account-item ' . esc_attr( $account_state ) . '">';
+		$account .= '<a href="' . esc_url( $account_url ) . '" id="miq360-blog-account-toggle" class="miq360-account-link nav-link ' . esc_attr( $account_state ) . '" aria-label="' . esc_attr( $is_authenticated ? 'Account menu' : 'Sign in' ) . '" title="' . esc_attr( $is_authenticated ? 'Account' : 'Sign in' ) . '"';
+		if ( $is_authenticated ) {
+			$account .= ' aria-haspopup="true" aria-expanded="false" aria-controls="miq360-blog-account-menu"';
+		}
+		$account .= '><i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i></a>';
+
+		if ( $is_authenticated ) {
+			$display_name = $current_user instanceof WP_User && $current_user->display_name !== ''
+				? $current_user->display_name
+				: ( $current_user instanceof WP_User ? $current_user->user_login : 'Account' );
+			$logout_url = function_exists( 'wp_logout_url' )
+				? wp_logout_url( $main_site_path . 'account_logout' )
+				: $main_site_path . 'account_logout';
+			$account .= '<div id="miq360-blog-account-menu" class="miq360-account-menu" role="menu" aria-labelledby="miq360-blog-account-toggle">';
+			$account .= '<div class="miq360-account-menu-header" role="presentation"><span>Signed in as</span><strong>' . esc_html( $display_name ) . '</strong></div>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace' ) . '"><i class="fas fa-layer-group fa-fw" aria-hidden="true"></i> My Workspace</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=watchlists' ) . '"><i class="fas fa-star fa-fw" aria-hidden="true"></i> Watchlists</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=charts' ) . '"><i class="fas fa-chart-line fa-fw" aria-hidden="true"></i> Saved Charts</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=scripts' ) . '"><i class="fas fa-code fa-fw" aria-hidden="true"></i> Pine Scripts</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notes' ) . '"><i class="fas fa-book-open fa-fw" aria-hidden="true"></i> Research Notes</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=alerts' ) . '"><i class="fas fa-bell fa-fw" aria-hidden="true"></i> Price Alerts</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notifications' ) . '"><i class="fas fa-inbox fa-fw" aria-hidden="true"></i> Notifications</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'writeforus' ) . '"><i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i> Write for Us</a>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_settings' ) . '"><i class="fas fa-cog fa-fw" aria-hidden="true"></i> Settings</a>';
+			$account .= '<div class="miq360-account-menu-divider" role="separator"></div>';
+			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $logout_url ) . '"><i class="fas fa-sign-out-alt fa-fw" aria-hidden="true"></i> Sign out</a>';
+			$account .= '</div>';
+		}
+
 		$account .= '</li>';
 
 		$toggle  = '<li class="menu-item miq360-theme-toggle-item">';

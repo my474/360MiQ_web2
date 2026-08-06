@@ -84,9 +84,40 @@
     updateToggleIcon(isDark());
   }
 
+  function initAccountMenu() {
+    var accountItem = document.querySelector('.miq360-account-item.is-authenticated');
+    var trigger = document.getElementById('miq360-blog-account-toggle');
+    var menu = document.getElementById('miq360-blog-account-menu');
+
+    if (!accountItem || !trigger || !menu) return;
+
+    function setOpen(open) {
+      accountItem.classList.toggle('is-open', open);
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    trigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(!accountItem.classList.contains('is-open'));
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!accountItem.contains(e.target)) setOpen(false);
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && accountItem.classList.contains('is-open')) {
+        setOpen(false);
+        trigger.focus();
+      }
+    });
+  }
+
   function boot() {
     applyTheme(resolveDark());
     initToggle();
+    initAccountMenu();
   }
 
   window.ThemeController = {
