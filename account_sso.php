@@ -83,7 +83,7 @@ function miq_sso_begin()
     $limits = miq_account_config()['rate_limits'];
     $sso_limit = $limits['sso_user'];
     if (!miq_account_rate_limit('sso_user', (string) $user['id'], $sso_limit['limit'], $sso_limit['window'])) {
-        miq_sso_browser_error('Too many WordPress sign-in requests. Please wait and try again.', 429);
+        miq_sso_browser_error('Article Editor sign-in is temporarily paused after too many recent attempts. Please wait up to one hour before trying again.', 429);
     }
 
     $token = miq_account_create_token();
