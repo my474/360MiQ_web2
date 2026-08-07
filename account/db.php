@@ -58,7 +58,7 @@ function miq_account_table($name)
         'moderation_actions', 'sso_tokens', 'rate_limits',
         'user_activity_daily', 'user_admin_actions', 'screener_presets',
         'user_preferences', 'research_notes', 'price_alerts', 'notifications',
-        'community_bookmarks', 'community_replies'
+        'community_bookmarks', 'community_replies', 'chat_histories'
     );
 
     if (!in_array($name, $allowed, true)) {

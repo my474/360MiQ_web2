@@ -86,7 +86,7 @@ function miq_account_delete_user_data($user_id)
     miq_account_delete_for_user('pine_scripts', 'user_id', $user_id);
 
     foreach (array(
-        'recent_searches', 'screener_presets', 'user_preferences',
+        'recent_searches', 'screener_presets', 'user_preferences', 'chat_histories',
         'price_alerts', 'notifications', 'sessions', 'user_activity_daily',
         'sso_tokens', 'email_tokens', 'password_reset_tokens', 'identities'
     ) as $logical_name) {

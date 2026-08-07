@@ -1168,6 +1168,7 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
+<script src="/assets/js/chatbox-sync.js?v=20260807-1"></script>
 <script src="/assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
@@ -2797,26 +2798,37 @@ function saveChatState() {
   const state = {
     messages,
     stockchatDict,
-    checkboxStates
+    checkboxStates,
+    count
   };
 
-  localStorage.setItem('chatbotState', JSON.stringify(state));
+  if (window.MiqChatboxSync) {
+    window.MiqChatboxSync.save(state);
+  } else {
+    localStorage.setItem('chatbotState', JSON.stringify(state));
+  }
 }
 
 function restoreChatState() {
-  const savedState = localStorage.getItem('chatbotState');
-  if (!savedState) return;
+  const restore = () => {
+    const savedState = window.MiqChatboxSync
+      ? window.MiqChatboxSync.getState()
+      : (() => {
+          const raw = localStorage.getItem('chatbotState');
+          return raw ? JSON.parse(raw) : null;
+        })();
+    if (!savedState) return;
 
-  try {
-    const { messages, stockchatDict: savedDict, checkboxStates: savedCheckboxes } = JSON.parse(savedState);
+    try {
+    const { messages = [], stockchatDict: savedDict = {}, checkboxStates: savedCheckboxes = {}, count: savedCount = 0 } = savedState;
 
     const messagesEl = document.querySelector('.chatbot__messages');
-    if (messagesEl) messagesEl.innerHTML = messages.join('');;
+    if (messagesEl) messagesEl.innerHTML = messages.join('');
 
     Object.assign(stockchatDict, savedDict);
     Object.assign(checkboxStates, savedCheckboxes);
 
-    count = Object.keys(stockchatDict).length > 0 ? Object.keys(stockchatDict).length : 0;
+    count = Number(savedCount) >= 0 ? Number(savedCount) : 0;
     
     // Restore checkboxes
     Object.entries(checkboxStates).forEach(([id, checked]) => {
@@ -2828,9 +2840,20 @@ function restoreChatState() {
   } catch (e) {
     console.error('Failed to restore chat state:', e);
   }
+  };
+
+  if (window.MiqChatboxSync && typeof window.MiqChatboxSync.ready === 'function') {
+    window.MiqChatboxSync.ready().then(restore).catch(restore);
+  } else {
+    restore();
+  }
 }
 
 function clearChatState() {
+  if (window.MiqChatboxSync && typeof window.MiqChatboxSync.clear === 'function') {
+    window.MiqChatboxSync.clear();
+    return;
+  }
   try {
     localStorage.removeItem('chatbotState');
   } catch (e) {

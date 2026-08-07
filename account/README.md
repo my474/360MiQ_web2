@@ -33,6 +33,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
    - `migrations/20260726_add_screener_presets.sql`
    - `migrations/20260726_add_productivity_features.sql`
    - `migrations/20260726_harden_account_features.sql`
+   - `migrations/20260807_add_chat_history.sql`
 
    Apply the chart/script asset migration before deploying the matching PHP and JavaScript changes. It preserves existing chart layouts and Pine scripts while assigning stable asset keys and identifying the existing `Auto:*` chart records as per-symbol workspaces. The baseline schema and required migrations omit foreign keys so they remain portable to restricted hosting accounts. Account deletion performs explicit ordered cleanup in application code. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
 
@@ -49,7 +50,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
 7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
 8. Grant your own account administrator access with `UPDATE miq_users SET role = 'admin' WHERE email = 'your-email@example.com';`. Alternatively, set `MIQ_ADMIN_EMAILS` to a comma-separated administrator allowlist. Only administrators can open `account_user_admin`.
 
-Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. Chart and Pine quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, `MIQ_MAX_ASSET_VERSIONS`, and `MIQ_MAX_ASSET_STORAGE_BYTES`. The combined chart/Pine current-and-version storage default is 50 MB per user.
+Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. Chart and Pine quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, `MIQ_MAX_ASSET_VERSIONS`, and `MIQ_MAX_ASSET_STORAGE_BYTES`. The combined chart/Pine current-and-version storage default is 50 MB per user. Footer chat history keeps up to 40 messages and is capped at 256 KiB of serialized UTF-8 JSON per browser and account by default; adjust the cap with `MIQ_MAX_CHAT_HISTORY_BYTES` within the built-in 32 KiB–1 MiB safety range.
 
 ## WordPress SSO
 

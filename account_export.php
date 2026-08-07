@@ -17,6 +17,7 @@ $preferences = miq_account_table('user_preferences');
 $notes = miq_account_table('research_notes');
 $alerts = miq_account_table('price_alerts');
 $notifications = miq_account_table('notifications');
+$chat_histories = miq_account_table('chat_histories');
 $bookmarks = miq_account_table('community_bookmarks');
 $replies = miq_account_table('community_replies');
 $ideas = miq_account_table('community_ideas');
@@ -45,6 +46,7 @@ $payload = array(
     'research_notes' => miq_account_fetch_all(miq_account_query("SELECT stock_code, chart_id, script_id, title, body, created_at, updated_at FROM {$notes} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
     'price_alerts' => miq_account_fetch_all(miq_account_query("SELECT code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$alerts} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),
     'notifications' => miq_account_fetch_all(miq_account_query("SELECT notification_type, title, message, link_url, read_at, created_at FROM {$notifications} WHERE user_id = ? ORDER BY created_at DESC", 'i', array($user_id))),
+    'chat_history' => miq_account_table_exists('chat_histories') ? miq_account_fetch_one(miq_account_query("SELECT history_json, history_bytes, updated_at FROM {$chat_histories} WHERE user_id = ? LIMIT 1", 'i', array($user_id))) : null,
     'community_bookmarks' => miq_account_fetch_all(miq_account_query("SELECT idea_id, created_at FROM {$bookmarks} WHERE user_id = ? ORDER BY created_at DESC", 'i', array($user_id))),
     'community_replies' => miq_account_fetch_all(miq_account_query("SELECT idea_id, parent_reply_id, body, status, created_at, updated_at FROM {$replies} WHERE user_id = ? ORDER BY created_at DESC", 'i', array($user_id))),
     'community_ideas' => miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, thesis, catalyst, risk, disclosure, status, visibility, created_at, updated_at, published_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC", 'i', array($user_id))),

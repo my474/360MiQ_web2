@@ -247,6 +247,15 @@ CREATE TABLE IF NOT EXISTS miq_user_preferences (
     PRIMARY KEY (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS miq_chat_histories (
+    user_id BIGINT UNSIGNED NOT NULL,
+    history_json MEDIUMTEXT NOT NULL,
+    history_bytes INT UNSIGNED NOT NULL,
+    updated_at DATETIME NOT NULL,
+    PRIMARY KEY (user_id),
+    KEY ix_miq_chat_history_updated (updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS miq_research_notes (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,

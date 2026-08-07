@@ -135,6 +135,7 @@ $miq_account_client_state = array(
     'role' => $miq_account_user ? $miq_account_user['role'] : null,
     'csrfToken' => session_status() === PHP_SESSION_ACTIVE ? miq_account_csrf_token() : '',
     'apiUrl' => 'account_api.php',
+    'chatHistoryMaxBytes' => (int) miq_account_config()['max_chat_history_bytes'],
     'accountUrl' => 'account.php',
     'workspaceUrl' => 'workspace',
     'preferences' => $miq_account_preferences,

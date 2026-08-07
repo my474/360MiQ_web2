@@ -81,6 +81,20 @@ This site is protected by reCAPTCHA and the Google
 
 <?php wp_footer(); ?>
 
+<?php
+$miq_blog_chat_user = function_exists( 'miq360_blog_theme_sync_main_site_user' )
+	? miq360_blog_theme_sync_main_site_user()
+	: null;
+$miq_blog_chat_config = array(
+	'loggedIn' => (bool) $miq_blog_chat_user,
+	'csrfToken' => $miq_blog_chat_user && function_exists( 'miq_account_csrf_token' ) ? miq_account_csrf_token() : '',
+	'apiUrl' => '/account_api.php',
+	'chatHistoryMaxBytes' => function_exists( 'miq_account_config' ) ? (int) miq_account_config()['max_chat_history_bytes'] : 262144,
+);
+?>
+<script>window.__MIQ_CHATBOX_SYNC__=<?php echo json_encode( $miq_blog_chat_config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;</script>
+<script src="/assets/js/chatbox-sync.js?v=20260807-1"></script>
+
 <script src="https://code.highcharts.com/8.2.0/highcharts.js"></script>
 <script src="https://code.highcharts.com/8.2.0/modules/no-data-to-display.js"></script>
 <script src="https://code.highcharts.com/8.2.0/highcharts-more.js"></script>

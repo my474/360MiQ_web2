@@ -71,6 +71,75 @@ function miq_api_clean_text($value, $max)
     return substr($value, 0, $max);
 }
 
+function miq_api_chat_history_payload($value)
+{
+    if (!is_array($value)) {
+        return null;
+    }
+
+    $messages = array();
+    if (isset($value['messages']) && is_array($value['messages'])) {
+        foreach (array_slice($value['messages'], -40) as $message) {
+            if (is_string($message)) {
+                $messages[] = $message;
+            }
+        }
+    }
+
+    $stockchat_dict = array();
+    if (isset($value['stockchatDict']) && is_array($value['stockchatDict'])) {
+        $keys = array_slice(array_keys($value['stockchatDict']), -40);
+        foreach ($keys as $key) {
+            $stockchat_dict[(string) $key] = $value['stockchatDict'][$key];
+        }
+    }
+
+    $checkbox_states = array();
+    if (isset($value['checkboxStates']) && is_array($value['checkboxStates'])) {
+        foreach (array_slice($value['checkboxStates'], -400, 400, true) as $key => $checked) {
+            $checkbox_states[(string) $key] = (bool) $checked;
+        }
+    }
+
+    $saved_at = isset($value['savedAt']) && is_numeric($value['savedAt'])
+        ? (int) $value['savedAt']
+        : (int) round(microtime(true) * 1000);
+    if ($saved_at <= 0) {
+        $saved_at = (int) round(microtime(true) * 1000);
+    }
+    $state = array(
+        'messages' => $messages,
+        'stockchatDict' => $stockchat_dict,
+        'checkboxStates' => $checkbox_states,
+        'count' => isset($value['count']) && is_numeric($value['count']) ? max(0, (int) $value['count']) : 0,
+        'savedAt' => $saved_at,
+    );
+    $max_bytes = (int) miq_account_config()['max_chat_history_bytes'];
+
+    while (strlen((string) json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) > $max_bytes) {
+        if (!empty($state['messages'])) {
+            array_shift($state['messages']);
+            continue;
+        }
+        if (!empty($state['stockchatDict'])) {
+            array_shift($state['stockchatDict']);
+            continue;
+        }
+        if (!empty($state['checkboxStates'])) {
+            array_shift($state['checkboxStates']);
+            continue;
+        }
+        break;
+    }
+
+    $encoded = json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($encoded === false || strlen($encoded) > $max_bytes) {
+        return null;
+    }
+
+    return array('state' => $state, 'json' => $encoded, 'bytes' => strlen($encoded));
+}
+
 function miq_api_pulse_timeframe($value)
 {
     $timeframe = strtolower(trim((string) $value));
@@ -651,7 +720,7 @@ $read_actions = array(
     'get_preferences', 'list_notes', 'list_alerts', 'list_screener_presets',
     'list_watchlists', 'watchlist_state', 'list_charts', 'get_chart',
     'list_chart_versions', 'list_scripts', 'get_script', 'list_script_versions',
-    'moderation_dashboard', 'moderation_queue'
+    'moderation_dashboard', 'moderation_queue', 'get_chat_history'
 );
 if ($request_method === 'GET') {
     if (!in_array($action, $read_actions, true)) {
@@ -732,6 +801,62 @@ try {
 
     $user = miq_api_user();
     $user_id = (int) $user['id'];
+
+    if ($action === 'get_chat_history') {
+        $history = null;
+        $updated_at = null;
+        $history_bytes = 0;
+        $table = miq_account_table('chat_histories');
+        if (miq_account_table_exists('chat_histories')) {
+            $row = miq_account_fetch_one(miq_account_query(
+                "SELECT history_json, history_bytes, updated_at FROM {$table} WHERE user_id = ? LIMIT 1",
+                'i',
+                array($user_id)
+            ));
+            if ($row) {
+                $history = json_decode((string) $row['history_json'], true);
+                $updated_at = $row['updated_at'];
+                $history_bytes = (int) $row['history_bytes'];
+            }
+        }
+        miq_api_json(array(
+            'history' => is_array($history) ? $history : null,
+            'bytes' => $history_bytes,
+            'updated_at' => $updated_at,
+            'csrf_token' => miq_account_csrf_token(),
+            'max_bytes' => (int) miq_account_config()['max_chat_history_bytes'],
+            'sync_available' => miq_account_table_exists('chat_histories'),
+        ));
+    }
+
+    if ($action === 'save_chat_history') {
+        $history = miq_api_chat_history_payload($body['history'] ?? null);
+        if (!$history) {
+            miq_api_json(array('error' => 'Chat history is invalid or exceeds the storage limit.'), 413);
+        }
+        $table = miq_account_table('chat_histories');
+        if (!miq_account_table_exists('chat_histories')) {
+            miq_api_json(array('error' => 'Chat history sync is not available yet.'), 503);
+        }
+        miq_account_query(
+            "INSERT INTO {$table} (user_id, history_json, history_bytes, updated_at) VALUES (?, ?, ?, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE history_json = VALUES(history_json), history_bytes = VALUES(history_bytes), updated_at = UTC_TIMESTAMP()",
+            'isi',
+            array($user_id, $history['json'], $history['bytes'])
+        )->close();
+        miq_api_json(array(
+            'saved' => true,
+            'bytes' => $history['bytes'],
+            'max_bytes' => (int) miq_account_config()['max_chat_history_bytes'],
+        ));
+    }
+
+    if ($action === 'clear_chat_history') {
+        if (miq_account_table_exists('chat_histories')) {
+            $table = miq_account_table('chat_histories');
+            miq_account_query("DELETE FROM {$table} WHERE user_id = ?", 'i', array($user_id))->close();
+        }
+        miq_api_json(array('cleared' => true));
+    }
 
     if ($action === 'save_search') {
         $code = miq_api_clean_code($body['code'] ?? '');

@@ -77,6 +77,9 @@ function miq_account_config()
             'asset_version_user' => array('limit' => (int) miq_account_env('MIQ_RATE_ASSET_VERSION_LIMIT', 60), 'window' => (int) miq_account_env('MIQ_RATE_ASSET_VERSION_WINDOW', 3600)),
         ),
         'max_api_request_bytes' => (int) miq_account_env('MIQ_MAX_API_REQUEST_BYTES', 2000000),
+        // Chat history is intentionally small because it contains rendered
+        // message HTML and stock-analysis metadata, not a durable transcript.
+        'max_chat_history_bytes' => max(32768, min(1048576, (int) miq_account_env('MIQ_MAX_CHAT_HISTORY_BYTES', 262144))),
         'max_chart_bytes' => (int) miq_account_env('MIQ_MAX_CHART_BYTES', 1000000),
         'max_script_chars' => (int) miq_account_env('MIQ_MAX_SCRIPT_CHARS', 100000),
         'max_chart_count' => (int) miq_account_env('MIQ_MAX_CHART_COUNT', 250),
