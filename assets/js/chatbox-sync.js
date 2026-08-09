@@ -18,6 +18,12 @@
   var MESSAGE_TIME_ATTRIBUTE = 'data-chat-created-at';
   var MESSAGE_TIME_CLASS = 'chatbot__message-time';
   var MESSAGE_DATE_DIVIDER_CLASS = 'chatbot__date-divider';
+  var SCROLL_DATE_PILL_CLASS = 'chatbot__scroll-date-pill';
+  var SCROLL_DATE_PILL_LABEL_CLASS = 'chatbot__scroll-date-pill__label';
+  var SCROLL_DATE_PILL_VISIBLE_CLASS = 'is-visible';
+  var SCROLL_DATE_PILL_HIDE_DELAY = 700;
+  var USER_SCROLL_INTENT_WINDOW = 900;
+  var USER_SCROLL_INERTIA_WINDOW = 250;
   var config = root && root.__MIQ_CHATBOX_SYNC__
     ? root.__MIQ_CHATBOX_SYNC__
     : (root && root.__MIQ_ACCOUNT__ ? root.__MIQ_ACCOUNT__ : {});
@@ -166,6 +172,28 @@
       if (dividerKey) previousDividerKey = dividerKey;
       return dividers;
     }, []);
+  }
+
+  function scrollDateLabel(dividers, viewportTop) {
+    if (!Array.isArray(dividers) || !dividers.length) return '';
+    var threshold = Number(viewportTop);
+    if (!isFinite(threshold)) threshold = 0;
+    var firstLabel = '';
+    var currentLabel = '';
+    var currentTop = -Infinity;
+
+    dividers.forEach(function (divider) {
+      var label = divider && divider.label != null ? String(divider.label).trim() : '';
+      var top = divider ? Number(divider.top) : NaN;
+      if (!label || !isFinite(top)) return;
+      if (!firstLabel) firstLabel = label;
+      if (top <= threshold && top >= currentTop) {
+        currentTop = top;
+        currentLabel = label;
+      }
+    });
+
+    return currentLabel || firstLabel;
   }
 
   function utf8ByteLength(value) {
@@ -536,9 +564,147 @@
     style.textContent =
       '.chatbot__message-time{display:block;float:right;clear:both;margin:5px 0 -1px 10px;font-size:10px;line-height:1;font-weight:400;font-variant-numeric:tabular-nums;opacity:.58;white-space:nowrap;text-align:right;color:inherit}' +
       '.chatbot__date-divider{align-self:center!important;display:block!important;width:auto!important;max-width:85%;margin:4px auto 14px!important;padding:5px 9px!important;border-radius:8px;background:rgba(95,99,104,.12);color:#5f6368;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:0;white-space:nowrap;text-align:center;pointer-events:none;user-select:none;transition:color .2s ease,background-color .2s ease}' +
+      '.chatbot__scroll-date-pill{position:absolute;top:62px;left:0;right:0;z-index:4;display:flex;justify-content:center;height:0;overflow:visible;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .18s ease,transform .18s ease;will-change:opacity,transform}' +
+      '.chatbot__scroll-date-pill.is-visible{opacity:1;transform:translateY(0)}' +
+      '.chatbot__scroll-date-pill .chatbot__date-divider{margin:0!important}' +
+      '.chatbot--closed .chatbot__scroll-date-pill{display:none}' +
       '[data-theme="light"] .chatbot__date-divider{background:rgba(95,99,104,.12);color:#5f6368}' +
-      '[data-theme="dark"] .chatbot__date-divider{background:rgba(232,232,232,.12);color:#d0d0dc}';
+      '[data-theme="dark"] .chatbot__date-divider{background:rgba(232,232,232,.12);color:#d0d0dc}' +
+      '@media (prefers-reduced-motion:reduce){.chatbot__scroll-date-pill{transition:none}}';
     root.document.head.appendChild(style);
+  }
+
+  function ensureScrollDatePill(scroller) {
+    if (!scroller || !root || !root.document || typeof root.document.createElement !== 'function') return null;
+    var chatbot = scroller.closest ? scroller.closest('.chatbot') : scroller.parentNode;
+    if (!chatbot || !chatbot.querySelector || !chatbot.insertBefore) return null;
+    var existing = chatbot.querySelector('.' + SCROLL_DATE_PILL_CLASS);
+    if (existing) return existing;
+
+    var pill = root.document.createElement('div');
+    var label = root.document.createElement('span');
+    pill.className = SCROLL_DATE_PILL_CLASS;
+    pill.setAttribute('aria-hidden', 'true');
+    label.className = MESSAGE_DATE_DIVIDER_CLASS + ' ' + SCROLL_DATE_PILL_LABEL_CLASS;
+    pill.appendChild(label);
+    chatbot.insertBefore(pill, scroller);
+    return pill;
+  }
+
+  function positionScrollDatePill(scroller, pill) {
+    if (!scroller || !pill || !pill.parentNode || !scroller.getBoundingClientRect || !pill.parentNode.getBoundingClientRect) return;
+    var scrollerRect = scroller.getBoundingClientRect();
+    var parentRect = pill.parentNode.getBoundingClientRect();
+    if (!scrollerRect.width || !scrollerRect.height) return;
+    pill.style.top = Math.round(scrollerRect.top - parentRect.top + 8) + 'px';
+    pill.style.left = Math.round(scrollerRect.left - parentRect.left) + 'px';
+    pill.style.right = 'auto';
+    pill.style.width = Math.round(scrollerRect.width) + 'px';
+  }
+
+  function updateScrollDatePill(scroller, pill) {
+    if (!scroller || !pill || !scroller.querySelectorAll || !scroller.getBoundingClientRect) return '';
+    var viewportTop = scroller.getBoundingClientRect().top + 12;
+    var dividers = Array.prototype.slice.call(scroller.querySelectorAll('.chatbot__messages .' + MESSAGE_DATE_DIVIDER_CLASS));
+    var label = scrollDateLabel(dividers.map(function (divider) {
+      return {
+        label: divider.textContent,
+        top: divider.getBoundingClientRect().top
+      };
+    }), viewportTop);
+    var labelElement = pill.querySelector('.' + SCROLL_DATE_PILL_LABEL_CLASS);
+    if (labelElement && labelElement.textContent !== label) labelElement.textContent = label;
+    return label;
+  }
+
+  function isScrollKey(event) {
+    var key = event && event.key;
+    return key === 'ArrowUp' || key === 'ArrowDown' || key === 'PageUp' ||
+      key === 'PageDown' || key === 'Home' || key === 'End' || key === ' ';
+  }
+
+  function isEditableTarget(target) {
+    if (!target || !target.tagName) return false;
+    var tagName = String(target.tagName).toLowerCase();
+    return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || !!target.isContentEditable;
+  }
+
+  function installScrollDatePill() {
+    if (!root || !root.document) return;
+    var start = function () {
+      var scroller = root.document.querySelector('.chatbot__message-window');
+      if (!scroller || !scroller.addEventListener || scroller.__miqScrollDatePillInstalled) return;
+      ensureTimestampStyle();
+      var pill = ensureScrollDatePill(scroller);
+      if (!pill) return;
+      scroller.__miqScrollDatePillInstalled = true;
+
+      var hideTimer = null;
+      var userScrollIntentUntil = 0;
+      var pointerActive = false;
+      var touchActive = false;
+
+      var markUserScrollIntent = function () {
+        userScrollIntentUntil = Math.max(userScrollIntentUntil, nowMilliseconds() + USER_SCROLL_INTENT_WINDOW);
+      };
+      var hidePill = function () {
+        pill.classList.remove(SCROLL_DATE_PILL_VISIBLE_CLASS);
+      };
+      var scheduleHide = function () {
+        if (hideTimer) clearTimeout(hideTimer);
+        hideTimer = setTimeout(hidePill, SCROLL_DATE_PILL_HIDE_DELAY);
+      };
+      var onUserScroll = function () {
+        var now = nowMilliseconds();
+        if (!pointerActive && !touchActive && now > userScrollIntentUntil) return;
+        userScrollIntentUntil = Math.max(userScrollIntentUntil, now + USER_SCROLL_INERTIA_WINDOW);
+        positionScrollDatePill(scroller, pill);
+        if (!updateScrollDatePill(scroller, pill)) {
+          hidePill();
+          return;
+        }
+        pill.classList.add(SCROLL_DATE_PILL_VISIBLE_CLASS);
+        scheduleHide();
+      };
+      var onPointerDown = function () {
+        pointerActive = true;
+      };
+      var onPointerEnd = function () {
+        pointerActive = false;
+      };
+      var onTouchStart = function () {
+        touchActive = true;
+        markUserScrollIntent();
+      };
+      var onTouchEnd = function () {
+        touchActive = false;
+      };
+      var onScrollKey = function (event) {
+        if (isScrollKey(event) && !isEditableTarget(event.target)) markUserScrollIntent();
+      };
+
+      scroller.addEventListener('wheel', markUserScrollIntent, { passive: true });
+      scroller.addEventListener('touchstart', onTouchStart, { passive: true });
+      scroller.addEventListener('touchmove', markUserScrollIntent, { passive: true });
+      scroller.addEventListener('touchend', onTouchEnd, { passive: true });
+      scroller.addEventListener('touchcancel', onTouchEnd, { passive: true });
+      scroller.addEventListener('pointerdown', onPointerDown, { passive: true });
+      scroller.addEventListener('keydown', onScrollKey);
+      scroller.addEventListener('scroll', onUserScroll, { passive: true });
+      if (root.addEventListener) {
+        root.addEventListener('pointerup', onPointerEnd, { passive: true });
+        root.addEventListener('pointercancel', onPointerEnd, { passive: true });
+        root.addEventListener('resize', function () {
+          if (pill.classList.contains(SCROLL_DATE_PILL_VISIBLE_CLASS)) positionScrollDatePill(scroller, pill);
+        });
+      }
+    };
+
+    if (root.document.readyState === 'loading') {
+      root.document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+      start();
+    }
   }
 
   function renderDateDividers(target, nowValue) {
@@ -891,6 +1057,7 @@
   installStorageGuard();
   readyPromise = hydrateFromAccount();
   installMessageObserver();
+  installScrollDatePill();
   installThemeRefresh();
   scheduleLegacyBindings();
 
@@ -913,6 +1080,7 @@
     restoreOpenChatState: restoreOpenChatState,
     save: save,
     saveOpenChatState: saveOpenChatState,
+    scrollDateLabel: scrollDateLabel,
     serializedByteLength: serializedByteLength,
     storageKey: STORAGE_KEY,
     localDateKey: localDateKey,

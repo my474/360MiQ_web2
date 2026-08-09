@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-08-10)
 
 ## Corpus Check
-- 155 files · ~790,792 words
+- 155 files · ~791,593 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1564 nodes · 3036 edges · 155 communities detected
+- 1571 nodes · 3051 edges · 155 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -192,16 +192,16 @@ Cohesion: 0.08
 Nodes (69): accountChartPreferences(), accountChartStorageV2(), ajaxTextFromCandidates(), applySharedLayout(), applyStockMetadata(), applyVisibleDateRange(), barDateKey(), chartLayoutId() (+61 more)
 
 ### Community 2 - "Community 2"
+Cohesion: 0.08
+Nodes (67): apiUrl(), applyRemoteStateToOpenChat(), applyStateToOpenChat(), cancelPendingRemoteSave(), canonicalMessageHtml(), captureMessages(), cleanMessageId(), clear() (+59 more)
+
+### Community 3 - "Community 3"
 Cohesion: 0.1
 Nodes (59): adaptiveEma(), addUtcMonths(), aggregateSecurityBars(), alignSecuritySeries(), argumentMap(), asNumber(), barCloseTimestamp(), baseSeries() (+51 more)
 
-### Community 3 - "Community 3"
+### Community 4 - "Community 4"
 Cohesion: 0.04
 Nodes (19): assertCalloutBubbleRendering(), assertCrosshairAxisMarkers(), assertPriceNoteBadgeRendering(), drawingPointForScreen(), FakeCanvas, FakeClassList, FakeElement, FakePineWorker (+11 more)
-
-### Community 4 - "Community 4"
-Cohesion: 0.09
-Nodes (60): apiUrl(), applyRemoteStateToOpenChat(), applyStateToOpenChat(), cancelPendingRemoteSave(), canonicalMessageHtml(), captureMessages(), cleanMessageId(), clear() (+52 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.09
@@ -981,10 +981,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.04 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `Community 4` be split into smaller, more focused modules?**
-  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04 - nodes in this community are weakly interconnected._
 - **Should `Community 5` be split into smaller, more focused modules?**
   _Cohesion score 0.09 - nodes in this community are weakly interconnected._
