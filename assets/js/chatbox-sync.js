@@ -26,6 +26,9 @@
   var SCROLL_DATE_PILL_OPEN_SUPPRESSION = 180;
   var USER_SCROLL_INTENT_WINDOW = 900;
   var USER_SCROLL_INERTIA_WINDOW = 250;
+  var CHAT_CHART_SELECTOR = '[id^="chatchart"]';
+  var CHAT_CHART_NODE_SELECTOR = '[id^="chatchart"],.highcharts-container,.highcharts-root';
+  var CHAT_CHART_THEME_ATTRIBUTE = 'data-miq-chat-chart-theme';
   var config = root && root.__MIQ_CHATBOX_SYNC__
     ? root.__MIQ_CHATBOX_SYNC__
     : (root && root.__MIQ_ACCOUNT__ ? root.__MIQ_ACCOUNT__ : {});
@@ -40,6 +43,7 @@
   var remoteSaveTimer = null;
   var readyPromise;
   var fallbackIdSequence = 0;
+  var chatChartThemeScheduled = false;
 
   function nowMilliseconds() {
     return typeof Date.now === 'function' ? Date.now() : new Date().getTime();
@@ -196,6 +200,127 @@
     });
 
     return currentLabel || firstLabel;
+  }
+
+  function chatThemeName(value) {
+    var requested = String(value || '').toLowerCase();
+    if (requested === 'dark' || requested === 'light') return requested;
+    if (root && root.document && root.document.documentElement) {
+      var attribute = root.document.documentElement.getAttribute('data-theme');
+      if (attribute === 'dark' || attribute === 'light') return attribute;
+    }
+    if (root && root.ThemeController && typeof root.ThemeController.isDark === 'function') {
+      return root.ThemeController.isDark() ? 'dark' : 'light';
+    }
+    return 'light';
+  }
+
+  function chatChartPalette(themeName) {
+    var name = chatThemeName(themeName);
+    if (name === 'dark') {
+      return {
+        name: 'dark',
+        label: '#b8bac8',
+        grid: '#3b3d52',
+        axisLine: '#5a5d73',
+        background: 'transparent'
+      };
+    }
+    return {
+      name: 'light',
+      label: '#7a7a7a',
+      grid: '#e0e2e7',
+      axisLine: '#b8bbc4',
+      background: 'transparent'
+    };
+  }
+
+  function chatChartThemeOptions(palette) {
+    var axis = function (includeGrid) {
+      var options = {
+        lineColor: palette.axisLine,
+        tickColor: palette.axisLine,
+        labels: { style: { color: palette.label } },
+        title: { style: { color: palette.label } }
+      };
+      if (includeGrid) options.gridLineColor = palette.grid;
+      return options;
+    };
+    return {
+      chart: { backgroundColor: palette.background },
+      xAxis: axis(false),
+      yAxis: axis(true)
+    };
+  }
+
+  function setChatChartPaint(container, selector, attribute, color) {
+    if (!container || !container.querySelectorAll) return;
+    Array.prototype.slice.call(container.querySelectorAll(selector)).forEach(function (node) {
+      if (node.setAttribute) node.setAttribute(attribute, color);
+      if (node.style) {
+        node.style[attribute] = color;
+        if (attribute === 'fill') node.style.color = color;
+      }
+    });
+  }
+
+  function applyChatChartSvgTheme(container, palette) {
+    if (!container) return;
+    setChatChartPaint(container, '.highcharts-background', 'fill', palette.background);
+    setChatChartPaint(container, '.highcharts-grid-line', 'stroke', palette.grid);
+    setChatChartPaint(container, '.highcharts-axis-line,.highcharts-tick', 'stroke', palette.axisLine);
+    setChatChartPaint(container, '.highcharts-axis-labels text,.highcharts-axis-title', 'fill', palette.label);
+    if (container.setAttribute) container.setAttribute(CHAT_CHART_THEME_ATTRIBUTE, palette.name);
+  }
+
+  function applyChatChartTheme(themeName) {
+    if (!root || !root.document) return 0;
+    var messages = root.document.querySelector('.chatbot__messages');
+    if (!messages || !messages.querySelectorAll) return 0;
+    var palette = chatChartPalette(themeName);
+    var containers = Array.prototype.slice.call(messages.querySelectorAll(CHAT_CHART_SELECTOR));
+    var charts = root.Highcharts && Array.isArray(root.Highcharts.charts)
+      ? root.Highcharts.charts
+      : [];
+
+    charts.forEach(function (chart) {
+      if (!chart) return;
+      var target = chart.renderTo || (chart.container ? chart.container.parentNode : null);
+      if (!target || !messages.contains || !messages.contains(target)) return;
+      var appliedTheme = target.getAttribute ? target.getAttribute(CHAT_CHART_THEME_ATTRIBUTE) : '';
+      if (appliedTheme === palette.name) return;
+      if (target.setAttribute) target.setAttribute(CHAT_CHART_THEME_ATTRIBUTE, palette.name);
+      try {
+        if (typeof chart.update === 'function') chart.update(chatChartThemeOptions(palette), false, false);
+        if (typeof chart.redraw === 'function') chart.redraw(false);
+      } catch (error) {
+        // The SVG fallback below also handles restored or partially destroyed charts.
+      }
+    });
+
+    containers.forEach(function (container) {
+      applyChatChartSvgTheme(container, palette);
+    });
+    return containers.length;
+  }
+
+  function scheduleChatChartTheme() {
+    if (chatChartThemeScheduled) return;
+    chatChartThemeScheduled = true;
+    var apply = function () {
+      chatChartThemeScheduled = false;
+      applyChatChartTheme();
+      if (root && typeof root.requestAnimationFrame === 'function') {
+        root.requestAnimationFrame(function () {
+          applyChatChartTheme();
+        });
+      }
+    };
+    if (root && typeof root.requestAnimationFrame === 'function') {
+      root.requestAnimationFrame(apply);
+    } else {
+      setTimeout(apply, 0);
+    }
   }
 
   function utf8ByteLength(value) {
@@ -568,12 +693,12 @@
       '.chatbot__date-divider{align-self:center!important;display:block!important;width:auto!important;max-width:85%;margin:4px auto 14px!important;padding:5px 9px!important;border-radius:8px;background:rgba(95,99,104,.12);color:#5f6368;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:0;white-space:nowrap;text-align:center;pointer-events:none;user-select:none;transition:color .2s ease,background-color .2s ease}' +
       '.chatbot__scroll-date-pill{position:absolute;top:68px;left:0;right:0;z-index:4;display:flex;justify-content:center;height:0;overflow:visible;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .18s ease,transform .18s ease;will-change:opacity,transform}' +
       '.chatbot__scroll-date-pill.is-visible{opacity:1;transform:translateY(0)}' +
-      '.chatbot__scroll-date-pill .chatbot__date-divider{margin:0!important;background:rgba(244,246,248,.96)}' +
+      '.chatbot__scroll-date-pill .chatbot__date-divider{margin:0!important;background:rgba(58,58,76,.96);color:#e2e2ea}' +
       '.chatbot--closed .chatbot__scroll-date-pill{display:none}' +
       '[data-theme="light"] .chatbot__date-divider{background:rgba(95,99,104,.12);color:#5f6368}' +
       '[data-theme="dark"] .chatbot__date-divider{background:rgba(232,232,232,.12);color:#d0d0dc}' +
-      '[data-theme="light"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(244,246,248,.96);color:#5f6368}' +
-      '[data-theme="dark"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(58,58,76,.96);color:#e2e2ea}' +
+      '[data-theme="light"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(58,58,76,.96);color:#e2e2ea}' +
+      '[data-theme="dark"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(244,246,248,.96);color:#5f6368}' +
       '@media (prefers-reduced-motion:reduce){.chatbot__scroll-date-pill{transition:none}}';
     root.document.head.appendChild(style);
   }
@@ -1074,6 +1199,7 @@
       decorateMessageElement(message, baseTimestamp + index);
     });
     renderDateDividers(list);
+    scheduleChatChartTheme();
   }
 
   function installMessageObserver() {
@@ -1084,9 +1210,14 @@
       if (!list || typeof root.MutationObserver !== 'function') return;
       var observer = new root.MutationObserver(function (mutations) {
         var refreshDateDividers = false;
+        var refreshChatCharts = false;
         mutations.forEach(function (mutation) {
           Array.prototype.slice.call(mutation.addedNodes || []).forEach(function (node) {
             if (!node || node.nodeType !== 1) return;
+            if ((node.matches && node.matches(CHAT_CHART_NODE_SELECTOR)) ||
+                (node.querySelector && node.querySelector(CHAT_CHART_NODE_SELECTOR))) {
+              refreshChatCharts = true;
+            }
             if (node.matches && node.matches('li.is-user, li.is-ai')) {
               decorateMessageElement(node);
               refreshDateDividers = true;
@@ -1105,6 +1236,7 @@
           });
         });
         if (refreshDateDividers) renderDateDividers(list);
+        if (refreshChatCharts) scheduleChatChartTheme();
       });
       observer.observe(list, { childList: true, subtree: true });
     };
@@ -1149,6 +1281,8 @@
   return {
     captureMessages: captureMessages,
     clear: clear,
+    applyChatChartTheme: applyChatChartTheme,
+    chatChartPalette: chatChartPalette,
     decorateOpenChat: decorateOpenChat,
     dateDividerPlan: dateDividerPlan,
     fitState: fitState,

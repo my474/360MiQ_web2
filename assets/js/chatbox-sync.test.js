@@ -93,6 +93,73 @@ assert.strictEqual(sync.scrollChatToBottom(openingScroller), 900, 'opening a cha
 assert.strictEqual(openingScroller.scrollTop, openingScroller.scrollHeight, 'the open position is the absolute bottom');
 assert.strictEqual(openingScroller.style.scrollBehavior, 'auto', 'the bottom snap never animates through the history');
 
+var originalDocument = global.document;
+var originalHighcharts = global.Highcharts;
+var chartThemeAttributes = {};
+var gridNode = { attributes: {}, style: {}, setAttribute: function (name, value) { this.attributes[name] = value; } };
+var axisNode = { attributes: {}, style: {}, setAttribute: function (name, value) { this.attributes[name] = value; } };
+var labelNode = { attributes: {}, style: {}, setAttribute: function (name, value) { this.attributes[name] = value; } };
+var backgroundNode = { attributes: {}, style: {}, setAttribute: function (name, value) { this.attributes[name] = value; } };
+var chartContainer = {
+  getAttribute: function (name) { return chartThemeAttributes[name] || ''; },
+  setAttribute: function (name, value) { chartThemeAttributes[name] = value; },
+  querySelectorAll: function (selector) {
+    if (selector === '.highcharts-grid-line') return [gridNode];
+    if (selector === '.highcharts-axis-line,.highcharts-tick') return [axisNode];
+    if (selector === '.highcharts-axis-labels text,.highcharts-axis-title') return [labelNode];
+    if (selector === '.highcharts-background') return [backgroundNode];
+    return [];
+  }
+};
+var chartMessages = {
+  contains: function (target) { return target === chartContainer; },
+  querySelectorAll: function () { return [chartContainer]; }
+};
+var chartUpdates = [];
+var chartRedraws = 0;
+var fakeChart = {
+  renderTo: chartContainer,
+  update: function (options) { chartUpdates.push(options); },
+  redraw: function () { chartRedraws += 1; }
+};
+try {
+  global.document = {
+    documentElement: { getAttribute: function () { return 'light'; } },
+    querySelector: function (selector) { return selector === '.chatbot__messages' ? chartMessages : null; }
+  };
+  global.Highcharts = { charts: [fakeChart] };
+  var lightChartPalette = sync.chatChartPalette('light');
+  var darkChartPalette = sync.chatChartPalette('dark');
+  assert.strictEqual(sync.applyChatChartTheme('light'), 1, 'initial light mode themes every chat chart');
+  assert.strictEqual(chartUpdates[0].yAxis.gridLineColor, lightChartPalette.grid, 'initial light chart grid uses the shared light palette');
+  assert.strictEqual(chartUpdates[0].yAxis.labels.style.color, lightChartPalette.label, 'initial light chart labels use the shared light palette');
+  sync.applyChatChartTheme('dark');
+  assert.strictEqual(chartUpdates[1].yAxis.gridLineColor, darkChartPalette.grid, 'live light-to-dark toggling replaces the chart grid color');
+  assert.strictEqual(labelNode.attributes.fill, darkChartPalette.label, 'live light-to-dark toggling replaces rendered SVG label colors');
+  sync.applyChatChartTheme('light');
+  assert.deepStrictEqual(chartUpdates[2], chartUpdates[0], 'live dark-to-light toggling returns to the exact initial light options');
+  assert.strictEqual(chartRedraws, 3, 'each real theme change redraws the live chart once');
+
+  chartThemeAttributes['data-miq-chat-chart-theme'] = '';
+  sync.applyChatChartTheme('dark');
+  assert.strictEqual(chartUpdates[3].yAxis.gridLineColor, darkChartPalette.grid, 'an initial dark-mode chart starts with the shared dark grid');
+  assert.strictEqual(chartUpdates[3].yAxis.labels.style.color, darkChartPalette.label, 'an initial dark-mode chart starts with the shared dark labels');
+  assert.strictEqual(chartRedraws, 4, 'initial dark mode receives one normalized redraw');
+
+  global.Highcharts = { charts: [] };
+  chartThemeAttributes['data-miq-chat-chart-theme'] = 'dark';
+  gridNode.attributes.stroke = darkChartPalette.grid;
+  labelNode.attributes.fill = darkChartPalette.label;
+  sync.applyChatChartTheme('light');
+  assert.strictEqual(gridNode.attributes.stroke, lightChartPalette.grid, 'restored static chart SVG grids adopt the current theme');
+  assert.strictEqual(labelNode.attributes.fill, lightChartPalette.label, 'restored static chart SVG labels adopt the current theme');
+} finally {
+  if (originalDocument === undefined) delete global.document;
+  else global.document = originalDocument;
+  if (originalHighcharts === undefined) delete global.Highcharts;
+  else global.Highcharts = originalHighcharts;
+}
+
 var oversized = sync.fitState({
   messages: Array.from({ length: 40 }, function () { return '<li>' + 'x'.repeat(20000) + '</li>'; }),
   stockchatDict: {},
@@ -108,11 +175,11 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-6"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-7"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
 assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
 assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
-assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-6"'), 'production blog loads chat sync from the main-site root');
-assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-6"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-7"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-7"'), 'alternate production blog footer loads chat sync from the main-site root');
 assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
 assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
@@ -129,8 +196,8 @@ assert.ok(syncSource.includes('display:block;float:none;clear:both;width:100%'),
 assert.ok(syncSource.includes('SCROLL_DATE_PILL_TOP_GAP = 14'), 'the floating pill has breathing room below the chat header');
 assert.ok(syncSource.includes('[data-theme="light"] .chatbot__date-divider'), 'date dividers support an initial light-mode load');
 assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__date-divider'), 'date dividers support an initial dark-mode load');
-assert.ok(syncSource.includes('[data-theme="light"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(244,246,248,.96)'), 'the floating pill is nearly opaque in light mode');
-assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(58,58,76,.96)'), 'the floating pill is nearly opaque in dark mode');
+assert.ok(syncSource.includes('[data-theme="light"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(58,58,76,.96)'), 'light mode uses the contrasting dark floating pill');
+assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(244,246,248,.96)'), 'dark mode uses the contrasting light floating pill');
 assert.ok(syncSource.includes("addEventListener('themechange', decorateOpenChat)"), 'date dividers refresh during live light-dark-light theme toggles');
 assert.ok(syncSource.includes("label.className = MESSAGE_DATE_DIVIDER_CLASS + ' ' + SCROLL_DATE_PILL_LABEL_CLASS"), 'the scroll pill reuses the exact current date-stamp styling in every theme');
 assert.ok(syncSource.includes("scroller.addEventListener('wheel', markUserScrollIntent"), 'mouse and trackpad scrolling can reveal the date pill');
@@ -142,6 +209,9 @@ assert.ok(syncSource.includes('@media (prefers-reduced-motion:reduce)'), 'the da
 assert.ok(syncSource.includes("observer.observe(chatbot, { attributes: true, attributeFilter: ['class'] })"), 'main and blog chat openings are detected by the shared runtime');
 assert.ok(syncSource.includes('scrollChatToBottom(element)'), 'open positioning uses a direct non-animated bottom snap');
 assert.ok(syncSource.includes('__miqSuppressScrollPillUntil'), 'the open snap cannot reveal the user-scroll date pill');
+assert.ok(syncSource.includes("setChatChartPaint(container, '.highcharts-grid-line', 'stroke', palette.grid)"), 'restored chart SVG grids are repainted by the shared runtime');
+assert.ok(syncSource.includes('chart.update(chatChartThemeOptions(palette), false, false)'), 'live Highcharts instances receive the shared current-theme options');
+assert.ok(syncSource.includes('if (refreshChatCharts) scheduleChatChartTheme()'), 'new and redrawn chat charts are normalized after rendering');
 assert.ok(syncSource.includes('renderDateDividers(element)'), 'restored account and local histories render date dividers');
 assert.ok(syncSource.includes('if (metadata.timestampEstimated)'), 'fabricated times are hidden for migrated legacy messages');
 assert.ok(syncSource.includes('root.saveChatState = saveOpenChatState'), 'blog legacy persistence is upgraded by the shared runtime');

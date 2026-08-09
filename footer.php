@@ -1168,7 +1168,7 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
-<script src="assets/js/chatbox-sync.js?v=20260810-6"></script>
+<script src="assets/js/chatbox-sync.js?v=20260810-7"></script>
 <script src="assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
