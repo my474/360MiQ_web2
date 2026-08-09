@@ -121,20 +121,26 @@
 
   function dateDividerPlan(messages, nowValue) {
     if (!Array.isArray(messages)) return [];
-    var previousDateKey = '';
+    var previousDividerKey = '';
     return messages.reduce(function (dividers, message, index) {
+      var messageObject = message && typeof message === 'object' ? message : {};
+      var html = typeof message === 'string' ? message : messageObject.html;
+      var id = cleanMessageId(messageObject.id) || cleanMessageId(readHtmlAttribute(html, MESSAGE_ID_ATTRIBUTE));
+      var estimated = isEstimatedTimestampMessage(id);
       var createdAt = message && typeof message === 'object'
-        ? normalizeTimestamp(message.createdAt)
+        ? normalizeTimestamp(messageObject.createdAt)
         : normalizeTimestamp(readHtmlAttribute(message, MESSAGE_TIME_ATTRIBUTE));
       var dateKey = localDateKey(createdAt);
-      if (dateKey && dateKey !== previousDateKey) {
+      var dividerKey = estimated ? 'earlier' : dateKey;
+      if (dividerKey && dividerKey !== previousDividerKey) {
         dividers.push({
           beforeIndex: index,
-          dateKey: dateKey,
-          label: formatLocalDateLabel(createdAt, nowValue)
+          dateKey: dividerKey,
+          estimated: estimated,
+          label: estimated ? 'Earlier' : formatLocalDateLabel(createdAt, nowValue)
         });
       }
-      if (dateKey) previousDateKey = dateKey;
+      if (dividerKey) previousDividerKey = dividerKey;
       return dividers;
     }, []);
   }
@@ -188,6 +194,10 @@
   function cleanMessageId(value) {
     var id = typeof value === 'string' ? value.trim() : '';
     return /^[A-Za-z0-9._:-]{1,96}$/.test(id) ? id : '';
+  }
+
+  function isEstimatedTimestampMessage(value) {
+    return cleanMessageId(value).indexOf('legacy-') === 0;
   }
 
   function createMessageId() {
@@ -518,7 +528,10 @@
 
     var renderedMessages = Array.prototype.slice.call(element.querySelectorAll('li.is-user, li.is-ai'));
     var plan = dateDividerPlan(renderedMessages.map(function (message) {
-      return { createdAt: message.getAttribute(MESSAGE_TIME_ATTRIBUTE) };
+      return {
+        id: message.getAttribute(MESSAGE_ID_ATTRIBUTE),
+        createdAt: message.getAttribute(MESSAGE_TIME_ATTRIBUTE)
+      };
     }), nowValue);
 
     if (!root || !root.document || typeof root.document.createElement !== 'function') return plan;
@@ -526,7 +539,7 @@
       var message = renderedMessages[entry.beforeIndex];
       if (!message || !message.parentNode || typeof message.parentNode.insertBefore !== 'function') return;
       var divider = root.document.createElement('li');
-      divider.className = MESSAGE_DATE_DIVIDER_CLASS;
+      divider.className = MESSAGE_DATE_DIVIDER_CLASS + (entry.estimated ? ' chatbot__date-divider--estimated' : '');
       divider.setAttribute('data-chat-date', entry.dateKey);
       divider.setAttribute('role', 'separator');
       divider.setAttribute('aria-label', 'Messages from ' + entry.label);
@@ -547,7 +560,8 @@
     return {
       id: id,
       role: element.classList && element.classList.contains('is-user') ? 'user' : 'assistant',
-      createdAt: createdAt
+      createdAt: createdAt,
+      timestampEstimated: isEstimatedTimestampMessage(id)
     };
   }
 
@@ -558,6 +572,12 @@
     if (!bubble) return metadata;
 
     var timestamps = Array.prototype.slice.call(element.querySelectorAll('.' + MESSAGE_TIME_CLASS));
+    if (metadata.timestampEstimated) {
+      timestamps.forEach(function (timestamp) {
+        if (timestamp.parentNode) timestamp.parentNode.removeChild(timestamp);
+      });
+      return metadata;
+    }
     var time = timestamps.shift();
     timestamps.forEach(function (duplicate) {
       if (duplicate.parentNode) duplicate.parentNode.removeChild(duplicate);
@@ -862,6 +882,7 @@
     getState: function () { return memoryState || readLocalState(); },
     maxBytes: maxBytes,
     maxMessages: MAX_MESSAGES,
+    isEstimatedTimestampMessage: isEstimatedTimestampMessage,
     normalizeState: normalizeState,
     ready: function () { return readyPromise; },
     renderDateDividers: renderDateDividers,

@@ -20,6 +20,9 @@ assert.strictEqual(typeof normalized.messages[0].id, 'string', 'legacy messages 
 assert.strictEqual(typeof normalized.messages[0].createdAt, 'number', 'legacy messages receive UTC timestamps');
 assert.strictEqual(normalized.messages[0].role, 'user', 'message roles are inferred from legacy HTML');
 assert.ok(normalized.messages[0].html.includes('data-chat-created-at'), 'stored HTML carries timestamp metadata for the blog runtime');
+var migratedLegacyPlan = sync.dateDividerPlan(normalized.messages, Date.now());
+assert.strictEqual(migratedLegacyPlan.length, 1, 'an actual pre-timestamp history migration renders as one estimated group');
+assert.strictEqual(migratedLegacyPlan[0].label, 'Earlier', 'an actual pre-timestamp history migration never claims Today or Yesterday');
 var normalizedAgain = sync.normalizeState(normalized);
 assert.strictEqual(normalizedAgain.messages[0].id, normalized.messages[0].id, 'message IDs survive repeated normalization');
 assert.strictEqual(normalizedAgain.messages[0].createdAt, normalized.messages[0].createdAt, 'message timestamps survive repeated normalization');
@@ -53,14 +56,23 @@ assert.strictEqual(sync.formatLocalDateLabel(localToday, localToday), 'Today', '
 assert.strictEqual(sync.formatLocalDateLabel(localYesterdayMorning, localToday), 'Yesterday', 'previous local date uses a Yesterday divider');
 assert.strictEqual(sync.localDateKey(localToday), '2026-08-10', 'local date grouping uses the viewing device calendar');
 var dividerPlan = sync.dateDividerPlan([
-  { createdAt: localOlderDay },
-  { createdAt: localYesterdayMorning },
-  { createdAt: localYesterdayEvening },
-  { createdAt: localToday }
+  { id: 'chat-older', createdAt: localOlderDay },
+  { id: 'chat-yesterday-1', createdAt: localYesterdayMorning },
+  { id: 'chat-yesterday-2', createdAt: localYesterdayEvening },
+  { id: 'chat-today', createdAt: localToday }
 ], localToday);
 assert.deepStrictEqual(dividerPlan.map(function (divider) { return divider.beforeIndex; }), [0, 1, 3], 'one render-only divider is inserted at each local day boundary');
 assert.strictEqual(dividerPlan[1].label, 'Yesterday', 'same-day messages share one Yesterday divider');
 assert.strictEqual(dividerPlan[2].label, 'Today', 'newest day is labeled Today');
+var legacyDividerPlan = sync.dateDividerPlan([
+  { id: 'legacy-july-message-1', createdAt: localYesterdayMorning },
+  { id: 'legacy-july-message-2', createdAt: localToday }
+], localToday);
+assert.strictEqual(sync.isEstimatedTimestampMessage('legacy-july-message-1'), true, 'legacy IDs identify messages whose original timestamp was unavailable');
+assert.strictEqual(sync.isEstimatedTimestampMessage('chat-current-message'), false, 'new messages retain exact timestamps');
+assert.strictEqual(legacyDividerPlan.length, 1, 'synthetic legacy dates are not split into misleading calendar groups');
+assert.strictEqual(legacyDividerPlan[0].label, 'Earlier', 'legacy history uses an honest non-date label');
+assert.strictEqual(legacyDividerPlan[0].estimated, true, 'legacy divider records its estimated timestamp status');
 
 var oversized = sync.fitState({
   messages: Array.from({ length: 40 }, function () { return '<li>' + 'x'.repeat(20000) + '</li>'; }),
@@ -77,11 +89,11 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-1"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-2"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
 assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
 assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
-assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-1"'), 'production blog loads chat sync from the main-site root');
-assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-1"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-2"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-2"'), 'alternate production blog footer loads chat sync from the main-site root');
 assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
 assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
@@ -97,6 +109,7 @@ assert.ok(syncSource.includes('[data-theme="light"] .chatbot__date-divider'), 'd
 assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__date-divider'), 'date dividers support an initial dark-mode load');
 assert.ok(syncSource.includes("addEventListener('themechange', decorateOpenChat)"), 'date dividers refresh during live light-dark-light theme toggles');
 assert.ok(syncSource.includes('renderDateDividers(element)'), 'restored account and local histories render date dividers');
+assert.ok(syncSource.includes('if (metadata.timestampEstimated)'), 'fabricated times are hidden for migrated legacy messages');
 assert.ok(syncSource.includes('root.saveChatState = saveOpenChatState'), 'blog legacy persistence is upgraded by the shared runtime');
 
 var meta = fs.readFileSync(path.join(__dirname, '..', '..', 'meta.php'), 'utf8');
