@@ -104,6 +104,27 @@
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
   }
 
+  function localDayNumber(value) {
+    var timestamp = normalizeTimestamp(value);
+    if (!timestamp) return 0;
+    var date = new Date(timestamp);
+    return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
+  }
+
+  function formatLocalWeekday(value) {
+    var timestamp = normalizeTimestamp(value);
+    if (!timestamp) return '';
+    var date = new Date(timestamp);
+    try {
+      if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+        return new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(date);
+      }
+      return date.toLocaleDateString(undefined, { weekday: 'long' });
+    } catch (error) {
+      return formatLocalDate(timestamp);
+    }
+  }
+
   function formatLocalDateLabel(value, nowValue) {
     var timestamp = normalizeTimestamp(value);
     if (!timestamp) return '';
@@ -116,6 +137,8 @@
     var yesterday = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
     yesterday.setDate(yesterday.getDate() - 1);
     if (messageKey === localDateKey(yesterday.getTime())) return 'Yesterday';
+    var dayDifference = localDayNumber(currentTimestamp) - localDayNumber(timestamp);
+    if (dayDifference >= 2 && dayDifference <= 7) return formatLocalWeekday(timestamp);
     return formatLocalDate(timestamp);
   }
 

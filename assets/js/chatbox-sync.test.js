@@ -55,6 +55,14 @@ var localOlderDay = new Date(2026, 7, 7, 12, 0, 0).getTime();
 assert.strictEqual(sync.formatLocalDateLabel(localToday, localToday), 'Today', 'current local date uses a Today divider');
 assert.strictEqual(sync.formatLocalDateLabel(localYesterdayMorning, localToday), 'Yesterday', 'previous local date uses a Yesterday divider');
 assert.strictEqual(sync.localDateKey(localToday), '2026-08-10', 'local date grouping uses the viewing device calendar');
+for (var weekdayDate = 2; weekdayDate <= 8; weekdayDate += 1) {
+  var weekdayTimestamp = new Date(2026, 7, weekdayDate, 12, 0, 0).getTime();
+  var twoDaysLater = new Date(2026, 7, weekdayDate + 2, 12, 0, 0).getTime();
+  var expectedWeekday = new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date(weekdayTimestamp));
+  assert.strictEqual(sync.formatLocalDateLabel(weekdayTimestamp, twoDaysLater), expectedWeekday, expectedWeekday + ' displays for an exact recent timestamp');
+}
+var localOlderThanWeek = new Date(2026, 7, 2, 12, 0, 0).getTime();
+assert.ok(sync.formatLocalDateLabel(localOlderThanWeek, localToday).includes('2026'), 'exact timestamps older than seven days display the local date');
 var dividerPlan = sync.dateDividerPlan([
   { id: 'chat-older', createdAt: localOlderDay },
   { id: 'chat-yesterday-1', createdAt: localYesterdayMorning },
@@ -89,11 +97,11 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-2"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-3"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
 assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
 assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
-assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-2"'), 'production blog loads chat sync from the main-site root');
-assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-2"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-3"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-3"'), 'alternate production blog footer loads chat sync from the main-site root');
 assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
 assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
