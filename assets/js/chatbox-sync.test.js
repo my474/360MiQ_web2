@@ -15,8 +15,33 @@ var state = {
 
 var normalized = sync.normalizeState(state);
 assert.strictEqual(normalized.messages.length, 40, 'chat history keeps at most 40 messages');
-assert.strictEqual(normalized.messages[0].includes('5'), true, 'chat history keeps the newest messages');
+assert.strictEqual(normalized.messages[0].html.includes('5'), true, 'chat history keeps the newest messages');
+assert.strictEqual(typeof normalized.messages[0].id, 'string', 'legacy messages receive stable IDs');
+assert.strictEqual(typeof normalized.messages[0].createdAt, 'number', 'legacy messages receive UTC timestamps');
+assert.strictEqual(normalized.messages[0].role, 'user', 'message roles are inferred from legacy HTML');
+assert.ok(normalized.messages[0].html.includes('data-chat-created-at'), 'stored HTML carries timestamp metadata for the blog runtime');
+var normalizedAgain = sync.normalizeState(normalized);
+assert.strictEqual(normalizedAgain.messages[0].id, normalized.messages[0].id, 'message IDs survive repeated normalization');
+assert.strictEqual(normalizedAgain.messages[0].createdAt, normalized.messages[0].createdAt, 'message timestamps survive repeated normalization');
+var metadataOnlyHtml = sync.normalizeState({ messages: [normalized.messages[0].html] });
+assert.strictEqual(metadataOnlyHtml.messages[0].id, normalized.messages[0].id, 'blog HTML metadata restores the same message ID');
+assert.strictEqual(metadataOnlyHtml.messages[0].createdAt, normalized.messages[0].createdAt, 'blog HTML metadata restores the same UTC timestamp');
 assert.strictEqual(sync.normalizeState({ stockchatDict: { AAPL_12: {} } }).count, 13, 'chat history infers the next stock result id');
+
+var utcTimestamp = Date.UTC(2026, 7, 9, 12, 34, 0);
+var timestamped = sync.normalizeState({
+  savedAt: utcTimestamp + 1000,
+  messages: [{
+    id: 'chat-test-message',
+    role: 'assistant',
+    html: '<li class="is-ai"><div class="chatbot__message">Answer</div></li>',
+    createdAt: utcTimestamp
+  }]
+});
+assert.strictEqual(timestamped.messages[0].createdAt, utcTimestamp, 'explicit UTC timestamps are preserved');
+assert.strictEqual(timestamped.messages[0].id, 'chat-test-message', 'explicit message IDs are preserved');
+assert.strictEqual(sync.utcIso(utcTimestamp), '2026-08-09T12:34:00.000Z', 'UTC timestamps serialize as ISO Z time');
+assert.ok(sync.formatLocalTimestamp(utcTimestamp).length > 0, 'UTC timestamps format for the local device timezone');
 
 var oversized = sync.fitState({
   messages: Array.from({ length: 40 }, function () { return '<li>' + 'x'.repeat(20000) + '</li>'; }),
@@ -33,7 +58,17 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('/assets/js/chatbox-sync.js?v=20260807-1'), 'main footer loads account chat sync');
-assert.ok(blogFooter.includes('/assets/js/chatbox-sync.js?v=20260807-1'), 'blog footer loads account chat sync');
+assert.ok(mainFooter.includes('/assets/js/chatbox-sync.js?v=20260809-1'), 'main footer loads timestamped account chat sync');
+assert.ok(blogFooter.includes('/assets/js/chatbox-sync.js?v=20260809-1'), 'blog footer loads timestamped account chat sync');
+assert.ok(alternateBlogFooter.includes('/assets/js/chatbox-sync.js?v=20260809-1'), 'alternate blog footer loads timestamped account chat sync');
+assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
+assert.ok(mainFooter.includes('window.MiqChatboxSync.renderMessages(messages, messagesEl)'), 'main footer renders timestamps in local device time');
+
+var accountApi = fs.readFileSync(path.join(__dirname, '..', '..', 'account_api.php'), 'utf8');
+assert.ok(accountApi.includes("'createdAt' => $created_at"), 'account sync preserves each message UTC timestamp');
+assert.ok(accountApi.includes("'id' => $message_id"), 'account sync preserves stable message IDs');
+var syncSource = fs.readFileSync(path.join(__dirname, 'chatbox-sync.js'), 'utf8');
+assert.ok(syncSource.includes('color:inherit'), 'timestamp text follows light, dark, and live theme colors');
+assert.ok(syncSource.includes('root.saveChatState = saveOpenChatState'), 'blog legacy persistence is upgraded by the shared runtime');
 
 console.log('chatbox-sync tests passed');

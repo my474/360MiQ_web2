@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-08-07)
+# Graph Report - .  (2026-08-09)
 
 ## Corpus Check
-- 155 files · ~787,819 words
+- 155 files · ~789,612 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1524 nodes · 2913 edges · 155 communities detected
+- 1554 nodes · 3000 edges · 155 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -204,56 +204,56 @@ Cohesion: 0.09
 Nodes (57): addSvgClass(), applyHighchartsTheme(), bindHighchartsLegendTheme(), bindLeftYAxisTitleTheme(), bindSentimentAxisThemeToggle(), collectAxisCandidates(), ensureAxisStyleColor(), exportMenuStyle() (+49 more)
 
 ### Community 5 - "Community 5"
+Cohesion: 0.1
+Nodes (51): apiUrl(), applyRemoteStateToOpenChat(), applyStateToOpenChat(), cancelPendingRemoteSave(), canonicalMessageHtml(), captureMessages(), cleanMessageId(), clear() (+43 more)
+
+### Community 6 - "Community 6"
 Cohesion: 0.08
 Nodes (44): miq_account_access_error(), miq_account_bootstrap(), miq_account_check_csrf(), miq_account_clean_display_name(), miq_account_client_ip(), miq_account_create_token(), miq_account_create_user(), miq_account_csrf_token() (+36 more)
 
-### Community 6 - "Community 6"
+### Community 7 - "Community 7"
 Cohesion: 0.09
 Nodes (40): accountAction(), applyLivePulseContext(), bindPulseExplanation(), bindSearchTracking(), bindStockViewTracking(), clearElement(), clearPendingPulseVote(), getChart() (+32 more)
 
-### Community 7 - "Community 7"
+### Community 8 - "Community 8"
 Cohesion: 0.1
 Nodes (43): applyHighchartsTheme(), bindHighchartsLegendTheme(), collectAxisCandidates(), ensureAxisStyleColor(), exportMenuStyle(), getAxisOptionColor(), getGridLineDirection(), getHighchartsThemeOptions() (+35 more)
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
 Cohesion: 0.16
 Nodes (40): assetMeta(), chartRow(), dashboardMetric(), escapeHtml(), formatPrice(), humanDate(), importRecentScripts(), load() (+32 more)
 
-### Community 9 - "Community 9"
+### Community 10 - "Community 10"
 Cohesion: 0.11
 Nodes (33): ae(), bn(), Bt(), ce(), ee(), fe(), Ft(), Gt() (+25 more)
 
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.05
 Nodes (11): ar, E(), eg, ip(), nC(), nF(), nN(), s0 (+3 more)
 
-### Community 11 - "Community 11"
+### Community 12 - "Community 12"
 Cohesion: 0.15
 Nodes (41): activeStorageKey(), bindEvents(), cleanName(), createPreset(), currentConfig(), filterControlValue(), filtersFromControls(), handleDefault() (+33 more)
 
-### Community 12 - "Community 12"
+### Community 13 - "Community 13"
 Cohesion: 0.11
 Nodes (33): add_Days(), createChart(), dateFormatStr(), ensureComposerReady(), fetchAjaxSeriesData(), findNameByIdAndType(), getSeriesList(), getSubtitle() (+25 more)
 
-### Community 13 - "Community 13"
+### Community 14 - "Community 14"
 Cohesion: 0.08
 Nodes (17): miq_api_asset_storage_bytes(), miq_api_body(), miq_api_clean_text(), miq_api_count_rows(), miq_api_enforce_asset_storage(), miq_api_json(), miq_api_pulse_context(), miq_api_pulse_timeframe() (+9 more)
 
-### Community 14 - "Community 14"
+### Community 15 - "Community 15"
 Cohesion: 0.19
 Nodes (32): absoluteUrl(), asNumber(), chartDatasets(), cleanText(), cleanValue(), codeFromLink(), currentGraph(), dateString() (+24 more)
 
-### Community 15 - "Community 15"
+### Community 16 - "Community 16"
 Cohesion: 0.13
 Nodes (25): addWeekday(), CCASSComment(), CCASSmonthlyCompression(), CCASSyearlyComment(), datedecrypt(), dayofyear(), embedVideo(), enqueueChartRender() (+17 more)
 
-### Community 16 - "Community 16"
+### Community 17 - "Community 17"
 Cohesion: 0.13
 Nodes (18): add_Days(), applyPriceInfoTheme(), dayofyear(), exchFn(), fscoreEfficiencyTXT(), fscoreLiquidityTXT(), fscoreProfitabilityTXT(), macdZeroTXT() (+10 more)
-
-### Community 17 - "Community 17"
-Cohesion: 0.22
-Nodes (21): apiUrl(), applyRemoteStateToOpenChat(), cancelPendingRemoteSave(), clear(), cloneObject(), copyLastEntries(), fitState(), hydrateFromAccount() (+13 more)
 
 ### Community 18 - "Community 18"
 Cohesion: 0.27
@@ -987,4 +987,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 4` be split into smaller, more focused modules?**
   _Cohesion score 0.09 - nodes in this community are weakly interconnected._
 - **Should `Community 5` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._

@@ -1168,7 +1168,7 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
-<script src="/assets/js/chatbox-sync.js?v=20260807-1"></script>
+<script src="/assets/js/chatbox-sync.js?v=20260809-1"></script>
 <script src="/assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
@@ -2789,11 +2789,28 @@ function saveChatState() {
     checkboxStates[cb.id] = cb.checked;
   });
 
-  // Save everything
-  const messages = Array.from(document.querySelectorAll('.chatbot__messages li'))
-    .filter(msg => msg.className.includes('is-ai') || msg.className.includes('is-user'))
-    .slice(-40)
-    .map(msg => msg.outerHTML);
+  // Store each message with a stable ID and UTC creation timestamp. The
+  // shared runtime also removes the locally formatted <time> element before
+  // serializing so another device can render the same instant in its timezone.
+  const messages = window.MiqChatboxSync
+    ? window.MiqChatboxSync.captureMessages()
+    : Array.from(document.querySelectorAll('.chatbot__messages li'))
+        .filter(msg => msg.className.includes('is-ai') || msg.className.includes('is-user'))
+        .slice(-40)
+        .map((msg, index) => {
+          const createdAt = Number(msg.getAttribute('data-chat-created-at')) || Date.now() + index;
+          const id = msg.getAttribute('data-chat-message-id') || `legacy-${createdAt}-${index}`;
+          msg.setAttribute('data-chat-message-id', id);
+          msg.setAttribute('data-chat-created-at', String(createdAt));
+          const clone = msg.cloneNode(true);
+          clone.querySelectorAll('.chatbot__message-time').forEach(time => time.remove());
+          return {
+            id,
+            role: msg.classList.contains('is-user') ? 'user' : 'assistant',
+            html: clone.outerHTML,
+            createdAt
+          };
+        });
 
   const state = {
     messages,
@@ -2823,7 +2840,11 @@ function restoreChatState() {
     const { messages = [], stockchatDict: savedDict = {}, checkboxStates: savedCheckboxes = {}, count: savedCount = 0 } = savedState;
 
     const messagesEl = document.querySelector('.chatbot__messages');
-    if (messagesEl) messagesEl.innerHTML = messages.join('');
+    if (messagesEl && window.MiqChatboxSync) {
+      window.MiqChatboxSync.renderMessages(messages, messagesEl);
+    } else if (messagesEl) {
+      messagesEl.innerHTML = messages.map(message => typeof message === 'string' ? message : message.html).join('');
+    }
 
     Object.assign(stockchatDict, savedDict);
     Object.assign(checkboxStates, savedCheckboxes);

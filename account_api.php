@@ -77,12 +77,55 @@ function miq_api_chat_history_payload($value)
         return null;
     }
 
+    $now_ms = (int) round(microtime(true) * 1000);
+    $saved_at = isset($value['savedAt']) && is_numeric($value['savedAt'])
+        ? (int) $value['savedAt']
+        : $now_ms;
+    if ($saved_at <= 0 || $saved_at > $now_ms + 86400000) {
+        $saved_at = $now_ms;
+    }
+
     $messages = array();
     if (isset($value['messages']) && is_array($value['messages'])) {
-        foreach (array_slice($value['messages'], -40) as $message) {
-            if (is_string($message)) {
-                $messages[] = $message;
+        $raw_messages = array_values(array_slice($value['messages'], -40));
+        $raw_message_count = count($raw_messages);
+        $seen_message_ids = array();
+        foreach ($raw_messages as $index => $message) {
+            $message_data = is_array($message) ? $message : array();
+            $html = is_string($message) ? $message : ($message_data['html'] ?? '');
+            if (!is_string($html) || trim($html) === '') {
+                continue;
             }
+
+            $created_at = isset($message_data['createdAt']) && is_numeric($message_data['createdAt'])
+                ? (int) $message_data['createdAt']
+                : 0;
+            if ($created_at <= 0 || $created_at > $now_ms + 86400000) {
+                $created_at = max(1, $saved_at - (($raw_message_count - $index - 1) * 1000));
+            }
+
+            $message_id = isset($message_data['id']) && is_string($message_data['id'])
+                ? preg_replace('/[^A-Za-z0-9._:-]/', '', substr($message_data['id'], 0, 96))
+                : '';
+            if ($message_id === '') {
+                $message_id = 'legacy-' . substr(hash('sha256', $html . '|' . $created_at . '|' . $index), 0, 32);
+            }
+            if (isset($seen_message_ids[$message_id])) {
+                $message_id = substr($message_id, 0, 80) . '-' . substr(hash('sha256', $html . '|' . $index), 0, 12);
+            }
+            $seen_message_ids[$message_id] = true;
+
+            $role = isset($message_data['role']) && in_array($message_data['role'], array('user', 'assistant'), true)
+                ? $message_data['role']
+                : (strpos($html, 'is-user') !== false ? 'user' : 'assistant');
+            $messages[] = array(
+                'id' => $message_id,
+                'role' => $role,
+                'html' => $html,
+                // Unix milliseconds are UTC and are formatted in the viewer's
+                // local timezone only when the message is rendered.
+                'createdAt' => $created_at,
+            );
         }
     }
 
@@ -101,12 +144,6 @@ function miq_api_chat_history_payload($value)
         }
     }
 
-    $saved_at = isset($value['savedAt']) && is_numeric($value['savedAt'])
-        ? (int) $value['savedAt']
-        : (int) round(microtime(true) * 1000);
-    if ($saved_at <= 0) {
-        $saved_at = (int) round(microtime(true) * 1000);
-    }
     $state = array(
         'messages' => $messages,
         'stockchatDict' => $stockchat_dict,
