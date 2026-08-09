@@ -167,6 +167,31 @@ var oversized = sync.fitState({
 });
 assert.ok(sync.serializedByteLength(oversized) <= sync.maxBytes, 'chat history is bounded by the byte cap');
 assert.ok(oversized.messages.length < 40, 'old messages are removed when the byte cap is reached');
+assert.ok(oversized.messages.length > 0, 'ordinary newest messages remain when their combined size reaches the cap');
+var previousMessages = Array.from({ length: 40 }, function (_, index) {
+  return {
+    id: 'chat-before-oversized-' + index,
+    role: index % 2 ? 'assistant' : 'user',
+    html: '<li class="' + (index % 2 ? 'is-ai' : 'is-user') + '"><p>Previous message ' + index + '</p></li>',
+    createdAt: Date.now() - ((40 - index) * 1000)
+  };
+});
+var individuallyOversized = sync.fitState({
+  messages: previousMessages.concat([{
+    id: 'chat-oversized-latest',
+    role: 'assistant',
+    html: '<li class="is-ai"><p>' + 'z'.repeat(sync.maxBytes + 1024) + '</p></li>',
+    createdAt: Date.now()
+  }]),
+  stockchatDict: {},
+  checkboxStates: {}
+});
+assert.deepStrictEqual(
+  individuallyOversized.messages.map(function (message) { return message.id; }),
+  previousMessages.map(function (message) { return message.id; }),
+  'an individually oversized latest message is omitted without evicting previous messages'
+);
+assert.ok(sync.serializedByteLength(individuallyOversized) <= sync.maxBytes, 'preserved history remains under the byte cap');
 assert.strictEqual(sync.storageKey, 'chatbotState');
 
 var mainFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'footer.php'), 'utf8');
@@ -175,11 +200,11 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-7"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-8"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
 assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
 assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
-assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-7"'), 'production blog loads chat sync from the main-site root');
-assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-7"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-8"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-8"'), 'alternate production blog footer loads chat sync from the main-site root');
 assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
 assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
@@ -190,6 +215,13 @@ assert.ok(!mainFooter.includes('restoreChatboxScroll(chatScrollState)'), 'main c
 var accountApi = fs.readFileSync(path.join(__dirname, '..', '..', 'account_api.php'), 'utf8');
 assert.ok(accountApi.includes("'createdAt' => $created_at"), 'account sync preserves each message UTC timestamp');
 assert.ok(accountApi.includes("'id' => $message_id"), 'account sync preserves stable message IDs');
+var serverOversizedFilter = accountApi.indexOf("$state['messages'] = array_values(array_filter");
+var serverAggregateTrim = accountApi.indexOf('while (strlen((string) json_encode($state', serverOversizedFilter);
+assert.ok(serverOversizedFilter >= 0, 'account sync filters individually oversized messages');
+assert.ok(serverAggregateTrim > serverOversizedFilter, 'account sync omits individually oversized messages before aggregate trimming');
+assert.ok(accountApi.includes("'messages' => array($message)"), 'account sync measures each message inside a minimal history envelope');
+assert.ok(accountApi.includes("array_slice($value['messages'], -41)"), 'account sync measures one overflow candidate before enforcing 40 messages');
+assert.ok(accountApi.includes("array_slice($state['messages'], -40)"), 'account sync enforces 40 messages after filtering the overflow candidate');
 var syncSource = fs.readFileSync(path.join(__dirname, 'chatbox-sync.js'), 'utf8');
 assert.ok(syncSource.includes('color:inherit'), 'timestamp text follows light, dark, and live theme colors');
 assert.ok(syncSource.includes('display:block;float:none;clear:both;width:100%'), 'single- and multi-line message times use the same bottom row');

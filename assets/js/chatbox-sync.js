@@ -13,6 +13,7 @@
 
   var STORAGE_KEY = 'chatbotState';
   var MAX_MESSAGES = 40;
+  var MAX_MESSAGE_CANDIDATES = MAX_MESSAGES + 1;
   var DEFAULT_MAX_BYTES = 262144;
   var MESSAGE_ID_ATTRIBUTE = 'data-chat-message-id';
   var MESSAGE_TIME_ATTRIBUTE = 'data-chat-created-at';
@@ -461,11 +462,13 @@
 
   function normalizeMessages(value, savedAt) {
     if (!Array.isArray(value)) return [];
-    var source = value.slice(-MAX_MESSAGES);
+    // Keep one overflow candidate so an oversized newest message can be
+    // rejected before applying the 40-message count limit.
+    var source = value.slice(-MAX_MESSAGE_CANDIDATES);
     var baseTimestamp = normalizeTimestamp(savedAt) || nowMilliseconds();
     var usedIds = {};
 
-    return source.reduce(function (messages, rawMessage, index) {
+    var messages = source.reduce(function (messages, rawMessage, index) {
       var messageObject = rawMessage && typeof rawMessage === 'object' && !Array.isArray(rawMessage)
         ? rawMessage
         : {};
@@ -500,6 +503,10 @@
       });
       return messages;
     }, []);
+
+    return messages.filter(function (message) {
+      return messageFitsByItself(message, savedAt);
+    }).slice(-MAX_MESSAGES);
   }
 
   function normalizeState(value) {
@@ -526,9 +533,25 @@
     return utf8ByteLength(serializeState(state));
   }
 
+  function messageFitsByItself(message, savedAt) {
+    return serializedByteLength({
+      messages: [message],
+      stockchatDict: {},
+      checkboxStates: {},
+      count: 0,
+      savedAt: savedAt
+    }) <= maxBytes;
+  }
+
   function fitState(value) {
     var state = normalizeState(value);
     if (!state) return null;
+
+    // Never let one unsaveable message evict the otherwise valid history.
+    // Messages are atomic: omit an oversized one instead of slicing its HTML.
+    state.messages = state.messages.filter(function (message) {
+      return messageFitsByItself(message, state.savedAt);
+    });
 
     while (serializedByteLength(state) > maxBytes) {
       if (state.messages.length > 0) {
@@ -1012,7 +1035,7 @@
       .filter(function (message) {
         return message.classList.contains('is-user') || message.classList.contains('is-ai');
       })
-      .slice(-MAX_MESSAGES);
+      .slice(-MAX_MESSAGE_CANDIDATES);
     var baseTimestamp = nowMilliseconds() - Math.max(0, elements.length - 1);
     return elements.map(function (element, index) {
       return storedMessageFromElement(element, baseTimestamp + index);

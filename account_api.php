@@ -87,7 +87,9 @@ function miq_api_chat_history_payload($value)
 
     $messages = array();
     if (isset($value['messages']) && is_array($value['messages'])) {
-        $raw_messages = array_values(array_slice($value['messages'], -40));
+        // Keep one overflow candidate so an oversized newest message can be
+        // rejected before applying the 40-message count limit.
+        $raw_messages = array_values(array_slice($value['messages'], -41));
         $raw_message_count = count($raw_messages);
         $seen_message_ids = array();
         foreach ($raw_messages as $index => $message) {
@@ -152,6 +154,21 @@ function miq_api_chat_history_payload($value)
         'savedAt' => $saved_at,
     );
     $max_bytes = (int) miq_account_config()['max_chat_history_bytes'];
+
+    // Treat messages as atomic records. If one message cannot fit inside an
+    // otherwise empty history, omit it before aggregate trimming so it cannot
+    // evict every previously saved message.
+    $state['messages'] = array_values(array_filter($state['messages'], function ($message) use ($saved_at, $max_bytes) {
+        $single_message_json = json_encode(array(
+            'messages' => array($message),
+            'stockchatDict' => array(),
+            'checkboxStates' => array(),
+            'count' => 0,
+            'savedAt' => $saved_at,
+        ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return $single_message_json !== false && strlen($single_message_json) <= $max_bytes;
+    }));
+    $state['messages'] = array_values(array_slice($state['messages'], -40));
 
     while (strlen((string) json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) > $max_bytes) {
         if (!empty($state['messages'])) {
