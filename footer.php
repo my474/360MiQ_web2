@@ -1168,12 +1168,8 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
-<?php
-$miq_chatbox_sync_script = function_exists('miq_account_public_path') ? miq_account_public_path('assets/js/chatbox-sync.js') : '/assets/js/chatbox-sync.js';
-$miq_chatbox_runtime_script = function_exists('miq_account_public_path') ? miq_account_public_path('assets/js/chatbox-runtime.js') : '/assets/js/chatbox-runtime.js';
-?>
-<script src="<?php echo htmlspecialchars($miq_chatbox_sync_script, ENT_QUOTES, 'UTF-8'); ?>?v=20260809-2"></script>
-<script src="<?php echo htmlspecialchars($miq_chatbox_runtime_script, ENT_QUOTES, 'UTF-8'); ?>?v=20260731-2"></script>
+<script src="assets/js/chatbox-sync.js?v=20260809-3"></script>
+<script src="assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
 var isBlogPath = window.location.href.includes('/blog/');

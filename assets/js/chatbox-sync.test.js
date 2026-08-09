@@ -58,13 +58,13 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes("miq_account_public_path('assets/js/chatbox-sync.js')"), 'main footer resolves chat sync within the current deployment path');
-assert.ok(mainFooter.includes("miq_account_public_path('assets/js/chatbox-runtime.js')"), 'main footer resolves the supporting chat runtime within the current deployment path');
-assert.ok(blogFooter.includes("miq_account_public_path( 'assets/js/chatbox-sync.js', 'blog' )"), 'blog footer resolves shared chat sync from the main deployment path');
-assert.ok(alternateBlogFooter.includes("miq_account_public_path( 'assets/js/chatbox-sync.js', 'blog' )"), 'alternate blog footer resolves shared chat sync from the main deployment path');
-assert.ok(mainFooter.includes('?v=20260809-2'), 'main footer cache-busts the path-aware chat sync asset');
-assert.ok(blogFooter.includes('?v=20260809-2'), 'blog footer cache-busts the path-aware chat sync asset');
-assert.ok(alternateBlogFooter.includes('?v=20260809-2'), 'alternate blog footer cache-busts the path-aware chat sync asset');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260809-3"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
+assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260809-3"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260809-3"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
+assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.renderMessages(messages, messagesEl)'), 'main footer renders timestamps in local device time');
 
@@ -75,10 +75,8 @@ var syncSource = fs.readFileSync(path.join(__dirname, 'chatbox-sync.js'), 'utf8'
 assert.ok(syncSource.includes('color:inherit'), 'timestamp text follows light, dark, and live theme colors');
 assert.ok(syncSource.includes('root.saveChatState = saveOpenChatState'), 'blog legacy persistence is upgraded by the shared runtime');
 
-var accountConfig = fs.readFileSync(path.join(__dirname, '..', '..', 'account', 'config.php'), 'utf8');
 var meta = fs.readFileSync(path.join(__dirname, '..', '..', 'meta.php'), 'utf8');
-assert.ok(accountConfig.includes('function miq_account_deployment_path'), 'account URLs share a deployment-path resolver');
-assert.ok(accountConfig.includes("$context === 'blog'"), 'deployment-path resolver maps WordPress back to the main application');
-assert.ok(meta.includes("'apiUrl' => miq_account_public_path('account_api.php')"), 'main-site API URL stays inside a subfolder deployment');
+assert.ok(meta.includes("'apiUrl' => 'account_api.php'"), 'main-site API URL is document-relative');
+assert.ok(meta.includes("'accountUrl' => 'account.php'"), 'main-site account URL is document-relative');
 
 console.log('chatbox-sync tests passed');

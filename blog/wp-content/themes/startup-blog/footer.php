@@ -85,21 +85,15 @@ This site is protected by reCAPTCHA and the Google
 $miq_blog_chat_user = function_exists( 'miq360_blog_theme_sync_main_site_user' )
 	? miq360_blog_theme_sync_main_site_user()
 	: null;
-$miq_blog_chat_api_url = function_exists( 'miq_account_public_path' )
-	? miq_account_public_path( 'account_api.php', 'blog' )
-	: '/account_api.php';
-$miq_blog_chat_script_url = function_exists( 'miq_account_public_path' )
-	? miq_account_public_path( 'assets/js/chatbox-sync.js', 'blog' )
-	: '/assets/js/chatbox-sync.js';
 $miq_blog_chat_config = array(
 	'loggedIn' => (bool) $miq_blog_chat_user,
 	'csrfToken' => $miq_blog_chat_user && function_exists( 'miq_account_csrf_token' ) ? miq_account_csrf_token() : '',
-	'apiUrl' => $miq_blog_chat_api_url,
+	'apiUrl' => '/account_api.php',
 	'chatHistoryMaxBytes' => function_exists( 'miq_account_config' ) ? (int) miq_account_config()['max_chat_history_bytes'] : 262144,
 );
 ?>
 <script>window.__MIQ_CHATBOX_SYNC__=<?php echo json_encode( $miq_blog_chat_config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;</script>
-<script src="<?php echo esc_url( $miq_blog_chat_script_url ); ?>?v=20260809-2"></script>
+<script src="/assets/js/chatbox-sync.js?v=20260809-3"></script>
 
 <script src="https://code.highcharts.com/8.2.0/highcharts.js"></script>
 <script src="https://code.highcharts.com/8.2.0/modules/no-data-to-display.js"></script>

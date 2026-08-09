@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-08-09)
 
 ## Corpus Check
-- 155 files · ~789,970 words
+- 155 files · ~789,726 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1556 nodes · 3004 edges · 155 communities detected
+- 1554 nodes · 3000 edges · 155 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -353,31 +353,31 @@ Nodes (2): detectIE(), rounding()
 
 ### Community 42 - "Community 42"
 Cohesion: 0.33
-Nodes (0): 
+Nodes (0):
 
 ### Community 43 - "Community 43"
 Cohesion: 0.33
 Nodes (0): 
 
 ### Community 44 - "Community 44"
-Cohesion: 0.6
-Nodes (5): miq_account_config(), miq_account_deployment_path(), miq_account_env(), miq_account_public_path(), miq_community_enabled()
-
-### Community 45 - "Community 45"
 Cohesion: 0.4
 Nodes (2): miq_account_db(), miq_account_query()
 
-### Community 46 - "Community 46"
+### Community 45 - "Community 45"
 Cohesion: 0.53
 Nodes (3): findLikelyStockCandidate(), isIgnoredStockTerm(), normalizeTerm()
 
-### Community 47 - "Community 47"
+### Community 46 - "Community 46"
 Cohesion: 0.6
 Nodes (4): formatPercent(), numberOrNull(), percentChange(), pointPercentChange()
 
-### Community 48 - "Community 48"
+### Community 47 - "Community 47"
 Cohesion: 0.53
 Nodes (5): earningSurpriseChart(), earningSurpriseComment(), Pxband(), valuationBands(), valuationComment()
+
+### Community 48 - "Community 48"
+Cohesion: 0.4
+Nodes (0):
 
 ### Community 49 - "Community 49"
 Cohesion: 0.4
@@ -388,20 +388,20 @@ Cohesion: 0.4
 Nodes (0): 
 
 ### Community 51 - "Community 51"
-Cohesion: 0.4
-Nodes (0):
-
-### Community 52 - "Community 52"
 Cohesion: 0.6
 Nodes (3): pchart(), polarTheme(), setLabelEvent()
 
-### Community 53 - "Community 53"
+### Community 52 - "Community 52"
 Cohesion: 0.7
 Nodes (4): ema0(), tsf(), TSFchart(), tsfLookback()
 
-### Community 54 - "Community 54"
+### Community 53 - "Community 53"
 Cohesion: 0.5
 Nodes (0): 
+
+### Community 54 - "Community 54"
+Cohesion: 0.83
+Nodes (3): miq_account_config(), miq_account_env(), miq_community_enabled()
 
 ### Community 55 - "Community 55"
 Cohesion: 1.0
