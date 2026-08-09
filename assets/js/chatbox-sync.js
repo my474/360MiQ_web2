@@ -17,6 +17,7 @@
   var MESSAGE_ID_ATTRIBUTE = 'data-chat-message-id';
   var MESSAGE_TIME_ATTRIBUTE = 'data-chat-created-at';
   var MESSAGE_TIME_CLASS = 'chatbot__message-time';
+  var MESSAGE_DATE_DIVIDER_CLASS = 'chatbot__date-divider';
   var config = root && root.__MIQ_CHATBOX_SYNC__
     ? root.__MIQ_CHATBOX_SYNC__
     : (root && root.__MIQ_ACCOUNT__ ? root.__MIQ_ACCOUNT__ : {});
@@ -51,24 +52,91 @@
     }
   }
 
-  function formatLocalTimestamp(value) {
+  function formatLocalTimestamp(value, locale, timeZone) {
     var timestamp = normalizeTimestamp(value);
     if (!timestamp) return '';
     var date = new Date(timestamp);
     try {
       if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
-        return new Intl.DateTimeFormat(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
+        var options = {
           hour: 'numeric',
           minute: '2-digit'
-        }).format(date);
+        };
+        if (timeZone) options.timeZone = timeZone;
+        return new Intl.DateTimeFormat(locale, options).format(date);
       }
-      return date.toLocaleString();
+      return date.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
     } catch (error) {
-      return utcIso(timestamp);
+      return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
     }
+  }
+
+  function formatLocalDate(value, locale, timeZone) {
+    var timestamp = normalizeTimestamp(value);
+    if (!timestamp) return '';
+    var date = new Date(timestamp);
+    try {
+      if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+        var options = {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        };
+        if (timeZone) options.timeZone = timeZone;
+        return new Intl.DateTimeFormat(locale, options).format(date);
+      }
+      return date.toLocaleDateString(locale);
+    } catch (error) {
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+  }
+
+  function formatLocalDateTime(value) {
+    var localDate = formatLocalDate(value);
+    var localTime = formatLocalTimestamp(value);
+    return localDate && localTime ? localDate + ', ' + localTime : (localDate || localTime);
+  }
+
+  function localDateKey(value) {
+    var timestamp = normalizeTimestamp(value);
+    if (!timestamp) return '';
+    var date = new Date(timestamp);
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  }
+
+  function formatLocalDateLabel(value, nowValue) {
+    var timestamp = normalizeTimestamp(value);
+    if (!timestamp) return '';
+    var currentTimestamp = normalizeTimestamp(nowValue) || nowMilliseconds();
+    var messageKey = localDateKey(timestamp);
+    var todayKey = localDateKey(currentTimestamp);
+    if (messageKey === todayKey) return 'Today';
+
+    var currentDate = new Date(currentTimestamp);
+    var yesterday = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (messageKey === localDateKey(yesterday.getTime())) return 'Yesterday';
+    return formatLocalDate(timestamp);
+  }
+
+  function dateDividerPlan(messages, nowValue) {
+    if (!Array.isArray(messages)) return [];
+    var previousDateKey = '';
+    return messages.reduce(function (dividers, message, index) {
+      var createdAt = message && typeof message === 'object'
+        ? normalizeTimestamp(message.createdAt)
+        : normalizeTimestamp(readHtmlAttribute(message, MESSAGE_TIME_ATTRIBUTE));
+      var dateKey = localDateKey(createdAt);
+      if (dateKey && dateKey !== previousDateKey) {
+        dividers.push({
+          beforeIndex: index,
+          dateKey: dateKey,
+          label: formatLocalDateLabel(createdAt, nowValue)
+        });
+      }
+      if (dateKey) previousDateKey = dateKey;
+      return dividers;
+    }, []);
   }
 
   function utf8ByteLength(value) {
@@ -433,9 +501,39 @@
     var style = root.document.createElement('style');
     style.id = 'miq-chat-message-time-style';
     style.textContent =
-      '.chatbot__message-time{display:block;margin-top:7px;font-size:11px;line-height:1.2;font-weight:400;opacity:.62;white-space:nowrap;text-align:right;color:inherit}' +
-      '.is-ai .chatbot__message-time{text-align:left}';
+      '.chatbot__message-time{display:block;float:right;clear:both;margin:5px 0 -1px 10px;font-size:10px;line-height:1;font-weight:400;font-variant-numeric:tabular-nums;opacity:.58;white-space:nowrap;text-align:right;color:inherit}' +
+      '.chatbot__date-divider{align-self:center!important;display:block!important;width:auto!important;max-width:85%;margin:4px auto 14px!important;padding:5px 9px!important;border-radius:8px;background:rgba(95,99,104,.12);color:#5f6368;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:0;white-space:nowrap;text-align:center;pointer-events:none;user-select:none;transition:color .2s ease,background-color .2s ease}' +
+      '[data-theme="light"] .chatbot__date-divider{background:rgba(95,99,104,.12);color:#5f6368}' +
+      '[data-theme="dark"] .chatbot__date-divider{background:rgba(232,232,232,.12);color:#d0d0dc}';
     root.document.head.appendChild(style);
+  }
+
+  function renderDateDividers(target, nowValue) {
+    var element = target || (root && root.document ? root.document.querySelector('.chatbot__messages') : null);
+    if (!element || !element.querySelectorAll) return [];
+
+    Array.prototype.slice.call(element.querySelectorAll('.' + MESSAGE_DATE_DIVIDER_CLASS)).forEach(function (divider) {
+      if (divider.parentNode) divider.parentNode.removeChild(divider);
+    });
+
+    var renderedMessages = Array.prototype.slice.call(element.querySelectorAll('li.is-user, li.is-ai'));
+    var plan = dateDividerPlan(renderedMessages.map(function (message) {
+      return { createdAt: message.getAttribute(MESSAGE_TIME_ATTRIBUTE) };
+    }), nowValue);
+
+    if (!root || !root.document || typeof root.document.createElement !== 'function') return plan;
+    plan.forEach(function (entry) {
+      var message = renderedMessages[entry.beforeIndex];
+      if (!message || !message.parentNode || typeof message.parentNode.insertBefore !== 'function') return;
+      var divider = root.document.createElement('li');
+      divider.className = MESSAGE_DATE_DIVIDER_CLASS;
+      divider.setAttribute('data-chat-date', entry.dateKey);
+      divider.setAttribute('role', 'separator');
+      divider.setAttribute('aria-label', 'Messages from ' + entry.label);
+      divider.textContent = entry.label;
+      message.parentNode.insertBefore(divider, message);
+    });
+    return plan;
   }
 
   function messageMetadataFromElement(element, fallbackTimestamp) {
@@ -473,7 +571,8 @@
     }
 
     time.dateTime = utcIso(metadata.createdAt);
-    time.title = utcIso(metadata.createdAt);
+    time.title = formatLocalDateTime(metadata.createdAt);
+    time.setAttribute('aria-label', formatLocalDateTime(metadata.createdAt));
     time.textContent = formatLocalTimestamp(metadata.createdAt);
     return metadata;
   }
@@ -509,12 +608,14 @@
   function renderMessages(messages, target) {
     var element = target || (root && root.document ? root.document.querySelector('.chatbot__messages') : null);
     if (!element) return [];
+    ensureTimestampStyle();
     var normalized = normalizeMessages(messages, memoryState ? memoryState.savedAt : 0);
     element.innerHTML = normalized.map(function (message) { return message.html; }).join('');
     var rendered = Array.prototype.slice.call(element.querySelectorAll('li.is-user, li.is-ai'));
     rendered.forEach(function (message, index) {
       decorateMessageElement(message, normalized[index] ? normalized[index].createdAt : 0);
     });
+    renderDateDividers(element);
     return normalized;
   }
 
@@ -672,11 +773,14 @@
   function decorateOpenChat() {
     if (!root || !root.document) return;
     ensureTimestampStyle();
-    var messages = Array.prototype.slice.call(root.document.querySelectorAll('.chatbot__messages li.is-user, .chatbot__messages li.is-ai'));
+    var list = root.document.querySelector('.chatbot__messages');
+    if (!list) return;
+    var messages = Array.prototype.slice.call(list.querySelectorAll('li.is-user, li.is-ai'));
     var baseTimestamp = nowMilliseconds() - Math.max(0, messages.length - 1);
     messages.forEach(function (message, index) {
       decorateMessageElement(message, baseTimestamp + index);
     });
+    renderDateDividers(list);
   }
 
   function installMessageObserver() {
@@ -686,17 +790,28 @@
       var list = root.document.querySelector('.chatbot__messages');
       if (!list || typeof root.MutationObserver !== 'function') return;
       var observer = new root.MutationObserver(function (mutations) {
+        var refreshDateDividers = false;
         mutations.forEach(function (mutation) {
           Array.prototype.slice.call(mutation.addedNodes || []).forEach(function (node) {
             if (!node || node.nodeType !== 1) return;
-            if (node.matches && node.matches('li.is-user, li.is-ai')) decorateMessageElement(node);
+            if (node.matches && node.matches('li.is-user, li.is-ai')) {
+              decorateMessageElement(node);
+              refreshDateDividers = true;
+            }
             if (node.querySelectorAll) {
               Array.prototype.slice.call(node.querySelectorAll('li.is-user, li.is-ai')).forEach(function (message) {
                 decorateMessageElement(message);
+                refreshDateDividers = true;
               });
             }
           });
+          Array.prototype.slice.call(mutation.removedNodes || []).forEach(function (node) {
+            if (!node || node.nodeType !== 1) return;
+            if (node.matches && node.matches('li.is-user, li.is-ai')) refreshDateDividers = true;
+            if (node.querySelector && node.querySelector('li.is-user, li.is-ai')) refreshDateDividers = true;
+          });
         });
+        if (refreshDateDividers) renderDateDividers(list);
       });
       observer.observe(list, { childList: true, subtree: true });
     };
@@ -725,28 +840,38 @@
     }
   }
 
+  function installThemeRefresh() {
+    if (!root || !root.document || !root.document.documentElement || !root.document.documentElement.addEventListener) return;
+    root.document.documentElement.addEventListener('themechange', decorateOpenChat);
+  }
+
   installStorageGuard();
   readyPromise = hydrateFromAccount();
   installMessageObserver();
+  installThemeRefresh();
   scheduleLegacyBindings();
 
   return {
     captureMessages: captureMessages,
     clear: clear,
     decorateOpenChat: decorateOpenChat,
+    dateDividerPlan: dateDividerPlan,
     fitState: fitState,
+    formatLocalDateLabel: formatLocalDateLabel,
     formatLocalTimestamp: formatLocalTimestamp,
     getState: function () { return memoryState || readLocalState(); },
     maxBytes: maxBytes,
     maxMessages: MAX_MESSAGES,
     normalizeState: normalizeState,
     ready: function () { return readyPromise; },
+    renderDateDividers: renderDateDividers,
     renderMessages: renderMessages,
     restoreOpenChatState: restoreOpenChatState,
     save: save,
     saveOpenChatState: saveOpenChatState,
     serializedByteLength: serializedByteLength,
     storageKey: STORAGE_KEY,
+    localDateKey: localDateKey,
     utcIso: utcIso,
     utf8ByteLength: utf8ByteLength
   };

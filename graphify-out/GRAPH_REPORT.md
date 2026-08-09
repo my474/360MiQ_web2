@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-08-09)
+# Graph Report - .  (2026-08-10)
 
 ## Corpus Check
-- 155 files · ~789,726 words
+- 155 files · ~790,391 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1554 nodes · 3000 edges · 155 communities detected
+- 1561 nodes · 3024 edges · 155 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -201,11 +201,11 @@ Nodes (19): assertCalloutBubbleRendering(), assertCrosshairAxisMarkers(), assert
 
 ### Community 4 - "Community 4"
 Cohesion: 0.09
-Nodes (57): addSvgClass(), applyHighchartsTheme(), bindHighchartsLegendTheme(), bindLeftYAxisTitleTheme(), bindSentimentAxisThemeToggle(), collectAxisCandidates(), ensureAxisStyleColor(), exportMenuStyle() (+49 more)
+Nodes (57): apiUrl(), applyRemoteStateToOpenChat(), applyStateToOpenChat(), cancelPendingRemoteSave(), canonicalMessageHtml(), captureMessages(), cleanMessageId(), clear() (+49 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.1
-Nodes (51): apiUrl(), applyRemoteStateToOpenChat(), applyStateToOpenChat(), cancelPendingRemoteSave(), canonicalMessageHtml(), captureMessages(), cleanMessageId(), clear() (+43 more)
+Cohesion: 0.09
+Nodes (57): addSvgClass(), applyHighchartsTheme(), bindHighchartsLegendTheme(), bindLeftYAxisTitleTheme(), bindSentimentAxisThemeToggle(), collectAxisCandidates(), ensureAxisStyleColor(), exportMenuStyle() (+49 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.08
@@ -987,4 +987,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 4` be split into smaller, more focused modules?**
   _Cohesion score 0.09 - nodes in this community are weakly interconnected._
 - **Should `Community 5` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09 - nodes in this community are weakly interconnected._

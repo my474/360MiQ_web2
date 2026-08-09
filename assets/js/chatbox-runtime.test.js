@@ -50,7 +50,8 @@ var footer = fs.readFileSync(path.join(__dirname, '..', '..', 'footer.php'), 'ut
 var inlineScript = footer.match(/<script id="rendered-js" >([\s\S]*?)<\/script>/);
 assert.ok(inlineScript, 'chatbox inline script is present');
 assert.ok(
-  footer.indexOf('<script src="/assets/js/chatbox-runtime.js?v=20260731-2"></script>') < footer.indexOf('<script id="rendered-js" >'),
+  footer.includes('<script src="assets/js/chatbox-runtime.js?v=20260731-2"></script>') &&
+    footer.indexOf('<script src="assets/js/chatbox-runtime.js?v=20260731-2"></script>') < footer.indexOf('<script id="rendered-js" >'),
   'chatbox runtime loads before the inline integration'
 );
 assert.ok(
