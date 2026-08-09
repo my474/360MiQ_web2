@@ -798,24 +798,63 @@
     return Number(scroller.scrollTop) || 0;
   }
 
-  function scrollOpenChatToBottom(scroller) {
-    var element = scroller || (root && root.document ? root.document.querySelector('.chatbot__message-window') : null);
-    if (!element) return;
+  function captureChatScrollState(scroller) {
+    if (!scroller) return null;
+    var maximum = Math.max(0, (Number(scroller.scrollHeight) || 0) - (Number(scroller.clientHeight) || 0));
+    var top = Math.min(maximum, Math.max(0, Number(scroller.scrollTop) || 0));
+    return {
+      top: top,
+      wasAtBottom: maximum - top <= 4
+    };
+  }
+
+  function restoreChatScrollState(scroller, state) {
+    if (!scroller || !state) return 0;
+    if (scroller.style) scroller.style.scrollBehavior = 'auto';
+    var maximum = Math.max(0, (Number(scroller.scrollHeight) || 0) - (Number(scroller.clientHeight) || 0));
+    var top = state.wasAtBottom
+      ? maximum
+      : Math.min(maximum, Math.max(0, Number(state.top) || 0));
+    scroller.scrollTop = top;
+    return Number(scroller.scrollTop) || 0;
+  }
+
+  function applyOpenChatScroll(element, position) {
+    if (!element || typeof position !== 'function') return;
     element.__miqSuppressScrollPillUntil = nowMilliseconds() + SCROLL_DATE_PILL_OPEN_SUPPRESSION;
     var pillContainer = chatboxForScroller(element);
     var pill = pillContainer && pillContainer.querySelector
       ? pillContainer.querySelector('.' + SCROLL_DATE_PILL_CLASS)
       : null;
     if (pill && pill.classList) pill.classList.remove(SCROLL_DATE_PILL_VISIBLE_CLASS);
-    scrollChatToBottom(element);
+    position();
     if (root && typeof root.requestAnimationFrame === 'function') {
       root.requestAnimationFrame(function () {
-        scrollChatToBottom(element);
-        root.requestAnimationFrame(function () {
-          scrollChatToBottom(element);
-        });
+        position();
+        root.requestAnimationFrame(position);
       });
     }
+  }
+
+  function scrollOpenChatToBottom(scroller) {
+    var element = scroller || (root && root.document ? root.document.querySelector('.chatbot__message-window') : null);
+    if (!element) return;
+    applyOpenChatScroll(element, function () { scrollChatToBottom(element); });
+  }
+
+  function restoreOpenChatScroll(scroller, state) {
+    var element = scroller || (root && root.document ? root.document.querySelector('.chatbot__message-window') : null);
+    if (!element || !state) return;
+    applyOpenChatScroll(element, function () { restoreChatScrollState(element, state); });
+  }
+
+  function positionChatForOpen(scroller, isFirstOpen, savedState) {
+    if (isFirstOpen || !savedState) {
+      scrollOpenChatToBottom(scroller);
+      return 'bottom';
+    }
+    restoreOpenChatScroll(scroller, savedState);
+    return 'restored';
   }
 
   function installChatOpenScroll() {
@@ -826,24 +865,51 @@
       if (!scroller || !chatbot || !chatbot.classList || chatbot.__miqOpenScrollInstalled) return;
       chatbot.__miqOpenScrollInstalled = true;
       var wasClosed = chatbot.classList.contains('chatbot--closed');
+      var hasOpened = false;
+      var savedScrollState = null;
+      var capturedForCurrentOpen = false;
+      var positionForOpen = function () {
+        var firstOpenAfterLoad = !hasOpened;
+        scroller.__miqFirstOpenAfterLoad = firstOpenAfterLoad;
+        positionChatForOpen(scroller, firstOpenAfterLoad, savedScrollState);
+        hasOpened = true;
+        capturedForCurrentOpen = false;
+      };
       var handleState = function () {
         var isClosed = chatbot.classList.contains('chatbot--closed');
-        if (wasClosed && !isClosed) scrollOpenChatToBottom(scroller);
+        if (!wasClosed && isClosed && !capturedForCurrentOpen) {
+          savedScrollState = captureChatScrollState(scroller);
+          capturedForCurrentOpen = true;
+        }
+        if (!wasClosed && isClosed) scroller.__miqFirstOpenAfterLoad = false;
+        if (wasClosed && !isClosed) positionForOpen();
         wasClosed = isClosed;
       };
+
+      var header = chatbot.querySelector ? chatbot.querySelector('.chatbot__header') : null;
+      if (header && header.addEventListener) {
+        header.addEventListener('click', function () {
+          if (!chatbot.classList.contains('chatbot--closed')) {
+            savedScrollState = captureChatScrollState(scroller);
+            capturedForCurrentOpen = true;
+            setTimeout(function () {
+              if (!chatbot.classList.contains('chatbot--closed')) capturedForCurrentOpen = false;
+            }, 0);
+          }
+        }, true);
+      }
 
       if (typeof root.MutationObserver === 'function') {
         var observer = new root.MutationObserver(handleState);
         observer.observe(chatbot, { attributes: true, attributeFilter: ['class'] });
       } else {
-        var header = chatbot.querySelector ? chatbot.querySelector('.chatbot__header') : null;
         if (header && header.addEventListener) {
           header.addEventListener('click', function () {
             setTimeout(handleState, 0);
           });
         }
       }
-      if (!wasClosed) scrollOpenChatToBottom(scroller);
+      if (!wasClosed) positionForOpen();
     };
 
     if (root.document.readyState === 'loading') {
@@ -1053,6 +1119,10 @@
       decorateMessageElement(message, normalized[index] ? normalized[index].createdAt : 0);
     });
     renderDateDividers(element);
+    var scroller = element.closest ? element.closest('.chatbot__message-window') : null;
+    if (scroller && scroller.__miqFirstOpenAfterLoad && isOpenChatScroller(scroller)) {
+      scrollOpenChatToBottom(scroller);
+    }
     return normalized;
   }
 
@@ -1303,6 +1373,7 @@
 
   return {
     captureMessages: captureMessages,
+    captureChatScrollState: captureChatScrollState,
     clear: clear,
     applyChatChartTheme: applyChatChartTheme,
     chatChartPalette: chatChartPalette,
@@ -1320,11 +1391,14 @@
     renderDateDividers: renderDateDividers,
     renderMessages: renderMessages,
     restoreOpenChatState: restoreOpenChatState,
+    restoreChatScrollState: restoreChatScrollState,
+    restoreOpenChatScroll: restoreOpenChatScroll,
     save: save,
     saveOpenChatState: saveOpenChatState,
     scrollChatToBottom: scrollChatToBottom,
     scrollDateLabel: scrollDateLabel,
     scrollOpenChatToBottom: scrollOpenChatToBottom,
+    positionChatForOpen: positionChatForOpen,
     serializedByteLength: serializedByteLength,
     storageKey: STORAGE_KEY,
     localDateKey: localDateKey,

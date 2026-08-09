@@ -1168,7 +1168,7 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
-<script src="assets/js/chatbox-sync.js?v=20260810-8"></script>
+<script src="assets/js/chatbox-sync.js?v=20260810-9"></script>
 <script src="assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
@@ -1236,6 +1236,7 @@ if (event.which == 13) validateMessage();
 
 $chatbotHeader.addEventListener('click', () => {
 const isOpening = $chatbot.classList.contains('chatbot--closed');
+const firstOpenAfterLoad = isFirstOpen;
 
 toggle($chatbot, 'chatbot--closed');
 
@@ -1250,9 +1251,9 @@ if (isFirstOpen)
     isFirstOpen = false;
 }
 
-if (window.MiqChatboxSync && typeof window.MiqChatboxSync.scrollOpenChatToBottom === 'function')
-    window.MiqChatboxSync.scrollOpenChatToBottom($chatbotMessageWindow);
-else
+// The shared runtime positions every opening. Without it, preserve the
+// browser's existing position after the first bottom snap.
+if (!window.MiqChatboxSync && firstOpenAfterLoad)
     $chatbotMessageWindow.scrollTop = $chatbotMessageWindow.scrollHeight;
 
 focusChatbotInput();
