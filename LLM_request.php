@@ -182,6 +182,10 @@
             $text = stripReasoningTrace($text);
         }
 
+        if ($isSearch === '') {
+            $text = normalizeBulletMarkers($text);
+        }
+
         $prefix = "Based on the provided data, ";
         if (str_starts_with($text, $prefix)) {
             $text = ucfirst(ltrim(substr($text, strlen($prefix))));
@@ -319,7 +323,7 @@ function ollama($prompt, $isSearch, $system_prompt)
             ],
             [
                 "role"=> "system",
-                "content"=> $isSearch == '' ? $system_prompt."Consider the data is your internal knowlegde, no need to say 'Based on the provided data'. Answer in 5 to 7 short sentences and no more than 130 words total. Use at most 3 bullet points, and keep each sentence under 25 words. Include only the most decision-relevant technical, fundamental, and valuation facts. Do not repeat or restate similar metrics. Use $ sign in front of price. DO NOT give trading or investment recommendation, such as buy/sell/hold. You are an AI stock assistant. Only answer questions that are related to finance, investing, stock markets, stock, macroeconomics, or business. If the question is not related to these topics, respond with 'I'm only able to answer stock-related questions.'" : "Do not guess. Do not explain. Only return a stock symbol found in the user's message. Wrap the stock symbol in @@. If no symbol is mentioned or implied explicitly, return an empty string.",
+                "content"=> $isSearch == '' ? $system_prompt."Consider the data is your internal knowlegde, no need to say 'Based on the provided data'. Answer in 5 to 7 short sentences and no more than 130 words total. Use at most 3 bullet points, and keep each sentence under 25 words. Prefix every bullet with the Unicode bullet character • followed by one space; never use *, -, +, or numbered list markers for bullets. Include only the most decision-relevant technical, fundamental, and valuation facts. Do not repeat or restate similar metrics. Use $ sign in front of price. DO NOT give trading or investment recommendation, such as buy/sell/hold. You are an AI stock assistant. Only answer questions that are related to finance, investing, stock markets, stock, macroeconomics, or business. If the question is not related to these topics, respond with 'I'm only able to answer stock-related questions.'" : "Do not guess. Do not explain. Only return a stock symbol found in the user's message. Wrap the stock symbol in @@. If no symbol is mentioned or implied explicitly, return an empty string.",
             ],
         ],
         //'prompt' => $prompt . ' (Answer in 1 to 2 sentences and less than 40 words.)', //'Explain the risk-return tradeoff in finance.',
@@ -416,6 +420,13 @@ function stripReasoningTrace($text)
     }
 
     return trim($text);
+}
+
+function normalizeBulletMarkers($text)
+{
+    // LLM replies are rendered as plain text with <br> line breaks, so replace
+    // Markdown-style list markers with the typographic bullet users see.
+    return preg_replace('/^([ \t]*)[*+-][ \t]+/mu', '$1• ', (string)$text);
 }
 
 function signage($value)
