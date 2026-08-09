@@ -568,10 +568,12 @@
       '.chatbot__date-divider{align-self:center!important;display:block!important;width:auto!important;max-width:85%;margin:4px auto 14px!important;padding:5px 9px!important;border-radius:8px;background:rgba(95,99,104,.12);color:#5f6368;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:0;white-space:nowrap;text-align:center;pointer-events:none;user-select:none;transition:color .2s ease,background-color .2s ease}' +
       '.chatbot__scroll-date-pill{position:absolute;top:68px;left:0;right:0;z-index:4;display:flex;justify-content:center;height:0;overflow:visible;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .18s ease,transform .18s ease;will-change:opacity,transform}' +
       '.chatbot__scroll-date-pill.is-visible{opacity:1;transform:translateY(0)}' +
-      '.chatbot__scroll-date-pill .chatbot__date-divider{margin:0!important}' +
+      '.chatbot__scroll-date-pill .chatbot__date-divider{margin:0!important;background:rgba(244,246,248,.96)}' +
       '.chatbot--closed .chatbot__scroll-date-pill{display:none}' +
       '[data-theme="light"] .chatbot__date-divider{background:rgba(95,99,104,.12);color:#5f6368}' +
       '[data-theme="dark"] .chatbot__date-divider{background:rgba(232,232,232,.12);color:#d0d0dc}' +
+      '[data-theme="light"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(244,246,248,.96);color:#5f6368}' +
+      '[data-theme="dark"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(58,58,76,.96);color:#e2e2ea}' +
       '@media (prefers-reduced-motion:reduce){.chatbot__scroll-date-pill{transition:none}}';
     root.document.head.appendChild(style);
   }

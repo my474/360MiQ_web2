@@ -93,7 +93,7 @@ $miq_blog_chat_config = array(
 );
 ?>
 <script>window.__MIQ_CHATBOX_SYNC__=<?php echo json_encode( $miq_blog_chat_config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?>;</script>
-<script src="/assets/js/chatbox-sync.js?v=20260810-5"></script>
+<script src="/assets/js/chatbox-sync.js?v=20260810-6"></script>
 
 <script src="https://code.highcharts.com/8.2.0/highcharts.js"></script>
 <script src="https://code.highcharts.com/8.2.0/modules/no-data-to-display.js"></script>

@@ -108,11 +108,11 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-5"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-6"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
 assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
 assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
-assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-5"'), 'production blog loads chat sync from the main-site root');
-assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-5"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-6"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-6"'), 'alternate production blog footer loads chat sync from the main-site root');
 assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
 assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
@@ -129,6 +129,8 @@ assert.ok(syncSource.includes('display:block;float:none;clear:both;width:100%'),
 assert.ok(syncSource.includes('SCROLL_DATE_PILL_TOP_GAP = 14'), 'the floating pill has breathing room below the chat header');
 assert.ok(syncSource.includes('[data-theme="light"] .chatbot__date-divider'), 'date dividers support an initial light-mode load');
 assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__date-divider'), 'date dividers support an initial dark-mode load');
+assert.ok(syncSource.includes('[data-theme="light"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(244,246,248,.96)'), 'the floating pill is nearly opaque in light mode');
+assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__scroll-date-pill .chatbot__date-divider{background:rgba(58,58,76,.96)'), 'the floating pill is nearly opaque in dark mode');
 assert.ok(syncSource.includes("addEventListener('themechange', decorateOpenChat)"), 'date dividers refresh during live light-dark-light theme toggles');
 assert.ok(syncSource.includes("label.className = MESSAGE_DATE_DIVIDER_CLASS + ' ' + SCROLL_DATE_PILL_LABEL_CLASS"), 'the scroll pill reuses the exact current date-stamp styling in every theme');
 assert.ok(syncSource.includes("scroller.addEventListener('wheel', markUserScrollIntent"), 'mouse and trackpad scrolling can reveal the date pill');
