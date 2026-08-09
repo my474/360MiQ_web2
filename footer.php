@@ -1168,7 +1168,7 @@ d="M10.912 24.259c-0.242-0.442-0.703-0.737-1.234-0.737-0 0-0 0-0 0h-0.56c-0.599-
   }
 </style>
 
-<script src="assets/js/chatbox-sync.js?v=20260810-4"></script>
+<script src="assets/js/chatbox-sync.js?v=20260810-5"></script>
 <script src="assets/js/chatbox-runtime.js?v=20260731-2"></script>
 <script id="rendered-js" >
 //clearChatState();
@@ -1202,7 +1202,6 @@ const $chatbotMessages = $document.querySelector('.chatbot__messages');
 const $chatbotInput = $document.querySelector('.chatbot__input');
 const $chatbotSubmit = $document.querySelector('.chatbot__submit');
 var initialMessage;
-var chatScrollState = null;
 
 const botLoadingDelay = 200;
 const botReplyDelay = 500;
@@ -1231,33 +1230,12 @@ restoreFocusScroll();
 requestAnimationFrame(restoreFocusScroll);
 };
 
-const restoreChatboxScroll = state => {
-if (!state)
-    return;
-
-requestAnimationFrame(() => {
-    ChatboxRuntime.restoreScrollState($chatbotMessageWindow, state);
-    requestAnimationFrame(() => {
-        ChatboxRuntime.restoreScrollState($chatbotMessageWindow, state);
-    });
-});
-
-// Highcharts can finish reflowing after the chat becomes visible.
-setTimeout(() => {
-    if (!$chatbot.classList.contains('chatbot--closed'))
-        ChatboxRuntime.restoreScrollState($chatbotMessageWindow, state);
-}, 120);
-};
-
 document.addEventListener('keypress', event => {
 if (event.which == 13) validateMessage();
 }, false);
 
 $chatbotHeader.addEventListener('click', () => {
 const isOpening = $chatbot.classList.contains('chatbot--closed');
-
-if (!isOpening)
-    chatScrollState = ChatboxRuntime.captureScrollState($chatbotMessageWindow);
 
 toggle($chatbot, 'chatbot--closed');
 
@@ -1272,8 +1250,12 @@ if (isFirstOpen)
     isFirstOpen = false;
 }
 
+if (window.MiqChatboxSync && typeof window.MiqChatboxSync.scrollOpenChatToBottom === 'function')
+    window.MiqChatboxSync.scrollOpenChatToBottom($chatbotMessageWindow);
+else
+    $chatbotMessageWindow.scrollTop = $chatbotMessageWindow.scrollHeight;
+
 focusChatbotInput();
-restoreChatboxScroll(chatScrollState);
 
 }, false);
 

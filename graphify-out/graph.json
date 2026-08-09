@@ -3265,559 +3265,599 @@
       "source_file": "assets\\js\\chatbox-sync.js",
       "source_location": "L1",
       "id": "assets_js_chatbox_sync_js",
-      "community": 2
+      "community": 1
     },
     {
       "label": "nowMilliseconds()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L42",
+      "source_location": "L44",
       "id": "chatbox_sync_nowmilliseconds",
-      "community": 2
+      "community": 1
     },
     {
       "label": "normalizeTimestamp()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L46",
+      "source_location": "L48",
       "id": "chatbox_sync_normalizetimestamp",
-      "community": 2
+      "community": 1
     },
     {
       "label": "utcIso()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L51",
+      "source_location": "L53",
       "id": "chatbox_sync_utciso",
-      "community": 2
+      "community": 1
     },
     {
       "label": "formatLocalTimestamp()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L61",
+      "source_location": "L63",
       "id": "chatbox_sync_formatlocaltimestamp",
-      "community": 2
+      "community": 1
     },
     {
       "label": "formatLocalDate()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L80",
+      "source_location": "L82",
       "id": "chatbox_sync_formatlocaldate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "formatLocalDateTime()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L100",
+      "source_location": "L102",
       "id": "chatbox_sync_formatlocaldatetime",
-      "community": 2
+      "community": 1
     },
     {
       "label": "localDateKey()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L106",
+      "source_location": "L108",
       "id": "chatbox_sync_localdatekey",
-      "community": 2
+      "community": 1
     },
     {
       "label": "localDayNumber()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L113",
+      "source_location": "L115",
       "id": "chatbox_sync_localdaynumber",
-      "community": 2
+      "community": 1
     },
     {
       "label": "formatLocalWeekday()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L120",
+      "source_location": "L122",
       "id": "chatbox_sync_formatlocalweekday",
-      "community": 2
+      "community": 1
     },
     {
       "label": "formatLocalDateLabel()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L134",
+      "source_location": "L136",
       "id": "chatbox_sync_formatlocaldatelabel",
-      "community": 2
+      "community": 1
     },
     {
       "label": "dateDividerPlan()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L151",
+      "source_location": "L153",
       "id": "chatbox_sync_datedividerplan",
-      "community": 2
+      "community": 1
     },
     {
       "label": "scrollDateLabel()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L177",
+      "source_location": "L179",
       "id": "chatbox_sync_scrolldatelabel",
-      "community": 2
+      "community": 1
     },
     {
       "label": "utf8ByteLength()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L199",
+      "source_location": "L201",
       "id": "chatbox_sync_utf8bytelength",
-      "community": 2
+      "community": 1
     },
     {
       "label": "cloneObject()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L211",
+      "source_location": "L213",
       "id": "chatbox_sync_cloneobject",
-      "community": 2
+      "community": 1
     },
     {
       "label": "copyLastEntries()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L216",
+      "source_location": "L218",
       "id": "chatbox_sync_copylastentries",
-      "community": 2
+      "community": 1
     },
     {
       "label": "inferNextCount()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L226",
+      "source_location": "L228",
       "id": "chatbox_sync_infernextcount",
-      "community": 2
+      "community": 1
     },
     {
       "label": "hashString()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L235",
+      "source_location": "L237",
       "id": "chatbox_sync_hashstring",
-      "community": 2
+      "community": 1
     },
     {
       "label": "cleanMessageId()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L245",
+      "source_location": "L247",
       "id": "chatbox_sync_cleanmessageid",
-      "community": 2
+      "community": 1
     },
     {
       "label": "isEstimatedTimestampMessage()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L250",
+      "source_location": "L252",
       "id": "chatbox_sync_isestimatedtimestampmessage",
-      "community": 2
+      "community": 1
     },
     {
       "label": "createMessageId()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L254",
+      "source_location": "L256",
       "id": "chatbox_sync_createmessageid",
-      "community": 2
+      "community": 1
     },
     {
       "label": "readHtmlAttribute()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L262",
+      "source_location": "L264",
       "id": "chatbox_sync_readhtmlattribute",
-      "community": 2
+      "community": 1
     },
     {
       "label": "removeHtmlAttribute()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L268",
+      "source_location": "L270",
       "id": "chatbox_sync_removehtmlattribute",
-      "community": 2
+      "community": 1
     },
     {
       "label": "stripRenderedTimestamp()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L273",
+      "source_location": "L275",
       "id": "chatbox_sync_striprenderedtimestamp",
-      "community": 2
+      "community": 1
     },
     {
       "label": "canonicalMessageHtml()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L279",
+      "source_location": "L281",
       "id": "chatbox_sync_canonicalmessagehtml",
-      "community": 2
+      "community": 1
     },
     {
       "label": "roleFromHtml()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L286",
+      "source_location": "L288",
       "id": "chatbox_sync_rolefromhtml",
-      "community": 2
+      "community": 1
     },
     {
       "label": "messageHtmlWithMetadata()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L292",
+      "source_location": "L294",
       "id": "chatbox_sync_messagehtmlwithmetadata",
-      "community": 2
+      "community": 1
     },
     {
       "label": "findExistingMessage()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L324",
+      "source_location": "L326",
       "id": "chatbox_sync_findexistingmessage",
-      "community": 2
+      "community": 1
     },
     {
       "label": "normalizeMessages()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L335",
+      "source_location": "L337",
       "id": "chatbox_sync_normalizemessages",
-      "community": 2
+      "community": 1
     },
     {
       "label": "normalizeState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L378",
+      "source_location": "L380",
       "id": "chatbox_sync_normalizestate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "serializeState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L394",
+      "source_location": "L396",
       "id": "chatbox_sync_serializestate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "serializedByteLength()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L398",
+      "source_location": "L400",
       "id": "chatbox_sync_serializedbytelength",
-      "community": 2
+      "community": 1
     },
     {
       "label": "fitState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L402",
+      "source_location": "L404",
       "id": "chatbox_sync_fitstate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "readLocalState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L430",
+      "source_location": "L432",
       "id": "chatbox_sync_readlocalstate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "writeLocalState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L445",
+      "source_location": "L447",
       "id": "chatbox_sync_writelocalstate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "parseResponse()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L465",
+      "source_location": "L467",
       "id": "chatbox_sync_parseresponse",
-      "community": 2
+      "community": 1
     },
     {
       "label": "apiUrl()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L478",
+      "source_location": "L480",
       "id": "chatbox_sync_apiurl",
-      "community": 2
+      "community": 1
     },
     {
       "label": "isLoggedIn()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L488",
+      "source_location": "L490",
       "id": "chatbox_sync_isloggedin",
-      "community": 2
+      "community": 1
     },
     {
       "label": "queueRemoteSave()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L492",
+      "source_location": "L494",
       "id": "chatbox_sync_queueremotesave",
-      "community": 2
+      "community": 1
     },
     {
       "label": "cancelPendingRemoteSave()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L523",
+      "source_location": "L525",
       "id": "chatbox_sync_cancelpendingremotesave",
-      "community": 2
+      "community": 1
     },
     {
       "label": "meaningfulState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L531",
+      "source_location": "L533",
       "id": "chatbox_sync_meaningfulstate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "messagesNeedMigration()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L538",
+      "source_location": "L540",
       "id": "chatbox_sync_messagesneedmigration",
-      "community": 2
+      "community": 1
     },
     {
       "label": "remoteTimestamp()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L548",
+      "source_location": "L550",
       "id": "chatbox_sync_remotetimestamp",
-      "community": 2
+      "community": 1
     },
     {
       "label": "ensureTimestampStyle()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L559",
+      "source_location": "L561",
       "id": "chatbox_sync_ensuretimestampstyle",
-      "community": 2
+      "community": 1
     },
     {
       "label": "ensureScrollDatePill()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L577",
+      "source_location": "L579",
       "id": "chatbox_sync_ensurescrolldatepill",
-      "community": 2
+      "community": 1
     },
     {
       "label": "positionScrollDatePill()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L594",
+      "source_location": "L596",
       "id": "chatbox_sync_positionscrolldatepill",
-      "community": 2
+      "community": 1
     },
     {
       "label": "updateScrollDatePill()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L605",
+      "source_location": "L607",
       "id": "chatbox_sync_updatescrolldatepill",
-      "community": 2
+      "community": 1
     },
     {
       "label": "isScrollKey()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L620",
+      "source_location": "L622",
       "id": "chatbox_sync_isscrollkey",
-      "community": 2
+      "community": 1
     },
     {
       "label": "isEditableTarget()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L626",
+      "source_location": "L628",
       "id": "chatbox_sync_iseditabletarget",
-      "community": 2
+      "community": 1
+    },
+    {
+      "label": "chatboxForScroller()",
+      "file_type": "code",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L634",
+      "id": "chatbox_sync_chatboxforscroller",
+      "community": 1
+    },
+    {
+      "label": "isOpenChatScroller()",
+      "file_type": "code",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L639",
+      "id": "chatbox_sync_isopenchatscroller",
+      "community": 1
+    },
+    {
+      "label": "scrollChatToBottom()",
+      "file_type": "code",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L644",
+      "id": "chatbox_sync_scrollchattobottom",
+      "community": 1
+    },
+    {
+      "label": "scrollOpenChatToBottom()",
+      "file_type": "code",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L651",
+      "id": "chatbox_sync_scrollopenchattobottom",
+      "community": 1
+    },
+    {
+      "label": "installChatOpenScroll()",
+      "file_type": "code",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L671",
+      "id": "chatbox_sync_installchatopenscroll",
+      "community": 1
     },
     {
       "label": "installScrollDatePill()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L632",
+      "source_location": "L706",
       "id": "chatbox_sync_installscrolldatepill",
-      "community": 2
+      "community": 1
     },
     {
       "label": "renderDateDividers()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L710",
+      "source_location": "L788",
       "id": "chatbox_sync_renderdatedividers",
-      "community": 2
+      "community": 1
     },
     {
       "label": "messageMetadataFromElement()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L741",
+      "source_location": "L819",
       "id": "chatbox_sync_messagemetadatafromelement",
-      "community": 2
+      "community": 1
     },
     {
       "label": "decorateMessageElement()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L757",
+      "source_location": "L835",
       "id": "chatbox_sync_decoratemessageelement",
-      "community": 2
+      "community": 1
     },
     {
       "label": "storedMessageFromElement()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L789",
+      "source_location": "L867",
       "id": "chatbox_sync_storedmessagefromelement",
-      "community": 2
+      "community": 1
     },
     {
       "label": "captureMessages()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L804",
+      "source_location": "L882",
       "id": "chatbox_sync_capturemessages",
-      "community": 2
+      "community": 1
     },
     {
       "label": "renderMessages()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L817",
+      "source_location": "L895",
       "id": "chatbox_sync_rendermessages",
-      "community": 2
+      "community": 1
     },
     {
       "label": "replaceObject()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L831",
+      "source_location": "L909",
       "id": "chatbox_sync_replaceobject",
-      "community": 2
+      "community": 1
     },
     {
       "label": "applyStateToOpenChat()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L837",
+      "source_location": "L915",
       "id": "chatbox_sync_applystatetoopenchat",
-      "community": 2
+      "community": 1
     },
     {
       "label": "applyRemoteStateToOpenChat()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L856",
+      "source_location": "L938",
       "id": "chatbox_sync_applyremotestatetoopenchat",
-      "community": 2
+      "community": 1
     },
     {
       "label": "hydrateFromAccount()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L860",
+      "source_location": "L942",
       "id": "chatbox_sync_hydratefromaccount",
-      "community": 2
+      "community": 1
     },
     {
       "label": "installStorageGuard()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L889",
+      "source_location": "L971",
       "id": "chatbox_sync_installstorageguard",
-      "community": 2
+      "community": 1
     },
     {
       "label": "save()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L928",
+      "source_location": "L1010",
       "id": "chatbox_sync_save",
-      "community": 2
+      "community": 1
     },
     {
       "label": "saveOpenChatState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L938",
+      "source_location": "L1020",
       "id": "chatbox_sync_saveopenchatstate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "restoreOpenChatState()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L953",
+      "source_location": "L1035",
       "id": "chatbox_sync_restoreopenchatstate",
-      "community": 2
+      "community": 1
     },
     {
       "label": "clear()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L961",
+      "source_location": "L1043",
       "id": "chatbox_sync_clear",
-      "community": 2
+      "community": 1
     },
     {
       "label": "decorateOpenChat()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L982",
+      "source_location": "L1064",
       "id": "chatbox_sync_decorateopenchat",
-      "community": 2
+      "community": 1
     },
     {
       "label": "installMessageObserver()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L995",
+      "source_location": "L1077",
       "id": "chatbox_sync_installmessageobserver",
-      "community": 2
+      "community": 1
     },
     {
       "label": "installLegacyBindings()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1035",
+      "source_location": "L1117",
       "id": "chatbox_sync_installlegacybindings",
-      "community": 2
+      "community": 1
     },
     {
       "label": "scheduleLegacyBindings()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1042",
+      "source_location": "L1124",
       "id": "chatbox_sync_schedulelegacybindings",
-      "community": 2
+      "community": 1
     },
     {
       "label": "installThemeRefresh()",
       "file_type": "code",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1052",
+      "source_location": "L1134",
       "id": "chatbox_sync_installthemerefresh",
-      "community": 2
+      "community": 1
     },
     {
       "label": "chatbox-sync.test.js",
@@ -8801,7 +8841,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1",
       "id": "assets_js_pages_tool_stock_chart_js",
-      "community": 1
+      "community": 2
     },
     {
       "label": "accountChartPreferences()",
@@ -8809,7 +8849,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L25",
       "id": "tool_stock_chart_accountchartpreferences",
-      "community": 1
+      "community": 2
     },
     {
       "label": "setAccountSyncStatus()",
@@ -8817,7 +8857,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L32",
       "id": "tool_stock_chart_setaccountsyncstatus",
-      "community": 1
+      "community": 2
     },
     {
       "label": "normalizeCode()",
@@ -8825,7 +8865,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L39",
       "id": "tool_stock_chart_normalizecode",
-      "community": 1
+      "community": 2
     },
     {
       "label": "isValidCode()",
@@ -8833,7 +8873,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L46",
       "id": "tool_stock_chart_isvalidcode",
-      "community": 1
+      "community": 2
     },
     {
       "label": "setStatus()",
@@ -8841,7 +8881,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L50",
       "id": "tool_stock_chart_setstatus",
-      "community": 1
+      "community": 2
     },
     {
       "label": "setSharedSaveVisible()",
@@ -8849,7 +8889,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L57",
       "id": "tool_stock_chart_setsharedsavevisible",
-      "community": 1
+      "community": 2
     },
     {
       "label": "closeStockAutocomplete()",
@@ -8857,7 +8897,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L63",
       "id": "tool_stock_chart_closestockautocomplete",
-      "community": 1
+      "community": 2
     },
     {
       "label": "barDateKey()",
@@ -8865,7 +8905,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L73",
       "id": "tool_stock_chart_bardatekey",
-      "community": 1
+      "community": 2
     },
     {
       "label": "visibleDateRangeForChart()",
@@ -8873,7 +8913,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L77",
       "id": "tool_stock_chart_visibledaterangeforchart",
-      "community": 1
+      "community": 2
     },
     {
       "label": "applyVisibleDateRange()",
@@ -8881,7 +8921,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L97",
       "id": "tool_stock_chart_applyvisibledaterange",
-      "community": 1
+      "community": 2
     },
     {
       "label": "cleanMetadataText()",
@@ -8889,7 +8929,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L140",
       "id": "tool_stock_chart_cleanmetadatatext",
-      "community": 1
+      "community": 2
     },
     {
       "label": "marketProfile()",
@@ -8897,7 +8937,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L144",
       "id": "tool_stock_chart_marketprofile",
-      "community": 1
+      "community": 2
     },
     {
       "label": "stockMetadataFromSource()",
@@ -8905,7 +8945,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L183",
       "id": "tool_stock_chart_stockmetadatafromsource",
-      "community": 1
+      "community": 2
     },
     {
       "label": "rememberStockMetadata()",
@@ -8913,7 +8953,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L202",
       "id": "tool_stock_chart_rememberstockmetadata",
-      "community": 1
+      "community": 2
     },
     {
       "label": "stockMetadataForCode()",
@@ -8921,7 +8961,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L222",
       "id": "tool_stock_chart_stockmetadataforcode",
-      "community": 1
+      "community": 2
     },
     {
       "label": "recentStocks()",
@@ -8929,7 +8969,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L241",
       "id": "tool_stock_chart_recentstocks",
-      "community": 1
+      "community": 2
     },
     {
       "label": "recordRecentStock()",
@@ -8937,7 +8977,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L255",
       "id": "tool_stock_chart_recordrecentstock",
-      "community": 1
+      "community": 2
     },
     {
       "label": "hasStockNameMetadata()",
@@ -8945,7 +8985,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L270",
       "id": "tool_stock_chart_hasstocknamemetadata",
-      "community": 1
+      "community": 2
     },
     {
       "label": "applyStockMetadata()",
@@ -8953,7 +8993,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L274",
       "id": "tool_stock_chart_applystockmetadata",
-      "community": 1
+      "community": 2
     },
     {
       "label": "ensureEngineReady()",
@@ -8961,7 +9001,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L285",
       "id": "tool_stock_chart_ensureengineready",
-      "community": 1
+      "community": 2
     },
     {
       "label": "escapeLayoutId()",
@@ -8969,7 +9009,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L335",
       "id": "tool_stock_chart_escapelayoutid",
-      "community": 1
+      "community": 2
     },
     {
       "label": "hasStoredLayout()",
@@ -8977,7 +9017,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L339",
       "id": "tool_stock_chart_hasstoredlayout",
-      "community": 1
+      "community": 2
     },
     {
       "label": "chartLayoutId()",
@@ -8985,7 +9025,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L347",
       "id": "tool_stock_chart_chartlayoutid",
-      "community": 1
+      "community": 2
     },
     {
       "label": "chartLocalMetaKey()",
@@ -8993,7 +9033,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L353",
       "id": "tool_stock_chart_chartlocalmetakey",
-      "community": 1
+      "community": 2
     },
     {
       "label": "loadChartLocalMeta()",
@@ -9001,7 +9041,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L357",
       "id": "tool_stock_chart_loadchartlocalmeta",
-      "community": 1
+      "community": 2
     },
     {
       "label": "saveChartLocalMeta()",
@@ -9009,7 +9049,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L366",
       "id": "tool_stock_chart_savechartlocalmeta",
-      "community": 1
+      "community": 2
     },
     {
       "label": "updateCurrentChartLabel()",
@@ -9017,7 +9057,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L372",
       "id": "tool_stock_chart_updatecurrentchartlabel",
-      "community": 1
+      "community": 2
     },
     {
       "label": "hideChartConflict()",
@@ -9025,7 +9065,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L381",
       "id": "tool_stock_chart_hidechartconflict",
-      "community": 1
+      "community": 2
     },
     {
       "label": "showChartConflict()",
@@ -9033,7 +9073,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L386",
       "id": "tool_stock_chart_showchartconflict",
-      "community": 1
+      "community": 2
     },
     {
       "label": "persistChartSyncMetaFor()",
@@ -9041,7 +9081,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L394",
       "id": "tool_stock_chart_persistchartsyncmetafor",
-      "community": 1
+      "community": 2
     },
     {
       "label": "persistChartSyncMeta()",
@@ -9049,7 +9089,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L411",
       "id": "tool_stock_chart_persistchartsyncmeta",
-      "community": 1
+      "community": 2
     },
     {
       "label": "flushChartCloudSave()",
@@ -9057,7 +9097,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L416",
       "id": "tool_stock_chart_flushchartcloudsave",
-      "community": 1
+      "community": 2
     },
     {
       "label": "queueChartCloudSave()",
@@ -9065,7 +9105,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L464",
       "id": "tool_stock_chart_queuechartcloudsave",
-      "community": 1
+      "community": 2
     },
     {
       "label": "legacyAccountChartStorage()",
@@ -9073,7 +9113,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L473",
       "id": "tool_stock_chart_legacyaccountchartstorage",
-      "community": 1
+      "community": 2
     },
     {
       "label": "accountChartStorageV2()",
@@ -9081,7 +9121,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L516",
       "id": "tool_stock_chart_accountchartstoragev2",
-      "community": 1
+      "community": 2
     },
     {
       "label": "updateHistory()",
@@ -9089,7 +9129,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L549",
       "id": "tool_stock_chart_updatehistory",
-      "community": 1
+      "community": 2
     },
     {
       "label": "currentThemeName()",
@@ -9097,7 +9137,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L559",
       "id": "tool_stock_chart_currentthemename",
-      "community": 1
+      "community": 2
     },
     {
       "label": "getShareLayoutPayload()",
@@ -9105,7 +9145,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L565",
       "id": "tool_stock_chart_getsharelayoutpayload",
-      "community": 1
+      "community": 2
     },
     {
       "label": "codeFromLayoutPayload()",
@@ -9113,7 +9153,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L584",
       "id": "tool_stock_chart_codefromlayoutpayload",
-      "community": 1
+      "community": 2
     },
     {
       "label": "sharedLayoutHasPine()",
@@ -9121,7 +9161,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L589",
       "id": "tool_stock_chart_sharedlayouthaspine",
-      "community": 1
+      "community": 2
     },
     {
       "label": "layoutWithoutEmbeddedData()",
@@ -9129,7 +9169,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L596",
       "id": "tool_stock_chart_layoutwithoutembeddeddata",
-      "community": 1
+      "community": 2
     },
     {
       "label": "endpointCandidates()",
@@ -9137,7 +9177,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L633",
       "id": "tool_stock_chart_endpointcandidates",
-      "community": 1
+      "community": 2
     },
     {
       "label": "ajaxTextFromCandidates()",
@@ -9145,7 +9185,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L642",
       "id": "tool_stock_chart_ajaxtextfromcandidates",
-      "community": 1
+      "community": 2
     },
     {
       "label": "requestStockMetadata()",
@@ -9153,7 +9193,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L677",
       "id": "tool_stock_chart_requeststockmetadata",
-      "community": 1
+      "community": 2
     },
     {
       "label": "decodeStockDate()",
@@ -9161,7 +9201,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L723",
       "id": "tool_stock_chart_decodestockdate",
-      "community": 1
+      "community": 2
     },
     {
       "label": "parseStockQuoteResult()",
@@ -9169,7 +9209,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L752",
       "id": "tool_stock_chart_parsestockquoteresult",
-      "community": 1
+      "community": 2
     },
     {
       "label": "requestBars()",
@@ -9177,7 +9217,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L783",
       "id": "tool_stock_chart_requestbars",
-      "community": 1
+      "community": 2
     },
     {
       "label": "ensureStarterStudies()",
@@ -9185,7 +9225,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L795",
       "id": "tool_stock_chart_ensurestarterstudies",
-      "community": 1
+      "community": 2
     },
     {
       "label": "relativeStrengthSnapshots()",
@@ -9193,7 +9233,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L805",
       "id": "tool_stock_chart_relativestrengthsnapshots",
-      "community": 1
+      "community": 2
     },
     {
       "label": "restoreRelativeStrengthSnapshots()",
@@ -9201,7 +9241,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L818",
       "id": "tool_stock_chart_restorerelativestrengthsnapshots",
-      "community": 1
+      "community": 2
     },
     {
       "label": "renderChart()",
@@ -9209,7 +9249,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L832",
       "id": "tool_stock_chart_renderchart",
-      "community": 1
+      "community": 2
     },
     {
       "label": "applySharedLayout()",
@@ -9217,7 +9257,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L913",
       "id": "tool_stock_chart_applysharedlayout",
-      "community": 1
+      "community": 2
     },
     {
       "label": "loadStockChart()",
@@ -9225,7 +9265,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L943",
       "id": "tool_stock_chart_loadstockchart",
-      "community": 1
+      "community": 2
     },
     {
       "label": "loadSharedChart()",
@@ -9233,7 +9273,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1011",
       "id": "tool_stock_chart_loadsharedchart",
-      "community": 1
+      "community": 2
     },
     {
       "label": "saveSharedLayout()",
@@ -9241,7 +9281,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1053",
       "id": "tool_stock_chart_savesharedlayout",
-      "community": 1
+      "community": 2
     },
     {
       "label": "setSaveAsFormVisible()",
@@ -9249,7 +9289,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1063",
       "id": "tool_stock_chart_setsaveasformvisible",
-      "community": 1
+      "community": 2
     },
     {
       "label": "saveCurrentAsNamed()",
@@ -9257,7 +9297,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1077",
       "id": "tool_stock_chart_savecurrentasnamed",
-      "community": 1
+      "community": 2
     },
     {
       "label": "createCurrentChartVersion()",
@@ -9265,7 +9305,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1103",
       "id": "tool_stock_chart_createcurrentchartversion",
-      "community": 1
+      "community": 2
     },
     {
       "label": "useServerConflictChart()",
@@ -9273,7 +9313,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1133",
       "id": "tool_stock_chart_useserverconflictchart",
-      "community": 1
+      "community": 2
     },
     {
       "label": "keepLocalConflictChart()",
@@ -9281,7 +9321,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1161",
       "id": "tool_stock_chart_keeplocalconflictchart",
-      "community": 1
+      "community": 2
     },
     {
       "label": "saveBothConflictCharts()",
@@ -9289,7 +9329,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1173",
       "id": "tool_stock_chart_savebothconflictcharts",
-      "community": 1
+      "community": 2
     },
     {
       "label": "saveLinkedPineScript()",
@@ -9297,7 +9337,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1191",
       "id": "tool_stock_chart_savelinkedpinescript",
-      "community": 1
+      "community": 2
     },
     {
       "label": "loadLinkedPineScript()",
@@ -9305,7 +9345,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1216",
       "id": "tool_stock_chart_loadlinkedpinescript",
-      "community": 1
+      "community": 2
     },
     {
       "label": "openPendingAccountScript()",
@@ -9313,7 +9353,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1221",
       "id": "tool_stock_chart_openpendingaccountscript",
-      "community": 1
+      "community": 2
     },
     {
       "label": "loadRequestedAccountAsset()",
@@ -9321,7 +9361,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1238",
       "id": "tool_stock_chart_loadrequestedaccountasset",
-      "community": 1
+      "community": 2
     },
     {
       "label": "preloadEngine()",
@@ -9329,7 +9369,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1258",
       "id": "tool_stock_chart_preloadengine",
-      "community": 1
+      "community": 2
     },
     {
       "label": "formatAutocompleteItem()",
@@ -9337,7 +9377,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1269",
       "id": "tool_stock_chart_formatautocompleteitem",
-      "community": 1
+      "community": 2
     },
     {
       "label": "initAutocomplete()",
@@ -9345,7 +9385,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1276",
       "id": "tool_stock_chart_initautocomplete",
-      "community": 1
+      "community": 2
     },
     {
       "label": "initialCode()",
@@ -9353,7 +9393,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1349",
       "id": "tool_stock_chart_initialcode",
-      "community": 1
+      "community": 2
     },
     {
       "label": "ensureLoaded()",
@@ -9361,7 +9401,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1360",
       "id": "tool_stock_chart_ensureloaded",
-      "community": 1
+      "community": 2
     },
     {
       "label": "activateStockChartTab()",
@@ -9369,7 +9409,7 @@
       "source_file": "assets\\js\\pages\\tool-stock-chart.js",
       "source_location": "L1375",
       "id": "tool_stock_chart_activatestockcharttab",
-      "community": 1
+      "community": 2
     },
     {
       "label": "pine-backtest-engine.js",
@@ -19117,7 +19157,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L42",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -19129,7 +19169,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -19141,7 +19181,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L51",
+      "source_location": "L53",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_utciso",
@@ -19153,7 +19193,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L61",
+      "source_location": "L63",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_formatlocaltimestamp",
@@ -19165,7 +19205,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L80",
+      "source_location": "L82",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_formatlocaldate",
@@ -19177,7 +19217,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L100",
+      "source_location": "L102",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_formatlocaldatetime",
@@ -19189,7 +19229,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L106",
+      "source_location": "L108",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_localdatekey",
@@ -19201,7 +19241,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L113",
+      "source_location": "L115",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_localdaynumber",
@@ -19213,7 +19253,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L120",
+      "source_location": "L122",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_formatlocalweekday",
@@ -19225,7 +19265,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L134",
+      "source_location": "L136",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_formatlocaldatelabel",
@@ -19237,7 +19277,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L151",
+      "source_location": "L153",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_datedividerplan",
@@ -19249,7 +19289,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L177",
+      "source_location": "L179",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_scrolldatelabel",
@@ -19261,7 +19301,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L199",
+      "source_location": "L201",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_utf8bytelength",
@@ -19273,7 +19313,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L211",
+      "source_location": "L213",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_cloneobject",
@@ -19285,7 +19325,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L216",
+      "source_location": "L218",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_copylastentries",
@@ -19297,7 +19337,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L226",
+      "source_location": "L228",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_infernextcount",
@@ -19309,7 +19349,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L235",
+      "source_location": "L237",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_hashstring",
@@ -19321,7 +19361,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L245",
+      "source_location": "L247",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -19333,7 +19373,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L250",
+      "source_location": "L252",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_isestimatedtimestampmessage",
@@ -19345,7 +19385,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L254",
+      "source_location": "L256",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_createmessageid",
@@ -19357,7 +19397,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L262",
+      "source_location": "L264",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_readhtmlattribute",
@@ -19369,7 +19409,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L268",
+      "source_location": "L270",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_removehtmlattribute",
@@ -19381,7 +19421,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L273",
+      "source_location": "L275",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_striprenderedtimestamp",
@@ -19393,7 +19433,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L279",
+      "source_location": "L281",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_canonicalmessagehtml",
@@ -19405,7 +19445,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L286",
+      "source_location": "L288",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_rolefromhtml",
@@ -19417,7 +19457,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L292",
+      "source_location": "L294",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_messagehtmlwithmetadata",
@@ -19429,7 +19469,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L324",
+      "source_location": "L326",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_findexistingmessage",
@@ -19441,7 +19481,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L335",
+      "source_location": "L337",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_normalizemessages",
@@ -19453,7 +19493,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L378",
+      "source_location": "L380",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_normalizestate",
@@ -19465,7 +19505,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L394",
+      "source_location": "L396",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_serializestate",
@@ -19477,7 +19517,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L398",
+      "source_location": "L400",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_serializedbytelength",
@@ -19489,7 +19529,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L402",
+      "source_location": "L404",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_fitstate",
@@ -19501,7 +19541,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L430",
+      "source_location": "L432",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_readlocalstate",
@@ -19513,7 +19553,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L445",
+      "source_location": "L447",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_writelocalstate",
@@ -19525,7 +19565,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L465",
+      "source_location": "L467",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_parseresponse",
@@ -19537,7 +19577,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L478",
+      "source_location": "L480",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_apiurl",
@@ -19549,7 +19589,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L488",
+      "source_location": "L490",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_isloggedin",
@@ -19561,7 +19601,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L492",
+      "source_location": "L494",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_queueremotesave",
@@ -19573,7 +19613,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L523",
+      "source_location": "L525",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_cancelpendingremotesave",
@@ -19585,7 +19625,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L531",
+      "source_location": "L533",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_meaningfulstate",
@@ -19597,7 +19637,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L538",
+      "source_location": "L540",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_messagesneedmigration",
@@ -19609,7 +19649,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L548",
+      "source_location": "L550",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_remotetimestamp",
@@ -19621,7 +19661,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L559",
+      "source_location": "L561",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_ensuretimestampstyle",
@@ -19633,7 +19673,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L577",
+      "source_location": "L579",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_ensurescrolldatepill",
@@ -19645,7 +19685,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L594",
+      "source_location": "L596",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_positionscrolldatepill",
@@ -19657,7 +19697,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L605",
+      "source_location": "L607",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_updatescrolldatepill",
@@ -19669,7 +19709,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L620",
+      "source_location": "L622",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_isscrollkey",
@@ -19681,7 +19721,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L626",
+      "source_location": "L628",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_iseditabletarget",
@@ -19693,7 +19733,67 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L632",
+      "source_location": "L634",
+      "weight": 1.0,
+      "_src": "assets_js_chatbox_sync_js",
+      "_tgt": "chatbox_sync_chatboxforscroller",
+      "source": "assets_js_chatbox_sync_js",
+      "target": "chatbox_sync_chatboxforscroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L639",
+      "weight": 1.0,
+      "_src": "assets_js_chatbox_sync_js",
+      "_tgt": "chatbox_sync_isopenchatscroller",
+      "source": "assets_js_chatbox_sync_js",
+      "target": "chatbox_sync_isopenchatscroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L644",
+      "weight": 1.0,
+      "_src": "assets_js_chatbox_sync_js",
+      "_tgt": "chatbox_sync_scrollchattobottom",
+      "source": "assets_js_chatbox_sync_js",
+      "target": "chatbox_sync_scrollchattobottom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L651",
+      "weight": 1.0,
+      "_src": "assets_js_chatbox_sync_js",
+      "_tgt": "chatbox_sync_scrollopenchattobottom",
+      "source": "assets_js_chatbox_sync_js",
+      "target": "chatbox_sync_scrollopenchattobottom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L671",
+      "weight": 1.0,
+      "_src": "assets_js_chatbox_sync_js",
+      "_tgt": "chatbox_sync_installchatopenscroll",
+      "source": "assets_js_chatbox_sync_js",
+      "target": "chatbox_sync_installchatopenscroll",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L706",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_installscrolldatepill",
@@ -19705,7 +19805,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L710",
+      "source_location": "L788",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_renderdatedividers",
@@ -19717,7 +19817,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L741",
+      "source_location": "L819",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_messagemetadatafromelement",
@@ -19729,7 +19829,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L757",
+      "source_location": "L835",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_decoratemessageelement",
@@ -19741,7 +19841,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L789",
+      "source_location": "L867",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_storedmessagefromelement",
@@ -19753,7 +19853,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L804",
+      "source_location": "L882",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_capturemessages",
@@ -19765,7 +19865,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L817",
+      "source_location": "L895",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_rendermessages",
@@ -19777,7 +19877,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L831",
+      "source_location": "L909",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_replaceobject",
@@ -19789,7 +19889,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L837",
+      "source_location": "L915",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_applystatetoopenchat",
@@ -19801,7 +19901,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L856",
+      "source_location": "L938",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_applyremotestatetoopenchat",
@@ -19813,7 +19913,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L860",
+      "source_location": "L942",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_hydratefromaccount",
@@ -19825,7 +19925,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L889",
+      "source_location": "L971",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_installstorageguard",
@@ -19837,7 +19937,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L928",
+      "source_location": "L1010",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_save",
@@ -19849,7 +19949,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L938",
+      "source_location": "L1020",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_saveopenchatstate",
@@ -19861,7 +19961,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L953",
+      "source_location": "L1035",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_restoreopenchatstate",
@@ -19873,7 +19973,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L961",
+      "source_location": "L1043",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_clear",
@@ -19885,7 +19985,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L982",
+      "source_location": "L1064",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_decorateopenchat",
@@ -19897,7 +19997,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L995",
+      "source_location": "L1077",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_installmessageobserver",
@@ -19909,7 +20009,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1035",
+      "source_location": "L1117",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_installlegacybindings",
@@ -19921,7 +20021,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1042",
+      "source_location": "L1124",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_schedulelegacybindings",
@@ -19933,7 +20033,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1052",
+      "source_location": "L1134",
       "weight": 1.0,
       "_src": "assets_js_chatbox_sync_js",
       "_tgt": "chatbox_sync_installthemerefresh",
@@ -19945,7 +20045,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L137",
+      "source_location": "L139",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatelabel",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -19957,7 +20057,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L259",
+      "source_location": "L261",
       "weight": 1.0,
       "_src": "chatbox_sync_createmessageid",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -19969,7 +20069,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L338",
+      "source_location": "L340",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -19981,7 +20081,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L648",
+      "source_location": "L654",
+      "weight": 1.0,
+      "_src": "chatbox_sync_scrollopenchattobottom",
+      "_tgt": "chatbox_sync_nowmilliseconds",
+      "source": "chatbox_sync_nowmilliseconds",
+      "target": "chatbox_sync_scrollopenchattobottom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L722",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -19993,7 +20105,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L745",
+      "source_location": "L823",
       "weight": 1.0,
       "_src": "chatbox_sync_messagemetadatafromelement",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -20005,7 +20117,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L811",
+      "source_location": "L889",
       "weight": 1.0,
       "_src": "chatbox_sync_capturemessages",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -20017,7 +20129,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L904",
+      "source_location": "L986",
       "weight": 1.0,
       "_src": "chatbox_sync_installstorageguard",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -20029,7 +20141,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L931",
+      "source_location": "L1013",
       "weight": 1.0,
       "_src": "chatbox_sync_save",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -20041,7 +20153,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L988",
+      "source_location": "L1070",
       "weight": 1.0,
       "_src": "chatbox_sync_decorateopenchat",
       "_tgt": "chatbox_sync_nowmilliseconds",
@@ -20053,7 +20165,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L52",
+      "source_location": "L54",
       "weight": 1.0,
       "_src": "chatbox_sync_utciso",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20065,7 +20177,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L62",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaltimestamp",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20077,7 +20189,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L81",
+      "source_location": "L83",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldate",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20089,7 +20201,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L107",
+      "source_location": "L109",
       "weight": 1.0,
       "_src": "chatbox_sync_localdatekey",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20101,7 +20213,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L114",
+      "source_location": "L116",
       "weight": 1.0,
       "_src": "chatbox_sync_localdaynumber",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20113,7 +20225,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L121",
+      "source_location": "L123",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocalweekday",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20125,7 +20237,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L135",
+      "source_location": "L137",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatelabel",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20137,7 +20249,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L160",
+      "source_location": "L162",
       "weight": 1.0,
       "_src": "chatbox_sync_datedividerplan",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20149,7 +20261,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L295",
+      "source_location": "L297",
       "weight": 1.0,
       "_src": "chatbox_sync_messagehtmlwithmetadata",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20161,7 +20273,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L338",
+      "source_location": "L340",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20173,7 +20285,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L383",
+      "source_location": "L385",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizestate",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20185,7 +20297,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L542",
+      "source_location": "L544",
       "weight": 1.0,
       "_src": "chatbox_sync_messagesneedmigration",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20197,7 +20309,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L549",
+      "source_location": "L551",
       "weight": 1.0,
       "_src": "chatbox_sync_remotetimestamp",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20209,7 +20321,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L743",
+      "source_location": "L821",
       "weight": 1.0,
       "_src": "chatbox_sync_messagemetadatafromelement",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20221,7 +20333,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L872",
+      "source_location": "L954",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_normalizetimestamp",
@@ -20233,7 +20345,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L782",
+      "source_location": "L860",
       "weight": 1.0,
       "_src": "chatbox_sync_decoratemessageelement",
       "_tgt": "chatbox_sync_utciso",
@@ -20245,7 +20357,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L102",
+      "source_location": "L104",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatetime",
       "_tgt": "chatbox_sync_formatlocaltimestamp",
@@ -20257,7 +20369,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L785",
+      "source_location": "L863",
       "weight": 1.0,
       "_src": "chatbox_sync_decoratemessageelement",
       "_tgt": "chatbox_sync_formatlocaltimestamp",
@@ -20269,7 +20381,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L101",
+      "source_location": "L103",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatetime",
       "_tgt": "chatbox_sync_formatlocaldate",
@@ -20281,7 +20393,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L130",
+      "source_location": "L132",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocalweekday",
       "_tgt": "chatbox_sync_formatlocaldate",
@@ -20293,7 +20405,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L148",
+      "source_location": "L150",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatelabel",
       "_tgt": "chatbox_sync_formatlocaldate",
@@ -20305,7 +20417,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L783",
+      "source_location": "L861",
       "weight": 1.0,
       "_src": "chatbox_sync_decoratemessageelement",
       "_tgt": "chatbox_sync_formatlocaldatetime",
@@ -20317,7 +20429,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L138",
+      "source_location": "L140",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatelabel",
       "_tgt": "chatbox_sync_localdatekey",
@@ -20329,7 +20441,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L162",
+      "source_location": "L164",
       "weight": 1.0,
       "_src": "chatbox_sync_datedividerplan",
       "_tgt": "chatbox_sync_localdatekey",
@@ -20341,7 +20453,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L146",
+      "source_location": "L148",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatelabel",
       "_tgt": "chatbox_sync_localdaynumber",
@@ -20353,7 +20465,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L147",
+      "source_location": "L149",
       "weight": 1.0,
       "_src": "chatbox_sync_formatlocaldatelabel",
       "_tgt": "chatbox_sync_formatlocalweekday",
@@ -20365,7 +20477,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L169",
+      "source_location": "L171",
       "weight": 1.0,
       "_src": "chatbox_sync_datedividerplan",
       "_tgt": "chatbox_sync_formatlocaldatelabel",
@@ -20377,7 +20489,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L157",
+      "source_location": "L159",
       "weight": 1.0,
       "_src": "chatbox_sync_datedividerplan",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -20389,7 +20501,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L157",
+      "source_location": "L159",
       "weight": 1.0,
       "_src": "chatbox_sync_datedividerplan",
       "_tgt": "chatbox_sync_readhtmlattribute",
@@ -20401,7 +20513,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L158",
+      "source_location": "L160",
       "weight": 1.0,
       "_src": "chatbox_sync_datedividerplan",
       "_tgt": "chatbox_sync_isestimatedtimestampmessage",
@@ -20413,7 +20525,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L719",
+      "source_location": "L797",
       "weight": 1.0,
       "_src": "chatbox_sync_renderdatedividers",
       "_tgt": "chatbox_sync_datedividerplan",
@@ -20425,7 +20537,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L609",
+      "source_location": "L611",
       "weight": 1.0,
       "_src": "chatbox_sync_updatescrolldatepill",
       "_tgt": "chatbox_sync_scrolldatelabel",
@@ -20437,7 +20549,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L399",
+      "source_location": "L401",
       "weight": 1.0,
       "_src": "chatbox_sync_serializedbytelength",
       "_tgt": "chatbox_sync_utf8bytelength",
@@ -20449,7 +20561,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L217",
+      "source_location": "L219",
       "weight": 1.0,
       "_src": "chatbox_sync_copylastentries",
       "_tgt": "chatbox_sync_cloneobject",
@@ -20461,7 +20573,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L947",
+      "source_location": "L1029",
       "weight": 1.0,
       "_src": "chatbox_sync_saveopenchatstate",
       "_tgt": "chatbox_sync_cloneobject",
@@ -20473,7 +20585,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L384",
+      "source_location": "L386",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizestate",
       "_tgt": "chatbox_sync_copylastentries",
@@ -20485,7 +20597,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L389",
+      "source_location": "L391",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizestate",
       "_tgt": "chatbox_sync_infernextcount",
@@ -20497,7 +20609,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L361",
+      "source_location": "L363",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_hashstring",
@@ -20509,7 +20621,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L251",
+      "source_location": "L253",
       "weight": 1.0,
       "_src": "chatbox_sync_isestimatedtimestampmessage",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -20521,7 +20633,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L294",
+      "source_location": "L296",
       "weight": 1.0,
       "_src": "chatbox_sync_messagehtmlwithmetadata",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -20533,7 +20645,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L349",
+      "source_location": "L351",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -20545,7 +20657,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L542",
+      "source_location": "L544",
       "weight": 1.0,
       "_src": "chatbox_sync_messagesneedmigration",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -20557,7 +20669,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L742",
+      "source_location": "L820",
       "weight": 1.0,
       "_src": "chatbox_sync_messagemetadatafromelement",
       "_tgt": "chatbox_sync_cleanmessageid",
@@ -20569,7 +20681,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L753",
+      "source_location": "L831",
       "weight": 1.0,
       "_src": "chatbox_sync_messagemetadatafromelement",
       "_tgt": "chatbox_sync_isestimatedtimestampmessage",
@@ -20581,7 +20693,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L746",
+      "source_location": "L824",
       "weight": 1.0,
       "_src": "chatbox_sync_messagemetadatafromelement",
       "_tgt": "chatbox_sync_createmessageid",
@@ -20593,7 +20705,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L350",
+      "source_location": "L352",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_readhtmlattribute",
@@ -20605,7 +20717,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L280",
+      "source_location": "L282",
       "weight": 1.0,
       "_src": "chatbox_sync_canonicalmessagehtml",
       "_tgt": "chatbox_sync_removehtmlattribute",
@@ -20617,7 +20729,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L317",
+      "source_location": "L319",
       "weight": 1.0,
       "_src": "chatbox_sync_messagehtmlwithmetadata",
       "_tgt": "chatbox_sync_removehtmlattribute",
@@ -20629,7 +20741,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L281",
+      "source_location": "L283",
       "weight": 1.0,
       "_src": "chatbox_sync_canonicalmessagehtml",
       "_tgt": "chatbox_sync_striprenderedtimestamp",
@@ -20641,7 +20753,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L293",
+      "source_location": "L295",
       "weight": 1.0,
       "_src": "chatbox_sync_messagehtmlwithmetadata",
       "_tgt": "chatbox_sync_striprenderedtimestamp",
@@ -20653,7 +20765,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L326",
+      "source_location": "L328",
       "weight": 1.0,
       "_src": "chatbox_sync_findexistingmessage",
       "_tgt": "chatbox_sync_canonicalmessagehtml",
@@ -20665,7 +20777,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L361",
+      "source_location": "L363",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_canonicalmessagehtml",
@@ -20677,7 +20789,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L358",
+      "source_location": "L360",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_rolefromhtml",
@@ -20689,7 +20801,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L371",
+      "source_location": "L373",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_messagehtmlwithmetadata",
@@ -20701,7 +20813,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L799",
+      "source_location": "L877",
       "weight": 1.0,
       "_src": "chatbox_sync_storedmessagefromelement",
       "_tgt": "chatbox_sync_messagehtmlwithmetadata",
@@ -20713,7 +20825,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L348",
+      "source_location": "L350",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizemessages",
       "_tgt": "chatbox_sync_findexistingmessage",
@@ -20725,7 +20837,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L386",
+      "source_location": "L388",
       "weight": 1.0,
       "_src": "chatbox_sync_normalizestate",
       "_tgt": "chatbox_sync_normalizemessages",
@@ -20737,7 +20849,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L821",
+      "source_location": "L899",
       "weight": 1.0,
       "_src": "chatbox_sync_rendermessages",
       "_tgt": "chatbox_sync_normalizemessages",
@@ -20749,7 +20861,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L403",
+      "source_location": "L405",
       "weight": 1.0,
       "_src": "chatbox_sync_fitstate",
       "_tgt": "chatbox_sync_normalizestate",
@@ -20761,7 +20873,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L399",
+      "source_location": "L401",
       "weight": 1.0,
       "_src": "chatbox_sync_serializedbytelength",
       "_tgt": "chatbox_sync_serializestate",
@@ -20773,7 +20885,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L438",
+      "source_location": "L440",
       "weight": 1.0,
       "_src": "chatbox_sync_readlocalstate",
       "_tgt": "chatbox_sync_serializestate",
@@ -20785,7 +20897,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L454",
+      "source_location": "L456",
       "weight": 1.0,
       "_src": "chatbox_sync_writelocalstate",
       "_tgt": "chatbox_sync_serializestate",
@@ -20797,7 +20909,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L906",
+      "source_location": "L988",
       "weight": 1.0,
       "_src": "chatbox_sync_installstorageguard",
       "_tgt": "chatbox_sync_serializestate",
@@ -20809,7 +20921,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L406",
+      "source_location": "L408",
       "weight": 1.0,
       "_src": "chatbox_sync_fitstate",
       "_tgt": "chatbox_sync_serializedbytelength",
@@ -20821,7 +20933,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L436",
+      "source_location": "L438",
       "weight": 1.0,
       "_src": "chatbox_sync_readlocalstate",
       "_tgt": "chatbox_sync_fitstate",
@@ -20833,7 +20945,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L446",
+      "source_location": "L448",
       "weight": 1.0,
       "_src": "chatbox_sync_writelocalstate",
       "_tgt": "chatbox_sync_fitstate",
@@ -20845,7 +20957,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L494",
+      "source_location": "L496",
       "weight": 1.0,
       "_src": "chatbox_sync_queueremotesave",
       "_tgt": "chatbox_sync_fitstate",
@@ -20857,7 +20969,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L871",
+      "source_location": "L953",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_fitstate",
@@ -20869,7 +20981,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L902",
+      "source_location": "L984",
       "weight": 1.0,
       "_src": "chatbox_sync_installstorageguard",
       "_tgt": "chatbox_sync_fitstate",
@@ -20881,7 +20993,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L929",
+      "source_location": "L1011",
       "weight": 1.0,
       "_src": "chatbox_sync_save",
       "_tgt": "chatbox_sync_fitstate",
@@ -20893,7 +21005,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L438",
+      "source_location": "L440",
       "weight": 1.0,
       "_src": "chatbox_sync_readlocalstate",
       "_tgt": "chatbox_sync_writelocalstate",
@@ -20905,7 +21017,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L870",
+      "source_location": "L952",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_readlocalstate",
@@ -20917,7 +21029,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L955",
+      "source_location": "L1037",
       "weight": 1.0,
       "_src": "chatbox_sync_restoreopenchatstate",
       "_tgt": "chatbox_sync_readlocalstate",
@@ -20929,7 +21041,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L878",
+      "source_location": "L960",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_writelocalstate",
@@ -20941,7 +21053,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L933",
+      "source_location": "L1015",
       "weight": 1.0,
       "_src": "chatbox_sync_save",
       "_tgt": "chatbox_sync_writelocalstate",
@@ -20953,7 +21065,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L503",
+      "source_location": "L505",
       "weight": 1.0,
       "_src": "chatbox_sync_queueremotesave",
       "_tgt": "chatbox_sync_apiurl",
@@ -20965,7 +21077,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L863",
+      "source_location": "L945",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_apiurl",
@@ -20977,7 +21089,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L968",
+      "source_location": "L1050",
       "weight": 1.0,
       "_src": "chatbox_sync_clear",
       "_tgt": "chatbox_sync_apiurl",
@@ -20989,7 +21101,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L493",
+      "source_location": "L495",
       "weight": 1.0,
       "_src": "chatbox_sync_queueremotesave",
       "_tgt": "chatbox_sync_isloggedin",
@@ -21001,7 +21113,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L861",
+      "source_location": "L943",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_isloggedin",
@@ -21013,7 +21125,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L967",
+      "source_location": "L1049",
       "weight": 1.0,
       "_src": "chatbox_sync_clear",
       "_tgt": "chatbox_sync_isloggedin",
@@ -21025,7 +21137,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L880",
+      "source_location": "L962",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_queueremotesave",
@@ -21037,7 +21149,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L909",
+      "source_location": "L991",
       "weight": 1.0,
       "_src": "chatbox_sync_installstorageguard",
       "_tgt": "chatbox_sync_queueremotesave",
@@ -21049,7 +21161,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L934",
+      "source_location": "L1016",
       "weight": 1.0,
       "_src": "chatbox_sync_save",
       "_tgt": "chatbox_sync_queueremotesave",
@@ -21061,7 +21173,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L877",
+      "source_location": "L959",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_cancelpendingremotesave",
@@ -21073,7 +21185,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L962",
+      "source_location": "L1044",
       "weight": 1.0,
       "_src": "chatbox_sync_clear",
       "_tgt": "chatbox_sync_cancelpendingremotesave",
@@ -21085,7 +21197,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L881",
+      "source_location": "L963",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_meaningfulstate",
@@ -21097,7 +21209,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L876",
+      "source_location": "L958",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_messagesneedmigration",
@@ -21109,7 +21221,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L873",
+      "source_location": "L955",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_remotetimestamp",
@@ -21121,7 +21233,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L637",
+      "source_location": "L711",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_ensuretimestampstyle",
@@ -21133,7 +21245,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L820",
+      "source_location": "L898",
       "weight": 1.0,
       "_src": "chatbox_sync_rendermessages",
       "_tgt": "chatbox_sync_ensuretimestampstyle",
@@ -21145,7 +21257,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L984",
+      "source_location": "L1066",
       "weight": 1.0,
       "_src": "chatbox_sync_decorateopenchat",
       "_tgt": "chatbox_sync_ensuretimestampstyle",
@@ -21157,7 +21269,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L638",
+      "source_location": "L712",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_ensurescrolldatepill",
@@ -21169,7 +21281,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L661",
+      "source_location": "L739",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_positionscrolldatepill",
@@ -21181,7 +21293,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L662",
+      "source_location": "L740",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_updatescrolldatepill",
@@ -21193,7 +21305,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L683",
+      "source_location": "L761",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_isscrollkey",
@@ -21205,7 +21317,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L683",
+      "source_location": "L761",
       "weight": 1.0,
       "_src": "chatbox_sync_installscrolldatepill",
       "_tgt": "chatbox_sync_iseditabletarget",
@@ -21217,7 +21329,91 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L827",
+      "source_location": "L640",
+      "weight": 1.0,
+      "_src": "chatbox_sync_isopenchatscroller",
+      "_tgt": "chatbox_sync_chatboxforscroller",
+      "source": "chatbox_sync_chatboxforscroller",
+      "target": "chatbox_sync_isopenchatscroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L655",
+      "weight": 1.0,
+      "_src": "chatbox_sync_scrollopenchattobottom",
+      "_tgt": "chatbox_sync_chatboxforscroller",
+      "source": "chatbox_sync_chatboxforscroller",
+      "target": "chatbox_sync_scrollopenchattobottom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L675",
+      "weight": 1.0,
+      "_src": "chatbox_sync_installchatopenscroll",
+      "_tgt": "chatbox_sync_chatboxforscroller",
+      "source": "chatbox_sync_chatboxforscroller",
+      "target": "chatbox_sync_installchatopenscroll",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L935",
+      "weight": 1.0,
+      "_src": "chatbox_sync_applystatetoopenchat",
+      "_tgt": "chatbox_sync_isopenchatscroller",
+      "source": "chatbox_sync_isopenchatscroller",
+      "target": "chatbox_sync_applystatetoopenchat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L660",
+      "weight": 1.0,
+      "_src": "chatbox_sync_scrollopenchattobottom",
+      "_tgt": "chatbox_sync_scrollchattobottom",
+      "source": "chatbox_sync_scrollchattobottom",
+      "target": "chatbox_sync_scrollopenchattobottom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L681",
+      "weight": 1.0,
+      "_src": "chatbox_sync_installchatopenscroll",
+      "_tgt": "chatbox_sync_scrollopenchattobottom",
+      "source": "chatbox_sync_scrollopenchattobottom",
+      "target": "chatbox_sync_installchatopenscroll",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L935",
+      "weight": 1.0,
+      "_src": "chatbox_sync_applystatetoopenchat",
+      "_tgt": "chatbox_sync_scrollopenchattobottom",
+      "source": "chatbox_sync_scrollopenchattobottom",
+      "target": "chatbox_sync_applystatetoopenchat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\chatbox-sync.js",
+      "source_location": "L905",
       "weight": 1.0,
       "_src": "chatbox_sync_rendermessages",
       "_tgt": "chatbox_sync_renderdatedividers",
@@ -21229,7 +21425,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L992",
+      "source_location": "L1074",
       "weight": 1.0,
       "_src": "chatbox_sync_decorateopenchat",
       "_tgt": "chatbox_sync_renderdatedividers",
@@ -21241,7 +21437,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1023",
+      "source_location": "L1105",
       "weight": 1.0,
       "_src": "chatbox_sync_installmessageobserver",
       "_tgt": "chatbox_sync_renderdatedividers",
@@ -21253,7 +21449,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L759",
+      "source_location": "L837",
       "weight": 1.0,
       "_src": "chatbox_sync_decoratemessageelement",
       "_tgt": "chatbox_sync_messagemetadatafromelement",
@@ -21265,7 +21461,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L790",
+      "source_location": "L868",
       "weight": 1.0,
       "_src": "chatbox_sync_storedmessagefromelement",
       "_tgt": "chatbox_sync_decoratemessageelement",
@@ -21277,7 +21473,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L825",
+      "source_location": "L903",
       "weight": 1.0,
       "_src": "chatbox_sync_rendermessages",
       "_tgt": "chatbox_sync_decoratemessageelement",
@@ -21289,7 +21485,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L990",
+      "source_location": "L1072",
       "weight": 1.0,
       "_src": "chatbox_sync_decorateopenchat",
       "_tgt": "chatbox_sync_decoratemessageelement",
@@ -21301,7 +21497,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1007",
+      "source_location": "L1089",
       "weight": 1.0,
       "_src": "chatbox_sync_installmessageobserver",
       "_tgt": "chatbox_sync_decoratemessageelement",
@@ -21313,7 +21509,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L813",
+      "source_location": "L891",
       "weight": 1.0,
       "_src": "chatbox_sync_capturemessages",
       "_tgt": "chatbox_sync_storedmessagefromelement",
@@ -21325,7 +21521,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L946",
+      "source_location": "L1028",
       "weight": 1.0,
       "_src": "chatbox_sync_saveopenchatstate",
       "_tgt": "chatbox_sync_capturemessages",
@@ -21337,7 +21533,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L845",
+      "source_location": "L923",
       "weight": 1.0,
       "_src": "chatbox_sync_applystatetoopenchat",
       "_tgt": "chatbox_sync_rendermessages",
@@ -21349,7 +21545,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L846",
+      "source_location": "L924",
       "weight": 1.0,
       "_src": "chatbox_sync_applystatetoopenchat",
       "_tgt": "chatbox_sync_replaceobject",
@@ -21361,7 +21557,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L944",
+      "source_location": "L1026",
       "weight": 1.0,
       "_src": "chatbox_sync_saveopenchatstate",
       "_tgt": "chatbox_sync_replaceobject",
@@ -21373,7 +21569,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L857",
+      "source_location": "L939",
       "weight": 1.0,
       "_src": "chatbox_sync_applyremotestatetoopenchat",
       "_tgt": "chatbox_sync_applystatetoopenchat",
@@ -21385,7 +21581,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L956",
+      "source_location": "L1038",
       "weight": 1.0,
       "_src": "chatbox_sync_restoreopenchatstate",
       "_tgt": "chatbox_sync_applystatetoopenchat",
@@ -21397,7 +21593,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L879",
+      "source_location": "L961",
       "weight": 1.0,
       "_src": "chatbox_sync_hydratefromaccount",
       "_tgt": "chatbox_sync_applyremotestatetoopenchat",
@@ -21409,7 +21605,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L945",
+      "source_location": "L1027",
       "weight": 1.0,
       "_src": "chatbox_sync_saveopenchatstate",
       "_tgt": "chatbox_sync_save",
@@ -21421,7 +21617,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L998",
+      "source_location": "L1080",
       "weight": 1.0,
       "_src": "chatbox_sync_installmessageobserver",
       "_tgt": "chatbox_sync_decorateopenchat",
@@ -21433,7 +21629,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\chatbox-sync.js",
-      "source_location": "L1048",
+      "source_location": "L1130",
       "weight": 1.0,
       "_src": "chatbox_sync_schedulelegacybindings",
       "_tgt": "chatbox_sync_installlegacybindings",

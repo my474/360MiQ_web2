@@ -21,7 +21,9 @@
   var SCROLL_DATE_PILL_CLASS = 'chatbot__scroll-date-pill';
   var SCROLL_DATE_PILL_LABEL_CLASS = 'chatbot__scroll-date-pill__label';
   var SCROLL_DATE_PILL_VISIBLE_CLASS = 'is-visible';
+  var SCROLL_DATE_PILL_TOP_GAP = 14;
   var SCROLL_DATE_PILL_HIDE_DELAY = 700;
+  var SCROLL_DATE_PILL_OPEN_SUPPRESSION = 180;
   var USER_SCROLL_INTENT_WINDOW = 900;
   var USER_SCROLL_INERTIA_WINDOW = 250;
   var config = root && root.__MIQ_CHATBOX_SYNC__
@@ -562,9 +564,9 @@
     var style = root.document.createElement('style');
     style.id = 'miq-chat-message-time-style';
     style.textContent =
-      '.chatbot__message-time{display:block;float:right;clear:both;margin:5px 0 -1px 10px;font-size:10px;line-height:1;font-weight:400;font-variant-numeric:tabular-nums;opacity:.58;white-space:nowrap;text-align:right;color:inherit}' +
+      '.chatbot__message-time{display:block;float:none;clear:both;width:100%;margin:4px 0 -3px;font-size:10px;line-height:1;font-weight:400;font-variant-numeric:tabular-nums;opacity:.58;white-space:nowrap;text-align:right;color:inherit}' +
       '.chatbot__date-divider{align-self:center!important;display:block!important;width:auto!important;max-width:85%;margin:4px auto 14px!important;padding:5px 9px!important;border-radius:8px;background:rgba(95,99,104,.12);color:#5f6368;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:0;white-space:nowrap;text-align:center;pointer-events:none;user-select:none;transition:color .2s ease,background-color .2s ease}' +
-      '.chatbot__scroll-date-pill{position:absolute;top:62px;left:0;right:0;z-index:4;display:flex;justify-content:center;height:0;overflow:visible;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .18s ease,transform .18s ease;will-change:opacity,transform}' +
+      '.chatbot__scroll-date-pill{position:absolute;top:68px;left:0;right:0;z-index:4;display:flex;justify-content:center;height:0;overflow:visible;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .18s ease,transform .18s ease;will-change:opacity,transform}' +
       '.chatbot__scroll-date-pill.is-visible{opacity:1;transform:translateY(0)}' +
       '.chatbot__scroll-date-pill .chatbot__date-divider{margin:0!important}' +
       '.chatbot--closed .chatbot__scroll-date-pill{display:none}' +
@@ -596,7 +598,7 @@
     var scrollerRect = scroller.getBoundingClientRect();
     var parentRect = pill.parentNode.getBoundingClientRect();
     if (!scrollerRect.width || !scrollerRect.height) return;
-    pill.style.top = Math.round(scrollerRect.top - parentRect.top + 8) + 'px';
+    pill.style.top = Math.round(scrollerRect.top - parentRect.top + SCROLL_DATE_PILL_TOP_GAP) + 'px';
     pill.style.left = Math.round(scrollerRect.left - parentRect.left) + 'px';
     pill.style.right = 'auto';
     pill.style.width = Math.round(scrollerRect.width) + 'px';
@@ -604,7 +606,7 @@
 
   function updateScrollDatePill(scroller, pill) {
     if (!scroller || !pill || !scroller.querySelectorAll || !scroller.getBoundingClientRect) return '';
-    var viewportTop = scroller.getBoundingClientRect().top + 12;
+    var viewportTop = scroller.getBoundingClientRect().top + SCROLL_DATE_PILL_TOP_GAP + 4;
     var dividers = Array.prototype.slice.call(scroller.querySelectorAll('.chatbot__messages .' + MESSAGE_DATE_DIVIDER_CLASS));
     var label = scrollDateLabel(dividers.map(function (divider) {
       return {
@@ -627,6 +629,78 @@
     if (!target || !target.tagName) return false;
     var tagName = String(target.tagName).toLowerCase();
     return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || !!target.isContentEditable;
+  }
+
+  function chatboxForScroller(scroller) {
+    if (!scroller) return null;
+    return scroller.closest ? scroller.closest('.chatbot') : scroller.parentNode;
+  }
+
+  function isOpenChatScroller(scroller) {
+    var chatbot = chatboxForScroller(scroller);
+    return !!scroller && (!chatbot || !chatbot.classList || !chatbot.classList.contains('chatbot--closed'));
+  }
+
+  function scrollChatToBottom(scroller) {
+    if (!scroller) return 0;
+    if (scroller.style) scroller.style.scrollBehavior = 'auto';
+    scroller.scrollTop = Math.max(0, Number(scroller.scrollHeight) || 0);
+    return Number(scroller.scrollTop) || 0;
+  }
+
+  function scrollOpenChatToBottom(scroller) {
+    var element = scroller || (root && root.document ? root.document.querySelector('.chatbot__message-window') : null);
+    if (!element) return;
+    element.__miqSuppressScrollPillUntil = nowMilliseconds() + SCROLL_DATE_PILL_OPEN_SUPPRESSION;
+    var pillContainer = chatboxForScroller(element);
+    var pill = pillContainer && pillContainer.querySelector
+      ? pillContainer.querySelector('.' + SCROLL_DATE_PILL_CLASS)
+      : null;
+    if (pill && pill.classList) pill.classList.remove(SCROLL_DATE_PILL_VISIBLE_CLASS);
+    scrollChatToBottom(element);
+    if (root && typeof root.requestAnimationFrame === 'function') {
+      root.requestAnimationFrame(function () {
+        scrollChatToBottom(element);
+        root.requestAnimationFrame(function () {
+          scrollChatToBottom(element);
+        });
+      });
+    }
+  }
+
+  function installChatOpenScroll() {
+    if (!root || !root.document) return;
+    var start = function () {
+      var scroller = root.document.querySelector('.chatbot__message-window');
+      var chatbot = chatboxForScroller(scroller);
+      if (!scroller || !chatbot || !chatbot.classList || chatbot.__miqOpenScrollInstalled) return;
+      chatbot.__miqOpenScrollInstalled = true;
+      var wasClosed = chatbot.classList.contains('chatbot--closed');
+      var handleState = function () {
+        var isClosed = chatbot.classList.contains('chatbot--closed');
+        if (wasClosed && !isClosed) scrollOpenChatToBottom(scroller);
+        wasClosed = isClosed;
+      };
+
+      if (typeof root.MutationObserver === 'function') {
+        var observer = new root.MutationObserver(handleState);
+        observer.observe(chatbot, { attributes: true, attributeFilter: ['class'] });
+      } else {
+        var header = chatbot.querySelector ? chatbot.querySelector('.chatbot__header') : null;
+        if (header && header.addEventListener) {
+          header.addEventListener('click', function () {
+            setTimeout(handleState, 0);
+          });
+        }
+      }
+      if (!wasClosed) scrollOpenChatToBottom(scroller);
+    };
+
+    if (root.document.readyState === 'loading') {
+      root.document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+      start();
+    }
   }
 
   function installScrollDatePill() {
@@ -656,6 +730,10 @@
       };
       var onUserScroll = function () {
         var now = nowMilliseconds();
+        if (now <= Number(scroller.__miqSuppressScrollPillUntil || 0)) {
+          hidePill();
+          return;
+        }
         if (!pointerActive && !touchActive && now > userScrollIntentUntil) return;
         userScrollIntentUntil = Math.max(userScrollIntentUntil, now + USER_SCROLL_INERTIA_WINDOW);
         positionScrollDatePill(scroller, pill);
@@ -851,6 +929,10 @@
       if (checkbox) checkbox.checked = !!state.checkboxStates[id];
     });
     if (typeof root.scrollDown === 'function') root.scrollDown();
+    var scroller = messages.closest
+      ? messages.closest('.chatbot__message-window')
+      : root.document.querySelector('.chatbot__message-window');
+    if (isOpenChatScroller(scroller)) scrollOpenChatToBottom(scroller);
   }
 
   function applyRemoteStateToOpenChat(state) {
@@ -1058,6 +1140,7 @@
   readyPromise = hydrateFromAccount();
   installMessageObserver();
   installScrollDatePill();
+  installChatOpenScroll();
   installThemeRefresh();
   scheduleLegacyBindings();
 
@@ -1080,7 +1163,9 @@
     restoreOpenChatState: restoreOpenChatState,
     save: save,
     saveOpenChatState: saveOpenChatState,
+    scrollChatToBottom: scrollChatToBottom,
     scrollDateLabel: scrollDateLabel,
+    scrollOpenChatToBottom: scrollOpenChatToBottom,
     serializedByteLength: serializedByteLength,
     storageKey: STORAGE_KEY,
     localDateKey: localDateKey,

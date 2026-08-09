@@ -88,6 +88,10 @@ var scrollPillDividers = [
 assert.strictEqual(sync.scrollDateLabel(scrollPillDividers, 60), 'Friday', 'the floating pill starts with the first stamped date');
 assert.strictEqual(sync.scrollDateLabel(scrollPillDividers, 100), 'Friday', 'the floating pill keeps the stamped date currently at the top');
 assert.strictEqual(sync.scrollDateLabel(scrollPillDividers, 230), 'Today', 'the floating pill changes when the next stamped date reaches the top');
+var openingScroller = { scrollHeight: 900, scrollTop: 0, style: {} };
+assert.strictEqual(sync.scrollChatToBottom(openingScroller), 900, 'opening a chat snaps directly to its newest content');
+assert.strictEqual(openingScroller.scrollTop, openingScroller.scrollHeight, 'the open position is the absolute bottom');
+assert.strictEqual(openingScroller.style.scrollBehavior, 'auto', 'the bottom snap never animates through the history');
 
 var oversized = sync.fitState({
   messages: Array.from({ length: 40 }, function () { return '<li>' + 'x'.repeat(20000) + '</li>'; }),
@@ -104,22 +108,25 @@ var alternateBlogFooter = fs.readFileSync(path.join(__dirname, '..', '..', 'blog
 assert.ok(mainFooter.includes('.slice(-40)'), 'main footer keeps the newest 40 messages');
 assert.ok(blogFooter.includes("slice'](-0x28)"), 'blog footer keeps the newest 40 messages');
 assert.ok(alternateBlogFooter.includes("slice'](-0x28)"), 'alternate blog footer keeps the newest 40 messages');
-assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-4"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
+assert.ok(mainFooter.includes('src="assets/js/chatbox-sync.js?v=20260810-5"'), 'main footer uses document-relative chat sync for root and subfolder deployments');
 assert.ok(mainFooter.includes('src="assets/js/chatbox-runtime.js?v=20260731-2"'), 'main footer uses a document-relative supporting runtime');
 assert.ok(!mainFooter.includes('src="/assets/js/chatbox-sync.js'), 'main footer does not escape a subfolder deployment');
-assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-4"'), 'production blog loads chat sync from the main-site root');
-assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-4"'), 'alternate production blog footer loads chat sync from the main-site root');
+assert.ok(blogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-5"'), 'production blog loads chat sync from the main-site root');
+assert.ok(alternateBlogFooter.includes('src="/assets/js/chatbox-sync.js?v=20260810-5"'), 'alternate production blog footer loads chat sync from the main-site root');
 assert.ok(blogFooter.includes("'apiUrl' => '/account_api.php'"), 'production blog syncs through the main-site account API');
 assert.ok(alternateBlogFooter.includes("'apiUrl' => '/account_api.php'"), 'alternate production blog footer syncs through the main-site account API');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.captureMessages()'), 'main footer captures structured timestamped messages');
 assert.ok(mainFooter.includes('window.MiqChatboxSync.renderMessages(messages, messagesEl)'), 'main footer renders timestamps in local device time');
+assert.ok(mainFooter.includes('window.MiqChatboxSync.scrollOpenChatToBottom($chatbotMessageWindow)'), 'main chat openings explicitly snap to the latest message');
+assert.ok(!mainFooter.includes('restoreChatboxScroll(chatScrollState)'), 'main chat openings no longer restore an older reading position');
 
 var accountApi = fs.readFileSync(path.join(__dirname, '..', '..', 'account_api.php'), 'utf8');
 assert.ok(accountApi.includes("'createdAt' => $created_at"), 'account sync preserves each message UTC timestamp');
 assert.ok(accountApi.includes("'id' => $message_id"), 'account sync preserves stable message IDs');
 var syncSource = fs.readFileSync(path.join(__dirname, 'chatbox-sync.js'), 'utf8');
 assert.ok(syncSource.includes('color:inherit'), 'timestamp text follows light, dark, and live theme colors');
-assert.ok(syncSource.includes('float:right;clear:both'), 'compact message times sit at the lower-right of both bubble types');
+assert.ok(syncSource.includes('display:block;float:none;clear:both;width:100%'), 'single- and multi-line message times use the same bottom row');
+assert.ok(syncSource.includes('SCROLL_DATE_PILL_TOP_GAP = 14'), 'the floating pill has breathing room below the chat header');
 assert.ok(syncSource.includes('[data-theme="light"] .chatbot__date-divider'), 'date dividers support an initial light-mode load');
 assert.ok(syncSource.includes('[data-theme="dark"] .chatbot__date-divider'), 'date dividers support an initial dark-mode load');
 assert.ok(syncSource.includes("addEventListener('themechange', decorateOpenChat)"), 'date dividers refresh during live light-dark-light theme toggles');
@@ -130,6 +137,9 @@ assert.ok(syncSource.includes("scroller.addEventListener('pointerdown', onPointe
 assert.ok(syncSource.includes("scroller.addEventListener('scroll', onUserScroll"), 'the date pill follows the visible stamped date while the user scrolls');
 assert.ok(syncSource.includes('setTimeout(hidePill, SCROLL_DATE_PILL_HIDE_DELAY)'), 'the date pill fades after scrolling stops');
 assert.ok(syncSource.includes('@media (prefers-reduced-motion:reduce)'), 'the date pill respects reduced-motion preferences');
+assert.ok(syncSource.includes("observer.observe(chatbot, { attributes: true, attributeFilter: ['class'] })"), 'main and blog chat openings are detected by the shared runtime');
+assert.ok(syncSource.includes('scrollChatToBottom(element)'), 'open positioning uses a direct non-animated bottom snap');
+assert.ok(syncSource.includes('__miqSuppressScrollPillUntil'), 'the open snap cannot reveal the user-scroll date pill');
 assert.ok(syncSource.includes('renderDateDividers(element)'), 'restored account and local histories render date dividers');
 assert.ok(syncSource.includes('if (metadata.timestampEstimated)'), 'fabricated times are hidden for migrated legacy messages');
 assert.ok(syncSource.includes('root.saveChatState = saveOpenChatState'), 'blog legacy persistence is upgraded by the shared runtime');
