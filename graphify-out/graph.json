@@ -457,7 +457,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L1",
       "id": "account_user_admin_php",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_user_admin_h()",
@@ -465,7 +465,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L18",
       "id": "account_user_admin_miq_user_admin_h",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_user_admin_utc()",
@@ -473,7 +473,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L23",
       "id": "account_user_admin_miq_user_admin_utc",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_user_admin_duration()",
@@ -481,7 +481,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L32",
       "id": "account_user_admin_miq_user_admin_duration",
-      "community": 48
+      "community": 49
     },
     {
       "label": "miq_user_admin_redirect()",
@@ -489,7 +489,7 @@
       "source_file": "account_user_admin.php",
       "source_location": "L60",
       "id": "account_user_admin_miq_user_admin_redirect",
-      "community": 48
+      "community": 49
     },
     {
       "label": "community.php",
@@ -1025,7 +1025,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L1",
       "id": "db_valuationbandsindex_get_php",
-      "community": 49
+      "community": 50
     },
     {
       "label": "datestr2num()",
@@ -1033,7 +1033,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L145",
       "id": "db_valuationbandsindex_get_datestr2num",
-      "community": 49
+      "community": 50
     },
     {
       "label": "str2num()",
@@ -1041,7 +1041,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L152",
       "id": "db_valuationbandsindex_get_str2num",
-      "community": 49
+      "community": 50
     },
     {
       "label": "datestrFormat()",
@@ -1049,7 +1049,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L162",
       "id": "db_valuationbandsindex_get_datestrformat",
-      "community": 49
+      "community": 50
     },
     {
       "label": "endsWith()",
@@ -1057,7 +1057,7 @@
       "source_file": "db_valuationbandsIndex_get.php",
       "source_location": "L190",
       "id": "db_valuationbandsindex_get_endswith",
-      "community": 49
+      "community": 50
     },
     {
       "label": "db_valuationbands_get.php",
@@ -1065,7 +1065,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L1",
       "id": "db_valuationbands_get_php",
-      "community": 53
+      "community": 54
     },
     {
       "label": "estimate_from_fundamental_stock_earnings_trend()",
@@ -1073,7 +1073,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L412",
       "id": "db_valuationbands_get_estimate_from_fundamental_stock_earnings_trend",
-      "community": 53
+      "community": 54
     },
     {
       "label": "endsWith()",
@@ -1081,7 +1081,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L435",
       "id": "db_valuationbands_get_endswith",
-      "community": 53
+      "community": 54
     },
     {
       "label": "daycount()",
@@ -1089,7 +1089,7 @@
       "source_file": "db_valuationbands_get.php",
       "source_location": "L439",
       "id": "db_valuationbands_get_daycount",
-      "community": 53
+      "community": 54
     },
     {
       "label": "disclaimer.php",
@@ -1209,7 +1209,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L1",
       "id": "llm_request_php",
-      "community": 50
+      "community": 51
     },
     {
       "label": "ollama()",
@@ -1217,7 +1217,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L297",
       "id": "llm_request_ollama",
-      "community": 50
+      "community": 51
     },
     {
       "label": "stripReasoningTrace()",
@@ -1225,7 +1225,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L407",
       "id": "llm_request_stripreasoningtrace",
-      "community": 50
+      "community": 51
     },
     {
       "label": "signage()",
@@ -1233,7 +1233,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L423",
       "id": "llm_request_signage",
-      "community": 50
+      "community": 51
     },
     {
       "label": "smartRound()",
@@ -1241,7 +1241,7 @@
       "source_file": "LLM_request.php",
       "source_location": "L434",
       "id": "llm_request_smartround",
-      "community": 50
+      "community": 51
     },
     {
       "label": "LLM_SQLiteCreateTable.php",
@@ -2001,7 +2001,7 @@
       "source_file": "account\\config.php",
       "source_location": "L1",
       "id": "account_config_php",
-      "community": 54
+      "community": 44
     },
     {
       "label": "miq_account_env()",
@@ -2009,7 +2009,7 @@
       "source_file": "account\\config.php",
       "source_location": "L14",
       "id": "config_miq_account_env",
-      "community": 54
+      "community": 44
     },
     {
       "label": "miq_community_enabled()",
@@ -2017,7 +2017,7 @@
       "source_file": "account\\config.php",
       "source_location": "L20",
       "id": "config_miq_community_enabled",
-      "community": 54
+      "community": 44
     },
     {
       "label": "miq_account_config()",
@@ -2025,7 +2025,23 @@
       "source_file": "account\\config.php",
       "source_location": "L30",
       "id": "config_miq_account_config",
-      "community": 54
+      "community": 44
+    },
+    {
+      "label": "miq_account_deployment_path()",
+      "file_type": "code",
+      "source_file": "account\\config.php",
+      "source_location": "L112",
+      "id": "config_miq_account_deployment_path",
+      "community": 44
+    },
+    {
+      "label": "miq_account_public_path()",
+      "file_type": "code",
+      "source_file": "account\\config.php",
+      "source_location": "L138",
+      "id": "config_miq_account_public_path",
+      "community": 44
     },
     {
       "label": "db.php",
@@ -2033,7 +2049,7 @@
       "source_file": "account\\db.php",
       "source_location": "L1",
       "id": "account_db_php",
-      "community": 44
+      "community": 45
     },
     {
       "label": "miq_account_db()",
@@ -2041,7 +2057,7 @@
       "source_file": "account\\db.php",
       "source_location": "L4",
       "id": "db_miq_account_db",
-      "community": 44
+      "community": 45
     },
     {
       "label": "miq_account_table()",
@@ -2049,7 +2065,7 @@
       "source_file": "account\\db.php",
       "source_location": "L50",
       "id": "db_miq_account_table",
-      "community": 44
+      "community": 45
     },
     {
       "label": "miq_account_query()",
@@ -2057,7 +2073,7 @@
       "source_file": "account\\db.php",
       "source_location": "L71",
       "id": "db_miq_account_query",
-      "community": 44
+      "community": 45
     },
     {
       "label": "miq_account_fetch_all()",
@@ -2065,7 +2081,7 @@
       "source_file": "account\\db.php",
       "source_location": "L95",
       "id": "db_miq_account_fetch_all",
-      "community": 44
+      "community": 45
     },
     {
       "label": "miq_account_fetch_one()",
@@ -2073,7 +2089,7 @@
       "source_file": "account\\db.php",
       "source_location": "L109",
       "id": "db_miq_account_fetch_one",
-      "community": 44
+      "community": 45
     },
     {
       "label": "lifecycle.php",
@@ -3209,7 +3225,7 @@
       "source_file": "assets\\js\\chatbox-runtime.js",
       "source_location": "L1",
       "id": "assets_js_chatbox_runtime_js",
-      "community": 45
+      "community": 46
     },
     {
       "label": "normalizeTerm()",
@@ -3217,7 +3233,7 @@
       "source_file": "assets\\js\\chatbox-runtime.js",
       "source_location": "L43",
       "id": "chatbox_runtime_normalizeterm",
-      "community": 45
+      "community": 46
     },
     {
       "label": "isIgnoredStockTerm()",
@@ -3225,7 +3241,7 @@
       "source_file": "assets\\js\\chatbox-runtime.js",
       "source_location": "L50",
       "id": "chatbox_runtime_isignoredstockterm",
-      "community": 45
+      "community": 46
     },
     {
       "label": "findLikelyStockCandidate()",
@@ -3233,7 +3249,7 @@
       "source_file": "assets\\js\\chatbox-runtime.js",
       "source_location": "L55",
       "id": "chatbox_runtime_findlikelystockcandidate",
-      "community": 45
+      "community": 46
     },
     {
       "label": "captureScrollState()",
@@ -3241,7 +3257,7 @@
       "source_file": "assets\\js\\chatbox-runtime.js",
       "source_location": "L100",
       "id": "chatbox_runtime_capturescrollstate",
-      "community": 45
+      "community": 46
     },
     {
       "label": "restoreScrollState()",
@@ -3249,7 +3265,7 @@
       "source_file": "assets\\js\\chatbox-runtime.js",
       "source_location": "L112",
       "id": "chatbox_runtime_restorescrollstate",
-      "community": 45
+      "community": 46
     },
     {
       "label": "chatbox-runtime.test.js",
@@ -5481,7 +5497,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L1",
       "id": "assets_js_polarchart_comment_js",
-      "community": 51
+      "community": 52
     },
     {
       "label": "polarTheme()",
@@ -5489,7 +5505,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L2",
       "id": "polarchart_comment_polartheme",
-      "community": 51
+      "community": 52
     },
     {
       "label": "polarComment()",
@@ -5497,7 +5513,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L12",
       "id": "polarchart_comment_polarcomment",
-      "community": 51
+      "community": 52
     },
     {
       "label": "pchart()",
@@ -5505,7 +5521,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L284",
       "id": "polarchart_comment_pchart",
-      "community": 51
+      "community": 52
     },
     {
       "label": "setLabelEvent()",
@@ -5513,7 +5529,7 @@
       "source_file": "assets\\js\\PolarChart-Comment.js",
       "source_location": "L506",
       "id": "polarchart_comment_setlabelevent",
-      "community": 51
+      "community": 52
     },
     {
       "label": "price-display-page-hooks.js",
@@ -5601,7 +5617,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L1",
       "id": "assets_js_price_display_policy_js",
-      "community": 46
+      "community": 47
     },
     {
       "label": "numberOrNull()",
@@ -5609,7 +5625,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L7",
       "id": "price_display_policy_numberornull",
-      "community": 46
+      "community": 47
     },
     {
       "label": "formatPercent()",
@@ -5617,7 +5633,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L15",
       "id": "price_display_policy_formatpercent",
-      "community": 46
+      "community": 47
     },
     {
       "label": "percentChange()",
@@ -5625,7 +5641,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L32",
       "id": "price_display_policy_percentchange",
-      "community": 46
+      "community": 47
     },
     {
       "label": "pointPercentChange()",
@@ -5633,7 +5649,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L41",
       "id": "price_display_policy_pointpercentchange",
-      "community": 46
+      "community": 47
     },
     {
       "label": "extractLastPercent()",
@@ -5641,7 +5657,7 @@
       "source_file": "assets\\js\\price-display-policy.js",
       "source_location": "L65",
       "id": "price_display_policy_extractlastpercent",
-      "community": 46
+      "community": 47
     },
     {
       "label": "priceDeviation.js",
@@ -6497,7 +6513,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L1",
       "id": "assets_js_tsf_js",
-      "community": 52
+      "community": 53
     },
     {
       "label": "TSFchart()",
@@ -6505,7 +6521,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L1",
       "id": "tsf_tsfchart",
-      "community": 52
+      "community": 53
     },
     {
       "label": "ema0()",
@@ -6513,7 +6529,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L380",
       "id": "tsf_ema0",
-      "community": 52
+      "community": 53
     },
     {
       "label": "tsfLookback()",
@@ -6521,7 +6537,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L403",
       "id": "tsf_tsflookback",
-      "community": 52
+      "community": 53
     },
     {
       "label": "tsf()",
@@ -6529,7 +6545,7 @@
       "source_file": "assets\\js\\TSF.js",
       "source_location": "L412",
       "id": "tsf_tsf",
-      "community": 52
+      "community": 53
     },
     {
       "label": "Utils.js",
@@ -6593,7 +6609,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1",
       "id": "assets_js_valuationbands_js",
-      "community": 47
+      "community": 48
     },
     {
       "label": "valuationBands()",
@@ -6601,7 +6617,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1",
       "id": "valuationbands_valuationbands",
-      "community": 47
+      "community": 48
     },
     {
       "label": "earningSurpriseChart()",
@@ -6609,7 +6625,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1121",
       "id": "valuationbands_earningsurprisechart",
-      "community": 47
+      "community": 48
     },
     {
       "label": "earningSurpriseComment()",
@@ -6617,7 +6633,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1286",
       "id": "valuationbands_earningsurprisecomment",
-      "community": 47
+      "community": 48
     },
     {
       "label": "Pxband()",
@@ -6625,7 +6641,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1355",
       "id": "valuationbands_pxband",
-      "community": 47
+      "community": 48
     },
     {
       "label": "valuationComment()",
@@ -6633,7 +6649,7 @@
       "source_file": "assets\\js\\ValuationBands.js",
       "source_location": "L1954",
       "id": "valuationbands_valuationcomment",
-      "community": 47
+      "community": 48
     },
     {
       "label": "workspace.js",
@@ -15630,6 +15646,30 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\config.php",
+      "source_location": "L112",
+      "weight": 1.0,
+      "_src": "account_config_php",
+      "_tgt": "config_miq_account_deployment_path",
+      "source": "account_config_php",
+      "target": "config_miq_account_deployment_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\config.php",
+      "source_location": "L138",
+      "weight": 1.0,
+      "_src": "account_config_php",
+      "_tgt": "config_miq_account_public_path",
+      "source": "account_config_php",
+      "target": "config_miq_account_public_path",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\config.php",
@@ -15651,6 +15691,30 @@
       "_tgt": "config_miq_account_env",
       "source": "config_miq_account_env",
       "target": "config_miq_account_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\config.php",
+      "source_location": "L114",
+      "weight": 1.0,
+      "_src": "config_miq_account_deployment_path",
+      "_tgt": "config_miq_account_config",
+      "source": "config_miq_account_config",
+      "target": "config_miq_account_deployment_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\config.php",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_src": "config_miq_account_public_path",
+      "_tgt": "config_miq_account_deployment_path",
+      "source": "config_miq_account_deployment_path",
+      "target": "config_miq_account_public_path",
       "confidence_score": 1.0
     },
     {
