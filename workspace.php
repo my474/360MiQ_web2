@@ -11,6 +11,10 @@ if (!$user) {
 <html>
 <head>
     <?php include __DIR__ . '/meta.php'; ?>
+    <?php
+    $miq_workspace_unread_notifications = (int) ($miq_account_unread_notifications ?? 0);
+    $miq_workspace_unread_badge = $miq_workspace_unread_notifications > 99 ? '99+' : (string) $miq_workspace_unread_notifications;
+    ?>
     <meta property="og:title" content="My Workspace - 360MiQ.com" />
     <meta name="description" content="<?php echo $community_enabled ? 'Your saved charts, Pine scripts, screener presets, searches, and community ideas on 360MiQ.com.' : 'Your saved charts, Pine scripts, screener presets, and searches on 360MiQ.com.'; ?>" />
     <title>My Workspace - 360MiQ.com</title>
@@ -43,7 +47,7 @@ if (!$user) {
         <button class="btn btn-outline-primary" data-workspace-tab="alerts" type="button">Price Alerts</button>
         <button class="btn btn-outline-primary" data-workspace-tab="searches" type="button">Recent Searches</button>
         <?php if ($community_enabled): ?><button class="btn btn-outline-primary" data-workspace-tab="ideas" type="button">Community Ideas</button><button class="btn btn-outline-primary" data-workspace-tab="bookmarks" type="button">Bookmarks</button><?php endif; ?>
-        <button class="btn btn-outline-primary" data-workspace-tab="notifications" type="button">Notifications<?php if (!empty($miq_account_unread_notifications)): ?> <span class="miq-tab-count"><?php echo (int) $miq_account_unread_notifications; ?></span><?php endif; ?></button>
+        <button class="btn btn-outline-primary" data-workspace-tab="notifications" type="button">Notifications <span class="miq-tab-count" data-miq-account-unread-badge<?php if ($miq_workspace_unread_notifications < 1): ?> hidden<?php endif; ?>><?php echo $miq_workspace_unread_badge; ?></span></button>
     </div>
     <section id="miq-workspace-content" class="miq-workspace-grid" aria-live="polite">
         <div class="miq-workspace-loading">Loading your workspace…</div>

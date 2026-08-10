@@ -161,7 +161,10 @@
 
         if (method === 'GET') {
             var query = new URLSearchParams(payload);
-            return fetch(state.apiUrl + '?action=' + encodeURIComponent(action) + '&' + query.toString(), options).then(parseResponse);
+            return fetch(state.apiUrl + '?action=' + encodeURIComponent(action) + '&' + query.toString(), options).then(parseResponse).then(function (body) {
+                syncUnreadNotificationCount(body);
+                return body;
+            });
         }
 
         payload.action = action;
@@ -169,7 +172,10 @@
         options.headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(payload);
         if (action === 'save_search') options.keepalive = true;
-        return fetch(state.apiUrl, options).then(parseResponse);
+        return fetch(state.apiUrl, options).then(parseResponse).then(function (body) {
+            syncUnreadNotificationCount(body);
+            return body;
+        });
     }
 
     function parseResponse(response) {
@@ -185,6 +191,33 @@
             }
             return body;
         });
+    }
+
+    function updateUnreadNotificationBadges(total) {
+        var count = Math.max(0, Number(total) || 0);
+        var label = count > 99 ? '99+' : String(count);
+        state.unreadNotifications = count;
+        Array.prototype.forEach.call(document.querySelectorAll('[data-miq-account-unread-badge]'), function (badge) {
+            badge.textContent = label;
+            badge.hidden = count < 1;
+        });
+        var trigger = document.querySelector('[data-miq-account-trigger]');
+        if (trigger) {
+            var baseLabel = trigger.getAttribute('data-account-aria-base') || 'Account menu';
+            trigger.setAttribute('aria-label', count > 0 ? baseLabel + ', ' + count + ' unread notifications' : baseLabel);
+        }
+    }
+
+    function syncUnreadNotificationCount(body) {
+        if (!body) return;
+        if (body.unread != null) {
+            updateUnreadNotificationBadges(body.unread);
+            return;
+        }
+        var workspaceCounts = body.workspace && body.workspace.counts;
+        if (workspaceCounts && workspaceCounts.notifications_unread != null) {
+            updateUnreadNotificationBadges(workspaceCounts.notifications_unread);
+        }
     }
 
     function makeAssetKey() {
