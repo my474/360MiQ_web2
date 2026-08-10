@@ -561,6 +561,51 @@ html[data-theme="dark"] .miq-display-name-suggestions {
     color-scheme: light;
 }
 
+.miq-google-form[hidden],
+.miq-native-google-login[hidden] {
+    display: none !important;
+}
+
+.miq-native-google-login {
+    display: flex;
+    width: min(100%, 400px);
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto;
+    padding: 9px 16px;
+    border: 1px solid #747775;
+    border-radius: 4px;
+    background: #fff;
+    color: #1f1f1f;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-decoration: none;
+}
+
+.miq-native-google-login:hover,
+.miq-native-google-login:focus {
+    border-color: #5f6368;
+    background: #f8f9fa;
+    color: #174ea6;
+    text-decoration: none;
+}
+
+.miq-native-google-login:focus-visible {
+    outline: 3px solid rgba(26, 115, 232, .3);
+    outline-offset: 2px;
+}
+
+.miq-native-google-login i {
+    width: 18px;
+    color: #4285f4;
+    font-size: 16px;
+    text-align: center;
+}
+
 .miq-google-button {
     display: flex;
     min-height: 40px;
@@ -618,6 +663,23 @@ html[data-theme="dark"] .miq-account-switch,
 html[data-theme="dark"] .miq-account-links,
 html[data-theme="dark"] .miq-google-unavailable {
     color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-native-google-login {
+    border-color: #8ab4f8;
+    background: #0b57d0;
+    color: #fff;
+}
+
+html[data-theme="dark"] .miq-native-google-login:hover,
+html[data-theme="dark"] .miq-native-google-login:focus {
+    border-color: #aecbfa;
+    background: #0842a0;
+    color: #fff;
+}
+
+html[data-theme="dark"] .miq-native-google-login i {
+    color: #fff;
 }
 
 html[data-theme="dark"] .miq-account-card .form-control,

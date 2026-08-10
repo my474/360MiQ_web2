@@ -314,6 +314,29 @@
     var googleButtonClientId = '';
     var googleButtonMode = '';
 
+    function isAndroidWebView() {
+        var userAgent = String((window.navigator && window.navigator.userAgent) || '');
+        return /360MiQAndroid/i.test(userAgent)
+            || (/Android/i.test(userAgent) && (/\bwv\b/i.test(userAgent) || /Version\/4\.0/i.test(userAgent)));
+    }
+
+    function configureGoogleLoginSurface() {
+        var nativeLinks = document.querySelectorAll('[data-native-google-login]');
+        if (!nativeLinks.length) return false;
+
+        var useNativeLogin = isAndroidWebView();
+        Array.prototype.forEach.call(document.querySelectorAll('.miq-google-form'), function (form) {
+            if (useNativeLogin) form.setAttribute('hidden', 'hidden');
+            else form.removeAttribute('hidden');
+        });
+        Array.prototype.forEach.call(nativeLinks, function (link) {
+            if (useNativeLogin) link.removeAttribute('hidden');
+            else link.setAttribute('hidden', 'hidden');
+        });
+        document.documentElement.setAttribute('data-miq-google-surface', useNativeLogin ? 'native' : 'web');
+        return useNativeLogin;
+    }
+
     function googleButtonIsDark() {
         return document.documentElement.getAttribute('data-theme') === 'dark';
     }
@@ -323,6 +346,8 @@
     }
 
     function renderGoogleButtons() {
+        if (configureGoogleLoginSurface()) return false;
+
         var targets = document.querySelectorAll('.miq-google-button[data-google-client-id]');
         if (!targets.length || !window.google || !window.google.accounts || !window.google.accounts.id) {
             return false;

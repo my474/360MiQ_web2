@@ -90,31 +90,6 @@ function miq_account_process_email_registration($email, $password, $confirm_pass
     return $user && miq_account_send_verification_for_user($user, $return_to);
 }
 
-function miq_account_process_google_login($credential)
-{
-    $identity = miq_account_google_identity($credential);
-    $user = miq_account_find_google_user($identity['provider_user_id']);
-
-    if (!$user) {
-        $existing = miq_account_find_user_by_email($identity['email']);
-        if ($existing) {
-            throw new RuntimeException('An account already exists for this email. Sign in with email first, then connect Google from your account settings.');
-        }
-
-        $user_id = miq_account_create_user($identity['email'], null, $identity['display_name'], 'google', $identity['provider_user_id'], true);
-        $users = miq_account_table('users');
-        miq_account_query(
-            "UPDATE {$users} SET avatar_url = ?, email_verified_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ?",
-            'si',
-            array($identity['avatar_url'], $user_id)
-        )->close();
-        $user = miq_account_find_google_user($identity['provider_user_id']);
-    }
-
-    $user = miq_account_require_active_user($user);
-    miq_account_login_user($user['id'], $user['session_version']);
-}
-
 if (isset($_GET['verify'])) {
     try {
         miq_account_process_verification($_GET['verify']);
@@ -246,6 +221,12 @@ $current_user = miq_account_current_user();
 if ($current_user && $view !== 'reset') {
     miq_account_redirect($return_to);
 }
+$google_client_id = miq_account_config()['google_client_id'];
+$native_google_url = '';
+if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forgot'), true)) {
+    $native_google_state = miq_account_issue_native_google_challenge($return_to);
+    $native_google_url = 'account_android_google.php?state=' . rawurlencode($native_google_state);
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -265,9 +246,9 @@ if ($current_user && $view !== 'reset') {
     <link rel="stylesheet" href="assets/css/MUSA_no-more-tables.css">
     <link rel="stylesheet" href="assets/css/signallight.css">
     <link rel="stylesheet" href="assets/css/Tabbed-Panel.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260806.7">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260810.1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-    <?php if (miq_account_config()['google_client_id'] !== ''): ?>
+    <?php if ($google_client_id !== ''): ?>
         <script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script>
     <?php endif; ?>
 </head>
@@ -312,15 +293,16 @@ if ($current_user && $view !== 'reset') {
                 </div>
                 <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
-            <?php if (miq_account_config()['google_client_id'] !== ''): ?>
+            <?php if ($google_client_id !== ''): ?>
                 <div class="miq-account-divider"><span>or</span></div>
                 <form method="post" id="google-login-form" class="miq-google-form">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="google">
                     <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="credential" id="google-credential">
-                    <div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="login" data-google-size="large"></div>
+                    <div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars($google_client_id, ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="login" data-google-size="large"></div>
                 </form>
+                <a class="miq-native-google-login" data-native-google-login href="<?php echo htmlspecialchars($native_google_url, ENT_QUOTES, 'UTF-8'); ?>" hidden><i class="fab fa-google" aria-hidden="true"></i><span>Continue with Google</span></a>
             <?php endif; ?>
             <p class="miq-account-switch">Already have an account? <a href="<?php echo htmlspecialchars('account.php?view=login&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Sign in</a></p>
         <?php elseif ($view === 'reset'): ?>
@@ -361,14 +343,15 @@ if ($current_user && $view !== 'reset') {
                 <button class="btn btn-primary btn-block" type="submit">Sign in</button>
             </form>
             <div class="miq-account-divider"><span>or</span></div>
-            <?php if (miq_account_config()['google_client_id'] !== ''): ?>
+            <?php if ($google_client_id !== ''): ?>
                 <form method="post" id="google-login-form" class="miq-google-form">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="google">
                     <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="credential" id="google-credential">
-                    <div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars(miq_account_config()['google_client_id'], ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="login" data-google-size="large"></div>
+                    <div class="miq-google-button" data-google-client-id="<?php echo htmlspecialchars($google_client_id, ENT_QUOTES, 'UTF-8'); ?>" data-google-mode="login" data-google-size="large"></div>
                 </form>
+                <a class="miq-native-google-login" data-native-google-login href="<?php echo htmlspecialchars($native_google_url, ENT_QUOTES, 'UTF-8'); ?>" hidden><i class="fab fa-google" aria-hidden="true"></i><span>Continue with Google</span></a>
             <?php else: ?>
                 <div class="miq-google-unavailable">Google login will appear after the production OAuth client is configured.</div>
             <?php endif; ?>

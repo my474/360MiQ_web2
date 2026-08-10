@@ -45,7 +45,7 @@ Public browsing does not require an account. Saving, following, voting, submitti
 2. Configure the dedicated account database include. Production defaults to `/home2/aamiqcom/php_script/mysql_vars_account.php`; `ACCOUNT_DB_INCLUDE` can override it. The repository template is `mysql_vars_account.php`; deploy it outside the web root, or provide `ACCOUNT_DB_HOST`, `ACCOUNT_DB_NAME`, `ACCOUNT_DB_USER`, `ACCOUNT_DB_PASSWORD`, and optional `ACCOUNT_DB_PORT`. Account code never falls back to the stock database. Main-site chat assets and account API URLs are document-relative, so the same files work at production `/` and a staging prefix such as `/full`. The production WordPress blog under `/blog` uses explicit main-site-root URLs for those shared endpoints.
 3. Set `MIQ_SITE_URL=https://360miq.com` and `ACCOUNT_EMAIL_FROM` to a sender that the host can deliver.
 4. Configure email delivery. Production defaults to `/home2/aamiqcom/cronjobs/email.php` through `ACCOUNT_MAILER_INCLUDE`; that file must define `email($subject, $body, $toEmail, $toName)`, return the boolean result of `$mail->send()`, and keep PHPMailer SMTP credentials outside this repository. If the configured helper is missing, returns anything other than `true`, or fails, verification/reset delivery fails safely and is logged. Rotate any SMTP password that has ever been pasted into a chat or source file.
-5. For Google login, create a production Web OAuth client in Google Cloud, configure the exact 360MiQ origin, set `GOOGLE_CLIENT_ID`, and enable the Google Identity Services client library. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
+5. For Google login, use the production Web OAuth client ID `735181786268-s7n2c9fdg268labp2estg8au267c3m0r.apps.googleusercontent.com`. It is the checked-in public default; `GOOGLE_CLIENT_ID` can override it for staging or rotation. Keep `https://360miq.com` as an exact authorized JavaScript origin. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
 6. Set `MIQ_ACCOUNT_DEBUG=false` in production.
 7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
 8. Grant your own account administrator access with `UPDATE miq_users SET role = 'admin' WHERE email = 'your-email@example.com';`. Alternatively, set `MIQ_ADMIN_EMAILS` to a comma-separated administrator allowlist. Only administrators can open `account_user_admin`.
@@ -103,6 +103,21 @@ The account layer stores only a SHA-256 hash of each IP/email key. Defaults are 
 - Community reports: 10 report submissions per account per hour, with duplicate open reports blocked.
 
 Rate-limit failures fail closed and are logged without recording raw IP addresses or email addresses.
+
+## Android WebView Google login
+
+Google Identity Services intentionally does not render its web sign-in button inside an Android WebView. The account page therefore keeps the normal Google button in desktop and mobile browsers, but replaces it with a native handoff link when the user agent contains the standard Android WebView markers (`wv` or `Version/4.0`) or the wrapper marker `360MiQAndroid`.
+
+The Android OAuth client (`com.miq360` plus the Play App Signing SHA-1) remains configured only in Google Cloud. Do not put its client ID in the website configuration. For the explicit native button, build a `GetSignInWithGoogleOption` with the Web OAuth client ID above; this makes the resulting ID token's audience match the website's `GOOGLE_CLIENT_ID`.
+
+The wrapper must intercept navigation to `account_android_google.php?state=...`, keep that `state` value, and launch Credential Manager. Pass the same value to `GetSignInWithGoogleOption.Builder(WEB_CLIENT_ID).setNonce(state)`. After a successful credential result, URL-encode and POST these form fields back to `https://360miq.com/account_android_google.php` using the same WebView cookie store:
+
+```text
+state=<the intercepted state>
+credential=<Google ID token>
+```
+
+For example, `WebView.postUrl(...)` can submit the UTF-8 `application/x-www-form-urlencoded` bytes. The endpoint consumes the session-bound state once, checks its five-minute expiry, verifies the token issuer, Web client audience, expiry, verified email, and matching nonce, then creates the normal HttpOnly 360MiQ login session and redirects within the WebView. Never place the ID token in a URL or expose it through a JavaScript bridge. A custom URI scheme and an OAuth redirect URI are not needed for this flow.
 
 ## API surface
 

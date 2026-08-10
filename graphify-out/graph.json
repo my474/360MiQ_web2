@@ -9,7 +9,7 @@
       "source_file": "about-us.php",
       "source_location": "L1",
       "id": "about_us_php",
-      "community": 100
+      "community": 102
     },
     {
       "label": "account.php",
@@ -17,7 +17,7 @@
       "source_file": "account.php",
       "source_location": "L1",
       "id": "account_php",
-      "community": 38
+      "community": 41
     },
     {
       "label": "miq_account_redirect()",
@@ -25,7 +25,7 @@
       "source_file": "account.php",
       "source_location": "L14",
       "id": "account_miq_account_redirect",
-      "community": 38
+      "community": 41
     },
     {
       "label": "miq_account_token_link()",
@@ -33,7 +33,7 @@
       "source_file": "account.php",
       "source_location": "L20",
       "id": "account_miq_account_token_link",
-      "community": 38
+      "community": 41
     },
     {
       "label": "miq_account_process_verification()",
@@ -41,7 +41,7 @@
       "source_file": "account.php",
       "source_location": "L34",
       "id": "account_miq_account_process_verification",
-      "community": 38
+      "community": 41
     },
     {
       "label": "miq_account_send_verification_for_user()",
@@ -49,7 +49,7 @@
       "source_file": "account.php",
       "source_location": "L66",
       "id": "account_miq_account_send_verification_for_user",
-      "community": 38
+      "community": 41
     },
     {
       "label": "miq_account_process_email_registration()",
@@ -57,15 +57,23 @@
       "source_file": "account.php",
       "source_location": "L81",
       "id": "account_miq_account_process_email_registration",
-      "community": 38
+      "community": 41
     },
     {
-      "label": "miq_account_process_google_login()",
+      "label": "account_android_google.php",
       "file_type": "code",
-      "source_file": "account.php",
-      "source_location": "L93",
-      "id": "account_miq_account_process_google_login",
-      "community": 38
+      "source_file": "account_android_google.php",
+      "source_location": "L1",
+      "id": "account_android_google_php",
+      "community": 74
+    },
+    {
+      "label": "miq_android_google_redirect()",
+      "file_type": "code",
+      "source_file": "account_android_google.php",
+      "source_location": "L8",
+      "id": "account_android_google_miq_android_google_redirect",
+      "community": 74
     },
     {
       "label": "account_api.php",
@@ -361,7 +369,7 @@
       "source_file": "account_export.php",
       "source_location": "L1",
       "id": "account_export_php",
-      "community": 101
+      "community": 103
     },
     {
       "label": "account_logout.php",
@@ -369,7 +377,7 @@
       "source_file": "account_logout.php",
       "source_location": "L1",
       "id": "account_logout_php",
-      "community": 102
+      "community": 104
     },
     {
       "label": "account_settings.php",
@@ -377,7 +385,7 @@
       "source_file": "account_settings.php",
       "source_location": "L1",
       "id": "account_settings_php",
-      "community": 103
+      "community": 105
     },
     {
       "label": "account_sso.php",
@@ -497,7 +505,7 @@
       "source_file": "community.php",
       "source_location": "L1",
       "id": "community_php",
-      "community": 104
+      "community": 106
     },
     {
       "label": "community_moderation.php",
@@ -505,7 +513,7 @@
       "source_file": "community_moderation.php",
       "source_location": "L1",
       "id": "community_moderation_php",
-      "community": 105
+      "community": 107
     },
     {
       "label": "contact-us.php",
@@ -513,7 +521,7 @@
       "source_file": "contact-us.php",
       "source_location": "L1",
       "id": "contact_us_php",
-      "community": 106
+      "community": 108
     },
     {
       "label": "contact-us2.php",
@@ -521,7 +529,7 @@
       "source_file": "contact-us2.php",
       "source_location": "L1",
       "id": "contact_us2_php",
-      "community": 107
+      "community": 109
     },
     {
       "label": "db_adv_get2.php",
@@ -529,7 +537,7 @@
       "source_file": "db_adv_get2.php",
       "source_location": "L1",
       "id": "db_adv_get2_php",
-      "community": 73
+      "community": 75
     },
     {
       "label": "endsWith()",
@@ -537,7 +545,7 @@
       "source_file": "db_adv_get2.php",
       "source_location": "L56",
       "id": "db_adv_get2_endswith",
-      "community": 73
+      "community": 75
     },
     {
       "label": "db_api_get.php",
@@ -545,7 +553,7 @@
       "source_file": "db_api_get.php",
       "source_location": "L1",
       "id": "db_api_get_php",
-      "community": 74
+      "community": 76
     },
     {
       "label": "endsWith()",
@@ -553,7 +561,7 @@
       "source_file": "db_api_get.php",
       "source_location": "L54",
       "id": "db_api_get_endswith",
-      "community": 74
+      "community": 76
     },
     {
       "label": "db_autocomplete.php",
@@ -561,7 +569,7 @@
       "source_file": "db_autocomplete.php",
       "source_location": "L1",
       "id": "db_autocomplete_php",
-      "community": 108
+      "community": 110
     },
     {
       "label": "db_blogpost_get.php",
@@ -569,7 +577,7 @@
       "source_file": "db_blogpost_get.php",
       "source_location": "L1",
       "id": "db_blogpost_get_php",
-      "community": 109
+      "community": 111
     },
     {
       "label": "db_chartcomposer_get.php",
@@ -577,7 +585,7 @@
       "source_file": "db_chartcomposer_get.php",
       "source_location": "L1",
       "id": "db_chartcomposer_get_php",
-      "community": 75
+      "community": 77
     },
     {
       "label": "endsWith()",
@@ -585,7 +593,7 @@
       "source_file": "db_chartcomposer_get.php",
       "source_location": "L583",
       "id": "db_chartcomposer_get_endswith",
-      "community": 75
+      "community": 77
     },
     {
       "label": "db_chatbot.php",
@@ -593,7 +601,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L1",
       "id": "db_chatbot_php",
-      "community": 60
+      "community": 61
     },
     {
       "label": "calculateChanges()",
@@ -601,7 +609,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L294",
       "id": "db_chatbot_calculatechanges",
-      "community": 60
+      "community": 61
     },
     {
       "label": "endsWith()",
@@ -609,7 +617,7 @@
       "source_file": "db_chatbot.php",
       "source_location": "L442",
       "id": "db_chatbot_endswith",
-      "community": 60
+      "community": 61
     },
     {
       "label": "db_econ_get.php",
@@ -617,7 +625,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L1",
       "id": "db_econ_get_php",
-      "community": 61
+      "community": 62
     },
     {
       "label": "datestrFormat()",
@@ -625,7 +633,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L138",
       "id": "db_econ_get_datestrformat",
-      "community": 61
+      "community": 62
     },
     {
       "label": "sma()",
@@ -633,7 +641,7 @@
       "source_file": "db_econ_get.php",
       "source_location": "L166",
       "id": "db_econ_get_sma",
-      "community": 61
+      "community": 62
     },
     {
       "label": "db_fa_get.php",
@@ -641,7 +649,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L1",
       "id": "db_fa_get_php",
-      "community": 62
+      "community": 63
     },
     {
       "label": "endsWith()",
@@ -649,7 +657,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L545",
       "id": "db_fa_get_endswith",
-      "community": 62
+      "community": 63
     },
     {
       "label": "daycount()",
@@ -657,7 +665,7 @@
       "source_file": "db_fa_get.php",
       "source_location": "L549",
       "id": "db_fa_get_daycount",
-      "community": 62
+      "community": 63
     },
     {
       "label": "db_featuredblogpost_get.php",
@@ -665,7 +673,7 @@
       "source_file": "db_featuredblogpost_get.php",
       "source_location": "L1",
       "id": "db_featuredblogpost_get_php",
-      "community": 110
+      "community": 112
     },
     {
       "label": "db_get_CCASS.php",
@@ -673,7 +681,7 @@
       "source_file": "db_get_CCASS.php",
       "source_location": "L1",
       "id": "db_get_ccass_php",
-      "community": 76
+      "community": 78
     },
     {
       "label": "isValidDate()",
@@ -681,7 +689,7 @@
       "source_file": "db_get_CCASS.php",
       "source_location": "L49",
       "id": "db_get_ccass_isvaliddate",
-      "community": 76
+      "community": 78
     },
     {
       "label": "db_get_CCASS_market.php",
@@ -689,7 +697,7 @@
       "source_file": "db_get_CCASS_market.php",
       "source_location": "L1",
       "id": "db_get_ccass_market_php",
-      "community": 111
+      "community": 113
     },
     {
       "label": "db_get_HKHousing.php",
@@ -697,7 +705,7 @@
       "source_file": "db_get_HKHousing.php",
       "source_location": "L1",
       "id": "db_get_hkhousing_php",
-      "community": 112
+      "community": 114
     },
     {
       "label": "db_get_SP500_ratio.php",
@@ -705,7 +713,7 @@
       "source_file": "db_get_SP500_ratio.php",
       "source_location": "L1",
       "id": "db_get_sp500_ratio_php",
-      "community": 113
+      "community": 115
     },
     {
       "label": "db_income4Sankey_get.php",
@@ -713,7 +721,7 @@
       "source_file": "db_income4Sankey_get.php",
       "source_location": "L1",
       "id": "db_income4sankey_get_php",
-      "community": 77
+      "community": 79
     },
     {
       "label": "endsWith()",
@@ -721,7 +729,7 @@
       "source_file": "db_income4Sankey_get.php",
       "source_location": "L99",
       "id": "db_income4sankey_get_endswith",
-      "community": 77
+      "community": 79
     },
     {
       "label": "db_index_get.php",
@@ -729,7 +737,7 @@
       "source_file": "db_index_get.php",
       "source_location": "L1",
       "id": "db_index_get_php",
-      "community": 78
+      "community": 80
     },
     {
       "label": "datestrFormat()",
@@ -737,7 +745,7 @@
       "source_file": "db_index_get.php",
       "source_location": "L151",
       "id": "db_index_get_datestrformat",
-      "community": 78
+      "community": 80
     },
     {
       "label": "db_market_get.php",
@@ -745,7 +753,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L1",
       "id": "db_market_get_php",
-      "community": 63
+      "community": 64
     },
     {
       "label": "datestrFormat()",
@@ -753,7 +761,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L291",
       "id": "db_market_get_datestrformat",
-      "community": 63
+      "community": 64
     },
     {
       "label": "sma()",
@@ -761,7 +769,7 @@
       "source_file": "db_market_get.php",
       "source_location": "L319",
       "id": "db_market_get_sma",
-      "community": 63
+      "community": 64
     },
     {
       "label": "db_market_trendgauge_get.php",
@@ -769,7 +777,7 @@
       "source_file": "db_market_trendgauge_get.php",
       "source_location": "L1",
       "id": "db_market_trendgauge_get_php",
-      "community": 114
+      "community": 116
     },
     {
       "label": "db_news_get.php",
@@ -777,7 +785,7 @@
       "source_file": "db_news_get.php",
       "source_location": "L1",
       "id": "db_news_get_php",
-      "community": 115
+      "community": 117
     },
     {
       "label": "db_PBband_get.php",
@@ -785,7 +793,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L1",
       "id": "db_pbband_get_php",
-      "community": 64
+      "community": 65
     },
     {
       "label": "endsWith()",
@@ -793,7 +801,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L235",
       "id": "db_pbband_get_endswith",
-      "community": 64
+      "community": 65
     },
     {
       "label": "daycount()",
@@ -801,7 +809,7 @@
       "source_file": "db_PBband_get.php",
       "source_location": "L239",
       "id": "db_pbband_get_daycount",
-      "community": 64
+      "community": 65
     },
     {
       "label": "db_peers_get.php",
@@ -809,7 +817,7 @@
       "source_file": "db_peers_get.php",
       "source_location": "L1",
       "id": "db_peers_get_php",
-      "community": 79
+      "community": 81
     },
     {
       "label": "endsWith()",
@@ -817,7 +825,7 @@
       "source_file": "db_peers_get.php",
       "source_location": "L82",
       "id": "db_peers_get_endswith",
-      "community": 79
+      "community": 81
     },
     {
       "label": "db_screener_get.php",
@@ -873,7 +881,7 @@
       "source_file": "db_sectorperformance_get.php",
       "source_location": "L1",
       "id": "db_sectorperformance_get_php",
-      "community": 116
+      "community": 118
     },
     {
       "label": "db_stockinfo_get.php",
@@ -881,7 +889,7 @@
       "source_file": "db_stockinfo_get.php",
       "source_location": "L1",
       "id": "db_stockinfo_get_php",
-      "community": 80
+      "community": 82
     },
     {
       "label": "endsWith()",
@@ -889,7 +897,7 @@
       "source_file": "db_stockinfo_get.php",
       "source_location": "L167",
       "id": "db_stockinfo_get_endswith",
-      "community": 80
+      "community": 82
     },
     {
       "label": "db_stockquote_get.php",
@@ -897,7 +905,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L1",
       "id": "db_stockquote_get_php",
-      "community": 65
+      "community": 66
     },
     {
       "label": "datestrFormat()",
@@ -905,7 +913,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L234",
       "id": "db_stockquote_get_datestrformat",
-      "community": 65
+      "community": 66
     },
     {
       "label": "endsWith()",
@@ -913,7 +921,7 @@
       "source_file": "db_stockquote_get.php",
       "source_location": "L263",
       "id": "db_stockquote_get_endswith",
-      "community": 65
+      "community": 66
     },
     {
       "label": "db_SurpriseIndex_get.php",
@@ -921,7 +929,7 @@
       "source_file": "db_SurpriseIndex_get.php",
       "source_location": "L1",
       "id": "db_surpriseindex_get_php",
-      "community": 81
+      "community": 83
     },
     {
       "label": "datestrFormat()",
@@ -929,7 +937,7 @@
       "source_file": "db_SurpriseIndex_get.php",
       "source_location": "L137",
       "id": "db_surpriseindex_get_datestrformat",
-      "community": 81
+      "community": 83
     },
     {
       "label": "db_top10_get.php",
@@ -937,7 +945,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L1",
       "id": "db_top10_get_php",
-      "community": 66
+      "community": 67
     },
     {
       "label": "datestrFormat()",
@@ -945,7 +953,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L217",
       "id": "db_top10_get_datestrformat",
-      "community": 66
+      "community": 67
     },
     {
       "label": "endsWith()",
@@ -953,7 +961,7 @@
       "source_file": "db_top10_get.php",
       "source_location": "L246",
       "id": "db_top10_get_endswith",
-      "community": 66
+      "community": 67
     },
     {
       "label": "db_top10_get1.php",
@@ -961,7 +969,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L1",
       "id": "db_top10_get1_php",
-      "community": 67
+      "community": 68
     },
     {
       "label": "datestrFormat()",
@@ -969,7 +977,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L178",
       "id": "db_top10_get1_datestrformat",
-      "community": 67
+      "community": 68
     },
     {
       "label": "endsWith()",
@@ -977,7 +985,7 @@
       "source_file": "db_top10_get1.php",
       "source_location": "L207",
       "id": "db_top10_get1_endswith",
-      "community": 67
+      "community": 68
     },
     {
       "label": "db_top10_name_get.php",
@@ -985,7 +993,7 @@
       "source_file": "db_top10_name_get.php",
       "source_location": "L1",
       "id": "db_top10_name_get_php",
-      "community": 117
+      "community": 119
     },
     {
       "label": "db_treemap_get.php",
@@ -993,7 +1001,7 @@
       "source_file": "db_treemap_get.php",
       "source_location": "L1",
       "id": "db_treemap_get_php",
-      "community": 82
+      "community": 84
     },
     {
       "label": "endsWith()",
@@ -1001,7 +1009,7 @@
       "source_file": "db_treemap_get.php",
       "source_location": "L357",
       "id": "db_treemap_get_endswith",
-      "community": 82
+      "community": 84
     },
     {
       "label": "db_treemap_index_get.php",
@@ -1009,7 +1017,7 @@
       "source_file": "db_treemap_index_get.php",
       "source_location": "L1",
       "id": "db_treemap_index_get_php",
-      "community": 83
+      "community": 85
     },
     {
       "label": "endsWith()",
@@ -1017,7 +1025,7 @@
       "source_file": "db_treemap_index_get.php",
       "source_location": "L363",
       "id": "db_treemap_index_get_endswith",
-      "community": 83
+      "community": 85
     },
     {
       "label": "db_valuationbandsIndex_get.php",
@@ -1097,7 +1105,7 @@
       "source_file": "disclaimer.php",
       "source_location": "L1",
       "id": "disclaimer_php",
-      "community": 118
+      "community": 120
     },
     {
       "label": "econ.php",
@@ -1105,7 +1113,7 @@
       "source_file": "econ.php",
       "source_location": "L1",
       "id": "econ_php",
-      "community": 119
+      "community": 121
     },
     {
       "label": "error.php",
@@ -1113,7 +1121,7 @@
       "source_file": "error.php",
       "source_location": "L1",
       "id": "error_php",
-      "community": 120
+      "community": 122
     },
     {
       "label": "footer.php",
@@ -1121,7 +1129,7 @@
       "source_file": "footer.php",
       "source_location": "L1",
       "id": "footer_php",
-      "community": 121
+      "community": 123
     },
     {
       "label": "footer_fullSave.php",
@@ -1129,7 +1137,7 @@
       "source_file": "footer_fullSave.php",
       "source_location": "L1",
       "id": "footer_fullsave_php",
-      "community": 122
+      "community": 124
     },
     {
       "label": "header.php",
@@ -1137,7 +1145,7 @@
       "source_file": "header.php",
       "source_location": "L1",
       "id": "header_php",
-      "community": 123
+      "community": 125
     },
     {
       "label": "idx.php",
@@ -1145,7 +1153,7 @@
       "source_file": "idx.php",
       "source_location": "L1",
       "id": "idx_php",
-      "community": 124
+      "community": 126
     },
     {
       "label": "index.php",
@@ -1153,7 +1161,7 @@
       "source_file": "index.php",
       "source_location": "L1",
       "id": "index_php",
-      "community": 84
+      "community": 86
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -1161,7 +1169,7 @@
       "source_file": "index.php",
       "source_location": "L2",
       "id": "index_scatterchartnotemarkup",
-      "community": 84
+      "community": 86
     },
     {
       "label": "index1.php",
@@ -1169,7 +1177,7 @@
       "source_file": "index1.php",
       "source_location": "L1",
       "id": "index1_php",
-      "community": 85
+      "community": 87
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -1177,7 +1185,7 @@
       "source_file": "index1.php",
       "source_location": "L2",
       "id": "index1_scatterchartnotemarkup",
-      "community": 85
+      "community": 87
     },
     {
       "label": "LLM_cancel_job.php",
@@ -1185,7 +1193,7 @@
       "source_file": "LLM_cancel_job.php",
       "source_location": "L1",
       "id": "llm_cancel_job_php",
-      "community": 125
+      "community": 127
     },
     {
       "label": "LLM_process_queue.php",
@@ -1193,7 +1201,7 @@
       "source_file": "LLM_process_queue.php",
       "source_location": "L1",
       "id": "llm_process_queue_php",
-      "community": 86
+      "community": 88
     },
     {
       "label": "ollama()",
@@ -1201,7 +1209,7 @@
       "source_file": "LLM_process_queue.php",
       "source_location": "L58",
       "id": "llm_process_queue_ollama",
-      "community": 86
+      "community": 88
     },
     {
       "label": "LLM_request.php",
@@ -1257,7 +1265,7 @@
       "source_file": "LLM_SQLiteCreateTable.php",
       "source_location": "L1",
       "id": "llm_sqlitecreatetable_php",
-      "community": 126
+      "community": 128
     },
     {
       "label": "LLM_SQLitePrintAll.php",
@@ -1265,7 +1273,7 @@
       "source_file": "LLM_SQLitePrintAll.php",
       "source_location": "L1",
       "id": "llm_sqliteprintall_php",
-      "community": 127
+      "community": 129
     },
     {
       "label": "LLM_SQLiteTruncate.php",
@@ -1273,7 +1281,7 @@
       "source_file": "LLM_SQLiteTruncate.php",
       "source_location": "L1",
       "id": "llm_sqlitetruncate_php",
-      "community": 128
+      "community": 130
     },
     {
       "label": "LLM_status.php",
@@ -1281,7 +1289,7 @@
       "source_file": "LLM_status.php",
       "source_location": "L1",
       "id": "llm_status_php",
-      "community": 129
+      "community": 131
     },
     {
       "label": "LLM_submit.php",
@@ -1289,7 +1297,7 @@
       "source_file": "LLM_submit.php",
       "source_location": "L1",
       "id": "llm_submit_php",
-      "community": 130
+      "community": 132
     },
     {
       "label": "market.php",
@@ -1297,7 +1305,7 @@
       "source_file": "market.php",
       "source_location": "L1",
       "id": "market_php",
-      "community": 87
+      "community": 89
     },
     {
       "label": "scatterChartNoteMarkup()",
@@ -1305,7 +1313,7 @@
       "source_file": "market.php",
       "source_location": "L122",
       "id": "market_scatterchartnotemarkup",
-      "community": 87
+      "community": 89
     },
     {
       "label": "meta.php",
@@ -1313,7 +1321,7 @@
       "source_file": "meta.php",
       "source_location": "L1",
       "id": "meta_php",
-      "community": 131
+      "community": 133
     },
     {
       "label": "mysql_vars_account.php",
@@ -1321,7 +1329,7 @@
       "source_file": "mysql_vars_account.php",
       "source_location": "L1",
       "id": "mysql_vars_account_php",
-      "community": 132
+      "community": 134
     },
     {
       "label": "ollama.php",
@@ -1329,7 +1337,7 @@
       "source_file": "ollama.php",
       "source_location": "L1",
       "id": "ollama_php",
-      "community": 68
+      "community": 69
     },
     {
       "label": "updateQueueCounter()",
@@ -1337,7 +1345,7 @@
       "source_file": "ollama.php",
       "source_location": "L22",
       "id": "ollama_updatequeuecounter",
-      "community": 68
+      "community": 69
     },
     {
       "label": "logQueueInfo()",
@@ -1345,7 +1353,7 @@
       "source_file": "ollama.php",
       "source_location": "L30",
       "id": "ollama_logqueueinfo",
-      "community": 68
+      "community": 69
     },
     {
       "label": "privacypolicy.php",
@@ -1353,7 +1361,7 @@
       "source_file": "privacypolicy.php",
       "source_location": "L1",
       "id": "privacypolicy_php",
-      "community": 133
+      "community": 135
     },
     {
       "label": "raceChart.php",
@@ -1361,7 +1369,7 @@
       "source_file": "raceChart.php",
       "source_location": "L1",
       "id": "racechart_php",
-      "community": 134
+      "community": 136
     },
     {
       "label": "screener.php",
@@ -1369,7 +1377,7 @@
       "source_file": "screener.php",
       "source_location": "L1",
       "id": "screener_php",
-      "community": 135
+      "community": 137
     },
     {
       "label": "stockinfo.php",
@@ -1425,7 +1433,7 @@
       "source_file": "stock_json.php",
       "source_location": "L1",
       "id": "stock_json_php",
-      "community": 69
+      "community": 70
     },
     {
       "label": "cleanName()",
@@ -1433,7 +1441,7 @@
       "source_file": "stock_json.php",
       "source_location": "L11",
       "id": "stock_json_cleanname",
-      "community": 69
+      "community": 70
     },
     {
       "label": "cleanChinese()",
@@ -1441,7 +1449,7 @@
       "source_file": "stock_json.php",
       "source_location": "L66",
       "id": "stock_json_cleanchinese",
-      "community": 69
+      "community": 70
     },
     {
       "label": "terms.php",
@@ -1449,7 +1457,7 @@
       "source_file": "terms.php",
       "source_location": "L1",
       "id": "terms_php",
-      "community": 136
+      "community": 138
     },
     {
       "label": "tool.php",
@@ -1457,7 +1465,7 @@
       "source_file": "tool.php",
       "source_location": "L1",
       "id": "tool_php",
-      "community": 137
+      "community": 139
     },
     {
       "label": "workspace.php",
@@ -1465,7 +1473,7 @@
       "source_file": "workspace.php",
       "source_location": "L1",
       "id": "workspace_php",
-      "community": 138
+      "community": 140
     },
     {
       "label": "writeforus.php",
@@ -1473,7 +1481,7 @@
       "source_file": "writeforus.php",
       "source_location": "L1",
       "id": "writeforus_php",
-      "community": 139
+      "community": 141
     },
     {
       "label": "youtube.php",
@@ -1481,7 +1489,7 @@
       "source_file": "youtube.php",
       "source_location": "L1",
       "id": "youtube_php",
-      "community": 140
+      "community": 142
     },
     {
       "label": "youtube_get.php",
@@ -1489,7 +1497,7 @@
       "source_file": "youtube_get.php",
       "source_location": "L1",
       "id": "youtube_get_php",
-      "community": 141
+      "community": 143
     },
     {
       "label": "auth.php",
@@ -1756,10 +1764,26 @@
       "community": 6
     },
     {
-      "label": "miq_account_safe_return_to()",
+      "label": "miq_account_issue_native_google_challenge()",
       "file_type": "code",
       "source_file": "account\\auth.php",
       "source_location": "L477",
+      "id": "auth_miq_account_issue_native_google_challenge",
+      "community": 6
+    },
+    {
+      "label": "miq_account_consume_native_google_challenge()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L489",
+      "id": "auth_miq_account_consume_native_google_challenge",
+      "community": 6
+    },
+    {
+      "label": "miq_account_safe_return_to()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L515",
       "id": "auth_miq_account_safe_return_to",
       "community": 6
     },
@@ -1767,7 +1791,7 @@
       "label": "miq_account_validate_password()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L503",
+      "source_location": "L541",
       "id": "auth_miq_account_validate_password",
       "community": 6
     },
@@ -1775,7 +1799,7 @@
       "label": "miq_account_flash()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L514",
+      "source_location": "L552",
       "id": "auth_miq_account_flash",
       "community": 6
     },
@@ -1783,7 +1807,7 @@
       "label": "miq_account_take_flash()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L520",
+      "source_location": "L558",
       "id": "auth_miq_account_take_flash",
       "community": 6
     },
@@ -1791,7 +1815,7 @@
       "label": "miq_account_hash_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L528",
+      "source_location": "L566",
       "id": "auth_miq_account_hash_token",
       "community": 6
     },
@@ -1799,7 +1823,7 @@
       "label": "miq_account_client_ip()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L533",
+      "source_location": "L571",
       "id": "auth_miq_account_client_ip",
       "community": 6
     },
@@ -1807,7 +1831,7 @@
       "label": "miq_account_rate_limit_key()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L539",
+      "source_location": "L577",
       "id": "auth_miq_account_rate_limit_key",
       "community": 6
     },
@@ -1815,7 +1839,7 @@
       "label": "miq_account_rate_limit()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L544",
+      "source_location": "L582",
       "id": "auth_miq_account_rate_limit",
       "community": 6
     },
@@ -1823,7 +1847,7 @@
       "label": "miq_account_require_rate_limit()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L617",
+      "source_location": "L655",
       "id": "auth_miq_account_require_rate_limit",
       "community": 6
     },
@@ -1831,7 +1855,7 @@
       "label": "miq_account_email_rate_limit()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L625",
+      "source_location": "L663",
       "id": "auth_miq_account_email_rate_limit",
       "community": 6
     },
@@ -1839,7 +1863,7 @@
       "label": "miq_account_send_mail()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L643",
+      "source_location": "L681",
       "id": "auth_miq_account_send_mail",
       "community": 6
     },
@@ -1847,7 +1871,7 @@
       "label": "miq_account_create_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L683",
+      "source_location": "L721",
       "id": "auth_miq_account_create_token",
       "community": 6
     },
@@ -1855,7 +1879,7 @@
       "label": "miq_account_create_user()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L688",
+      "source_location": "L726",
       "id": "auth_miq_account_create_user",
       "community": 6
     },
@@ -1863,7 +1887,7 @@
       "label": "miq_account_issue_email_token()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L737",
+      "source_location": "L775",
       "id": "auth_miq_account_issue_email_token",
       "community": 6
     },
@@ -1871,7 +1895,7 @@
       "label": "miq_account_google_identity()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L753",
+      "source_location": "L791",
       "id": "auth_miq_account_google_identity",
       "community": 6
     },
@@ -1879,15 +1903,23 @@
       "label": "miq_account_find_google_user()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L794",
+      "source_location": "L850",
       "id": "auth_miq_account_find_google_user",
+      "community": 6
+    },
+    {
+      "label": "miq_account_process_google_login()",
+      "file_type": "code",
+      "source_file": "account\\auth.php",
+      "source_location": "L861",
+      "id": "auth_miq_account_process_google_login",
       "community": 6
     },
     {
       "label": "miq_account_find_user_by_email()",
       "file_type": "code",
       "source_file": "account\\auth.php",
-      "source_location": "L805",
+      "source_location": "L886",
       "id": "auth_miq_account_find_user_by_email",
       "community": 6
     },
@@ -1897,7 +1929,7 @@
       "source_file": "account\\bootstrap.php",
       "source_location": "L1",
       "id": "account_bootstrap_php",
-      "community": 142
+      "community": 144
     },
     {
       "label": "check_price_alerts.php",
@@ -1905,7 +1937,7 @@
       "source_file": "account\\check_price_alerts.php",
       "source_location": "L1",
       "id": "account_check_price_alerts_php",
-      "community": 143
+      "community": 145
     },
     {
       "label": "cleanup_rate_limits.php",
@@ -1913,7 +1945,7 @@
       "source_file": "account\\cleanup_rate_limits.php",
       "source_location": "L1",
       "id": "account_cleanup_rate_limits_php",
-      "community": 144
+      "community": 146
     },
     {
       "label": "community_sentiment.php",
@@ -2209,7 +2241,7 @@
       "source_file": "account\\snapshot_community_sentiment.php",
       "source_location": "L1",
       "id": "account_snapshot_community_sentiment_php",
-      "community": 145
+      "community": 147
     },
     {
       "label": "bootstrap.min.js",
@@ -2716,10 +2748,26 @@
       "community": 7
     },
     {
-      "label": "googleButtonIsDark()",
+      "label": "isAndroidWebView()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
       "source_location": "L317",
+      "id": "account_isandroidwebview",
+      "community": 7
+    },
+    {
+      "label": "configureGoogleLoginSurface()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L323",
+      "id": "account_configuregoogleloginsurface",
+      "community": 7
+    },
+    {
+      "label": "googleButtonIsDark()",
+      "file_type": "code",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L340",
       "id": "account_googlebuttonisdark",
       "community": 7
     },
@@ -2727,7 +2775,7 @@
       "label": "googleButtonCallback()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L321",
+      "source_location": "L344",
       "id": "account_googlebuttoncallback",
       "community": 7
     },
@@ -2735,7 +2783,7 @@
       "label": "renderGoogleButtons()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L325",
+      "source_location": "L348",
       "id": "account_rendergooglebuttons",
       "community": 7
     },
@@ -2743,7 +2791,7 @@
       "label": "bindDisplayNameSuggestions()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L363",
+      "source_location": "L388",
       "id": "account_binddisplaynamesuggestions",
       "community": 7
     },
@@ -2751,7 +2799,7 @@
       "label": "bindPasswordVisibility()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L375",
+      "source_location": "L400",
       "id": "account_bindpasswordvisibility",
       "community": 7
     },
@@ -2759,7 +2807,7 @@
       "label": "bindSearchTracking()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L398",
+      "source_location": "L423",
       "id": "account_bindsearchtracking",
       "community": 7
     },
@@ -2767,7 +2815,7 @@
       "label": "bindStockViewTracking()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L407",
+      "source_location": "L432",
       "id": "account_bindstockviewtracking",
       "community": 7
     },
@@ -2775,7 +2823,7 @@
       "label": "sentimentSvgElement()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L417",
+      "source_location": "L442",
       "id": "account_sentimentsvgelement",
       "community": 7
     },
@@ -2783,7 +2831,7 @@
       "label": "sentimentLinePath()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L426",
+      "source_location": "L451",
       "id": "account_sentimentlinepath",
       "community": 7
     },
@@ -2791,7 +2839,7 @@
       "label": "clearElement()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L441",
+      "source_location": "L466",
       "id": "account_clearelement",
       "community": 7
     },
@@ -2799,7 +2847,7 @@
       "label": "renderSentimentChart()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L445",
+      "source_location": "L470",
       "id": "account_rendersentimentchart",
       "community": 7
     },
@@ -2807,7 +2855,7 @@
       "label": "sentimentTrendRequest()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L581",
+      "source_location": "L606",
       "id": "account_sentimenttrendrequest",
       "community": 7
     },
@@ -2815,7 +2863,7 @@
       "label": "loadSentimentChart()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L600",
+      "source_location": "L625",
       "id": "account_loadsentimentchart",
       "community": 7
     },
@@ -2823,7 +2871,7 @@
       "label": "renderSentimentCharts()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L620",
+      "source_location": "L645",
       "id": "account_rendersentimentcharts",
       "community": 7
     },
@@ -2831,7 +2879,7 @@
       "label": "rememberPendingPulseVote()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L627",
+      "source_location": "L652",
       "id": "account_rememberpendingpulsevote",
       "community": 7
     },
@@ -2839,7 +2887,7 @@
       "label": "pendingPulseVote()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L636",
+      "source_location": "L661",
       "id": "account_pendingpulsevote",
       "community": 7
     },
@@ -2847,7 +2895,7 @@
       "label": "clearPendingPulseVote()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L650",
+      "source_location": "L675",
       "id": "account_clearpendingpulsevote",
       "community": 7
     },
@@ -2855,7 +2903,7 @@
       "label": "updatePulseCounts()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L654",
+      "source_location": "L679",
       "id": "account_updatepulsecounts",
       "community": 7
     },
@@ -2863,7 +2911,7 @@
       "label": "setPulseBusy()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L667",
+      "source_location": "L692",
       "id": "account_setpulsebusy",
       "community": 7
     },
@@ -2871,7 +2919,7 @@
       "label": "selectPulseDirection()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L673",
+      "source_location": "L698",
       "id": "account_selectpulsedirection",
       "community": 7
     },
@@ -2879,7 +2927,7 @@
       "label": "showPulseExplanation()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L679",
+      "source_location": "L704",
       "id": "account_showpulseexplanation",
       "community": 7
     },
@@ -2887,7 +2935,7 @@
       "label": "submitPulseVote()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L688",
+      "source_location": "L713",
       "id": "account_submitpulsevote",
       "community": 7
     },
@@ -2895,7 +2943,7 @@
       "label": "replayPendingPulseVote()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L720",
+      "source_location": "L745",
       "id": "account_replaypendingpulsevote",
       "community": 7
     },
@@ -2903,7 +2951,7 @@
       "label": "bindPulseExplanation()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L743",
+      "source_location": "L768",
       "id": "account_bindpulseexplanation",
       "community": 7
     },
@@ -2911,7 +2959,7 @@
       "label": "renderPulse()",
       "file_type": "code",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L794",
+      "source_location": "L819",
       "id": "account_renderpulse",
       "community": 7
     },
@@ -2921,7 +2969,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L1",
       "id": "assets_js_adchart_js",
-      "community": 70
+      "community": 71
     },
     {
       "label": "adchart()",
@@ -2929,7 +2977,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L1",
       "id": "adchart_adchart",
-      "community": 70
+      "community": 71
     },
     {
       "label": "adComment()",
@@ -2937,7 +2985,7 @@
       "source_file": "assets\\js\\ADChart.js",
       "source_location": "L415",
       "id": "adchart_adcomment",
-      "community": 70
+      "community": 71
     },
     {
       "label": "AdvDecPie.js",
@@ -2945,7 +2993,7 @@
       "source_file": "assets\\js\\AdvDecPie.js",
       "source_location": "L1",
       "id": "assets_js_advdecpie_js",
-      "community": 88
+      "community": 90
     },
     {
       "label": "adpie()",
@@ -2953,7 +3001,7 @@
       "source_file": "assets\\js\\AdvDecPie.js",
       "source_location": "L1",
       "id": "advdecpie_adpie",
-      "community": 88
+      "community": 90
     },
     {
       "label": "anychart-bundle.min.js",
@@ -3145,7 +3193,7 @@
       "source_file": "assets\\js\\bot-detector.js",
       "source_location": "L1",
       "id": "assets_js_bot_detector_js",
-      "community": 89
+      "community": 91
     },
     {
       "label": "isHumanMove()",
@@ -3153,7 +3201,7 @@
       "source_file": "assets\\js\\bot-detector.js",
       "source_location": "L38",
       "id": "bot_detector_ishumanmove",
-      "community": 89
+      "community": 91
     },
     {
       "label": "bubble-price-policy.js",
@@ -3161,7 +3209,7 @@
       "source_file": "assets\\js\\bubble-price-policy.js",
       "source_location": "L1",
       "id": "assets_js_bubble_price_policy_js",
-      "community": 146
+      "community": 148
     },
     {
       "label": "Bubble.js",
@@ -3201,7 +3249,7 @@
       "source_file": "assets\\js\\CCASS.js",
       "source_location": "L1",
       "id": "assets_js_ccass_js",
-      "community": 90
+      "community": 92
     },
     {
       "label": "CCASS()",
@@ -3209,7 +3257,7 @@
       "source_file": "assets\\js\\CCASS.js",
       "source_location": "L1",
       "id": "ccass_ccass",
-      "community": 90
+      "community": 92
     },
     {
       "label": "chatbox-runtime.js",
@@ -3265,7 +3313,7 @@
       "source_file": "assets\\js\\chatbox-runtime.test.js",
       "source_location": "L1",
       "id": "assets_js_chatbox_runtime_test_js",
-      "community": 147
+      "community": 149
     },
     {
       "label": "chatbox-sync.js",
@@ -3977,7 +4025,7 @@
       "source_file": "assets\\js\\chatbox-sync.test.js",
       "source_location": "L1",
       "id": "assets_js_chatbox_sync_test_js",
-      "community": 148
+      "community": 150
     },
     {
       "label": "community.js",
@@ -4417,7 +4465,7 @@
       "source_file": "assets\\js\\cookieconsent.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsent_js",
-      "community": 91
+      "community": 93
     },
     {
       "label": "ga_ms()",
@@ -4425,7 +4473,7 @@
       "source_file": "assets\\js\\cookieconsent.js",
       "source_location": "L1",
       "id": "cookieconsent_ga_ms",
-      "community": 91
+      "community": 93
     },
     {
       "label": "cookieconsentrun.js",
@@ -4433,7 +4481,7 @@
       "source_file": "assets\\js\\cookieconsentrun.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsentrun_js",
-      "community": 149
+      "community": 151
     },
     {
       "label": "cookieconsentruna.js",
@@ -4441,7 +4489,7 @@
       "source_file": "assets\\js\\cookieconsentruna.js",
       "source_location": "L1",
       "id": "assets_js_cookieconsentruna_js",
-      "community": 150
+      "community": 152
     },
     {
       "label": "datatables.input.js",
@@ -4561,7 +4609,7 @@
       "source_file": "assets\\js\\GaugeChart.js",
       "source_location": "L1",
       "id": "assets_js_gaugechart_js",
-      "community": 92
+      "community": 94
     },
     {
       "label": "trendgauge()",
@@ -4569,7 +4617,7 @@
       "source_file": "assets\\js\\GaugeChart.js",
       "source_location": "L68",
       "id": "gaugechart_trendgauge",
-      "community": 92
+      "community": 94
     },
     {
       "label": "highcharts-theme.js",
@@ -5425,7 +5473,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_ui_min_js",
-      "community": 39
+      "community": 38
     },
     {
       "label": "i()",
@@ -5433,7 +5481,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_i",
-      "community": 39
+      "community": 38
     },
     {
       "label": "s()",
@@ -5441,7 +5489,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_s",
-      "community": 39
+      "community": 38
     },
     {
       "label": "n()",
@@ -5449,7 +5497,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_n",
-      "community": 39
+      "community": 38
     },
     {
       "label": "h()",
@@ -5457,7 +5505,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_h",
-      "community": 39
+      "community": 38
     },
     {
       "label": "e()",
@@ -5465,7 +5513,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L5",
       "id": "jquery_ui_min_e",
-      "community": 39
+      "community": 38
     },
     {
       "label": "o()",
@@ -5473,7 +5521,7 @@
       "source_file": "assets\\js\\jquery-ui.min.js",
       "source_location": "L12",
       "id": "jquery_ui_min_o",
-      "community": 39
+      "community": 38
     },
     {
       "label": "jquery-ui1.12.1.min.js",
@@ -5553,7 +5601,7 @@
       "source_file": "assets\\js\\jquery.sparkline.min.js",
       "source_location": "L1",
       "id": "assets_js_jquery_sparkline_min_js",
-      "community": 151
+      "community": 153
     },
     {
       "label": "LanguageTimezone.js",
@@ -5561,7 +5609,7 @@
       "source_file": "assets\\js\\LanguageTimezone.js",
       "source_location": "L1",
       "id": "assets_js_languagetimezone_js",
-      "community": 93
+      "community": 95
     },
     {
       "label": "LanguageTimezone()",
@@ -5569,7 +5617,7 @@
       "source_file": "assets\\js\\LanguageTimezone.js",
       "source_location": "L1",
       "id": "languagetimezone_languagetimezone",
-      "community": 93
+      "community": 95
     },
     {
       "label": "MajorEvents.js",
@@ -5577,7 +5625,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L1",
       "id": "assets_js_majorevents_js",
-      "community": 71
+      "community": 72
     },
     {
       "label": "getHighstockMajorEvents()",
@@ -5585,7 +5633,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L1",
       "id": "majorevents_gethighstockmajorevents",
-      "community": 71
+      "community": 72
     },
     {
       "label": "applyHighstockMajorEventTheme()",
@@ -5593,7 +5641,7 @@
       "source_file": "assets\\js\\MajorEvents.js",
       "source_location": "L768",
       "id": "majorevents_applyhighstockmajoreventtheme",
-      "community": 71
+      "community": 72
     },
     {
       "label": "moderation.js",
@@ -5937,7 +5985,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L1",
       "id": "assets_js_pricedeviation_js",
-      "community": 72
+      "community": 73
     },
     {
       "label": "priceDeviation()",
@@ -5945,7 +5993,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L1",
       "id": "pricedeviation_pricedeviation",
-      "community": 72
+      "community": 73
     },
     {
       "label": "findMovingMax()",
@@ -5953,7 +6001,7 @@
       "source_file": "assets\\js\\priceDeviation.js",
       "source_location": "L666",
       "id": "pricedeviation_findmovingmax",
-      "community": 72
+      "community": 73
     },
     {
       "label": "pwabuilder-sw.js",
@@ -5961,7 +6009,7 @@
       "source_file": "assets\\js\\pwabuilder-sw.js",
       "source_location": "L1",
       "id": "assets_js_pwabuilder_sw_js",
-      "community": 152
+      "community": 154
     },
     {
       "label": "RangeChart.js",
@@ -6289,7 +6337,7 @@
       "source_file": "assets\\js\\seasonality.js",
       "source_location": "L1",
       "id": "assets_js_seasonality_js",
-      "community": 94
+      "community": 96
     },
     {
       "label": "seasonalityChart()",
@@ -6297,7 +6345,7 @@
       "source_file": "assets\\js\\seasonality.js",
       "source_location": "L1",
       "id": "seasonality_seasonalitychart",
-      "community": 94
+      "community": 96
     },
     {
       "label": "sectorPerformance.js",
@@ -6305,7 +6353,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L1",
       "id": "assets_js_sectorperformance_js",
-      "community": 40
+      "community": 39
     },
     {
       "label": "sectorPerformance()",
@@ -6313,7 +6361,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L1",
       "id": "sectorperformance_sectorperformance",
-      "community": 40
+      "community": 39
     },
     {
       "label": "sortAZ()",
@@ -6321,7 +6369,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L573",
       "id": "sectorperformance_sortaz",
-      "community": 40
+      "community": 39
     },
     {
       "label": "sort1day()",
@@ -6329,7 +6377,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L621",
       "id": "sectorperformance_sort1day",
-      "community": 40
+      "community": 39
     },
     {
       "label": "sort5day()",
@@ -6337,7 +6385,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L661",
       "id": "sectorperformance_sort5day",
-      "community": 40
+      "community": 39
     },
     {
       "label": "sort20day()",
@@ -6345,7 +6393,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L705",
       "id": "sectorperformance_sort20day",
-      "community": 40
+      "community": 39
     },
     {
       "label": "setLabelEvent()",
@@ -6353,7 +6401,7 @@
       "source_file": "assets\\js\\sectorPerformance.js",
       "source_location": "L749",
       "id": "sectorperformance_setlabelevent",
-      "community": 40
+      "community": 39
     },
     {
       "label": "smart-forms.min.js",
@@ -6545,7 +6593,7 @@
       "source_file": "assets\\js\\stockCompare.js",
       "source_location": "L1",
       "id": "assets_js_stockcompare_js",
-      "community": 95
+      "community": 97
     },
     {
       "label": "stockCompare()",
@@ -6553,7 +6601,7 @@
       "source_file": "assets\\js\\stockCompare.js",
       "source_location": "L1",
       "id": "stockcompare_stockcompare",
-      "community": 95
+      "community": 97
     },
     {
       "label": "TA.js",
@@ -6769,7 +6817,7 @@
       "source_file": "assets\\js\\Treemap.js",
       "source_location": "L1",
       "id": "assets_js_treemap_js",
-      "community": 96
+      "community": 98
     },
     {
       "label": "treemap()",
@@ -6777,7 +6825,7 @@
       "source_file": "assets\\js\\Treemap.js",
       "source_location": "L1",
       "id": "treemap_treemap",
-      "community": 96
+      "community": 98
     },
     {
       "label": "TSF.js",
@@ -6825,7 +6873,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L1",
       "id": "assets_js_utils_js",
-      "community": 41
+      "community": 40
     },
     {
       "label": "utc()",
@@ -6833,7 +6881,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L1",
       "id": "utils_utc",
-      "community": 41
+      "community": 40
     },
     {
       "label": "str2date()",
@@ -6841,7 +6889,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L6",
       "id": "utils_str2date",
-      "community": 41
+      "community": 40
     },
     {
       "label": "formatDate()",
@@ -6849,7 +6897,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L21",
       "id": "utils_formatdate",
-      "community": 41
+      "community": 40
     },
     {
       "label": "formatDateNoBreak()",
@@ -6857,7 +6905,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L32",
       "id": "utils_formatdatenobreak",
-      "community": 41
+      "community": 40
     },
     {
       "label": "rounding()",
@@ -6865,7 +6913,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L43",
       "id": "utils_rounding",
-      "community": 41
+      "community": 40
     },
     {
       "label": "detectIE()",
@@ -6873,7 +6921,7 @@
       "source_file": "assets\\js\\Utils.js",
       "source_location": "L50",
       "id": "utils_detectie",
-      "community": 41
+      "community": 40
     },
     {
       "label": "ValuationBands.js",
@@ -7281,7 +7329,7 @@
       "source_file": "assets\\js\\yearlyTrendChart.js",
       "source_location": "L1",
       "id": "assets_js_yearlytrendchart_js",
-      "community": 97
+      "community": 99
     },
     {
       "label": "yearlyTrendChart()",
@@ -7289,7 +7337,7 @@
       "source_file": "assets\\js\\yearlyTrendChart.js",
       "source_location": "L1",
       "id": "yearlytrendchart_yearlytrendchart",
-      "community": 97
+      "community": 99
     },
     {
       "label": "econ-main.js",
@@ -10145,7 +10193,7 @@
       "source_file": "assets\\js\\stock-chart-engine\\pine-script-worker.js",
       "source_location": "L1",
       "id": "assets_js_stock_chart_engine_pine_script_worker_js",
-      "community": 153
+      "community": 155
     },
     {
       "label": "stock-chart-engine.js",
@@ -12697,7 +12745,7 @@
       "source_file": "components\\community-pulse.php",
       "source_location": "L1",
       "id": "components_community_pulse_php",
-      "community": 154
+      "community": 156
     },
     {
       "label": "stock-account-tools.php",
@@ -12705,7 +12753,7 @@
       "source_file": "components\\stock-account-tools.php",
       "source_location": "L1",
       "id": "components_stock_account_tools_php",
-      "community": 155
+      "community": 157
     },
     {
       "label": "account-hardening.test.js",
@@ -12713,7 +12761,7 @@
       "source_file": "tests\\account-hardening.test.js",
       "source_location": "L1",
       "id": "tests_account_hardening_test_js",
-      "community": 98
+      "community": 100
     },
     {
       "label": "read()",
@@ -12721,7 +12769,39 @@
       "source_file": "tests\\account-hardening.test.js",
       "source_location": "L8",
       "id": "account_hardening_test_read",
-      "community": 98
+      "community": 100
+    },
+    {
+      "label": "android-google-login.test.js",
+      "file_type": "code",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L1",
+      "id": "tests_android_google_login_test_js",
+      "community": 60
+    },
+    {
+      "label": "read()",
+      "file_type": "code",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L9",
+      "id": "android_google_login_test_read",
+      "community": 60
+    },
+    {
+      "label": "createElement()",
+      "file_type": "code",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L45",
+      "id": "android_google_login_test_createelement",
+      "community": 60
+    },
+    {
+      "label": "createRuntime()",
+      "file_type": "code",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L58",
+      "id": "android_google_login_test_createruntime",
+      "community": 60
     },
     {
       "label": "llm-bullet-format.test.js",
@@ -12729,7 +12809,7 @@
       "source_file": "tests\\llm-bullet-format.test.js",
       "source_location": "L1",
       "id": "tests_llm_bullet_format_test_js",
-      "community": 99
+      "community": 101
     },
     {
       "label": "normalizeBulletMarkers()",
@@ -12737,7 +12817,7 @@
       "source_file": "tests\\llm-bullet-format.test.js",
       "source_location": "L13",
       "id": "llm_bullet_format_test_normalizebulletmarkers",
-      "community": 99
+      "community": 101
     }
   ],
   "links": [
@@ -12802,18 +12882,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "account.php",
-      "source_location": "L93",
-      "weight": 1.0,
-      "_src": "account_php",
-      "_tgt": "account_miq_account_process_google_login",
-      "source": "account_php",
-      "target": "account_miq_account_process_google_login",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account.php",
@@ -12835,6 +12903,18 @@
       "_tgt": "account_miq_account_send_verification_for_user",
       "source": "account_miq_account_send_verification_for_user",
       "target": "account_miq_account_process_email_registration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account_android_google.php",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "account_android_google_php",
+      "_tgt": "account_android_google_miq_android_google_redirect",
+      "source": "account_android_google_php",
+      "target": "account_android_google_miq_android_google_redirect",
       "confidence_score": 1.0
     },
     {
@@ -14716,6 +14796,30 @@
       "source_location": "L477",
       "weight": 1.0,
       "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_issue_native_google_challenge",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_issue_native_google_challenge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L489",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_consume_native_google_challenge",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_consume_native_google_challenge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L515",
+      "weight": 1.0,
+      "_src": "account_auth_php",
       "_tgt": "auth_miq_account_safe_return_to",
       "source": "account_auth_php",
       "target": "auth_miq_account_safe_return_to",
@@ -14725,7 +14829,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L503",
+      "source_location": "L541",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_validate_password",
@@ -14737,7 +14841,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L514",
+      "source_location": "L552",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_flash",
@@ -14749,7 +14853,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L520",
+      "source_location": "L558",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_take_flash",
@@ -14761,7 +14865,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L528",
+      "source_location": "L566",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_hash_token",
@@ -14773,7 +14877,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L533",
+      "source_location": "L571",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_client_ip",
@@ -14785,7 +14889,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L539",
+      "source_location": "L577",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_rate_limit_key",
@@ -14797,7 +14901,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L544",
+      "source_location": "L582",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_rate_limit",
@@ -14809,7 +14913,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L617",
+      "source_location": "L655",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_require_rate_limit",
@@ -14821,7 +14925,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L625",
+      "source_location": "L663",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_email_rate_limit",
@@ -14833,7 +14937,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L643",
+      "source_location": "L681",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_send_mail",
@@ -14845,7 +14949,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L683",
+      "source_location": "L721",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_create_token",
@@ -14857,7 +14961,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L688",
+      "source_location": "L726",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_create_user",
@@ -14869,7 +14973,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L737",
+      "source_location": "L775",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_issue_email_token",
@@ -14881,7 +14985,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L753",
+      "source_location": "L791",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_google_identity",
@@ -14893,7 +14997,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L794",
+      "source_location": "L850",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_find_google_user",
@@ -14905,7 +15009,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L805",
+      "source_location": "L861",
+      "weight": 1.0,
+      "_src": "account_auth_php",
+      "_tgt": "auth_miq_account_process_google_login",
+      "source": "account_auth_php",
+      "target": "auth_miq_account_process_google_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L886",
       "weight": 1.0,
       "_src": "account_auth_php",
       "_tgt": "auth_miq_account_find_user_by_email",
@@ -14989,7 +15105,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L516",
+      "source_location": "L479",
+      "weight": 1.0,
+      "_src": "auth_miq_account_issue_native_google_challenge",
+      "_tgt": "auth_miq_account_start_session",
+      "source": "auth_miq_account_start_session",
+      "target": "auth_miq_account_issue_native_google_challenge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L491",
+      "weight": 1.0,
+      "_src": "auth_miq_account_consume_native_google_challenge",
+      "_tgt": "auth_miq_account_start_session",
+      "source": "auth_miq_account_start_session",
+      "target": "auth_miq_account_consume_native_google_challenge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L554",
       "weight": 1.0,
       "_src": "auth_miq_account_flash",
       "_tgt": "auth_miq_account_start_session",
@@ -15001,7 +15141,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L522",
+      "source_location": "L560",
       "weight": 1.0,
       "_src": "auth_miq_account_take_flash",
       "_tgt": "auth_miq_account_start_session",
@@ -15145,6 +15285,18 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
+      "source_location": "L882",
+      "weight": 1.0,
+      "_src": "auth_miq_account_process_google_login",
+      "_tgt": "auth_miq_account_require_active_user",
+      "source": "auth_miq_account_require_active_user",
+      "target": "auth_miq_account_process_google_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
       "source_location": "L191",
       "weight": 1.0,
       "_src": "auth_miq_account_current_user",
@@ -15205,7 +15357,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L630",
+      "source_location": "L883",
+      "weight": 1.0,
+      "_src": "auth_miq_account_process_google_login",
+      "_tgt": "auth_miq_account_login_user",
+      "source": "auth_miq_account_login_user",
+      "target": "auth_miq_account_process_google_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L668",
       "weight": 1.0,
       "_src": "auth_miq_account_email_rate_limit",
       "_tgt": "auth_miq_account_normalize_email",
@@ -15217,7 +15381,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L690",
+      "source_location": "L728",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_normalize_email",
@@ -15229,7 +15393,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L788",
+      "source_location": "L844",
       "weight": 1.0,
       "_src": "auth_miq_account_google_identity",
       "_tgt": "auth_miq_account_normalize_email",
@@ -15241,7 +15405,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L811",
+      "source_location": "L892",
       "weight": 1.0,
       "_src": "auth_miq_account_find_user_by_email",
       "_tgt": "auth_miq_account_normalize_email",
@@ -15313,7 +15477,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L789",
+      "source_location": "L845",
       "weight": 1.0,
       "_src": "auth_miq_account_google_identity",
       "_tgt": "auth_miq_account_display_name",
@@ -15409,7 +15573,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L716",
+      "source_location": "L754",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_display_name_exists",
@@ -15445,7 +15609,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L717",
+      "source_location": "L755",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_display_name_suggestions",
@@ -15457,7 +15621,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L707",
+      "source_location": "L745",
       "weight": 1.0,
       "_src": "auth_miq_account_create_user",
       "_tgt": "auth_miq_account_resolve_display_name",
@@ -15481,7 +15645,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L748",
+      "source_location": "L483",
+      "weight": 1.0,
+      "_src": "auth_miq_account_issue_native_google_challenge",
+      "_tgt": "auth_miq_account_safe_return_to",
+      "source": "auth_miq_account_issue_native_google_challenge",
+      "target": "auth_miq_account_safe_return_to",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L511",
+      "weight": 1.0,
+      "_src": "auth_miq_account_consume_native_google_challenge",
+      "_tgt": "auth_miq_account_safe_return_to",
+      "source": "auth_miq_account_consume_native_google_challenge",
+      "target": "auth_miq_account_safe_return_to",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L786",
       "weight": 1.0,
       "_src": "auth_miq_account_issue_email_token",
       "_tgt": "auth_miq_account_hash_token",
@@ -15493,7 +15681,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L629",
+      "source_location": "L667",
       "weight": 1.0,
       "_src": "auth_miq_account_email_rate_limit",
       "_tgt": "auth_miq_account_client_ip",
@@ -15505,7 +15693,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L553",
+      "source_location": "L591",
       "weight": 1.0,
       "_src": "auth_miq_account_rate_limit",
       "_tgt": "auth_miq_account_rate_limit_key",
@@ -15517,7 +15705,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L647",
+      "source_location": "L685",
       "weight": 1.0,
       "_src": "auth_miq_account_send_mail",
       "_tgt": "auth_miq_account_rate_limit_key",
@@ -15529,7 +15717,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L620",
+      "source_location": "L658",
       "weight": 1.0,
       "_src": "auth_miq_account_require_rate_limit",
       "_tgt": "auth_miq_account_rate_limit",
@@ -15541,7 +15729,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L635",
+      "source_location": "L673",
       "weight": 1.0,
       "_src": "auth_miq_account_email_rate_limit",
       "_tgt": "auth_miq_account_rate_limit",
@@ -15553,7 +15741,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L646",
+      "source_location": "L684",
       "weight": 1.0,
       "_src": "auth_miq_account_send_mail",
       "_tgt": "auth_miq_account_email_rate_limit",
@@ -15565,12 +15753,60 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "account\\auth.php",
-      "source_location": "L739",
+      "source_location": "L777",
       "weight": 1.0,
       "_src": "auth_miq_account_issue_email_token",
       "_tgt": "auth_miq_account_create_token",
       "source": "auth_miq_account_create_token",
       "target": "auth_miq_account_issue_email_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L872",
+      "weight": 1.0,
+      "_src": "auth_miq_account_process_google_login",
+      "_tgt": "auth_miq_account_create_user",
+      "source": "auth_miq_account_create_user",
+      "target": "auth_miq_account_process_google_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L863",
+      "weight": 1.0,
+      "_src": "auth_miq_account_process_google_login",
+      "_tgt": "auth_miq_account_google_identity",
+      "source": "auth_miq_account_google_identity",
+      "target": "auth_miq_account_process_google_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L864",
+      "weight": 1.0,
+      "_src": "auth_miq_account_process_google_login",
+      "_tgt": "auth_miq_account_find_google_user",
+      "source": "auth_miq_account_find_google_user",
+      "target": "auth_miq_account_process_google_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "account\\auth.php",
+      "source_location": "L867",
+      "weight": 1.0,
+      "_src": "auth_miq_account_process_google_login",
+      "_tgt": "auth_miq_account_find_user_by_email",
+      "source": "auth_miq_account_process_google_login",
+      "target": "auth_miq_account_find_user_by_email",
       "confidence_score": 1.0
     },
     {
@@ -17680,6 +17916,30 @@
       "source_location": "L317",
       "weight": 1.0,
       "_src": "assets_js_account_js",
+      "_tgt": "account_isandroidwebview",
+      "source": "assets_js_account_js",
+      "target": "account_isandroidwebview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L323",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
+      "_tgt": "account_configuregoogleloginsurface",
+      "source": "assets_js_account_js",
+      "target": "account_configuregoogleloginsurface",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L340",
+      "weight": 1.0,
+      "_src": "assets_js_account_js",
       "_tgt": "account_googlebuttonisdark",
       "source": "assets_js_account_js",
       "target": "account_googlebuttonisdark",
@@ -17689,7 +17949,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L321",
+      "source_location": "L344",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_googlebuttoncallback",
@@ -17701,7 +17961,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L325",
+      "source_location": "L348",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rendergooglebuttons",
@@ -17713,7 +17973,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L363",
+      "source_location": "L388",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_binddisplaynamesuggestions",
@@ -17725,7 +17985,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L375",
+      "source_location": "L400",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_bindpasswordvisibility",
@@ -17737,7 +17997,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L398",
+      "source_location": "L423",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_bindsearchtracking",
@@ -17749,7 +18009,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L407",
+      "source_location": "L432",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_bindstockviewtracking",
@@ -17761,7 +18021,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L417",
+      "source_location": "L442",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_sentimentsvgelement",
@@ -17773,7 +18033,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L426",
+      "source_location": "L451",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_sentimentlinepath",
@@ -17785,7 +18045,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L441",
+      "source_location": "L466",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_clearelement",
@@ -17797,7 +18057,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L445",
+      "source_location": "L470",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rendersentimentchart",
@@ -17809,7 +18069,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L581",
+      "source_location": "L606",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_sentimenttrendrequest",
@@ -17821,7 +18081,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L600",
+      "source_location": "L625",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_loadsentimentchart",
@@ -17833,7 +18093,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L620",
+      "source_location": "L645",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rendersentimentcharts",
@@ -17845,7 +18105,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L627",
+      "source_location": "L652",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_rememberpendingpulsevote",
@@ -17857,7 +18117,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L636",
+      "source_location": "L661",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_pendingpulsevote",
@@ -17869,7 +18129,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L650",
+      "source_location": "L675",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_clearpendingpulsevote",
@@ -17881,7 +18141,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L654",
+      "source_location": "L679",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_updatepulsecounts",
@@ -17893,7 +18153,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L667",
+      "source_location": "L692",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_setpulsebusy",
@@ -17905,7 +18165,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L673",
+      "source_location": "L698",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_selectpulsedirection",
@@ -17917,7 +18177,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L679",
+      "source_location": "L704",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_showpulseexplanation",
@@ -17929,7 +18189,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L688",
+      "source_location": "L713",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_submitpulsevote",
@@ -17941,7 +18201,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L720",
+      "source_location": "L745",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_replaypendingpulsevote",
@@ -17953,7 +18213,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L743",
+      "source_location": "L768",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_bindpulseexplanation",
@@ -17965,7 +18225,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L794",
+      "source_location": "L819",
       "weight": 1.0,
       "_src": "assets_js_account_js",
       "_tgt": "account_renderpulse",
@@ -17977,7 +18237,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L611",
+      "source_location": "L636",
       "weight": 1.0,
       "_src": "account_loadsentimentchart",
       "_tgt": "account_pulsedebug",
@@ -17989,7 +18249,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L632",
+      "source_location": "L657",
       "weight": 1.0,
       "_src": "account_rememberpendingpulsevote",
       "_tgt": "account_pulsedebug",
@@ -18001,7 +18261,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L707",
+      "source_location": "L732",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_pulsedebug",
@@ -18013,7 +18273,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L736",
+      "source_location": "L761",
       "weight": 1.0,
       "_src": "account_replaypendingpulsevote",
       "_tgt": "account_pulsedebug",
@@ -18025,7 +18285,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L797",
+      "source_location": "L822",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_pulsedebug",
@@ -18049,7 +18309,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L804",
+      "source_location": "L829",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_applylivepulsecontext",
@@ -18061,7 +18321,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L801",
+      "source_location": "L826",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_inspectpulse",
@@ -18157,7 +18417,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L585",
+      "source_location": "L610",
       "weight": 1.0,
       "_src": "account_sentimenttrendrequest",
       "_tgt": "account_jsonrequest",
@@ -18169,7 +18429,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L691",
+      "source_location": "L716",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_jsonrequest",
@@ -18181,7 +18441,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L809",
+      "source_location": "L834",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_jsonrequest",
@@ -18253,7 +18513,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L402",
+      "source_location": "L427",
       "weight": 1.0,
       "_src": "account_bindsearchtracking",
       "_tgt": "account_savesearch",
@@ -18265,7 +18525,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L410",
+      "source_location": "L435",
       "weight": 1.0,
       "_src": "account_bindstockviewtracking",
       "_tgt": "account_savesearch",
@@ -18289,7 +18549,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L768",
+      "source_location": "L793",
       "weight": 1.0,
       "_src": "account_bindpulseexplanation",
       "_tgt": "account_saveidea",
@@ -18301,7 +18561,31 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L347",
+      "source_location": "L327",
+      "weight": 1.0,
+      "_src": "account_configuregoogleloginsurface",
+      "_tgt": "account_isandroidwebview",
+      "source": "account_isandroidwebview",
+      "target": "account_configuregoogleloginsurface",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L349",
+      "weight": 1.0,
+      "_src": "account_rendergooglebuttons",
+      "_tgt": "account_configuregoogleloginsurface",
+      "source": "account_configuregoogleloginsurface",
+      "target": "account_rendergooglebuttons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "assets\\js\\account.js",
+      "source_location": "L372",
       "weight": 1.0,
       "_src": "account_rendergooglebuttons",
       "_tgt": "account_googlebuttonisdark",
@@ -18313,7 +18597,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L339",
+      "source_location": "L364",
       "weight": 1.0,
       "_src": "account_rendergooglebuttons",
       "_tgt": "account_googlebuttoncallback",
@@ -18325,7 +18609,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L492",
+      "source_location": "L517",
       "weight": 1.0,
       "_src": "account_rendersentimentchart",
       "_tgt": "account_sentimentsvgelement",
@@ -18337,7 +18621,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L510",
+      "source_location": "L535",
       "weight": 1.0,
       "_src": "account_rendersentimentchart",
       "_tgt": "account_sentimentlinepath",
@@ -18349,7 +18633,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L470",
+      "source_location": "L495",
       "weight": 1.0,
       "_src": "account_rendersentimentchart",
       "_tgt": "account_clearelement",
@@ -18361,7 +18645,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L606",
+      "source_location": "L631",
       "weight": 1.0,
       "_src": "account_loadsentimentchart",
       "_tgt": "account_rendersentimentchart",
@@ -18373,7 +18657,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L605",
+      "source_location": "L630",
       "weight": 1.0,
       "_src": "account_loadsentimentchart",
       "_tgt": "account_sentimenttrendrequest",
@@ -18385,7 +18669,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L623",
+      "source_location": "L648",
       "weight": 1.0,
       "_src": "account_rendersentimentcharts",
       "_tgt": "account_loadsentimentchart",
@@ -18397,7 +18681,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L706",
+      "source_location": "L731",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_rendersentimentcharts",
@@ -18409,7 +18693,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L834",
+      "source_location": "L859",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_rememberpendingpulsevote",
@@ -18421,7 +18705,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L722",
+      "source_location": "L747",
       "weight": 1.0,
       "_src": "account_replaypendingpulsevote",
       "_tgt": "account_pendingpulsevote",
@@ -18433,7 +18717,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L731",
+      "source_location": "L756",
       "weight": 1.0,
       "_src": "account_replaypendingpulsevote",
       "_tgt": "account_clearpendingpulsevote",
@@ -18445,7 +18729,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L698",
+      "source_location": "L723",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_updatepulsecounts",
@@ -18457,7 +18741,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L811",
+      "source_location": "L836",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_updatepulsecounts",
@@ -18469,7 +18753,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L690",
+      "source_location": "L715",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_setpulsebusy",
@@ -18481,7 +18765,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L699",
+      "source_location": "L724",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_selectpulsedirection",
@@ -18493,7 +18777,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L701",
+      "source_location": "L726",
       "weight": 1.0,
       "_src": "account_submitpulsevote",
       "_tgt": "account_showpulseexplanation",
@@ -18505,7 +18789,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L734",
+      "source_location": "L759",
       "weight": 1.0,
       "_src": "account_replaypendingpulsevote",
       "_tgt": "account_showpulseexplanation",
@@ -18517,7 +18801,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L732",
+      "source_location": "L757",
       "weight": 1.0,
       "_src": "account_replaypendingpulsevote",
       "_tgt": "account_submitpulsevote",
@@ -18529,7 +18813,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L843",
+      "source_location": "L868",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_submitpulsevote",
@@ -18541,7 +18825,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L847",
+      "source_location": "L872",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_replaypendingpulsevote",
@@ -18553,7 +18837,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "assets\\js\\account.js",
-      "source_location": "L828",
+      "source_location": "L853",
       "weight": 1.0,
       "_src": "account_renderpulse",
       "_tgt": "account_bindpulseexplanation",
@@ -49903,6 +50187,54 @@
       "_tgt": "account_hardening_test_read",
       "source": "tests_account_hardening_test_js",
       "target": "account_hardening_test_read",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "tests_android_google_login_test_js",
+      "_tgt": "android_google_login_test_read",
+      "source": "tests_android_google_login_test_js",
+      "target": "android_google_login_test_read",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "tests_android_google_login_test_js",
+      "_tgt": "android_google_login_test_createelement",
+      "source": "tests_android_google_login_test_js",
+      "target": "android_google_login_test_createelement",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_src": "tests_android_google_login_test_js",
+      "_tgt": "android_google_login_test_createruntime",
+      "source": "tests_android_google_login_test_js",
+      "target": "android_google_login_test_createruntime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\android-google-login.test.js",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "android_google_login_test_createruntime",
+      "_tgt": "android_google_login_test_createelement",
+      "source": "android_google_login_test_createelement",
+      "target": "android_google_login_test_createruntime",
       "confidence_score": 1.0
     },
     {

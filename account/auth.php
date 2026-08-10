@@ -474,6 +474,44 @@ function miq_account_check_csrf($token)
     return is_string($token) && hash_equals(miq_account_csrf_token(), $token);
 }
 
+function miq_account_issue_native_google_challenge($return_to = 'workspace')
+{
+    miq_account_start_session();
+    $nonce = bin2hex(random_bytes(32));
+    $_SESSION['miq_native_google_challenge'] = array(
+        'nonce_hash' => hash('sha256', $nonce),
+        'return_to' => miq_account_safe_return_to($return_to, 'workspace'),
+        'expires_at' => time() + (int) miq_account_config()['native_google_challenge_ttl'],
+    );
+    return $nonce;
+}
+
+function miq_account_consume_native_google_challenge($nonce)
+{
+    miq_account_start_session();
+    $challenge = isset($_SESSION['miq_native_google_challenge'])
+        ? $_SESSION['miq_native_google_challenge']
+        : null;
+    unset($_SESSION['miq_native_google_challenge']);
+
+    $nonce = is_string($nonce) ? trim($nonce) : '';
+    if (
+        !is_array($challenge)
+        || !preg_match('/^[a-f0-9]{64}$/', $nonce)
+        || empty($challenge['nonce_hash'])
+        || empty($challenge['expires_at'])
+        || (int) $challenge['expires_at'] < time()
+        || !hash_equals((string) $challenge['nonce_hash'], hash('sha256', $nonce))
+    ) {
+        throw new RuntimeException('The Android Google sign-in request expired. Reload the account page and try again.');
+    }
+
+    return array(
+        'nonce' => $nonce,
+        'return_to' => miq_account_safe_return_to($challenge['return_to'] ?? 'workspace', 'workspace'),
+    );
+}
+
 function miq_account_safe_return_to($value, $fallback = '/')
 {
     $value = trim((string) $value);
@@ -750,7 +788,7 @@ function miq_account_issue_email_token($user_id, $type)
     return $token;
 }
 
-function miq_account_google_identity($credential)
+function miq_account_google_identity($credential, $expected_nonce = null)
 {
     $config = miq_account_config();
     if ($config['google_client_id'] === '') {
@@ -760,12 +798,19 @@ function miq_account_google_identity($credential)
         throw new RuntimeException('Google login requires the PHP cURL extension.');
     }
 
-    $curl = curl_init($config['google_tokeninfo_url'] . '?id_token=' . rawurlencode($credential));
+    $credential = trim((string) $credential);
+    if ($credential === '' || strlen($credential) > 16384) {
+        throw new RuntimeException('Google returned an invalid login credential.');
+    }
+
+    $curl = curl_init($config['google_tokeninfo_url']);
     curl_setopt_array($curl, array(
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 8,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query(array('id_token' => $credential), '', '&', PHP_QUERY_RFC3986),
     ));
     $response = curl_exec($curl);
     $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -775,8 +820,19 @@ function miq_account_google_identity($credential)
     if ($status !== 200 || !is_array($claims)) {
         throw new RuntimeException('Google login could not be verified.');
     }
+    $issuer = (string) ($claims['iss'] ?? '');
+    if (!in_array($issuer, array('accounts.google.com', 'https://accounts.google.com'), true)) {
+        throw new RuntimeException('Google login returned an invalid token issuer.');
+    }
     if (!hash_equals($config['google_client_id'], (string) ($claims['aud'] ?? '')) || (int) ($claims['exp'] ?? 0) < time()) {
         throw new RuntimeException('Google login token has expired or belongs to another application.');
+    }
+    if ($expected_nonce !== null) {
+        $expected_nonce = (string) $expected_nonce;
+        $returned_nonce = (string) ($claims['nonce'] ?? '');
+        if ($expected_nonce === '' || $returned_nonce === '' || !hash_equals($expected_nonce, $returned_nonce)) {
+            throw new RuntimeException('Google login could not be matched to this Android sign-in request.');
+        }
     }
     $email_verified = $claims['email_verified'] ?? false;
     if (!($email_verified === true || $email_verified === 'true') || empty($claims['sub']) || empty($claims['email'])) {
@@ -800,6 +856,31 @@ function miq_account_find_google_user($provider_user_id)
         's',
         array((string) $provider_user_id)
     ));
+}
+
+function miq_account_process_google_login($credential, $expected_nonce = null)
+{
+    $identity = miq_account_google_identity($credential, $expected_nonce);
+    $user = miq_account_find_google_user($identity['provider_user_id']);
+
+    if (!$user) {
+        $existing = miq_account_find_user_by_email($identity['email']);
+        if ($existing) {
+            throw new RuntimeException('An account already exists for this email. Sign in with email first, then connect Google from your account settings.');
+        }
+
+        $user_id = miq_account_create_user($identity['email'], null, $identity['display_name'], 'google', $identity['provider_user_id'], true);
+        $users = miq_account_table('users');
+        miq_account_query(
+            "UPDATE {$users} SET avatar_url = ?, email_verified_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ?",
+            'si',
+            array($identity['avatar_url'], $user_id)
+        )->close();
+        $user = miq_account_find_google_user($identity['provider_user_id']);
+    }
+
+    $user = miq_account_require_active_user($user);
+    miq_account_login_user($user['id'], $user['session_version']);
 }
 
 function miq_account_find_user_by_email($email)

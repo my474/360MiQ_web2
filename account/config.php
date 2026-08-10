@@ -40,8 +40,13 @@ function miq_account_config()
         'cookie_name' => miq_account_env('MIQ_ACCOUNT_COOKIE_NAME', 'miq_account'),
         'session_lifetime' => (int) miq_account_env('MIQ_ACCOUNT_SESSION_LIFETIME', 1209600),
         'base_url' => rtrim(miq_account_env('MIQ_SITE_URL', 'https://360miq.com'), '/'),
-        'google_client_id' => miq_account_env('GOOGLE_CLIENT_ID', ''),
+        // OAuth client IDs are public identifiers. This Web client is also the
+        // Credential Manager serverClientId, so web and Android tokens share
+        // the same server-side audience. GOOGLE_CLIENT_ID can still override
+        // it for staging or a future production client rotation.
+        'google_client_id' => miq_account_env('GOOGLE_CLIENT_ID', '735181786268-s7n2c9fdg268labp2estg8au267c3m0r.apps.googleusercontent.com'),
         'google_tokeninfo_url' => miq_account_env('GOOGLE_TOKENINFO_URL', 'https://oauth2.googleapis.com/tokeninfo'),
+        'native_google_challenge_ttl' => max(60, min(600, (int) miq_account_env('MIQ_NATIVE_GOOGLE_CHALLENGE_TTL', 300))),
         // The production account connection lives outside the public web root.
         // ACCOUNT_DB_INCLUDE can still override this path for local/staging.
         'account_db_include' => miq_account_env('ACCOUNT_DB_INCLUDE', '/home2/aamiqcom/php_script/mysql_vars_account.php'),
