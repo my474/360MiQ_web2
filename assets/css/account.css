@@ -928,6 +928,17 @@ html[data-theme="dark"] .miq-sso-error-note {
 }
 
 @media (max-width: 991.98px) {
+    .clean-navbar #navbarSupportedContent {
+        max-height: calc(100vh - 74px);
+        max-height: calc(100dvh - 74px);
+        padding-bottom: .75rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y pinch-zoom;
+    }
+
     .miq-account-name {
         max-width: none;
     }
@@ -949,6 +960,15 @@ html[data-theme="dark"] .miq-sso-error-note {
 
     .miq-community-pulse-actions {
         flex-basis: auto;
+    }
+}
+
+@media (max-width: 639px) {
+    .clean-navbar #navbarSupportedContent {
+        max-height: calc(100vh - 134px - env(safe-area-inset-bottom, 0px));
+        max-height: calc(100dvh - 134px - env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
+        scroll-padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
     }
 }
 

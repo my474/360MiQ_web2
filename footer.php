@@ -3315,10 +3315,25 @@ document.addEventListener('click', function(e) {
     const chatbot = document.querySelector('.chatbot');
     const topcontrol = document.getElementById('topcontrol');
 
+    function mobileNavigationIsExpanded() {
+        return !!(navbar && navbar.querySelector(
+            '#navbarSupportedContent.show, #navbarSupportedContent.collapsing, .miq-account-nav-item.show'
+        ));
+    }
+
     window.addEventListener('scroll', function() {
         if (window.innerWidth > 1024) return;
         
         let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (mobileNavigationIsExpanded()) {
+            navbar.classList.remove('nav-hidden');
+            if (bottomNav) bottomNav.classList.remove('bottom-hidden');
+            if (chatbot) chatbot.classList.remove('bottom-hidden');
+            if (topcontrol) topcontrol.classList.remove('topcontrol-down');
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            return;
+        }
+
         if (scrollTop > lastScrollTop && scrollTop > 100) {
             // Scroll down
             if (navbar) navbar.classList.add('nav-hidden');
