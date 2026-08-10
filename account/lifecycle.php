@@ -87,11 +87,17 @@ function miq_account_delete_user_data($user_id)
 
     foreach (array(
         'recent_searches', 'screener_presets', 'user_preferences', 'chat_histories',
-        'price_alerts', 'notifications', 'sessions', 'user_activity_daily',
-        'sso_tokens', 'email_tokens', 'password_reset_tokens', 'identities'
+        'price_alerts', 'notifications', 'notification_preferences', 'sessions',
+        'user_activity_daily', 'sso_tokens', 'email_tokens', 'password_reset_tokens', 'identities'
     ) as $logical_name) {
         miq_account_delete_for_user($logical_name, 'user_id', $user_id);
     }
+    if (miq_account_table_exists('notification_deliveries') && miq_account_table_exists('notification_devices')) {
+        $deliveries = miq_account_table('notification_deliveries');
+        $devices = miq_account_table('notification_devices');
+        miq_account_query("DELETE FROM {$deliveries} WHERE device_id IN (SELECT id FROM {$devices} WHERE user_id = ?)", 'i', array($user_id))->close();
+    }
+    miq_account_delete_for_user('notification_devices', 'user_id', $user_id);
     if (miq_account_table_exists('user_admin_actions')) {
         $admin_actions = miq_account_table('user_admin_actions');
         miq_account_query("DELETE FROM {$admin_actions} WHERE admin_user_id = ? OR target_user_id = ?", 'ii', array($user_id, $user_id))->close();

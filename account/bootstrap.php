@@ -4,4 +4,5 @@ if (!defined('MIQ_ACCOUNT_BOOTSTRAPPED')) {
     require_once __DIR__ . '/auth.php';
     require_once __DIR__ . '/productivity.php';
     require_once __DIR__ . '/lifecycle.php';
+    require_once __DIR__ . '/notifications.php';
 }

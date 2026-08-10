@@ -19,6 +19,7 @@ The main PHP site now has a first-party account/workspace layer. It is intention
 - Moderator dashboard with pending and reported-content queues, publish/reject/hide decisions, required adverse-action notes, and audit history.
 - Administrator dashboard with user search, 24-hour/7-day/30-day activity, saved-work counts, timed suspension, permanent blocking, session revocation, restoration, and an access-action audit trail.
 - Account settings, data export, Google linking, and account deletion.
+- In-app notifications with shared unread badges plus optional FCM delivery to browser and Android devices.
 - Optional main-site-to-WordPress contributor SSO handoff.
 
 Public browsing does not require an account. Saving, following, voting, submitting, and publishing require an account. Community content is never published directly to the homepage.
@@ -32,8 +33,9 @@ Public browsing does not require an account. Saving, following, voting, submitti
    - `migrations/20260726_add_user_activity_admin.sql`
    - `migrations/20260726_add_screener_presets.sql`
    - `migrations/20260726_add_productivity_features.sql`
-   - `migrations/20260726_harden_account_features.sql`
-   - `migrations/20260807_add_chat_history.sql`
+    - `migrations/20260726_harden_account_features.sql`
+    - `migrations/20260807_add_chat_history.sql`
+    - `migrations/20260811_add_notifications.sql`
 
    Apply the chart/script asset migration before deploying the matching PHP and JavaScript changes. It preserves existing chart layouts and Pine scripts while assigning stable asset keys and identifying the existing `Auto:*` chart records as per-symbol workspaces. The baseline schema and required migrations omit foreign keys so they remain portable to restricted hosting accounts. Account deletion performs explicit ordered cleanup in application code. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
 
@@ -45,10 +47,26 @@ Public browsing does not require an account. Saving, following, voting, submitti
 2. Configure the dedicated account database include. Production defaults to `/home2/aamiqcom/php_script/mysql_vars_account.php`; `ACCOUNT_DB_INCLUDE` can override it. The repository template is `mysql_vars_account.php`; deploy it outside the web root, or provide `ACCOUNT_DB_HOST`, `ACCOUNT_DB_NAME`, `ACCOUNT_DB_USER`, `ACCOUNT_DB_PASSWORD`, and optional `ACCOUNT_DB_PORT`. Account code never falls back to the stock database. Main-site chat assets and account API URLs are document-relative, so the same files work at production `/` and a staging prefix such as `/full`. The production WordPress blog under `/blog` uses explicit main-site-root URLs for those shared endpoints.
 3. Set `MIQ_SITE_URL=https://360miq.com` and `ACCOUNT_EMAIL_FROM` to a sender that the host can deliver.
 4. Configure email delivery. Production defaults to `/home2/aamiqcom/cronjobs/email.php` through `ACCOUNT_MAILER_INCLUDE`; that file must define `email($subject, $body, $toEmail, $toName)`, return the boolean result of `$mail->send()`, and keep PHPMailer SMTP credentials outside this repository. If the configured helper is missing, returns anything other than `true`, or fails, verification/reset delivery fails safely and is logged. Rotate any SMTP password that has ever been pasted into a chat or source file.
-5. For Google login, use the production Web OAuth client ID `735181786268-s7n2c9fdg268labp2estg8au267c3m0r.apps.googleusercontent.com`. It is the checked-in public default; `GOOGLE_CLIENT_ID` can override it for staging or rotation. Keep `https://360miq.com` as an exact authorized JavaScript origin. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
-6. Set `MIQ_ACCOUNT_DEBUG=false` in production.
-7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
-8. Grant your own account administrator access with `UPDATE miq_users SET role = 'admin' WHERE email = 'your-email@example.com';`. Alternatively, set `MIQ_ADMIN_EMAILS` to a comma-separated administrator allowlist. Only administrators can open `account_user_admin`.
+ 5. For Google login, use the production Web OAuth client ID `735181786268-s7n2c9fdg268labp2estg8au267c3m0r.apps.googleusercontent.com`. It is the checked-in public default; `GOOGLE_CLIENT_ID` can override it for staging or rotation. Keep `https://360miq.com` as an exact authorized JavaScript origin. The backend verifies the returned ID token through Google's tokeninfo endpoint. A mature Google API client can replace that verification implementation if desired.
+ 6. Set `MIQ_ACCOUNT_DEBUG=false` in production.
+ 7. Set `MIQ_COMMUNITY_ENABLED=true` to expose Community Pulse and Community Ideas. Change it to `false` to remove community cards, links, workspace controls, and pages and to reject community-only API actions. The root `.htaccess` contains this switch.
+ 8. Grant your own account administrator access with `UPDATE miq_users SET role = 'admin' WHERE email = 'your-email@example.com';`. Alternatively, set `MIQ_ADMIN_EMAILS` to a comma-separated administrator allowlist. Only administrators can open `account_user_admin`.
+
+FCM push delivery is optional and is enabled only when the server credentials and public web configuration are present. Keep the service-account JSON or private key outside the repository and configure these environment variables on the PHP host:
+
+```text
+FCM_PROJECT_ID=<firebase-project-id>
+FCM_CLIENT_EMAIL=<service-account-client-email>
+FCM_PRIVATE_KEY=<service-account-private-key-with-escaped-newlines>
+FCM_WEB_API_KEY=<firebase-web-api-key>
+FCM_WEB_AUTH_DOMAIN=<firebase-auth-domain>
+FCM_WEB_STORAGE_BUCKET=<firebase-storage-bucket>
+FCM_WEB_MESSAGING_SENDER_ID=<firebase-messaging-sender-id>
+FCM_WEB_APP_ID=<firebase-web-app-id>
+FCM_WEB_VAPID_KEY=<firebase-cloud-messaging-web-push-certificate-key-pair-public-key>
+```
+
+`FCM_SERVICE_ACCOUNT_JSON` may be used instead of the three server credential variables when the host cannot provide multiline environment values. `FCM_WEB_SDK_VERSION` defaults to `11.10.0`; `FCM_MAX_DEVICES_PER_NOTIFICATION` defaults to 10. The account settings page never asks for browser permission until the user clicks Enable browser notifications. Android clients obtain an FCM registration token natively and submit it to the authenticated `account_api.php` endpoint with `action=register_notification_device`, `channel=android`, `token`, and optional `label`/`app_version`; the same endpoint accepts `unregister_notification_device`. The Android wrapper must preserve the shared main-site session cookie or complete the normal account sign-in first.
 
 Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. Chart and Pine quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, `MIQ_MAX_ASSET_VERSIONS`, and `MIQ_MAX_ASSET_STORAGE_BYTES`. The combined chart/Pine current-and-version storage default is 50 MB per user. Footer chat history keeps up to 40 messages and is capped at 256 KiB of serialized UTF-8 JSON per browser and account by default; adjust the cap with `MIQ_MAX_CHAT_HISTORY_BYTES` within the built-in 32 KiB–1 MiB safety range. Messages are never partially truncated: an individually oversized message is omitted as a whole without evicting the previously stored history, while ordinary aggregate overflow removes the oldest whole messages first. Every newly stored message has a stable ID and Unix-millisecond UTC `createdAt` value. The browser displays a compact local time in each bubble and renders exact history as `Today`, `Yesterday`, a local weekday for the previous seven days, or a full local date; those dividers are not saved or synced. While the user scrolls, a matching floating date pill shows the same visible divider label and fades after scrolling stops. The first chatbox opening after each page load snaps immediately to the newest message without animation; subsequent openings restore the position captured when the chatbox closed. Chat sparkline grids, axes, and labels are normalized to the current theme on creation, restoration, and live theme changes. Messages migrated from history created before per-message timestamps are grouped under `Earlier` without a fabricated time because their original creation instants cannot be recovered.
 

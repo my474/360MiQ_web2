@@ -113,19 +113,33 @@ function miq_account_notify($user_id, $type, $title, $message, $link_url = '', $
     $link_url = substr(trim((string) $link_url), 0, 500);
     $dedupe_key = substr(trim((string) $dedupe_key), 0, 190);
     $notifications = miq_account_table('notifications');
+    $notification_id = 0;
     if ($dedupe_key !== '') {
         miq_account_query(
-            "INSERT INTO {$notifications} (user_id, notification_type, title, message, link_url, dedupe_key, read_at, created_at) VALUES (?, ?, ?, ?, ?, ?, NULL, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE title = VALUES(title), message = VALUES(message), link_url = VALUES(link_url), read_at = NULL, created_at = UTC_TIMESTAMP()",
+            "INSERT INTO {$notifications} (user_id, notification_type, title, message, link_url, dedupe_key, read_at, created_at) VALUES (?, ?, ?, ?, ?, ?, NULL, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), title = VALUES(title), message = VALUES(message), link_url = VALUES(link_url), read_at = NULL, created_at = UTC_TIMESTAMP()",
             'isssss',
             array($user_id, $type, $title, $message, $link_url, $dedupe_key)
         )->close();
-        return;
+        $notification_id = (int) miq_account_db()->insert_id;
+    } else {
+        $statement = miq_account_query(
+            "INSERT INTO {$notifications} (user_id, notification_type, title, message, link_url, dedupe_key, read_at, created_at) VALUES (?, ?, ?, ?, ?, NULL, NULL, UTC_TIMESTAMP())",
+            'issss',
+            array($user_id, $type, $title, $message, $link_url)
+        );
+        $notification_id = (int) miq_account_db()->insert_id;
+        $statement->close();
     }
-    miq_account_query(
-        "INSERT INTO {$notifications} (user_id, notification_type, title, message, link_url, dedupe_key, read_at, created_at) VALUES (?, ?, ?, ?, ?, NULL, NULL, UTC_TIMESTAMP())",
-        'issss',
-        array($user_id, $type, $title, $message, $link_url)
-    )->close();
+    if ($dedupe_key !== '' && $notification_id > 0 && function_exists('miq_account_reset_notification_deliveries')) {
+        miq_account_reset_notification_deliveries($notification_id);
+    }
+    if ($notification_id > 0 && function_exists('miq_account_dispatch_notification')) {
+        try {
+            miq_account_dispatch_notification($notification_id, $user_id, $type, $title, $message, $link_url);
+        } catch (Throwable $error) {
+            error_log('360MiQ notification delivery failure: ' . $error->getMessage());
+        }
+    }
 }
 
 function miq_stock_db()

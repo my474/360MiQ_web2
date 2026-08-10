@@ -771,7 +771,7 @@ $action = isset($_GET['action']) ? (string) $_GET['action'] : (isset($body['acti
 $request_method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $read_actions = array(
     'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'workspace',
-    'get_preferences', 'list_notes', 'list_alerts', 'list_screener_presets',
+    'get_preferences', 'get_notification_settings', 'list_notes', 'list_alerts', 'list_screener_presets',
     'list_watchlists', 'watchlist_state', 'list_charts', 'get_chart',
     'list_chart_versions', 'list_scripts', 'get_script', 'list_script_versions',
     'moderation_dashboard', 'moderation_queue', 'get_chat_history'
@@ -936,6 +936,46 @@ try {
 
     if ($action === 'get_preferences') {
         miq_api_json(array('preferences' => miq_account_user_preferences($user_id)));
+    }
+
+    if ($action === 'get_notification_settings') {
+        miq_api_json(array_merge(
+            miq_account_notification_settings_payload($user_id),
+            array('csrf_token' => miq_account_csrf_token())
+        ));
+    }
+
+    if ($action === 'save_notification_settings') {
+        $values = is_array($body['preferences'] ?? null) ? $body['preferences'] : $body;
+        $preferences = miq_account_save_notification_preferences($user_id, $values);
+        $settings = miq_account_notification_settings_payload($user_id);
+        $settings['preferences'] = $preferences;
+        miq_api_json(array_merge(array('saved' => true, 'csrf_token' => miq_account_csrf_token()), $settings));
+    }
+
+    if ($action === 'register_notification_device') {
+        $channel = miq_account_notification_clean_channel($body['channel'] ?? '');
+        $token = trim((string) ($body['token'] ?? ''));
+        if ($channel === '' || $token === '') {
+            miq_api_json(array('error' => 'A valid notification channel and device token are required.'), 422);
+        }
+        $device = miq_account_register_notification_device($user_id, $channel, $token, array(
+            'label' => $body['label'] ?? '',
+            'app_version' => $body['app_version'] ?? '',
+        ));
+        $settings = miq_account_notification_settings_payload($user_id);
+        miq_api_json(array_merge(array('saved' => true, 'device' => $device, 'csrf_token' => miq_account_csrf_token()), $settings));
+    }
+
+    if ($action === 'unregister_notification_device') {
+        $removed = miq_account_unregister_notification_device(
+            $user_id,
+            (int) ($body['device_id'] ?? 0),
+            $body['channel'] ?? '',
+            $body['token'] ?? ''
+        );
+        $settings = miq_account_notification_settings_payload($user_id);
+        miq_api_json(array_merge(array('saved' => true, 'removed' => (bool) $removed, 'csrf_token' => miq_account_csrf_token()), $settings));
     }
 
     if ($action === 'save_preferences') {

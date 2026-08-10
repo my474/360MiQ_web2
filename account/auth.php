@@ -892,3 +892,13 @@ function miq_account_find_user_by_email($email)
         array(miq_account_normalize_email($email))
     ));
 }
+
+function miq_account_find_user_by_id($user_id)
+{
+    $users = miq_account_table('users');
+    return miq_account_fetch_one(miq_account_query(
+        "SELECT id, email, password_hash, display_name, avatar_url, role, status, email_verified_at, session_version, suspended_at, suspended_until, suspension_reason, suspended_by_user_id FROM {$users} WHERE id = ? LIMIT 1",
+        'i',
+        array((int) $user_id)
+    ));
+}

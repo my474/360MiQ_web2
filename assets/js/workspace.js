@@ -396,7 +396,7 @@
                 escapeHtml(alert.status) + '">' + escapeHtml(alert.status) + '</span><div class="miq-management-actions"><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="alert-status" data-next-status="' +
                 next + '">' + (alert.status === 'active' ? 'Pause' : 'Reactivate') + '</button><button class="btn btn-sm btn-outline-danger" type="button" data-workspace-action="alert-delete">Delete</button></div></article>';
         }).join('') + '</div>' : '<div class="miq-empty-state">No price alerts yet.</div>';
-        return panel('Price alerts', '<p class="miq-asset-note">Alerts are checked by the scheduled server job and appear in your notifications when triggered.</p>' + form + rows, true);
+        return panel('Price alerts', '<p class="miq-asset-note">Alerts are checked by the scheduled server job and appear in your notifications when triggered. <a href="account_settings#miq-notification-settings">Manage push notification preferences</a>.</p>' + form + rows, true);
     }
 
     function renderNotifications() {

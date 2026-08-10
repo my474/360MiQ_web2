@@ -971,6 +971,72 @@ html[data-theme="dark"] .miq-sso-error-note {
     margin-right: 3px;
 }
 
+.miq-notification-settings-status {
+    min-height: 1.5em;
+    margin: 12px 0;
+    color: #526071;
+    font-size: 14px;
+}
+
+.miq-notification-preferences {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.miq-notification-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.miq-notification-devices {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.miq-notification-device {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(52, 64, 84, .18);
+    border-radius: 8px;
+    background: rgba(59, 153, 224, .04);
+}
+
+.miq-notification-device-copy {
+    min-width: 0;
+}
+
+.miq-notification-device-copy strong,
+.miq-notification-device-copy small {
+    display: block;
+}
+
+.miq-notification-device-copy small {
+    color: #687586;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html[data-theme="dark"] .miq-notification-settings-status {
+    color: #c5c9d6;
+}
+
+html[data-theme="dark"] .miq-notification-device {
+    border-color: rgba(110, 168, 255, .28);
+    background: rgba(110, 168, 255, .08);
+}
+
+html[data-theme="dark"] .miq-notification-device-copy small {
+    color: #aeb8cb;
+}
+
 @media (max-width: 991.98px) {
     .clean-navbar #navbarSupportedContent {
         max-height: calc(100vh - 74px);

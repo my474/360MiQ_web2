@@ -91,6 +91,11 @@
   pointer-events: none;
 }
 
+.miq360-account-icon-badge[hidden],
+.miq360-account-unread[hidden] {
+  display: none !important;
+}
+
 .miq360-account-unread {
   display: inline-flex;
   min-width: 18px;

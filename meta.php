@@ -140,6 +140,7 @@ $miq_account_client_state = array(
     'workspaceUrl' => 'workspace',
     'preferences' => $miq_account_preferences,
     'unreadNotifications' => $miq_account_unread_notifications,
+    'notificationConfig' => miq_account_notification_web_config(),
     'contextType' => $miq_account_context_type,
     'contextKey' => substr($miq_account_context_key, 0, 80),
 );

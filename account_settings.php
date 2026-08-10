@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Account Settings - 360MiQ.com</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/account.css?v=20260806.7">
+    <link rel="stylesheet" href="assets/css/account.css?v=20260811.1">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260806.3">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <?php if (miq_account_config()['google_client_id'] !== ''): ?><script src="https://accounts.google.com/gsi/client" async defer onload="window.miqInitGoogleButtons&&window.miqInitGoogleButtons()"></script><?php endif; ?>
@@ -114,6 +114,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="miq-settings-check"><input type="checkbox" name="auto_save_charts" value="1" <?php echo $preferences['auto_save_charts'] ? 'checked' : ''; ?>> Automatically sync chart changes while signed in</label>
                 <button class="btn btn-primary" type="submit">Save preferences</button>
             </form>
+        </section>
+        <section class="miq-workspace-panel miq-workspace-panel-wide" id="miq-notification-settings" data-miq-notification-settings>
+            <h2>Notifications</h2>
+            <p>In-app notifications and the account badge are always available. Browser and Android push notifications are optional and only start after you enable them.</p>
+            <div class="miq-notification-settings-status" data-miq-notification-status role="status" aria-live="polite">Loading notification settings…</div>
+            <div class="miq-notification-preferences">
+                <label class="miq-settings-check"><input type="checkbox" data-miq-notification-preference="price_alerts"> Price alert push notifications</label>
+                <label class="miq-settings-check"><input type="checkbox" data-miq-notification-preference="community_replies"> Community reply push notifications</label>
+                <label class="miq-settings-check"><input type="checkbox" data-miq-notification-preference="moderation"> Moderation and account push notifications</label>
+            </div>
+            <div class="miq-notification-actions">
+                <button class="btn btn-primary" type="button" data-miq-notification-enable>Enable browser notifications</button>
+                <button class="btn btn-outline-secondary" type="button" data-miq-notification-disable>Disable browser notifications</button>
+            </div>
+            <div class="miq-notification-devices" data-miq-notification-devices></div>
         </section>
         <section class="miq-workspace-panel"><h2>Change password</h2><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><input type="hidden" name="action" value="password"><label for="current-password">Current password</label><input id="current-password" class="form-control" type="password" name="current_password" maxlength="1024" autocomplete="current-password" required><label for="new-password">New password</label><input id="new-password" class="form-control" type="password" name="new_password" minlength="8" maxlength="1024" autocomplete="new-password" required><button class="btn btn-primary" type="submit">Change password</button></form></section>
         <section class="miq-workspace-panel"><h2>Your data</h2><p>Export your account data or permanently delete your account and private workspace.</p><a class="btn btn-outline-primary" href="account_export.php">Download my data</a></section>
