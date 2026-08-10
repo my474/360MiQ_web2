@@ -3,7 +3,7 @@
  * Plugin Name: 360MiQ Blog Theme Sync
  * Description: Syncs the public WordPress blog theme and shared Recent Analyses behavior.
  * Author: 360MiQ
- * Version: 1.1.0
+ * Version: 1.2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -70,6 +70,15 @@
   border-right: 0.3em solid transparent;
   border-bottom: 0;
   border-left: 0.3em solid transparent;
+  transition: transform 160ms ease;
+}
+
+.miq360-account-item.is-open .miq-account-chevron {
+  transform: rotate(180deg);
+}
+
+.miq360-submenu-toggle {
+  display: none;
 }
 
 html[data-theme="dark"] .site-header .miq360-account-link .miq-account-chevron {
@@ -570,6 +579,79 @@ html[data-theme="dark"] .miq360-account-menu-divider {
 }
 
 @media all and (max-width: 49.99em) {
+  #menu-primary-container.open {
+    max-height: calc(100vh - 4.5rem) !important;
+    max-height: calc(100dvh - 4.5rem) !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding-bottom: 1rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    touch-action: pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .menu-primary-items > li,
+  .menu-unset > ul > li {
+    display: block;
+    float: none;
+    width: 100%;
+  }
+
+  .miq360-theme-toggle-item,
+  .miq360-account-item {
+    display: block;
+  }
+
+  .miq360-submenu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: 0 0 0 0.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #333333;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+
+  .miq360-submenu-toggle::before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    border-top: 0.38rem solid currentColor;
+    border-right: 0.38rem solid transparent;
+    border-left: 0.38rem solid transparent;
+    transition: transform 160ms ease;
+  }
+
+  .miq360-submenu-toggle:hover,
+  .miq360-submenu-toggle:active,
+  .miq360-submenu-toggle:focus-visible {
+    background: rgba(59, 153, 224, 0.12);
+    color: #20a4e6;
+    outline: none;
+  }
+
+  .miq360-mobile-submenu-open > .miq360-submenu-toggle::before {
+    transform: rotate(180deg);
+  }
+
+  html.miq360-blog-menu-ready .menu-primary-items li.menu-item-has-children > ul,
+  html.miq360-blog-menu-ready .menu-unset ul li.menu-item-has-children > ul {
+    display: none;
+  }
+
+  html.miq360-blog-menu-ready .menu-primary-items li.menu-item-has-children.miq360-mobile-submenu-open > ul,
+  html.miq360-blog-menu-ready .menu-unset ul li.menu-item-has-children.miq360-mobile-submenu-open > ul {
+    display: block;
+  }
+
   html[data-theme="dark"] .site-header .toggle-navigation svg g {
     fill: var(--miq-blog-dark-text) !important;
   }
@@ -581,19 +663,35 @@ html[data-theme="dark"] .miq360-account-menu-divider {
     fill: var(--miq-blog-dark-blue-hover) !important;
   }
 
-  .miq360-account-menu {
-    position: static;
-    min-width: 0;
-    margin: 0.5rem 0 0;
-    box-shadow: none;
-    transform: none;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+  html[data-theme="dark"] .miq360-submenu-toggle {
+    color: #bbbbbb;
   }
 
-  .miq360-account-item:hover > .miq360-account-menu,
-  .miq360-account-item:focus-within > .miq360-account-menu,
-  .miq360-account-item.is-open > .miq360-account-menu {
+  html[data-theme="dark"] .miq360-submenu-toggle:hover,
+  html[data-theme="dark"] .miq360-submenu-toggle:active,
+  html[data-theme="dark"] .miq360-submenu-toggle:focus-visible {
+    background: var(--miq-blog-dark-surface-strong);
+    color: #ffffff;
+  }
+
+  .miq360-account-menu {
+    display: none;
+    position: static;
+    min-width: 0;
+    width: 100%;
+    margin: 0.5rem 0 0;
+    box-shadow: none;
+    opacity: 0;
     transform: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    visibility: hidden;
+  }
+
+  .miq360-account-item.is-open > .miq360-account-menu {
+    display: block;
+    opacity: 1;
+    transform: none;
+    visibility: visible;
   }
 }
 

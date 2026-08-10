@@ -84,40 +84,198 @@
     updateToggleIcon(isDark());
   }
 
-  function initAccountMenu() {
-    var accountItem = document.querySelector('.miq360-account-item.is-authenticated');
-    var trigger = document.getElementById('miq360-blog-account-toggle');
-    var menu = document.getElementById('miq360-blog-account-menu');
+  function directChild(element, tagName, className) {
+    if (!element || !element.children) return null;
 
-    if (!accountItem || !trigger || !menu) return;
+    for (var i = 0; i < element.children.length; i += 1) {
+      var child = element.children[i];
+      var matchesTag = !tagName || child.tagName.toLowerCase() === tagName.toLowerCase();
+      var matchesClass = !className || child.classList.contains(className);
 
-    function setOpen(open) {
-      accountItem.classList.toggle('is-open', open);
-      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (matchesTag && matchesClass) return child;
     }
 
-    trigger.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      setOpen(!accountItem.classList.contains('is-open'));
-    });
+    return null;
+  }
+
+  function initNavigationMenus() {
+    var mobileQuery = window.matchMedia
+      ? window.matchMedia('(max-width: 49.99em)')
+      : { matches: window.innerWidth < 800 };
+    var menuRoot = document.getElementById('menu-primary-items') || document.querySelector('.menu-unset > ul');
+    var menuContainer = document.getElementById('menu-primary-container');
+    var navigationToggle = document.getElementById('toggle-navigation');
+    var accountItem = document.querySelector('.miq360-account-item.is-authenticated');
+    var accountTrigger = document.getElementById('miq360-blog-account-toggle');
+    var accountMenu = document.getElementById('miq360-blog-account-menu');
+    var controls = [];
+
+    function normalizedText(element) {
+      var value = element && element.textContent ? element.textContent : 'Menu';
+      return value.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '') || 'Menu';
+    }
+
+    function addControl(item, trigger, menu, type, label) {
+      controls.push({
+        item: item,
+        trigger: trigger,
+        menu: menu,
+        type: type,
+        label: label || 'Menu'
+      });
+    }
+
+    if (menuRoot) {
+      var submenuParents = menuRoot.querySelectorAll('li.menu-item-has-children');
+
+      for (var i = 0; i < submenuParents.length; i += 1) {
+        var parent = submenuParents[i];
+        var submenu = directChild(parent, 'ul');
+        var parentLink = directChild(parent, 'a');
+        var submenuToggle = directChild(parent, 'button', 'miq360-submenu-toggle');
+
+        if (!submenu || !parentLink) continue;
+
+        if (!submenu.id) submenu.id = 'miq360-blog-submenu-' + (i + 1);
+
+        if (!submenuToggle) {
+          submenuToggle = document.createElement('button');
+          submenuToggle.type = 'button';
+          submenuToggle.className = 'miq360-submenu-toggle';
+          parent.insertBefore(submenuToggle, submenu);
+        }
+
+        submenuToggle.setAttribute('aria-controls', submenu.id);
+        submenuToggle.setAttribute('aria-expanded', 'false');
+        submenuToggle.setAttribute('aria-haspopup', 'true');
+        addControl(parent, submenuToggle, submenu, 'submenu', normalizedText(parentLink));
+      }
+    }
+
+    if (accountItem && accountTrigger && accountMenu) {
+      addControl(accountItem, accountTrigger, accountMenu, 'account', 'Account');
+    }
+
+    if (!controls.length) return;
+
+    htmlEl.classList.add('miq360-blog-menu-ready');
+
+    function openClass(control) {
+      return control.type === 'account' ? 'is-open' : 'miq360-mobile-submenu-open';
+    }
+
+    function isOpen(control) {
+      return control.item.classList.contains(openClass(control));
+    }
+
+    function setOpen(control, open) {
+      control.item.classList.toggle(openClass(control), open);
+      control.trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+      if (control.type === 'submenu') {
+        control.trigger.setAttribute(
+          'aria-label',
+          (open ? 'Close ' : 'Open ') + control.label + ' submenu'
+        );
+      }
+
+      control.menu.hidden = mobileQuery.matches ? !open : false;
+    }
+
+    function closeControl(control) {
+      for (var i = controls.length - 1; i >= 0; i -= 1) {
+        if (controls[i] === control || control.item.contains(controls[i].item)) {
+          setOpen(controls[i], false);
+        }
+      }
+    }
+
+    function closeOthers(current) {
+      for (var i = 0; i < controls.length; i += 1) {
+        var candidate = controls[i];
+        var keepsAncestorOpen = candidate.item.contains(current.item);
+
+        if (candidate !== current && !keepsAncestorOpen) closeControl(candidate);
+      }
+    }
+
+    function closeAll() {
+      for (var i = 0; i < controls.length; i += 1) closeControl(controls[i]);
+    }
+
+    function toggleControl(control) {
+      var willOpen = !isOpen(control);
+
+      if (willOpen) closeOthers(control);
+      if (willOpen) {
+        setOpen(control, true);
+      } else {
+        closeControl(control);
+      }
+    }
+
+    for (var i = 0; i < controls.length; i += 1) {
+      (function(control) {
+        control.trigger.addEventListener('click', function(e) {
+          if (control.type === 'submenu' && !mobileQuery.matches) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+          toggleControl(control);
+        });
+      })(controls[i]);
+    }
+
+    function applyViewport() {
+      closeAll();
+    }
 
     document.addEventListener('click', function(e) {
-      if (!accountItem.contains(e.target)) setOpen(false);
+      if (mobileQuery.matches && menuContainer && menuContainer.contains(e.target)) return;
+
+      for (var i = 0; i < controls.length; i += 1) {
+        if (controls[i].item.contains(e.target)) return;
+      }
+
+      closeAll();
     });
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && accountItem.classList.contains('is-open')) {
-        setOpen(false);
-        trigger.focus();
+      if (e.key !== 'Escape') return;
+
+      var focusTarget = null;
+
+      for (var i = 0; i < controls.length; i += 1) {
+        if (isOpen(controls[i])) focusTarget = controls[i].trigger;
       }
+
+      if (!focusTarget) return;
+
+      closeAll();
+      focusTarget.focus();
     });
+
+    if (navigationToggle && menuContainer) {
+      navigationToggle.addEventListener('click', function() {
+        window.setTimeout(function() {
+          if (!menuContainer.classList.contains('open')) closeAll();
+        }, 0);
+      });
+    }
+
+    if (mobileQuery.addEventListener) {
+      mobileQuery.addEventListener('change', applyViewport);
+    } else if (mobileQuery.addListener) {
+      mobileQuery.addListener(applyViewport);
+    }
+
+    applyViewport();
   }
 
   function boot() {
     applyTheme(resolveDark());
     initToggle();
-    initAccountMenu();
+    initNavigationMenus();
   }
 
   window.ThemeController = {
