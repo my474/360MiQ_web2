@@ -3,9 +3,11 @@
   --sce-panel: #f8fafc;
   --sce-pane-control-bg: rgba(248, 250, 252, 0.92);
   --sce-pane-control-border: rgba(209, 213, 219, 0.9);
-  --sce-latest-bg: rgba(37, 99, 235, 0.92);
-  --sce-latest-border: rgba(30, 64, 175, 0.9);
-  --sce-latest-glow: rgba(37, 99, 235, 0.48);
+  --sce-latest-bg: #facc15;
+  --sce-latest-border: #a16207;
+  --sce-latest-glow: rgba(234, 179, 8, 0.55);
+  --sce-latest-hover-bg: #eab308;
+  --sce-latest-text: #422006;
   --sce-pine-beta: #b45309;
   --sce-text: #111827;
   --sce-muted: #6b7280;
@@ -27,9 +29,11 @@
   --sce-panel: #172033;
   --sce-pane-control-bg: rgba(23, 32, 51, 0.92);
   --sce-pane-control-border: rgba(55, 65, 81, 0.9);
-  --sce-latest-bg: rgba(37, 99, 235, 0.94);
-  --sce-latest-border: rgba(147, 197, 253, 0.9);
-  --sce-latest-glow: rgba(96, 165, 250, 0.72);
+  --sce-latest-bg: #facc15;
+  --sce-latest-border: #fde68a;
+  --sce-latest-glow: rgba(250, 204, 21, 0.78);
+  --sce-latest-hover-bg: #fde047;
+  --sce-latest-text: #1c1917;
   --sce-pine-beta: #fbbf24;
   --sce-text: #f9fafb;
   --sce-muted: #cbd5e1;
@@ -587,7 +591,7 @@
   border-radius: 5px;
   bottom: 3px;
   box-shadow: 0 3px 9px rgba(15, 23, 42, 0.22);
-  color: #fff;
+  color: var(--sce-latest-text);
   cursor: pointer;
   display: inline-flex;
   justify-content: center;
@@ -641,7 +645,7 @@
 
 .sce-latest-marker:hover,
 .sce-latest-marker:focus-visible {
-  background: #1d4ed8;
+  background: var(--sce-latest-hover-bg);
   box-shadow: 0 9px 22px rgba(15, 23, 42, 0.3);
   outline: none;
   transform: translateY(-1px);
