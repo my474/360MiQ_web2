@@ -672,12 +672,28 @@ if (!function_exists('miq_account_notification_text_limit')) {
     }
 }
 
+if (!function_exists('miq_account_fcm_target_field')) {
+    function miq_account_fcm_target_field($channel)
+    {
+        $channel = miq_account_notification_clean_channel($channel);
+        if ($channel === 'android') {
+            return 'fid';
+        }
+        return $channel === 'web' ? 'token' : '';
+    }
+}
+
 if (!function_exists('miq_account_fcm_send')) {
-    function miq_account_fcm_send($device_token, $notification_id, $type, $title, $message, $link_url, $unread_count = null)
+    function miq_account_fcm_send($device_target, $channel, $notification_id, $type, $title, $message, $link_url, $unread_count = null)
     {
         $credentials = miq_account_fcm_service_account();
         if (!$credentials) {
             return null;
+        }
+        $device_target = trim((string) $device_target);
+        $target_field = miq_account_fcm_target_field($channel);
+        if ($device_target === '' || $target_field === '') {
+            throw new MiqAccountFcmDeliveryException('The FCM delivery target is invalid.', true, false, 'INVALID_TARGET', 0, 0);
         }
         $url = miq_account_notification_absolute_url($link_url);
         $data = array(
@@ -686,32 +702,33 @@ if (!function_exists('miq_account_fcm_send')) {
             'link_url' => $url,
             'unread_count' => (string) ($unread_count === null ? 0 : max(0, (int) $unread_count)),
         );
-        $payload = array(
-            'message' => array(
-                'token' => (string) $device_token,
+        $message_payload = array(
+            'notification' => array(
+                'title' => miq_account_notification_text_limit($title, 160),
+                'body' => miq_account_notification_text_limit($message, 500),
+            ),
+            'data' => $data,
+            'android' => array(
+                'priority' => 'HIGH',
+                'notification' => array('channel_id' => 'miq_notifications'),
+            ),
+            'webpush' => array(
+                'headers' => array('Urgency' => 'high'),
                 'notification' => array(
                     'title' => miq_account_notification_text_limit($title, 160),
                     'body' => miq_account_notification_text_limit($message, 500),
+                    'icon' => rtrim((string) miq_account_config()['base_url'], '/') . '/assets/img/360Logo_192.png',
+                    'badge' => rtrim((string) miq_account_config()['base_url'], '/') . '/assets/img/360Logo_192.png',
+                    'tag' => 'miq-notification-' . (int) $notification_id,
+                    'data' => array('url' => $url, 'notification_id' => (string) ((int) $notification_id)),
                 ),
-                'data' => $data,
-                'android' => array(
-                    'priority' => 'HIGH',
-                    'notification' => array('channel_id' => 'miq_notifications'),
-                ),
-                'webpush' => array(
-                    'headers' => array('Urgency' => 'high'),
-                    'notification' => array(
-                        'title' => miq_account_notification_text_limit($title, 160),
-                        'body' => miq_account_notification_text_limit($message, 500),
-                        'icon' => rtrim((string) miq_account_config()['base_url'], '/') . '/assets/img/360Logo_192.png',
-                        'badge' => rtrim((string) miq_account_config()['base_url'], '/') . '/assets/img/360Logo_192.png',
-                        'tag' => 'miq-notification-' . (int) $notification_id,
-                        'data' => array('url' => $url, 'notification_id' => (string) ((int) $notification_id)),
-                    ),
-                    'fcm_options' => array('link' => $url),
-                ),
+                'fcm_options' => array('link' => $url),
             ),
         );
+        // FCM target is a union: Android registrations use their Firebase
+        // Installation ID, while the current web client still uses a legacy token.
+        $message_payload[$target_field] = $device_target;
+        $payload = array('message' => $message_payload);
         $encoded_payload = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if ($encoded_payload === false) {
             throw new MiqAccountFcmDeliveryException('The FCM payload could not be encoded.', false, false, 'PAYLOAD_ENCODING', 0, 0);
@@ -820,7 +837,7 @@ if (!function_exists('miq_account_claim_notification_delivery')) {
         $db->begin_transaction();
         try {
             $row = miq_account_fetch_one(miq_account_query(
-                "SELECT delivery.id AS delivery_id, delivery.user_id, delivery.attempt_count, notification.id AS notification_id, notification.notification_type, notification.title, notification.message, notification.link_url, notification.read_at, device.id AS device_id, device.device_token, device.token_hash, device.installation_hash, device.enabled AS device_enabled, device.session_version AS device_session_version, account_user.session_version AS user_session_version, account_user.status AS user_status, account_session.id AS session_id FROM {$deliveries} delivery INNER JOIN {$notifications} notification ON notification.id = delivery.notification_id AND notification.user_id = delivery.user_id LEFT JOIN {$devices} device ON device.id = delivery.device_id AND device.user_id = delivery.user_id LEFT JOIN {$users} account_user ON account_user.id = delivery.user_id LEFT JOIN {$sessions} account_session ON account_session.user_id = delivery.user_id AND account_session.session_hash = device.session_hash AND account_session.expires_at > UTC_TIMESTAMP() WHERE ((delivery.status IN ('pending', 'retry') AND (delivery.next_attempt_at IS NULL OR delivery.next_attempt_at <= UTC_TIMESTAMP())) OR (delivery.status = 'processing' AND (delivery.lease_expires_at IS NULL OR delivery.lease_expires_at <= UTC_TIMESTAMP()))) ORDER BY COALESCE(delivery.next_attempt_at, delivery.created_at), delivery.id LIMIT 1 FOR UPDATE"
+                "SELECT delivery.id AS delivery_id, delivery.user_id, delivery.attempt_count, notification.id AS notification_id, notification.notification_type, notification.title, notification.message, notification.link_url, notification.read_at, device.id AS device_id, device.channel AS device_channel, device.device_token, device.token_hash, device.installation_hash, device.enabled AS device_enabled, device.session_version AS device_session_version, account_user.session_version AS user_session_version, account_user.status AS user_status, account_session.id AS session_id FROM {$deliveries} delivery INNER JOIN {$notifications} notification ON notification.id = delivery.notification_id AND notification.user_id = delivery.user_id LEFT JOIN {$devices} device ON device.id = delivery.device_id AND device.user_id = delivery.user_id LEFT JOIN {$users} account_user ON account_user.id = delivery.user_id LEFT JOIN {$sessions} account_session ON account_session.user_id = delivery.user_id AND account_session.session_hash = device.session_hash AND account_session.expires_at > UTC_TIMESTAMP() WHERE ((delivery.status IN ('pending', 'retry') AND (delivery.next_attempt_at IS NULL OR delivery.next_attempt_at <= UTC_TIMESTAMP())) OR (delivery.status = 'processing' AND (delivery.lease_expires_at IS NULL OR delivery.lease_expires_at <= UTC_TIMESTAMP()))) ORDER BY COALESCE(delivery.next_attempt_at, delivery.created_at), delivery.id LIMIT 1 FOR UPDATE"
             ));
             if (!$row) {
                 $db->commit();
@@ -945,6 +962,7 @@ if (!function_exists('miq_account_process_notification_queue')) {
                 && !empty($delivery['session_id'])
                 && (int) $delivery['device_enabled'] === 1
                 && trim((string) $delivery['device_token']) !== ''
+                && miq_account_fcm_target_field($delivery['device_channel'] ?? '') !== ''
                 && (int) $delivery['device_session_version'] === (int) $delivery['user_session_version']
                 && (string) $delivery['user_status'] === 'active';
             $notification_unread = empty($delivery['read_at']);
@@ -960,6 +978,7 @@ if (!function_exists('miq_account_process_notification_queue')) {
             try {
                 $provider_id = miq_account_fcm_send(
                     $delivery['device_token'],
+                    $delivery['device_channel'],
                     $delivery['notification_id'],
                     $delivery['notification_type'],
                     $delivery['title'],
