@@ -284,10 +284,13 @@
 
     function chartRow(item) {
         var openUrl = 'tool?tab=3&stockcode=' + encodeURIComponent(item.code) + '&chart_id=' + encodeURIComponent(item.id);
+        var metadata = [item.code];
+        if (item.kind !== 'workspace') metadata.push('revision ' + item.revision);
+        metadata.push('updated ' + humanDate(item.updated_at));
         return '<article class="miq-asset-row" data-chart-id="' + Number(item.id) + '">' +
             '<div class="miq-asset-main"><a class="miq-asset-title" href="' + openUrl + '">' + escapeHtml(item.name) + '</a>' +
             '<span class="miq-asset-badge">' + escapeHtml(item.kind === 'workspace' ? 'Synced workspace' : 'Named chart') + '</span>' +
-            assetMeta([item.code, 'revision ' + item.revision, 'updated ' + humanDate(item.updated_at)]) + '</div>' +
+            assetMeta(metadata) + '</div>' +
             '<div class="miq-asset-actions">' +
             '<a class="btn btn-sm btn-primary" href="' + openUrl + '">Open</a>' +
             '<button class="btn btn-sm btn-outline-primary" type="button" data-asset-action="rename-chart">Rename</button>' +
