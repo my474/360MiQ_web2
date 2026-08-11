@@ -62,6 +62,9 @@ function miq_account_config()
         'fcm_client_email' => miq_account_env('FCM_CLIENT_EMAIL', ''),
         'fcm_private_key' => str_replace('\\n', "\n", miq_account_env('FCM_PRIVATE_KEY', '')),
         'fcm_service_account_json' => miq_account_env('FCM_SERVICE_ACCOUNT_JSON', ''),
+        // Shared-hosting PHP and cron can read the same credential without
+        // placing its private key in .htaccess or a command line.
+        'fcm_service_account_file' => miq_account_env('FCM_SERVICE_ACCOUNT_FILE', '/home2/aamiqcom/php_script/firebase-service-account.json'),
         'fcm_web_api_key' => miq_account_env('FCM_WEB_API_KEY', ''),
         'fcm_web_auth_domain' => miq_account_env('FCM_WEB_AUTH_DOMAIN', ''),
         'fcm_web_storage_bucket' => miq_account_env('FCM_WEB_STORAGE_BUCKET', ''),

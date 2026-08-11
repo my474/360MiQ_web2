@@ -472,6 +472,19 @@ if (!function_exists('miq_account_fcm_service_account')) {
         }
         $config = miq_account_config();
         $json = trim((string) $config['fcm_service_account_json']);
+        $credential_file = trim((string) ($config['fcm_service_account_file'] ?? ''));
+        if ($json === '' && $credential_file !== '') {
+            $resolved_file = realpath($credential_file);
+            if ($resolved_file !== false && is_file($resolved_file) && is_readable($resolved_file)) {
+                $file_size = @filesize($resolved_file);
+                if ($file_size !== false && $file_size > 0 && $file_size <= 65536) {
+                    $file_json = @file_get_contents($resolved_file);
+                    if (is_string($file_json)) {
+                        $json = trim($file_json);
+                    }
+                }
+            }
+        }
         $decoded = $json !== '' ? json_decode($json, true) : array();
         $decoded = is_array($decoded) ? $decoded : array();
         $private_key = (string) ($decoded['private_key'] ?? $config['fcm_private_key']);

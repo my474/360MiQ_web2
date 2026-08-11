@@ -59,6 +59,7 @@ FCM push delivery is optional and is enabled only when the server credentials an
 FCM_PROJECT_ID=<firebase-project-id>
 FCM_CLIENT_EMAIL=<service-account-client-email>
 FCM_PRIVATE_KEY=<service-account-private-key-with-escaped-newlines>
+FCM_SERVICE_ACCOUNT_FILE=<absolute-private-path-to-service-account-json>
 FCM_WEB_API_KEY=<firebase-web-api-key>
 FCM_WEB_AUTH_DOMAIN=<firebase-auth-domain>
 FCM_WEB_STORAGE_BUCKET=<firebase-storage-bucket>
@@ -67,7 +68,7 @@ FCM_WEB_APP_ID=<firebase-web-app-id>
 FCM_WEB_VAPID_KEY=<firebase-cloud-messaging-web-push-certificate-key-pair-public-key>
 ```
 
-`FCM_SERVICE_ACCOUNT_JSON` may be used instead of the three server credential variables when the host cannot provide multiline environment values. `FCM_WEB_SDK_VERSION` defaults to `11.10.0`; `FCM_MAX_DEVICES_PER_NOTIFICATION` defaults to 10 and `FCM_MAX_DEVICES_PER_USER` defaults to 20 active devices. Device upserts are additionally limited to 300 per account per hour by `MIQ_RATE_NOTIFICATION_DEVICE_LIMIT`/`MIQ_RATE_NOTIFICATION_DEVICE_WINDOW`. The account settings page never asks for browser permission until the user clicks Enable browser notifications. Android clients obtain an FCM registration token natively and submit it to the authenticated `account_api.php` endpoint with `action=register_notification_device`, `channel=android`, `token`, `installation_id`, and optional `label`/`app_version`; the same endpoint accepts an installation-scoped `unregister_notification_device`. The Android wrapper must preserve the shared main-site session cookie or complete the normal account sign-in first.
+The preferred shared-hosting setup is to upload the Firebase service-account JSON outside the public web root with owner-only permissions and point `FCM_SERVICE_ACCOUNT_FILE` to it. Production defaults to `/home2/aamiqcom/php_script/firebase-service-account.json`, allowing web PHP and the CLI worker to share the credential without exposing its contents in `.htaccess` or a cron command. `FCM_SERVICE_ACCOUNT_JSON` may instead contain the complete JSON, or the three split server credential variables may be used when the host provides a secure environment store. `FCM_WEB_SDK_VERSION` defaults to `11.10.0`; `FCM_MAX_DEVICES_PER_NOTIFICATION` defaults to 10 and `FCM_MAX_DEVICES_PER_USER` defaults to 20 active devices. Device upserts are additionally limited to 300 per account per hour by `MIQ_RATE_NOTIFICATION_DEVICE_LIMIT`/`MIQ_RATE_NOTIFICATION_DEVICE_WINDOW`. The account settings page never asks for browser permission until the user clicks Enable browser notifications. Android clients obtain an FCM registration token natively and submit it to the authenticated `account_api.php` endpoint with `action=register_notification_device`, `channel=android`, `token`, `installation_id`, and optional `label`/`app_version`; the same endpoint accepts an installation-scoped `unregister_notification_device`. The Android wrapper must preserve the shared main-site session cookie or complete the normal account sign-in first.
 
 Push delivery is written to a durable database queue and sent outside the web request; notification calls made inside an existing application transaction enqueue within that transaction. Run this worker once per minute (the optional numeric argument overrides the batch size):
 
