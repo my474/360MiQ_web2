@@ -1,0 +1,260 @@
+.miq-notification-invite {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 190000;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 14px;
+    width: min(420px, calc(100vw - 32px));
+    box-sizing: border-box;
+    padding: 20px 20px 18px;
+    color: #1f2937;
+    background: #ffffff;
+    border: 1px solid #d7e1ed;
+    border-radius: 14px;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.2);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(14px);
+    transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.miq-notification-invite.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.miq-notification-invite.is-leaving {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+}
+
+.miq-notification-invite-close {
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: #64748b;
+    font: 400 24px/30px Arial, sans-serif;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.miq-notification-invite-close:hover,
+.miq-notification-invite-close:focus-visible {
+    color: #0f172a;
+    background: #eef2f7;
+}
+
+.miq-notification-invite-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: #1769e0;
+    background: #eaf2ff;
+    border-radius: 50%;
+}
+
+.miq-notification-invite.is-success .miq-notification-invite-icon {
+    color: #087443;
+    background: #e3f7ec;
+}
+
+.miq-notification-invite-content {
+    min-width: 0;
+    padding-right: 14px;
+}
+
+.miq-notification-invite-title {
+    display: block;
+    margin: 1px 0 6px;
+    color: #111827;
+    font-size: 1rem;
+    line-height: 1.35;
+}
+
+.miq-notification-invite-body,
+.miq-notification-invite-status {
+    margin: 0;
+    color: #526173;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.miq-notification-invite-status:empty {
+    display: none;
+}
+
+.miq-notification-invite-status {
+    margin-top: 8px;
+    color: #087443;
+}
+
+.miq-notification-invite-status.is-error {
+    color: #b42318;
+}
+
+.miq-notification-invite-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 14px;
+}
+
+.miq-notification-invite-primary,
+.miq-notification-invite-settings,
+.miq-notification-invite-later {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    box-sizing: border-box;
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.miq-notification-invite-primary {
+    color: #ffffff;
+    background: #1769e0;
+    border: 1px solid #1769e0;
+}
+
+.miq-notification-invite-primary:hover,
+.miq-notification-invite-primary:focus-visible {
+    color: #ffffff;
+    background: #0f58c2;
+    border-color: #0f58c2;
+    text-decoration: none;
+}
+
+.miq-notification-invite-primary:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.miq-notification-invite-settings,
+.miq-notification-invite-later {
+    color: #445468;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.miq-notification-invite-settings:hover,
+.miq-notification-invite-settings:focus-visible,
+.miq-notification-invite-later:hover,
+.miq-notification-invite-later:focus-visible {
+    color: #0f172a;
+    background: #eef2f7;
+    text-decoration: none;
+}
+
+.miq-notification-invite-close:focus-visible,
+.miq-notification-invite-primary:focus-visible,
+.miq-notification-invite-settings:focus-visible,
+.miq-notification-invite-later:focus-visible {
+    outline: 3px solid rgba(23, 105, 224, 0.3);
+    outline-offset: 2px;
+}
+
+html[data-theme="dark"] .miq-notification-invite {
+    color: #dce6f3;
+    background: #182231;
+    border-color: #34445a;
+    box-shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
+}
+
+html[data-theme="dark"] .miq-notification-invite-title {
+    color: #f5f8fc;
+}
+
+html[data-theme="dark"] .miq-notification-invite-body {
+    color: #b5c1d1;
+}
+
+html[data-theme="dark"] .miq-notification-invite-close,
+html[data-theme="dark"] .miq-notification-invite-settings,
+html[data-theme="dark"] .miq-notification-invite-later {
+    color: #bcc8d8;
+}
+
+html[data-theme="dark"] .miq-notification-invite-close:hover,
+html[data-theme="dark"] .miq-notification-invite-close:focus-visible,
+html[data-theme="dark"] .miq-notification-invite-settings:hover,
+html[data-theme="dark"] .miq-notification-invite-settings:focus-visible,
+html[data-theme="dark"] .miq-notification-invite-later:hover,
+html[data-theme="dark"] .miq-notification-invite-later:focus-visible {
+    color: #ffffff;
+    background: #263449;
+}
+
+html[data-theme="dark"] .miq-notification-invite-icon {
+    color: #8bb9ff;
+    background: #203b64;
+}
+
+html[data-theme="dark"] .miq-notification-invite.is-success .miq-notification-invite-icon {
+    color: #73d7a6;
+    background: #173e32;
+}
+
+html[data-theme="dark"] .miq-notification-invite-status {
+    color: #73d7a6;
+}
+
+html[data-theme="dark"] .miq-notification-invite-status.is-error {
+    color: #ff9e96;
+}
+
+@media (max-width: 575.98px) {
+    .miq-notification-invite {
+        right: 16px;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 11px;
+        padding: 17px 16px 15px;
+    }
+
+    .miq-notification-invite-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .miq-notification-invite-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .miq-notification-invite-primary,
+    .miq-notification-invite-settings,
+    .miq-notification-invite-later {
+        width: 100%;
+    }
+}
+
+@media (max-width: 639px) {
+    .bottom-nav ~ .miq-notification-invite {
+        bottom: max(76px, calc(60px + env(safe-area-inset-bottom)));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .miq-notification-invite {
+        transition: none;
+    }
+}

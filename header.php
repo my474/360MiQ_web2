@@ -241,7 +241,7 @@ $(document).on('click', '.color-item', function(event) {
 <!-- Script -->
 <script src="https://code.jquery.com/jquery-migrate-3.0.0.min.js"></script>
 <script src="assets/js/account.js?v=20260811.2" defer></script>
-<script src="assets/js/notifications.js?v=20260812.1" defer></script>
+<script src="assets/js/notifications.js?v=20260812.2" defer></script>
 <!-- jQuery UI -->
 <link href='autocomplete/jquery-ui.min.css' rel='stylesheet' type='text/css'>
 <style>

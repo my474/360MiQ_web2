@@ -104,7 +104,7 @@ $miq_blog_account_config = array(
 (function(){var state=window.__MIQ_ACCOUNT__;window.__MIQ_CHATBOX_SYNC__=state;if(!window.fetch){window.__MIQ_ACCOUNT_BOOTSTRAP_PROMISE__=Promise.resolve(state);return;}window.__MIQ_ACCOUNT_BOOTSTRAP_PROMISE__=fetch(state.bootstrapUrl,{method:'GET',credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store'}).then(function(response){if(!response.ok){throw new Error('Account bootstrap failed.');}return response.json();}).then(function(payload){Object.assign(state,payload||{});state.bootstrapRequired=false;window.dispatchEvent(new CustomEvent('miq:account-state',{detail:state}));return state;}).catch(function(){return state;});}());
 </script>
 <script src="<?php echo esc_url( $miq_blog_main_site_url . '/assets/js/chatbox-sync.js?v=20260812.1' ); ?>"></script>
-<script src="<?php echo esc_url( $miq_blog_main_site_url . '/assets/js/notifications.js?v=20260812.1' ); ?>"></script>
+<script src="<?php echo esc_url( $miq_blog_main_site_url . '/assets/js/notifications.js?v=20260812.2' ); ?>"></script>
 
 <script src="https://code.highcharts.com/8.2.0/highcharts.js"></script>
 <script src="https://code.highcharts.com/8.2.0/modules/no-data-to-display.js"></script>

@@ -20,6 +20,18 @@
         return window.MIQAccount.request(action, payload || {}, method || 'POST');
     }
 
+    function offerNotificationContext(source) {
+        if (window.MIQNotifications && typeof window.MIQNotifications.offerContext === 'function') {
+            window.MIQNotifications.offerContext('community_replies', source);
+            return;
+        }
+        if (typeof window.CustomEvent === 'function') {
+            window.dispatchEvent(new window.CustomEvent('miq:notification-context', {
+                detail: { category: 'community_replies', source: source }
+            }));
+        }
+    }
+
     function requireLogin() {
         if (window.MIQAccount && window.MIQAccount.state.loggedIn) return true;
         window.location.href = 'account.php?view=login&return_to=' + encodeURIComponent(window.location.pathname + window.location.search);
@@ -40,7 +52,10 @@
         formStatus.textContent = submit ? 'Submitting for review…' : 'Saving draft…';
         window.MIQAccount.saveIdea(data, submit).then(function () {
             formStatus.textContent = submit ? 'Submitted. It will appear after moderation.' : 'Draft saved.';
-            if (submit) loadIdeas();
+            if (submit) {
+                offerNotificationContext('idea');
+                loadIdeas();
+            }
         }).catch(function (error) {
             formStatus.textContent = error.message;
         });
@@ -159,6 +174,7 @@
         accountRequest('save_idea_reply', { idea_id: ideaId, body: replyForm.elements.body.value.trim() }).then(function () {
             replyForm.reset();
             replyStatus.textContent = 'Reply submitted for review.';
+            offerNotificationContext('reply');
         }).catch(function (error) {
             replyStatus.textContent = error.message;
         });
@@ -181,6 +197,7 @@
                 bookmarkButton.setAttribute('data-bookmarked', bookmarked ? 'true' : 'false');
                 bookmarkButton.classList.toggle('active', bookmarked);
                 bookmarkButton.innerHTML = '<i class="fas fa-bookmark"></i> ' + (bookmarked ? 'Bookmarked' : 'Bookmark');
+                if (bookmarked) offerNotificationContext('bookmark');
             }).catch(function (error) { listStatus.textContent = error.message; });
             return;
         }

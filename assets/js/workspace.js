@@ -30,6 +30,18 @@
         status.textContent = message || '';
     }
 
+    function offerNotificationContext(category, source) {
+        if (window.MIQNotifications && typeof window.MIQNotifications.offerContext === 'function') {
+            window.MIQNotifications.offerContext(category, source);
+            return;
+        }
+        if (typeof window.CustomEvent === 'function') {
+            window.dispatchEvent(new window.CustomEvent('miq:notification-context', {
+                detail: { category: category, source: source }
+            }));
+        }
+    }
+
     function panel(title, body, wide) {
         return '<section class="miq-workspace-panel' + (wide ? ' miq-workspace-panel-wide' : '') + '"><h2>' + escapeHtml(title) + '</h2>' + body + '</section>';
     }
@@ -401,7 +413,7 @@
 
     function renderNotifications() {
         var notifications = workspaceItems('notifications');
-        var toolbar = '<div class="miq-management-toolbar"><span>' + workspaceCount('notifications_unread') + ' unread</span><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="notifications-read-all">Mark all read</button></div>';
+        var toolbar = '<div class="miq-management-toolbar"><span>' + workspaceCount('notifications_unread') + ' unread</span><div class="miq-management-actions"><a class="btn btn-sm btn-outline-secondary" href="account_settings#miq-notification-settings">Push settings</a><button class="btn btn-sm btn-outline-primary" type="button" data-workspace-action="notifications-read-all">Mark all read</button></div></div>';
         var rows = notifications.length ? '<div class="miq-notification-list">' + notifications.map(function (notification) {
             var contentHtml = '<strong>' + escapeHtml(notification.title) + '</strong><span>' + escapeHtml(notification.message) + '</span><small>' + escapeHtml(humanDate(notification.created_at)) + '</small>';
             return '<article class="miq-notification-row' + (notification.read_at ? '' : ' is-unread') + '" data-notification-id="' + Number(notification.id) + '">' +
@@ -616,7 +628,10 @@
                 code: alertForm.elements.code.value.trim().toUpperCase(),
                 condition_type: alertForm.elements.condition_type.value,
                 target_price: alertForm.elements.target_price.value
-            }).then(function () { return refreshWorkspaceAndTab('Price alert created.'); })
+            }).then(function () {
+                offerNotificationContext('price_alerts', 'price_alert');
+                return refreshWorkspaceAndTab('Price alert created.');
+            })
                 .catch(function (error) { showStatus(error.message, 'danger'); });
         } else if (chartFilter) {
             event.preventDefault();

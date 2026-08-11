@@ -79,6 +79,6 @@ $trend_subject = $context_code !== '' ? $context_code : 'Global market';
 </main>
 <?php include __DIR__ . '/footer.php'; ?>
 <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-<script src="assets/js/community.js?v=20260726.2"></script>
+<script src="assets/js/community.js?v=20260812.2"></script>
 </body>
 </html>

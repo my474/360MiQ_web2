@@ -9,6 +9,9 @@
     var foregroundBound = false;
     var startupPromise = null;
     var androidPermissionRequest = null;
+    var notificationSettingsLoadPromise = null;
+    var activeContextInvite = null;
+    var contextOffersBound = false;
     var tokenStorageKey = 'miq-notification-web-token';
     var webOptInStorageKey = 'miq-notification-web-enabled';
     var webOptInUserStorageKey = 'miq-notification-web-user-id';
@@ -18,6 +21,9 @@
     var androidOptInUserStorageKey = 'miq-notification-android-user-id';
     var androidInstallationStorageKey = 'miq-notification-android-installation-v1';
     var androidDeviceStorageKey = 'miq-notification-android-device-id';
+    var contextStoragePrefix = 'miq-notification-context-v1';
+    var contextSnoozeMilliseconds = 30 * 24 * 60 * 60 * 1000;
+    var contextStyleVersion = '20260812.2';
 
     function storageGet(key) {
         try { return window.localStorage ? window.localStorage.getItem(key) || '' : ''; } catch (error) { return ''; }
@@ -29,6 +35,212 @@
 
     function storageRemove(key) {
         try { if (window.localStorage) window.localStorage.removeItem(key); } catch (error) {}
+    }
+
+    function normalizedContextCategory(category) {
+        return category === 'price_alerts' || category === 'community_replies' ? category : '';
+    }
+
+    function contextRecord(key) {
+        var value = storageGet(key);
+        if (!value) return {};
+        try {
+            var parsed = JSON.parse(value);
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (error) { return {}; }
+    }
+
+    function contextCooldownActive(record, now) {
+        var currentTime = typeof now === 'undefined' ? Date.now() : Number(now);
+        return !!record && Number(record.nextAt || 0) > currentTime;
+    }
+
+    function contextStorageKey(scope, category, channel) {
+        var userId = currentUserStorageId() || 'guest';
+        return [contextStoragePrefix, channel || 'web', userId, scope, category || 'all'].join(':');
+    }
+
+    function markContextCooldown(key, denied) {
+        storageSet(key, JSON.stringify({
+            nextAt: Date.now() + contextSnoozeMilliseconds,
+            denied: !!denied
+        }));
+    }
+
+    function contextOfferPolicy(category, snapshot) {
+        if (!normalizedContextCategory(category) || !snapshot || !snapshot.loggedIn || !snapshot.supported || !snapshot.configured) return '';
+        if (snapshot.channelEnabled && snapshot.preferenceEnabled) return '';
+        if (snapshot.categoryCooldown) return '';
+        if (!snapshot.channelEnabled && snapshot.globalCooldown) return '';
+        if (!snapshot.channelEnabled && snapshot.blocked) return 'blocked';
+        return snapshot.channelEnabled ? 'preference' : 'channel';
+    }
+
+    function contextCopy(category, source, plan, channel) {
+        if (plan === 'blocked') {
+            return {
+                title: channel === 'android' ? 'App notifications are blocked' : 'Browser notifications are blocked',
+                body: channel === 'android'
+                    ? 'Allow notifications for 360MiQ in Android settings, then return to notification settings.'
+                    : 'Allow notifications for 360MiQ in your browser site settings, then return to notification settings.'
+            };
+        }
+        if (category === 'price_alerts') {
+            return {
+                title: 'Get this price alert on this device',
+                body: 'Enable push notifications so 360MiQ can tell you when the alert triggers.'
+            };
+        }
+        var body = 'Enable community reply notifications so you can keep up with discussions you follow.';
+        if (source === 'idea') body = 'Enable community reply notifications so you know when people respond to your idea.';
+        else if (source === 'reply') body = 'Enable community reply notifications so you know when the discussion continues.';
+        else if (source === 'bookmark') body = 'Enable community reply notifications for updates on this bookmarked idea.';
+        return { title: 'Keep up with community replies', body: body };
+    }
+
+    function notificationSettingsUrl() {
+        try {
+            var workspace = new URL(state.workspaceUrl || '/workspace', window.location.origin);
+            return new URL('account_settings#miq-notification-settings', workspace).toString();
+        } catch (error) {
+            return '/account_settings#miq-notification-settings';
+        }
+    }
+
+    function ensureContextStyles() {
+        if (!document.head || document.querySelector('link[data-miq-notification-context-style]')) return;
+        var base = String(state.assetBaseUrl || '/assets').replace(/\/$/, '');
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = base + '/css/notification-invite.css?v=' + contextStyleVersion;
+        link.setAttribute('data-miq-notification-context-style', 'true');
+        document.head.appendChild(link);
+    }
+
+    function contextElement(tag, className, text) {
+        var element = document.createElement(tag);
+        if (className) element.className = className;
+        if (typeof text !== 'undefined') element.textContent = text;
+        return element;
+    }
+
+    function closeContextInvite() {
+        var current = activeContextInvite;
+        if (!current) return;
+        activeContextInvite = null;
+        if (current.keyHandler) document.removeEventListener('keydown', current.keyHandler);
+        current.node.classList.remove('is-visible');
+        current.node.classList.add('is-leaving');
+        window.setTimeout(function () {
+            if (current.node.parentNode) current.node.parentNode.removeChild(current.node);
+        }, 180);
+    }
+
+    function contextPermissionFailure(error, channel) {
+        if (channel === 'web' && typeof Notification !== 'undefined' && Notification.permission === 'denied') return true;
+        return /blocked|denied|not granted|disabled in android settings/i.test(String(error && error.message || error || ''));
+    }
+
+    function showContextInvite(category, source, plan, snapshot) {
+        if (activeContextInvite || !document.body) return false;
+        ensureContextStyles();
+        var copy = contextCopy(category, source, plan, snapshot.channel);
+        var invite = contextElement('aside', 'miq-notification-invite');
+        var identifier = 'miq-notification-invite-' + Date.now();
+        invite.setAttribute('role', 'dialog');
+        invite.setAttribute('aria-modal', 'false');
+        invite.setAttribute('aria-labelledby', identifier + '-title');
+        invite.setAttribute('aria-describedby', identifier + '-body');
+
+        var close = contextElement('button', 'miq-notification-invite-close', '\u00d7');
+        close.type = 'button';
+        close.setAttribute('aria-label', 'Not now');
+        var icon = contextElement('span', 'miq-notification-invite-icon');
+        icon.setAttribute('aria-hidden', 'true');
+        var iconGlyph = contextElement('i', 'fas fa-bell');
+        icon.appendChild(iconGlyph);
+        var content = contextElement('div', 'miq-notification-invite-content');
+        var title = contextElement('strong', 'miq-notification-invite-title', copy.title);
+        title.id = identifier + '-title';
+        var body = contextElement('p', 'miq-notification-invite-body', copy.body);
+        body.id = identifier + '-body';
+        var status = contextElement('p', 'miq-notification-invite-status', '');
+        status.setAttribute('role', 'status');
+        status.setAttribute('aria-live', 'polite');
+        var actions = contextElement('div', 'miq-notification-invite-actions');
+        var primary = null;
+        var manage = contextElement('a', 'miq-notification-invite-settings', 'Notification settings');
+        manage.href = notificationSettingsUrl();
+        var later = contextElement('button', 'miq-notification-invite-later', 'Not now');
+        later.type = 'button';
+
+        if (plan === 'blocked') {
+            manage.className = 'miq-notification-invite-primary';
+            manage.textContent = 'Open notification settings';
+            actions.appendChild(manage);
+        } else {
+            var primaryLabel = plan === 'preference'
+                ? (category === 'price_alerts' ? 'Turn on price alerts' : 'Turn on community updates')
+                : (snapshot.channel === 'android' ? 'Enable app notifications' : 'Enable browser notifications');
+            primary = contextElement('button', 'miq-notification-invite-primary', primaryLabel);
+            primary.type = 'button';
+            actions.appendChild(primary);
+            actions.appendChild(manage);
+        }
+        actions.appendChild(later);
+        content.appendChild(title);
+        content.appendChild(body);
+        content.appendChild(status);
+        content.appendChild(actions);
+        invite.appendChild(close);
+        invite.appendChild(icon);
+        invite.appendChild(content);
+
+        var categoryKey = contextStorageKey('category', category, snapshot.channel);
+        markContextCooldown(categoryKey, plan === 'blocked');
+        if (plan !== 'preference') markContextCooldown(contextStorageKey('global', '', snapshot.channel), plan === 'blocked');
+
+        close.addEventListener('click', closeContextInvite);
+        later.addEventListener('click', closeContextInvite);
+        var keyHandler = function (event) {
+            if (event.key === 'Escape') closeContextInvite();
+        };
+        document.addEventListener('keydown', keyHandler);
+        activeContextInvite = { node: invite, keyHandler: keyHandler };
+        document.body.appendChild(invite);
+        var reveal = function () { invite.classList.add('is-visible'); };
+        if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(reveal);
+        else window.setTimeout(reveal, 0);
+
+        if (primary) primary.addEventListener('click', function () {
+            primary.disabled = true;
+            status.classList.remove('is-error');
+            status.textContent = plan === 'preference' ? 'Saving your preference\u2026' : 'Enabling notifications\u2026';
+            // Keep permission requests on this direct click path so browser and
+            // Android user-activation requirements remain satisfied.
+            enableContextNotifications(category, snapshot).then(function () {
+                invite.classList.add('is-success');
+                status.textContent = category === 'price_alerts'
+                    ? 'Price alert notifications are enabled.'
+                    : 'Community reply notifications are enabled.';
+                window.setTimeout(closeContextInvite, 1400);
+            }).catch(function (error) {
+                var denied = contextPermissionFailure(error, snapshot.channel);
+                status.classList.add('is-error');
+                status.textContent = denied
+                    ? 'Notifications are blocked. Open notification settings to allow them.'
+                    : String(error && error.message || 'Notifications could not be enabled.');
+                if (denied) {
+                    markContextCooldown(categoryKey, true);
+                    primary.hidden = true;
+                    manage.className = 'miq-notification-invite-primary';
+                    manage.textContent = 'Open notification settings';
+                } else {
+                    primary.disabled = false;
+                }
+            });
+        });
+        return true;
     }
 
     function randomInstallationId(prefix) {
@@ -265,6 +477,76 @@
         else bridge.postMessage(JSON.stringify({ action: action }));
     }
 
+    function contextSnapshot(category, payload) {
+        var bridge = androidBridge();
+        var channel = bridge ? 'android' : 'web';
+        var config = payload && payload.web ? payload.web : getConfig();
+        var categoryKey = contextStorageKey('category', category, channel);
+        var globalKey = contextStorageKey('global', '', channel);
+        var categoryRecord = contextRecord(categoryKey);
+        var globalRecord = contextRecord(globalKey);
+        var browserSupported = typeof Notification !== 'undefined' && typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+        var browserBlocked = !bridge && browserSupported && Notification.permission === 'denied';
+        return {
+            loggedIn: !!state.loggedIn,
+            channel: channel,
+            supported: !!bridge || browserSupported,
+            configured: bridge ? config.deliveryEnabled === true : config.enabled === true,
+            channelEnabled: bridge
+                ? optInBelongsToCurrentUser('android')
+                : browserSupported && Notification.permission === 'granted' && optInBelongsToCurrentUser('web'),
+            preferenceEnabled: !!(payload && payload.preferences && payload.preferences[category]),
+            categoryCooldown: contextCooldownActive(categoryRecord),
+            globalCooldown: contextCooldownActive(globalRecord),
+            blocked: bridge
+                ? !!categoryRecord.denied || !!globalRecord.denied
+                : browserBlocked
+        };
+    }
+
+    function saveContextPreference(category) {
+        var values = {};
+        values[category] = true;
+        return request('save_notification_settings', 'POST', { preferences: values }).then(function (payload) {
+            applySettings(payload);
+            return payload;
+        });
+    }
+
+    function enableContextNotifications(category, snapshot) {
+        var enableChannel = snapshot.channelEnabled
+            ? Promise.resolve(settings)
+            : (snapshot.channel === 'android' ? enableAndroid() : enableBrowser());
+        return enableChannel.then(function () {
+            if (settings && settings.preferences && settings.preferences[category]) return settings;
+            return saveContextPreference(category);
+        });
+    }
+
+    function offerContext(category, source) {
+        category = normalizedContextCategory(category);
+        if (!category) return Promise.resolve(false);
+        return startup().catch(function () { return null; }).then(function () {
+            if (!state.loggedIn) return null;
+            return loadNotificationSettings(false);
+        }).then(function (payload) {
+            if (!payload) return false;
+            var snapshot = contextSnapshot(category, payload);
+            var plan = contextOfferPolicy(category, snapshot);
+            if (!plan) return false;
+            return showContextInvite(category, String(source || ''), plan, snapshot);
+        }).catch(function () { return false; });
+    }
+
+    function bindContextOffers() {
+        if (contextOffersBound || typeof window.addEventListener !== 'function') return;
+        contextOffersBound = true;
+        window.addEventListener('miq:notification-context', function (event) {
+            var detail = event && event.detail ? event.detail : {};
+            offerContext(detail.category, detail.source);
+        });
+    }
+
     function applySettings(payload) {
         settings = payload || {};
         var preferences = settings.preferences || {};
@@ -297,13 +579,25 @@
         else setStatus('Push is off until you choose Enable browser notifications.');
     }
 
-    function refresh() {
-        if (!state.loggedIn || !settingsPanel) return Promise.resolve(null);
-        setStatus('Loading notification settings...');
-        return request('get_notification_settings', 'GET').then(function (payload) {
+    function loadNotificationSettings(force) {
+        if (!state.loggedIn) return Promise.reject(new Error('Sign in is required to manage notifications.'));
+        if (!force && settings) return Promise.resolve(settings);
+        if (notificationSettingsLoadPromise) return notificationSettingsLoadPromise;
+        notificationSettingsLoadPromise = request('get_notification_settings', 'GET').then(function (payload) {
+            notificationSettingsLoadPromise = null;
             applySettings(payload);
             return payload;
         }).catch(function (error) {
+            notificationSettingsLoadPromise = null;
+            throw error;
+        });
+        return notificationSettingsLoadPromise;
+    }
+
+    function refresh() {
+        if (!state.loggedIn || !settingsPanel) return Promise.resolve(null);
+        setStatus('Loading notification settings...');
+        return loadNotificationSettings(true).catch(function (error) {
             setStatus(error.message, true);
             throw error;
         });
@@ -419,7 +713,7 @@
                 rememberDevice('web', payload);
                 storageSet(tokenStorageKey, token);
                 if (explicitOptIn || optInBelongsToCurrentUser('web')) markOptedIn('web');
-                if (settingsPanel) applySettings(payload);
+                applySettings(payload);
                 return payload;
             });
         });
@@ -466,7 +760,7 @@
         return unregisterInstallation('web', currentInstallation, storageGet(tokenStorageKey)).then(function (payload) {
             return clearLocalRegistration('web').then(function () { return payload; });
         }).then(function (payload) {
-            if (payload && settingsPanel) applySettings(payload);
+            if (payload) applySettings(payload);
             setStatus('Browser notifications are disabled.');
             return payload;
         }).catch(function (error) {
@@ -510,7 +804,7 @@
         }).then(function (payload) {
             rememberDevice('android', payload);
             markOptedIn('android');
-            if (settingsPanel) applySettings(payload);
+            applySettings(payload);
             return payload;
         });
     }
@@ -579,7 +873,7 @@
             // The server binding is already disabled; native cleanup is
             // best-effort and cannot turn a successful opt-out into an error.
             clearLocalRegistration('android');
-            if (payload && settingsPanel) applySettings(payload);
+            if (payload) applySettings(payload);
             setStatus('Android app notifications are disabled.');
             return payload;
         });
@@ -672,6 +966,8 @@
 
     function startup() {
         if (startupPromise) return startupPromise;
+        ensureContextStyles();
+        bindContextOffers();
         bindServiceWorkerMessages();
         bindLogoutCleanup();
         startupPromise = bootstrapAccountState().then(function () {
@@ -682,7 +978,7 @@
         return startupPromise;
     }
 
-    window.MIQNotifications = {
+    var notificationApi = {
         refresh: refresh,
         enableBrowser: enableBrowser,
         disableBrowser: disableBrowser,
@@ -691,8 +987,18 @@
         registerAndroidToken: registerAndroidToken,
         androidPermissionResult: androidPermissionResult,
         updateUnread: updateUnread,
+        offerContext: offerContext,
         startup: startup
     };
+
+    if (window.__MIQ_NOTIFICATION_TEST__) {
+        notificationApi._test = {
+            contextOfferPolicy: contextOfferPolicy,
+            contextCopy: contextCopy,
+            contextCooldownActive: contextCooldownActive
+        };
+    }
+    window.MIQNotifications = notificationApi;
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startup);
     else startup();
