@@ -271,9 +271,9 @@
         return !!(metadata && (metadata.name_en || metadata.name_tc));
     }
 
-    function applyStockMetadata(chart, code, preferred) {
+    function applyStockMetadata(chart, code, preferred, options) {
         var metadata = rememberStockMetadata(stockMetadataForCode(code, preferred), code);
-        if (chart && chart.setSymbolInfo) chart.setSymbolInfo(metadata);
+        if (chart && chart.setSymbolInfo) chart.setSymbolInfo(metadata, options);
         else if (chart && chart.document) {
             chart.document.symbol = metadata.code;
             chart.document.symbolInfo = metadata;
@@ -888,7 +888,7 @@
             onPineAccountSave: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? saveLinkedPineScript : null,
             onPineAccountLoad: window.MIQAccount && window.MIQAccount.state && window.MIQAccount.state.loggedIn ? loadLinkedPineScript : null
         });
-        applyStockMetadata(stockChart, code, options.symbolInfo);
+        applyStockMetadata(stockChart, code, options.symbolInfo, { silent: true });
         if (!layoutExisted) {
             if (chartPreferences.chart_type && stockChart.setChartType) stockChart.setChartType(chartPreferences.chart_type);
             if (chartPreferences.chart_period && stockChart.setPeriod) stockChart.setPeriod(chartPreferences.chart_period);
@@ -921,7 +921,7 @@
             accountChart: accountChart || null
         });
         stockChart.importLayout(layoutWithoutEmbeddedData(payload, includePine));
-        applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo);
+        applyStockMetadata(stockChart, code, metadata || payload && payload.document && payload.document.symbolInfo, { silent: true });
         stockChart.setTheme(currentThemeName());
         stockChart.updateToolbar();
         if (stockChart.loadRequiredComparisonSymbols) {

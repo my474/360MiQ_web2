@@ -48,6 +48,7 @@ assert.doesNotMatch(chartPage, /\[file,\s*'\/'\s*\+\s*file\]/);
 assert.doesNotMatch(chartPage, /function legacySyncPineScripts/);
 assert.match(chartPage, /delete indicator\.accountScript/);
 assert.match(chartPage, /function flushChartCloudSave\(targetSync\)/);
+assert.match(chartPage, /applyStockMetadata\(stockChart, code, options\.symbolInfo, \{ silent: true \}\)/);
 assert.match(chartEngine, /includePineSource:\s*false/);
 assert.match(chartEngine, /delete indicator\.accountScript/);
 assert.match(pineRuntime, /var MAX_SOURCE_LENGTH = 100000/);

@@ -4412,6 +4412,32 @@ assert.ok(pineShareIndicators.length > 0);
 assert.ok(pineShareIndicators.every((indicator) => !Object.prototype.hasOwnProperty.call(indicator, 'accountScript')));
 precomputedChart.destroy();
 
+let hydrationWrites = 0;
+const hydrationChart = new StockChartEngine.Chart('#chart', {
+  data,
+  symbol: 'HYDRATE',
+  symbolInfo: { code: 'HYDRATE', name_en: 'Loaded chart' },
+  interval: '1D',
+  load: false,
+  autosave: true,
+  storage: {
+    load() { return null; },
+    save() { hydrationWrites += 1; return true; },
+    remove() { return true; }
+  }
+});
+const loadedSymbolInfo = hydrationChart.serialize().symbolInfo;
+const loadedUpdatedAt = hydrationChart.document.updatedAt;
+hydrationChart.setSymbolInfo(loadedSymbolInfo);
+assert.strictEqual(hydrationChart.autosaveTimer, null);
+assert.strictEqual(hydrationWrites, 0);
+hydrationChart.setSymbolInfo(Object.assign({}, loadedSymbolInfo, { name_en: 'Refreshed server metadata' }), { silent: true });
+assert.strictEqual(hydrationChart.document.symbolInfo.name_en, 'Refreshed server metadata');
+assert.strictEqual(hydrationChart.document.updatedAt, loadedUpdatedAt);
+assert.strictEqual(hydrationChart.autosaveTimer, null);
+assert.strictEqual(hydrationWrites, 0);
+hydrationChart.destroy();
+
 let autosaveWrites = 0;
 const autosaveChart = new StockChartEngine.Chart('#chart', {
   data,
@@ -4433,6 +4459,42 @@ assert.strictEqual(autosaveChart.flushAutosave(), true);
 assert.strictEqual(autosaveWrites, 1);
 assert.strictEqual(autosaveChart.autosaveTimer, null);
 autosaveChart.destroy();
+
+const nativeSetTimeout = global.setTimeout;
+const nativeClearTimeout = global.clearTimeout;
+let completedAutosaveCallback = null;
+let completedAutosaveWrites = 0;
+try {
+  global.setTimeout = function (callback) {
+    completedAutosaveCallback = callback;
+    return 731;
+  };
+  global.clearTimeout = function () {};
+  const completedAutosaveChart = new StockChartEngine.Chart('#chart', {
+    data,
+    symbol: 'AUTOSAVE-COMPLETE',
+    interval: '1D',
+    load: false,
+    autosave: true,
+    storage: {
+      load() { return null; },
+      save() { completedAutosaveWrites += 1; return true; },
+      remove() { return true; }
+    }
+  });
+  completedAutosaveChart.addDrawing('text', [{ time: data[data.length - 1].time, value: data[data.length - 1].close }], { paneId: 'price', text: 'Save once' });
+  assert.strictEqual(completedAutosaveChart.autosaveTimer, 731);
+  assert.strictEqual(typeof completedAutosaveCallback, 'function');
+  completedAutosaveCallback();
+  assert.strictEqual(completedAutosaveWrites, 1);
+  assert.strictEqual(completedAutosaveChart.autosaveTimer, null);
+  assert.strictEqual(completedAutosaveChart.flushAutosave(), false);
+  assert.strictEqual(completedAutosaveWrites, 1);
+  completedAutosaveChart.destroy();
+} finally {
+  global.setTimeout = nativeSetTimeout;
+  global.clearTimeout = nativeClearTimeout;
+}
 
 const unavailableStorage = new StockChartEngine.LocalStorageAdapter('blocked');
 const workingLocalStorage = global.localStorage;

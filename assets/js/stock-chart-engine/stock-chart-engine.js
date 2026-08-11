@@ -3500,6 +3500,7 @@
     this.autosaveTimer = null;
     if (this.options.autosave === false || this.document.settings.autosave === false) return;
     this.autosaveTimer = setTimeout(function () {
+      self.autosaveTimer = null;
       if (!self.destroyed) self.save();
     }, this.options.autosaveDelay || 1200);
   };
@@ -3514,7 +3515,7 @@
   };
 
   Chart.prototype.flushAutosave = function () {
-    if (!this.autosaveTimer) return false;
+    if (this.autosaveTimer == null) return false;
     clearTimeout(this.autosaveTimer);
     this.autosaveTimer = null;
     if (this.options.autosave === false || this.document.settings.autosave === false || this.destroyed) return false;
@@ -3571,14 +3572,22 @@
     }));
   };
 
-  Chart.prototype.setSymbolInfo = function (info) {
+  Chart.prototype.setSymbolInfo = function (info, options) {
+    options = options || {};
     var normalized = normalizeSymbolInfo(info, this.document.symbol);
+    var currentSymbol = String(this.document.symbol || '').trim();
+    var nextSymbol = normalized.code || currentSymbol;
+    var currentInfo = normalizeSymbolInfo(this.document.symbolInfo, currentSymbol);
+    if (nextSymbol === currentSymbol && JSON.stringify(normalized) === JSON.stringify(currentInfo)) {
+      return this.document.symbolInfo;
+    }
     if (normalized.code) this.document.symbol = normalized.code;
     else normalized.code = String(this.document.symbol || '').trim();
     this.document.symbolInfo = normalized;
     this.updateToolbar();
     this.draw();
-    this.emitChange('symbol:info', { symbolInfo: clone(this.document.symbolInfo) });
+    if (options.silent === true) this.recordHistoryCheckpoint('symbol:info');
+    else this.emitChange('symbol:info', { symbolInfo: clone(this.document.symbolInfo) });
     return this.document.symbolInfo;
   };
 
