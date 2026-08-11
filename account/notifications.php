@@ -136,13 +136,74 @@ if (!function_exists('miq_account_notification_web_config')) {
     }
 }
 
+if (!function_exists('miq_account_notification_clean_target_type')) {
+    function miq_account_notification_clean_target_type($target_type)
+    {
+        $target_type = strtolower(trim((string) $target_type));
+        return in_array($target_type, array('token', 'fid'), true) ? $target_type : '';
+    }
+}
+
+if (!function_exists('miq_account_notification_target_type_supported')) {
+    function miq_account_notification_target_type_supported()
+    {
+        static $supported = null;
+        if ($supported !== null) {
+            return $supported;
+        }
+        try {
+            $table = miq_account_table('notification_devices');
+            miq_account_query("SELECT target_type FROM {$table} LIMIT 0")->close();
+            $supported = true;
+        } catch (Throwable $error) {
+            // This keeps the deploy order safe: before the additive migration,
+            // FIDs are sent through FCM's backwards-compatible token field.
+            $supported = false;
+        }
+        return $supported;
+    }
+}
+
+if (!function_exists('miq_account_notification_target_payload')) {
+    function miq_account_notification_target_payload($payload)
+    {
+        $payload = is_array($payload) ? $payload : array();
+        $raw_type = strtolower(trim((string) ($payload['target_type'] ?? '')));
+        if ($raw_type !== '' && miq_account_notification_clean_target_type($raw_type) === '') {
+            return null;
+        }
+
+        $token = trim((string) ($payload['token'] ?? ''));
+        $fid = trim((string) ($payload['fid'] ?? ''));
+        $target = trim((string) ($payload['target'] ?? ''));
+        $target_type = $raw_type !== ''
+            ? $raw_type
+            : ($fid !== '' && $token === '' && $target === '' ? 'fid' : 'token');
+
+        $resolved = '';
+        foreach (array($target, $target_type === 'fid' ? $fid : $token, $token, $fid) as $candidate) {
+            if ($candidate === '') {
+                continue;
+            }
+            if ($resolved !== '' && !hash_equals($resolved, $candidate)) {
+                return null;
+            }
+            $resolved = $candidate;
+        }
+        return array('target_type' => $target_type, 'target' => $resolved);
+    }
+}
+
 if (!function_exists('miq_account_notification_device_rows')) {
     function miq_account_notification_device_rows($user_id)
     {
         try {
             $table = miq_account_table('notification_devices');
+            $target_type_select = miq_account_notification_target_type_supported()
+                ? 'target_type'
+                : "'token' AS target_type";
             $rows = miq_account_fetch_all(miq_account_query(
-                "SELECT id, channel, label, app_version, user_agent, enabled, last_seen_at, created_at, updated_at FROM {$table} WHERE user_id = ? AND enabled = 1 ORDER BY updated_at DESC, id DESC LIMIT 50",
+                "SELECT id, channel, {$target_type_select}, label, app_version, user_agent, enabled, last_seen_at, created_at, updated_at FROM {$table} WHERE user_id = ? AND enabled = 1 ORDER BY updated_at DESC, id DESC LIMIT 50",
                 'i',
                 array((int) $user_id)
             ));
@@ -150,6 +211,7 @@ if (!function_exists('miq_account_notification_device_rows')) {
                 return array(
                     'id' => (int) $row['id'],
                     'channel' => (string) $row['channel'],
+                    'target_type' => miq_account_notification_clean_target_type($row['target_type'] ?? '') ?: 'token',
                     'label' => (string) ($row['label'] ?? ''),
                     'app_version' => (string) ($row['app_version'] ?? ''),
                     'user_agent' => (string) ($row['user_agent'] ?? ''),
@@ -236,26 +298,28 @@ if (!function_exists('miq_account_release_notification_device_binding')) {
 }
 
 if (!function_exists('miq_account_register_notification_device')) {
-    function miq_account_register_notification_device($user_id, $channel, $token, $metadata = array())
+    function miq_account_register_notification_device($user_id, $channel, $device_target, $metadata = array())
     {
         $user_id = (int) $user_id;
         $channel = miq_account_notification_clean_channel($channel);
-        $token = trim((string) $token);
-        if ($user_id <= 0 || $channel === '' || strlen($token) < 20 || strlen($token) > 4096) {
-            throw new InvalidArgumentException('A valid notification channel and device token are required.');
-        }
+        $device_target = trim((string) $device_target);
         $metadata = is_array($metadata) ? $metadata : array();
+        $target_type = miq_account_notification_clean_target_type($metadata['target_type'] ?? 'token');
+        if ($user_id <= 0 || $channel === '' || $target_type === '' || strlen($device_target) < 20 || strlen($device_target) > 4096) {
+            throw new InvalidArgumentException('A valid notification channel and delivery target are required.');
+        }
         $raw_label = trim((string) ($metadata['label'] ?? ''));
         $label = miq_account_notification_text_limit($raw_label, 120);
         $app_version = miq_account_notification_text_limit($metadata['app_version'] ?? '', 40);
         $user_agent = miq_account_notification_text_limit($metadata['user_agent'] ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''), 500);
         $installation_id = miq_account_notification_clean_installation_id($metadata['installation_id'] ?? '');
         $installation_hash = $installation_id === '' ? null : hash('sha256', $installation_id);
-        $token_hash = hash('sha256', $token);
+        $token_hash = hash('sha256', $device_target);
         $session_hash = function_exists('miq_account_session_hash') ? miq_account_session_hash() : '';
         $session_version = max(1, (int) ($_SESSION['miq_account_session_version'] ?? 1));
         $table = miq_account_table('notification_devices');
         $sessions_table = miq_account_table('sessions');
+        $target_type_supported = miq_account_notification_target_type_supported();
         $db = miq_account_db();
         $db->begin_transaction();
         try {
@@ -317,18 +381,34 @@ if (!function_exists('miq_account_register_notification_device')) {
             }
 
             if ($selected) {
-                miq_account_query(
-                    "UPDATE {$table} SET device_token = ?, token_hash = ?, installation_hash = ?, session_hash = ?, session_version = ?, label = ?, app_version = ?, user_agent = ?, enabled = 1, last_seen_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
-                    'ssssisssii',
-                    array($token, $token_hash, $installation_hash, $session_hash, $session_version, $label, $app_version, $user_agent, (int) $selected['id'], $user_id)
-                )->close();
+                if ($target_type_supported) {
+                    miq_account_query(
+                        "UPDATE {$table} SET target_type = ?, device_token = ?, token_hash = ?, installation_hash = ?, session_hash = ?, session_version = ?, label = ?, app_version = ?, user_agent = ?, enabled = 1, last_seen_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                        'sssssisssii',
+                        array($target_type, $device_target, $token_hash, $installation_hash, $session_hash, $session_version, $label, $app_version, $user_agent, (int) $selected['id'], $user_id)
+                    )->close();
+                } else {
+                    miq_account_query(
+                        "UPDATE {$table} SET device_token = ?, token_hash = ?, installation_hash = ?, session_hash = ?, session_version = ?, label = ?, app_version = ?, user_agent = ?, enabled = 1, last_seen_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() WHERE id = ? AND user_id = ?",
+                        'ssssisssii',
+                        array($device_target, $token_hash, $installation_hash, $session_hash, $session_version, $label, $app_version, $user_agent, (int) $selected['id'], $user_id)
+                    )->close();
+                }
                 $device_id = (int) $selected['id'];
             } else {
-                miq_account_query(
-                    "INSERT INTO {$table} (user_id, channel, device_token, token_hash, installation_hash, session_hash, session_version, label, app_version, user_agent, enabled, last_seen_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP())",
-                    'isssssisss',
-                    array($user_id, $channel, $token, $token_hash, $installation_hash, $session_hash, $session_version, $label, $app_version, $user_agent)
-                )->close();
+                if ($target_type_supported) {
+                    miq_account_query(
+                        "INSERT INTO {$table} (user_id, channel, target_type, device_token, token_hash, installation_hash, session_hash, session_version, label, app_version, user_agent, enabled, last_seen_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                        'issssssisss',
+                        array($user_id, $channel, $target_type, $device_target, $token_hash, $installation_hash, $session_hash, $session_version, $label, $app_version, $user_agent)
+                    )->close();
+                } else {
+                    miq_account_query(
+                        "INSERT INTO {$table} (user_id, channel, device_token, token_hash, installation_hash, session_hash, session_version, label, app_version, user_agent, enabled, last_seen_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                        'isssssisss',
+                        array($user_id, $channel, $device_target, $token_hash, $installation_hash, $session_hash, $session_version, $label, $app_version, $user_agent)
+                    )->close();
+                }
                 $device_id = (int) $db->insert_id;
             }
             $db->commit();
@@ -337,14 +417,16 @@ if (!function_exists('miq_account_register_notification_device')) {
             throw $error;
         }
 
+        $target_type_select = $target_type_supported ? 'target_type' : "'token' AS target_type";
         $row = miq_account_fetch_one(miq_account_query(
-            "SELECT id, channel, label, app_version, last_seen_at FROM {$table} WHERE id = ? AND user_id = ? LIMIT 1",
+            "SELECT id, channel, {$target_type_select}, label, app_version, last_seen_at FROM {$table} WHERE id = ? AND user_id = ? LIMIT 1",
             'ii',
             array($device_id, $user_id)
         ));
         return $row ? array(
             'id' => (int) $row['id'],
             'channel' => (string) $row['channel'],
+            'target_type' => miq_account_notification_clean_target_type($row['target_type'] ?? '') ?: 'token',
             'label' => (string) ($row['label'] ?? ''),
             'app_version' => (string) ($row['app_version'] ?? ''),
             'last_seen_at' => $row['last_seen_at'],
@@ -353,12 +435,12 @@ if (!function_exists('miq_account_register_notification_device')) {
 }
 
 if (!function_exists('miq_account_unregister_notification_device')) {
-    function miq_account_unregister_notification_device($user_id, $device_id = 0, $channel = '', $token = '', $installation_id = '')
+    function miq_account_unregister_notification_device($user_id, $device_id = 0, $channel = '', $device_target = '', $installation_id = '')
     {
         $user_id = (int) $user_id;
         $device_id = (int) $device_id;
         $channel = miq_account_notification_clean_channel($channel);
-        $token = trim((string) $token);
+        $device_target = trim((string) $device_target);
         $installation_id = miq_account_notification_clean_installation_id($installation_id);
         $table = miq_account_table('notification_devices');
         if ($device_id > 0) {
@@ -367,11 +449,11 @@ if (!function_exists('miq_account_unregister_notification_device')) {
                 'ii',
                 array($device_id, $user_id)
             );
-        } elseif ($installation_id !== '' && $token !== '' && $channel !== '') {
+        } elseif ($installation_id !== '' && $device_target !== '' && $channel !== '') {
             $statement = miq_account_query(
                 "UPDATE {$table} SET device_token = '', session_hash = NULL, enabled = 0, updated_at = UTC_TIMESTAMP() WHERE user_id = ? AND channel = ? AND (installation_hash = ? OR token_hash = ?)",
                 'isss',
-                array($user_id, $channel, hash('sha256', $installation_id), hash('sha256', $token))
+                array($user_id, $channel, hash('sha256', $installation_id), hash('sha256', $device_target))
             );
         } elseif ($installation_id !== '' && $channel !== '') {
             $statement = miq_account_query(
@@ -379,11 +461,11 @@ if (!function_exists('miq_account_unregister_notification_device')) {
                 'iss',
                 array($user_id, $channel, hash('sha256', $installation_id))
             );
-        } elseif ($token !== '' && $channel !== '') {
+        } elseif ($device_target !== '' && $channel !== '') {
             $statement = miq_account_query(
                 "UPDATE {$table} SET device_token = '', session_hash = NULL, enabled = 0, updated_at = UTC_TIMESTAMP() WHERE user_id = ? AND channel = ? AND token_hash = ?",
                 'iss',
-                array($user_id, $channel, hash('sha256', $token))
+                array($user_id, $channel, hash('sha256', $device_target))
             );
         } else {
             return false;
@@ -673,25 +755,21 @@ if (!function_exists('miq_account_notification_text_limit')) {
 }
 
 if (!function_exists('miq_account_fcm_target_field')) {
-    function miq_account_fcm_target_field($channel)
+    function miq_account_fcm_target_field($target_type)
     {
-        $channel = miq_account_notification_clean_channel($channel);
-        if ($channel === 'android') {
-            return 'fid';
-        }
-        return $channel === 'web' ? 'token' : '';
+        return miq_account_notification_clean_target_type($target_type);
     }
 }
 
 if (!function_exists('miq_account_fcm_send')) {
-    function miq_account_fcm_send($device_target, $channel, $notification_id, $type, $title, $message, $link_url, $unread_count = null)
+    function miq_account_fcm_send($device_target, $target_type, $notification_id, $type, $title, $message, $link_url, $unread_count = null)
     {
         $credentials = miq_account_fcm_service_account();
         if (!$credentials) {
             return null;
         }
         $device_target = trim((string) $device_target);
-        $target_field = miq_account_fcm_target_field($channel);
+        $target_field = miq_account_fcm_target_field($target_type);
         if ($device_target === '' || $target_field === '') {
             throw new MiqAccountFcmDeliveryException('The FCM delivery target is invalid.', true, false, 'INVALID_TARGET', 0, 0);
         }
@@ -725,8 +803,8 @@ if (!function_exists('miq_account_fcm_send')) {
                 'fcm_options' => array('link' => $url),
             ),
         );
-        // FCM target is a union: Android registrations use their Firebase
-        // Installation ID, while the current web client still uses a legacy token.
+        // FCM target is a union. The persisted type is authoritative because
+        // both web and Android can coexist as legacy tokens or modern FIDs.
         $message_payload[$target_field] = $device_target;
         $payload = array('message' => $message_payload);
         $encoded_payload = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -833,11 +911,14 @@ if (!function_exists('miq_account_claim_notification_delivery')) {
         $devices = miq_account_table('notification_devices');
         $users = miq_account_table('users');
         $sessions = miq_account_table('sessions');
+        $target_type_select = miq_account_notification_target_type_supported()
+            ? 'device.target_type'
+            : "'token'";
         $db = miq_account_db();
         $db->begin_transaction();
         try {
             $row = miq_account_fetch_one(miq_account_query(
-                "SELECT delivery.id AS delivery_id, delivery.user_id, delivery.attempt_count, notification.id AS notification_id, notification.notification_type, notification.title, notification.message, notification.link_url, notification.read_at, device.id AS device_id, device.channel AS device_channel, device.device_token, device.token_hash, device.installation_hash, device.enabled AS device_enabled, device.session_version AS device_session_version, account_user.session_version AS user_session_version, account_user.status AS user_status, account_session.id AS session_id FROM {$deliveries} delivery INNER JOIN {$notifications} notification ON notification.id = delivery.notification_id AND notification.user_id = delivery.user_id LEFT JOIN {$devices} device ON device.id = delivery.device_id AND device.user_id = delivery.user_id LEFT JOIN {$users} account_user ON account_user.id = delivery.user_id LEFT JOIN {$sessions} account_session ON account_session.user_id = delivery.user_id AND account_session.session_hash = device.session_hash AND account_session.expires_at > UTC_TIMESTAMP() WHERE ((delivery.status IN ('pending', 'retry') AND (delivery.next_attempt_at IS NULL OR delivery.next_attempt_at <= UTC_TIMESTAMP())) OR (delivery.status = 'processing' AND (delivery.lease_expires_at IS NULL OR delivery.lease_expires_at <= UTC_TIMESTAMP()))) ORDER BY COALESCE(delivery.next_attempt_at, delivery.created_at), delivery.id LIMIT 1 FOR UPDATE"
+                "SELECT delivery.id AS delivery_id, delivery.user_id, delivery.attempt_count, notification.id AS notification_id, notification.notification_type, notification.title, notification.message, notification.link_url, notification.read_at, device.id AS device_id, device.channel AS device_channel, {$target_type_select} AS device_target_type, device.device_token, device.token_hash, device.installation_hash, device.enabled AS device_enabled, device.session_version AS device_session_version, account_user.session_version AS user_session_version, account_user.status AS user_status, account_session.id AS session_id FROM {$deliveries} delivery INNER JOIN {$notifications} notification ON notification.id = delivery.notification_id AND notification.user_id = delivery.user_id LEFT JOIN {$devices} device ON device.id = delivery.device_id AND device.user_id = delivery.user_id LEFT JOIN {$users} account_user ON account_user.id = delivery.user_id LEFT JOIN {$sessions} account_session ON account_session.user_id = delivery.user_id AND account_session.session_hash = device.session_hash AND account_session.expires_at > UTC_TIMESTAMP() WHERE ((delivery.status IN ('pending', 'retry') AND (delivery.next_attempt_at IS NULL OR delivery.next_attempt_at <= UTC_TIMESTAMP())) OR (delivery.status = 'processing' AND (delivery.lease_expires_at IS NULL OR delivery.lease_expires_at <= UTC_TIMESTAMP()))) ORDER BY COALESCE(delivery.next_attempt_at, delivery.created_at), delivery.id LIMIT 1 FOR UPDATE"
             ));
             if (!$row) {
                 $db->commit();
@@ -962,7 +1043,7 @@ if (!function_exists('miq_account_process_notification_queue')) {
                 && !empty($delivery['session_id'])
                 && (int) $delivery['device_enabled'] === 1
                 && trim((string) $delivery['device_token']) !== ''
-                && miq_account_fcm_target_field($delivery['device_channel'] ?? '') !== ''
+                && miq_account_fcm_target_field($delivery['device_target_type'] ?? '') !== ''
                 && (int) $delivery['device_session_version'] === (int) $delivery['user_session_version']
                 && (string) $delivery['user_status'] === 'active';
             $notification_unread = empty($delivery['read_at']);
@@ -978,7 +1059,7 @@ if (!function_exists('miq_account_process_notification_queue')) {
             try {
                 $provider_id = miq_account_fcm_send(
                     $delivery['device_token'],
-                    $delivery['device_channel'],
+                    $delivery['device_target_type'],
                     $delivery['notification_id'],
                     $delivery['notification_type'],
                     $delivery['title'],

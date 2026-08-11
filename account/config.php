@@ -71,7 +71,7 @@ function miq_account_config()
         'fcm_web_messaging_sender_id' => miq_account_env('FCM_WEB_MESSAGING_SENDER_ID', ''),
         'fcm_web_app_id' => miq_account_env('FCM_WEB_APP_ID', ''),
         'fcm_web_vapid_key' => miq_account_env('FCM_WEB_VAPID_KEY', ''),
-        'fcm_web_sdk_version' => miq_account_env('FCM_WEB_SDK_VERSION', '11.10.0'),
+        'fcm_web_sdk_version' => miq_account_env('FCM_WEB_SDK_VERSION', '12.16.0'),
         'fcm_max_devices_per_notification' => max(1, min(50, (int) miq_account_env('FCM_MAX_DEVICES_PER_NOTIFICATION', 10))),
         'fcm_max_devices_per_user' => max(1, min(100, (int) miq_account_env('FCM_MAX_DEVICES_PER_USER', 20))),
         'fcm_worker_batch_size' => max(1, min(200, (int) miq_account_env('FCM_WORKER_BATCH_SIZE', 50))),

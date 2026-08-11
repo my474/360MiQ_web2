@@ -317,6 +317,7 @@ CREATE TABLE IF NOT EXISTS miq_notification_devices (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
     channel ENUM('web', 'android') NOT NULL,
+    target_type ENUM('token', 'fid') NOT NULL DEFAULT 'token',
     device_token TEXT NOT NULL,
     token_hash CHAR(64) NOT NULL,
     installation_hash CHAR(64) NULL,

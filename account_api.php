@@ -981,11 +981,13 @@ try {
             miq_api_json(array('error' => 'Too many notification-device updates. Please wait and try again.'), 429);
         }
         $channel = miq_account_notification_clean_channel($body['channel'] ?? '');
-        $token = trim((string) ($body['token'] ?? ''));
-        if ($channel === '' || strlen($token) < 20 || strlen($token) > 4096) {
-            miq_api_json(array('error' => 'A valid notification channel and device token are required.'), 422);
+        $registration_target = miq_account_notification_target_payload($body);
+        $device_target = $registration_target ? $registration_target['target'] : '';
+        if ($channel === '' || !$registration_target || strlen($device_target) < 20 || strlen($device_target) > 4096) {
+            miq_api_json(array('error' => 'A valid, unambiguous notification channel and delivery target are required.'), 422);
         }
-        $device = miq_account_register_notification_device($user_id, $channel, $token, array(
+        $device = miq_account_register_notification_device($user_id, $channel, $device_target, array(
+            'target_type' => $registration_target['target_type'],
             'label' => $body['label'] ?? '',
             'app_version' => $body['app_version'] ?? '',
             'installation_id' => $body['installation_id'] ?? '',
@@ -995,11 +997,15 @@ try {
     }
 
     if ($action === 'unregister_notification_device') {
+        $registration_target = miq_account_notification_target_payload($body);
+        if (!$registration_target) {
+            miq_api_json(array('error' => 'The notification delivery target is ambiguous.'), 422);
+        }
         $removed = miq_account_unregister_notification_device(
             $user_id,
             (int) ($body['device_id'] ?? 0),
             $body['channel'] ?? '',
-            $body['token'] ?? '',
+            $registration_target['target'],
             $body['installation_id'] ?? ''
         );
         $settings = miq_account_notification_settings_payload($user_id);

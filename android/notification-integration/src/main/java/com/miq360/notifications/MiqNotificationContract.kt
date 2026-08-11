@@ -1,6 +1,7 @@
 package com.miq360.notifications
 
 import android.content.Context
+import androidx.core.content.edit
 import java.util.UUID
 
 internal object MiqNotificationContract {
@@ -11,11 +12,13 @@ internal object MiqNotificationContract {
     const val DEFAULT_ORIGIN = "https://360miq.com"
     const val EXTRA_LINK_URL = "miq_notification_link_url"
     const val EXTRA_NOTIFICATION_ID = "miq_notification_id"
+    const val FCM_LINK_URL = "link_url"
+    const val FCM_NOTIFICATION_ID = "notification_id"
 
     private const val PREFERENCES = "miq_notification_preferences"
     private const val INSTALLATION_ID = "installation_id"
     private const val OPTED_IN = "opted_in"
-    private const val LAST_TOKEN = "last_token"
+    private const val LAST_REGISTRATION = "last_registration"
 
     private fun preferences(context: Context) =
         context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
@@ -25,21 +28,24 @@ internal object MiqNotificationContract {
         val existing = preferences.getString(INSTALLATION_ID, null)
         if (!existing.isNullOrBlank()) return existing
         val created = "android-${UUID.randomUUID()}"
-        preferences.edit().putString(INSTALLATION_ID, created).apply()
+        preferences.edit { putString(INSTALLATION_ID, created) }
         return created
     }
 
-    fun optedIn(context: Context): Boolean = preferences(context).getBoolean(OPTED_IN, false)
+    fun optedIn(context: Context): Boolean =
+        preferences(context).getBoolean(OPTED_IN, false)
 
     fun setOptedIn(context: Context, enabled: Boolean) {
-        preferences(context).edit().putBoolean(OPTED_IN, enabled).apply()
+        preferences(context).edit { putBoolean(OPTED_IN, enabled) }
     }
 
-    fun saveToken(context: Context, token: String) {
-        preferences(context).edit().putString(LAST_TOKEN, token).apply()
+    fun saveRegistration(context: Context, registration: String) {
+        preferences(context).edit {
+            putString(LAST_REGISTRATION, registration)
+        }
     }
 
-    fun clearToken(context: Context) {
-        preferences(context).edit().remove(LAST_TOKEN).apply()
+    fun clearRegistration(context: Context) {
+        preferences(context).edit { remove(LAST_REGISTRATION) }
     }
 }

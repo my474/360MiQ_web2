@@ -6,13 +6,21 @@
     var settings = null;
     var firebaseLoadPromise = null;
     var messaging = null;
+    var firebaseMessagingApi = null;
     var foregroundBound = false;
+    var firebaseRegistrationBound = false;
+    var webRegistrationAttempt = null;
+    var webRegistrationEpoch = 0;
+    var webFidUploadPromise = null;
+    var webFidUploadKey = '';
     var startupPromise = null;
     var androidPermissionRequest = null;
+    var androidRegistrationEpoch = 0;
     var notificationSettingsLoadPromise = null;
     var activeContextInvite = null;
     var contextOffersBound = false;
-    var tokenStorageKey = 'miq-notification-web-token';
+    var legacyTokenStorageKey = 'miq-notification-web-token';
+    var webFidStorageKey = 'miq-notification-web-fid';
     var webOptInStorageKey = 'miq-notification-web-enabled';
     var webOptInUserStorageKey = 'miq-notification-web-user-id';
     var webInstallationStorageKey = 'miq-notification-web-installation-v1';
@@ -400,18 +408,25 @@
 
     function clearLocalRegistration(channel) {
         if (channel === 'android') {
+            cancelAndroidRegistration();
             storageRemove(androidOptInStorageKey);
             storageRemove(androidOptInUserStorageKey);
             storageRemove(androidDeviceStorageKey);
             try { if (androidBridge()) callAndroidBridge('deleteToken'); } catch (error) {}
             return Promise.resolve();
         }
+        cancelWebRegistration();
         storageRemove(webOptInStorageKey);
         storageRemove(webOptInUserStorageKey);
         storageRemove(webDeviceStorageKey);
-        storageRemove(tokenStorageKey);
-        if (messaging && typeof messaging.deleteToken === 'function') return messaging.deleteToken().catch(function () {});
-        return Promise.resolve();
+        storageRemove(webFidStorageKey);
+        storageRemove(legacyTokenStorageKey);
+        var providerCleanup = messaging && firebaseMessagingApi && typeof firebaseMessagingApi.unregister === 'function'
+            ? firebaseMessagingApi.unregister(messaging)
+            : loadFirebase().then(function (loaded) {
+                return loaded.api.unregister(loaded.messaging);
+            });
+        return Promise.resolve(providerCleanup).catch(function () {});
     }
 
     function renderDevices(devices) {
@@ -603,38 +618,50 @@
         });
     }
 
-    function loadScript(url) {
-        return new Promise(function (resolve, reject) {
-            var existing = document.querySelector('script[data-miq-firebase-script="' + url + '"]');
-            if (existing) {
-                if (window.firebase) { resolve(); return; }
-                existing.addEventListener('load', resolve, { once: true });
-                existing.addEventListener('error', reject, { once: true });
-                return;
-            }
-            var script = document.createElement('script');
-            script.src = url;
-            script.async = true;
-            script.setAttribute('data-miq-firebase-script', url);
-            script.onload = resolve;
-            script.onerror = function () { reject(new Error('The browser notification library could not be loaded.')); };
-            document.head.appendChild(script);
+    function loadFirebaseModules(appUrl, messagingUrl) {
+        if (typeof window.__MIQ_FIREBASE_MODULE_LOADER__ === 'function') {
+            return Promise.resolve(window.__MIQ_FIREBASE_MODULE_LOADER__(appUrl, messagingUrl));
+        }
+        return Promise.all([import(appUrl), import(messagingUrl)]).then(function (modules) {
+            return { app: modules[0], messaging: modules[1] };
         });
     }
 
     function loadFirebase() {
         if (firebaseLoadPromise) return firebaseLoadPromise;
         var config = getConfig();
-        var version = encodeURIComponent(config.sdkVersion || '11.10.0');
-        firebaseLoadPromise = loadScript('https://www.gstatic.com/firebasejs/' + version + '/firebase-app-compat.js').then(function () {
-            return loadScript('https://www.gstatic.com/firebasejs/' + version + '/firebase-messaging-compat.js');
-        }).then(function () {
-            if (!window.firebase) throw new Error('Firebase is unavailable in this browser.');
-            if (!window.firebase.apps || !window.firebase.apps.length) window.firebase.initializeApp(config.firebase);
-            messaging = window.firebase.messaging();
-            return messaging;
+        var version = encodeURIComponent(config.sdkVersion || '12.16.0');
+        var base = 'https://www.gstatic.com/firebasejs/' + version + '/';
+        firebaseLoadPromise = loadFirebaseModules(base + 'firebase-app.js', base + 'firebase-messaging.js').then(function (modules) {
+            var appApi = modules && modules.app;
+            var messagingApi = modules && modules.messaging;
+            if (!appApi || !messagingApi || typeof appApi.initializeApp !== 'function' || typeof messagingApi.getMessaging !== 'function') {
+                throw new Error('Firebase is unavailable in this browser.');
+            }
+            var support = typeof messagingApi.isSupported === 'function'
+                ? messagingApi.isSupported()
+                : Promise.resolve(true);
+            return Promise.resolve(support).then(function (supported) {
+                if (!supported) throw new Error('This browser does not support Firebase notifications.');
+                var app = null;
+                var apps = typeof appApi.getApps === 'function' ? appApi.getApps() : [];
+                for (var index = 0; index < apps.length; index++) {
+                    if (apps[index] && apps[index].name === 'miq-notifications') {
+                        app = apps[index];
+                        break;
+                    }
+                }
+                if (!app) app = appApi.initializeApp(config.firebase, 'miq-notifications');
+                firebaseMessagingApi = messagingApi;
+                messaging = messagingApi.getMessaging(app);
+                bindFirebaseRegistrationEvents();
+                bindForegroundMessages();
+                return { messaging: messaging, api: firebaseMessagingApi };
+            });
         }).catch(function (error) {
             firebaseLoadPromise = null;
+            firebaseMessagingApi = null;
+            messaging = null;
             throw error;
         });
         return firebaseLoadPromise;
@@ -659,10 +686,166 @@
         } catch (error) { return fallback; }
     }
 
+    function settleWebRegistrationAttempt(attempt, error, payload) {
+        if (!attempt || webRegistrationAttempt !== attempt) return;
+        webRegistrationAttempt = null;
+        if (attempt.timer && typeof window.clearTimeout === 'function') window.clearTimeout(attempt.timer);
+        if (error) attempt.reject(error);
+        else attempt.resolve(payload);
+    }
+
+    function cancelWebRegistration() {
+        webRegistrationEpoch += 1;
+        if (webRegistrationAttempt) {
+            settleWebRegistrationAttempt(webRegistrationAttempt, new Error('Browser registration was cancelled.'));
+        }
+    }
+
+    function cancelAndroidRegistration() {
+        androidRegistrationEpoch += 1;
+        if (androidPermissionRequest) {
+            var pending = androidPermissionRequest;
+            androidPermissionRequest = null;
+            pending.reject(new Error('Android registration was cancelled.'));
+        }
+    }
+
+    function createWebRegistrationAttempt(explicitOptIn) {
+        var attempt = {
+            explicitOptIn: !!explicitOptIn,
+            installationId: installationId('web'),
+            userId: currentUserStorageId(),
+            epoch: webRegistrationEpoch,
+            resolve: null,
+            reject: null,
+            timer: null,
+            promise: null
+        };
+        attempt.promise = new Promise(function (resolve, reject) {
+            attempt.resolve = resolve;
+            attempt.reject = reject;
+        });
+        if (typeof window.setTimeout === 'function') {
+            attempt.timer = window.setTimeout(function () {
+                settleWebRegistrationAttempt(attempt, new Error('Firebase did not confirm this browser registration in time.'));
+            }, 30000);
+        }
+        return attempt;
+    }
+
+    function uploadBrowserFid(fid, explicitOptIn, currentInstallation, expectedUserId, expectedEpoch) {
+        fid = String(fid || '').trim();
+        if (fid.length < 20 || fid.length > 4096) {
+            return Promise.reject(new Error('Firebase returned an invalid browser installation ID.'));
+        }
+        expectedUserId = expectedUserId || currentUserStorageId();
+        expectedEpoch = typeof expectedEpoch === 'number' ? expectedEpoch : webRegistrationEpoch;
+        var uploadKey = expectedUserId + '|' + expectedEpoch + '|' + fid;
+        if (webFidUploadPromise && webFidUploadKey === uploadKey) return webFidUploadPromise;
+        webFidUploadKey = uploadKey;
+        var upload = request('register_notification_device', 'POST', {
+            channel: 'web',
+            target_type: 'fid',
+            target: fid,
+            fid: fid,
+            // Kept during the rolling deploy so an older server can accept
+            // the FID through FCM's backwards-compatible token field.
+            token: fid,
+            installation_id: currentInstallation || installationId('web'),
+            label: window.location.hostname + ' browser',
+            app_version: navigator.userAgent.slice(0, 40)
+        }).then(function (payload) {
+            var stillCurrent = state.loggedIn
+                && expectedUserId === currentUserStorageId()
+                && expectedEpoch === webRegistrationEpoch
+                && optInBelongsToCurrentUser('web');
+            if (!stillCurrent) {
+                var cleanup = state.loggedIn && expectedUserId === currentUserStorageId()
+                    ? unregisterInstallation('web', '', fid, 'fid').catch(function () {})
+                    : Promise.resolve(null);
+                return cleanup.then(function () {
+                    throw new Error('Browser registration completed after it was cancelled.');
+                });
+            }
+            rememberDevice('web', payload);
+            storageSet(webFidStorageKey, fid);
+            storageRemove(legacyTokenStorageKey);
+            if (explicitOptIn || optInBelongsToCurrentUser('web')) markOptedIn('web');
+            applySettings(payload);
+            return payload;
+        });
+        var tracked = upload.then(function (payload) {
+            if (webFidUploadPromise === tracked) {
+                webFidUploadPromise = null;
+                webFidUploadKey = '';
+            }
+            return payload;
+        }, function (error) {
+            if (webFidUploadPromise === tracked) {
+                webFidUploadPromise = null;
+                webFidUploadKey = '';
+            }
+            throw error;
+        });
+        webFidUploadPromise = tracked;
+        return tracked;
+    }
+
+    function handleBrowserRegistered(fid) {
+        var attempt = webRegistrationAttempt;
+        var sameUser = !attempt || attempt.userId === currentUserStorageId();
+        var authorized = state.loggedIn && sameUser && (optInBelongsToCurrentUser('web') || (attempt && attempt.explicitOptIn));
+        if (!authorized) {
+            if (attempt) settleWebRegistrationAttempt(attempt, new Error('The signed-in account changed before browser registration completed.'));
+            if (messaging && firebaseMessagingApi && typeof firebaseMessagingApi.unregister === 'function') {
+                Promise.resolve(firebaseMessagingApi.unregister(messaging)).catch(function () {});
+            }
+            return;
+        }
+        uploadBrowserFid(
+            fid,
+            !!(attempt && attempt.explicitOptIn),
+            attempt && attempt.installationId,
+            attempt && attempt.userId,
+            attempt && attempt.epoch
+        ).then(function (payload) {
+            if (attempt) settleWebRegistrationAttempt(attempt, null, payload);
+        }).catch(function (error) {
+            if (attempt) settleWebRegistrationAttempt(attempt, error);
+            else setStatus('Browser notification refresh failed: ' + error.message, true);
+        });
+    }
+
+    function handleBrowserUnregistered(fid) {
+        fid = String(fid || '').trim();
+        if (fid && storageGet(webFidStorageKey) === fid) {
+            storageRemove(webFidStorageKey);
+            storageRemove(webDeviceStorageKey);
+        }
+        if (state.loggedIn && fid) {
+            unregisterInstallation('web', '', fid, 'fid').catch(function () {});
+        }
+    }
+
+    function bindFirebaseRegistrationEvents() {
+        if (firebaseRegistrationBound) return;
+        if (!messaging || !firebaseMessagingApi || typeof firebaseMessagingApi.register !== 'function' ||
+            typeof firebaseMessagingApi.onRegistered !== 'function' || typeof firebaseMessagingApi.onUnregistered !== 'function') {
+            throw new Error('This Firebase SDK does not support installation-ID registration.');
+        }
+        var stopRegistered = firebaseMessagingApi.onRegistered(messaging, handleBrowserRegistered);
+        try {
+            firebaseMessagingApi.onUnregistered(messaging, handleBrowserUnregistered);
+            firebaseRegistrationBound = true;
+        } catch (error) {
+            if (typeof stopRegistered === 'function') stopRegistered();
+            throw error;
+        }
+    }
+
     function bindForegroundMessages() {
-        if (foregroundBound || !messaging || typeof messaging.onMessage !== 'function') return;
-        foregroundBound = true;
-        messaging.onMessage(function (payload) {
+        if (foregroundBound || !messaging || !firebaseMessagingApi || typeof firebaseMessagingApi.onMessage !== 'function') return;
+        firebaseMessagingApi.onMessage(messaging, function (payload) {
             applyResponseCounts(payload || {});
             var notification = payload && payload.notification ? payload.notification : {};
             if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && notification.title) {
@@ -676,6 +859,7 @@
                 };
             }
         });
+        foregroundBound = true;
     }
 
     function bindServiceWorkerMessages() {
@@ -694,29 +878,23 @@
             return Promise.reject(new Error('This browser does not support push notifications.'));
         }
         if (Notification.permission !== 'granted') return Promise.reject(new Error('Browser notification permission is not granted.'));
-        var currentInstallation = installationId('web');
-        return navigator.serviceWorker.register(serviceWorkerUrl(config)).then(function (registration) {
-            return loadFirebase().then(function (loadedMessaging) {
-                messaging = loadedMessaging;
-                bindForegroundMessages();
-                return messaging.getToken({ vapidKey: config.vapidKey, serviceWorkerRegistration: registration });
+        if (webRegistrationAttempt) {
+            webRegistrationAttempt.explicitOptIn = webRegistrationAttempt.explicitOptIn || !!explicitOptIn;
+            return webRegistrationAttempt.promise;
+        }
+        var attempt = createWebRegistrationAttempt(explicitOptIn);
+        webRegistrationAttempt = attempt;
+        navigator.serviceWorker.register(serviceWorkerUrl(config)).then(function (registration) {
+            return loadFirebase().then(function (loaded) {
+                return loaded.api.register(loaded.messaging, {
+                    vapidKey: config.vapidKey,
+                    serviceWorkerRegistration: registration
+                });
             });
-        }).then(function (token) {
-            if (!token) throw new Error('The browser did not return a push token.');
-            return request('register_notification_device', 'POST', {
-                channel: 'web',
-                token: token,
-                installation_id: currentInstallation,
-                label: window.location.hostname + ' browser',
-                app_version: navigator.userAgent.slice(0, 40)
-            }).then(function (payload) {
-                rememberDevice('web', payload);
-                storageSet(tokenStorageKey, token);
-                if (explicitOptIn || optInBelongsToCurrentUser('web')) markOptedIn('web');
-                applySettings(payload);
-                return payload;
-            });
+        }).catch(function (error) {
+            settleWebRegistrationAttempt(attempt, error);
         });
+        return attempt.promise;
     }
 
     function enableBrowser() {
@@ -746,18 +924,28 @@
         });
     }
 
-    function unregisterInstallation(channel, id, token) {
-        if (!state.loggedIn || !id) return Promise.resolve(null);
-        return request('unregister_notification_device', 'POST', {
+    function unregisterInstallation(channel, id, target, targetType) {
+        target = String(target || '');
+        targetType = targetType === 'fid' ? 'fid' : 'token';
+        if (!state.loggedIn || (!id && !target)) return Promise.resolve(null);
+        var payload = {
             channel: channel,
             installation_id: id,
-            token: String(token || '')
-        });
+            target_type: targetType,
+            target: target,
+            // Legacy server compatibility during the rolling deploy.
+            token: target
+        };
+        if (targetType === 'fid') payload.fid = target;
+        return request('unregister_notification_device', 'POST', payload);
     }
 
     function disableBrowser() {
+        cancelWebRegistration();
         var currentInstallation = installationId('web');
-        return unregisterInstallation('web', currentInstallation, storageGet(tokenStorageKey)).then(function (payload) {
+        var currentFid = storageGet(webFidStorageKey);
+        var currentTarget = currentFid || storageGet(legacyTokenStorageKey);
+        return unregisterInstallation('web', currentInstallation, currentTarget, currentFid ? 'fid' : 'token').then(function (payload) {
             return clearLocalRegistration('web').then(function () { return payload; });
         }).then(function (payload) {
             if (payload) applySettings(payload);
@@ -771,17 +959,22 @@
 
     function reconcileBrowserRegistration() {
         var optedIn = optInBelongsToCurrentUser('web');
-        if (!optedIn && (storageGet(webOptInStorageKey) === '1' || storageGet(tokenStorageKey))) {
+        var storedFid = storageGet(webFidStorageKey);
+        var storedLegacyToken = storageGet(legacyTokenStorageKey);
+        if (!optedIn && (storageGet(webOptInStorageKey) === '1' || storedFid || storedLegacyToken)) {
+            cancelWebRegistration();
             var staleInstallation = installationId('web');
-            var staleToken = storageGet(tokenStorageKey);
+            var staleTarget = storedFid || storedLegacyToken;
             var retireStale = state.loggedIn
-                ? unregisterInstallation('web', staleInstallation, staleToken).catch(function () {})
+                ? unregisterInstallation('web', staleInstallation, staleTarget, storedFid ? 'fid' : 'token').catch(function () {})
                 : Promise.resolve(null);
             return retireStale.then(function () { return clearLocalRegistration('web'); }).then(function () { return null; });
         }
         if (!optedIn || !state.loggedIn || androidBridge()) return Promise.resolve(null);
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
-            return unregisterInstallation('web', installationId('web'), storageGet(tokenStorageKey)).catch(function () {}).then(function () {
+            cancelWebRegistration();
+            var target = storedFid || storedLegacyToken;
+            return unregisterInstallation('web', installationId('web'), target, storedFid ? 'fid' : 'token').catch(function () {}).then(function () {
                 return clearLocalRegistration('web').then(function () { return null; });
             });
         }
@@ -791,17 +984,39 @@
         });
     }
 
-    function registerAndroidToken(token, metadata) {
+    function registerAndroidToken(deviceTarget, metadata) {
         if (!state.loggedIn) return Promise.reject(new Error('Sign in is required to register an Android device.'));
         metadata = metadata || {};
+        var targetType = metadata.target_type === 'fid' ? 'fid' : 'token';
+        deviceTarget = String(deviceTarget || '');
+        var expectedUserId = currentUserStorageId();
+        var expectedEpoch = androidRegistrationEpoch;
         var currentInstallation = installationId('android', metadata.installation_id);
-        return request('register_notification_device', 'POST', {
+        var registration = {
             channel: 'android',
-            token: String(token || ''),
+            target_type: targetType,
+            target: deviceTarget,
+            // Old Android wrappers omit target_type and continue to register
+            // their real legacy token through this field.
+            token: deviceTarget,
             installation_id: currentInstallation,
             label: metadata.label || 'Android app',
             app_version: metadata.app_version || ''
-        }).then(function (payload) {
+        };
+        if (targetType === 'fid') registration.fid = deviceTarget;
+        return request('register_notification_device', 'POST', registration).then(function (payload) {
+            var stillCurrent = state.loggedIn
+                && expectedUserId === currentUserStorageId()
+                && expectedEpoch === androidRegistrationEpoch
+                && optInBelongsToCurrentUser('android');
+            if (!stillCurrent) {
+                var cleanup = state.loggedIn && expectedUserId === currentUserStorageId()
+                    ? unregisterInstallation('android', '', deviceTarget, targetType).catch(function () {})
+                    : Promise.resolve(null);
+                return cleanup.then(function () {
+                    throw new Error('Android registration completed after it was cancelled.');
+                });
+            }
             rememberDevice('android', payload);
             markOptedIn('android');
             applySettings(payload);
@@ -809,7 +1024,7 @@
         });
     }
 
-    function androidPermissionResult(granted, token, metadata) {
+    function androidPermissionResult(granted, deviceTarget, metadata) {
         if (typeof metadata === 'string') {
             try { metadata = JSON.parse(metadata); } catch (error) { metadata = {}; }
         }
@@ -831,13 +1046,21 @@
             });
             return;
         }
-        registerAndroidToken(token, metadata || {}).then(function (payload) {
+        registerAndroidToken(deviceTarget, metadata || {}).then(function (payload) {
             setStatus('Android app notifications are enabled.');
             if (completion) completion.resolve(payload);
         }).catch(function (error) {
-            setStatus(error.message, true);
+            if (optInBelongsToCurrentUser('android')) setStatus(error.message, true);
             if (completion) completion.reject(error);
         });
+    }
+
+    function androidRegistrationRemoved(fid) {
+        fid = String(fid || '').trim();
+        if (!state.loggedIn || fid.length < 20 || fid.length > 4096) return Promise.resolve(null);
+        // Target-only cleanup cannot disable a newer FID that may already have
+        // replaced this one for the same Android installation.
+        return unregisterInstallation('android', '', fid, 'fid').catch(function () { return null; });
     }
 
     function enableAndroid() {
@@ -868,6 +1091,7 @@
     }
 
     function disableAndroid() {
+        cancelAndroidRegistration();
         var currentInstallation = installationId('android');
         return unregisterInstallation('android', currentInstallation).then(function (payload) {
             // The server binding is already disabled; native cleanup is
@@ -904,9 +1128,12 @@
             var target = event.target;
             var link = target && typeof target.closest === 'function' ? target.closest('a[href]') : null;
             if (!link || link.href.indexOf('account_logout') === -1) return;
+            cancelWebRegistration();
+            cancelAndroidRegistration();
             var registrations = [];
             if (optInBelongsToCurrentUser('web')) {
-                registrations.push(unregisterInstallation('web', installationId('web'), storageGet(tokenStorageKey)).catch(function () {}));
+                var currentFid = storageGet(webFidStorageKey);
+                registrations.push(unregisterInstallation('web', installationId('web'), currentFid || storageGet(legacyTokenStorageKey), currentFid ? 'fid' : 'token').catch(function () {}));
             }
             if (optInBelongsToCurrentUser('android')) {
                 registrations.push(unregisterInstallation('android', installationId('android')).catch(function () {}));
@@ -920,7 +1147,8 @@
                 storageRemove(webOptInStorageKey);
                 storageRemove(webOptInUserStorageKey);
                 storageRemove(webDeviceStorageKey);
-                storageRemove(tokenStorageKey);
+                storageRemove(webFidStorageKey);
+                storageRemove(legacyTokenStorageKey);
                 storageRemove(androidOptInStorageKey);
                 storageRemove(androidOptInUserStorageKey);
                 storageRemove(androidDeviceStorageKey);
@@ -986,6 +1214,7 @@
         disableAndroid: disableAndroid,
         registerAndroidToken: registerAndroidToken,
         androidPermissionResult: androidPermissionResult,
+        androidRegistrationRemoved: androidRegistrationRemoved,
         updateUnread: updateUnread,
         offerContext: offerContext,
         startup: startup

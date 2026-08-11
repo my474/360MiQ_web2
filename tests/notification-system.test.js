@@ -11,6 +11,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const schema = read('account/schema.sql');
 const migration = read('account/migrations/20260811_add_notifications.sql');
 const hardeningMigration = read('account/migrations/20260812_harden_notification_delivery.sql');
+const targetTypeMigration = read('account/migrations/20260813_add_notification_target_type.sql');
 const config = read('account/config.php');
 const db = read('account/db.php');
 const bootstrap = read('account/bootstrap.php');
@@ -53,6 +54,7 @@ for (const table of [
 assert.match(schema, /installation_hash CHAR\(64\)/);
 assert.match(schema, /session_hash CHAR\(64\)/);
 assert.match(schema, /session_version INT UNSIGNED/);
+assert.match(schema, /target_type ENUM\('token', 'fid'\) NOT NULL DEFAULT 'token'/);
 assert.match(schema, /status ENUM\('pending', 'processing', 'retry', 'sent', 'failed', 'skipped'\)/);
 assert.match(schema, /next_attempt_at DATETIME/);
 assert.match(schema, /lease_token CHAR\(64\)/);
@@ -63,6 +65,8 @@ assert.match(hardeningMigration, /DELETE delivery[\s\S]*notification\.id IS NULL
 assert.match(hardeningMigration, /MODIFY COLUMN user_id BIGINT UNSIGNED NOT NULL/);
 assert.match(hardeningMigration, /ADD COLUMN `requeue_requested`/);
 assert.match(hardeningMigration, /ADD KEY ix_miq_notification_delivery_status \(status, next_attempt_at, lease_expires_at, id\)/);
+assert.match(targetTypeMigration, /ADD COLUMN `target_type` ENUM\(''token'', ''fid''\) NOT NULL DEFAULT ''token''/);
+assert.match(targetTypeMigration, /SET target_type = 'token'/);
 
 assert.match(config, /FCM_PROJECT_ID/);
 assert.match(config, /FCM_PRIVATE_KEY/);
@@ -103,11 +107,14 @@ assert.match(notifications, /if \(\(int\) \$response\['status'\] === 401\)[\s\S]
 assert.match(notifications, /https:\/\/fcm\.googleapis\.com\/v1\/projects/);
 assert.match(notifications, /oauth2\.googleapis\.com\/token/);
 assert.match(notifications, /function miq_account_fcm_target_field/);
-assert.match(notifications, /if \(\$channel === 'android'\)[\s\S]*return 'fid'/);
-assert.match(notifications, /return \$channel === 'web' \? 'token' : ''/);
+assert.match(notifications, /miq_account_notification_clean_target_type/);
+assert.match(notifications, /miq_account_notification_target_type_supported/);
+assert.match(notifications, /SELECT target_type FROM \{\$table\} LIMIT 0/);
+assert.match(notifications, /function miq_account_notification_target_payload/);
+assert.match(notifications, /device\.target_type/);
+assert.match(notifications, /AS device_target_type/);
 assert.match(notifications, /\$message_payload\[\$target_field\] = \$device_target/);
-assert.match(notifications, /device\.channel AS device_channel/);
-assert.match(notifications, /miq_account_fcm_send\(\s*\$delivery\['device_token'\],\s*\$delivery\['device_channel'\]/);
+assert.match(notifications, /miq_account_fcm_send\(\s*\$delivery\['device_token'\],\s*\$delivery\['device_target_type'\]/);
 assert.match(notifications, /miq_account_notification_web_config/);
 assert.match(notifications, /\$service_account\['project_id'\]/);
 assert.match(notifications, /channel.*web.*android/s);
@@ -131,6 +138,7 @@ assert.match(api, /Vary: Cookie/);
 assert.match(api, /if \(\$action === 'account_bootstrap'\)[\s\S]*miq_api_json\(\$payload\)/);
 assert(api.indexOf("if ($action === 'account_bootstrap')") < api.indexOf('$user = miq_api_user();'));
 assert.match(api, /register_notification_device[\s\S]*installation_id/);
+assert.match(api, /register_notification_device[\s\S]*registration_target\['target_type'\]/);
 assert.match(api, /notification_device_user/);
 assert.match(api, /unregister_notification_device[\s\S]*installation_id/);
 assert.match(settings, /data-miq-notification-settings/);
@@ -140,6 +148,12 @@ assert.match(header, /assets\/js\/notifications\.js/);
 assert.match(client, /replace\(\/\[\^A-Za-z0-9\._:-\]\/g, ''\)\.slice\(0, 128\)/);
 assert.match(client, /miq-notification-web-user-id/);
 assert.match(client, /optInBelongsToCurrentUser/);
+assert.match(client, /firebase-messaging\.js/);
+assert.match(client, /onRegistered\(messaging, handleBrowserRegistered\)/);
+assert.match(client, /onUnregistered\(messaging, handleBrowserUnregistered\)/);
+assert.match(client, /loaded\.api\.register\(loaded\.messaging/);
+assert.match(client, /target_type: 'fid'/);
+assert.doesNotMatch(client, /firebase-messaging-compat|getToken\(/);
 assert.match(client, /if \(!granted\)[\s\S]*clearLocalRegistration\('android'\)/);
 assert.match(blogPlugin, /data-miq-blog-account-shell/);
 assert.match(blogPlugin, /data-miq-account-unread-badge/);
@@ -170,26 +184,32 @@ assert.match(serviceWorker, /addEventListener\('push'/);
 assert.match(serviceWorker, /addEventListener\('notificationclick'/);
 assert.match(serviceWorker, /parsed\.origin === self\.location\.origin/);
 
-// The checked-in Android module owns permission, token rotation, deep links, and icons.
+// The checked-in Android module owns permission, FID rotation, deep links, and icons.
 assert.match(androidBuild, /id\("org\.jetbrains\.kotlin\.android"\)/);
 assert.match(androidManifest, /android\.permission\.POST_NOTIFICATIONS/);
 assert.match(androidManifest, /default_notification_icon/);
 assert.match(androidManifest, /default_notification_channel_id/);
+assert.match(androidManifest, /firebase_messaging_installation_id_enabled/);
+assert.match(androidManifest, /firebase_messaging_auto_init_enabled/);
 assert.match(androidCoordinator, /WebViewCompat\.addWebMessageListener/);
 assert.match(androidCoordinator, /WebViewCompat\.removeWebMessageListener/);
 assert.match(androidCoordinator, /setOf\(trustedOrigin\)/);
 assert.match(androidCoordinator, /ActivityResultContracts\.RequestPermission/);
-assert.match(androidCoordinator, /deleteToken\(\)/);
-assert.match(androidCoordinator, /if \(!MiqNotificationContract\.optedIn\(activity\)\)[\s\S]*deleteProviderToken\(activity\)/);
-assert.match(androidCoordinator, /if \(token\.isBlank\(\)\)[\s\S]*MiqNotificationContract\.setOptedIn\(activity, false\)/);
+assert.match(androidCoordinator, /messaging\.register\(\)/);
+assert.match(androidCoordinator, /messaging\.unregister\(\)/);
+assert.match(androidCoordinator, /put\("target_type", "fid"\)/);
+assert.doesNotMatch(androidCoordinator, /\.getToken\(|\.deleteToken\(\)/);
 assert.match(androidCoordinator, /MIQNotifications\.updateUnread/);
-assert.match(androidService, /override fun onNewToken/);
-assert.match(androidService, /if \(MiqNotificationContract\.optedIn\(this\)\)[\s\S]*MiqNotificationContract\.saveToken/);
+assert.match(androidService, /override fun onRegistered/);
+assert.match(androidService, /override fun onUnregistered/);
+assert.match(androidService, /MiqNotificationCoordinator\.registrationRemoved/);
+assert.doesNotMatch(androidService, /override fun onNewToken/);
+assert.match(androidService, /if \(MiqNotificationContract\.optedIn\(this\)\)[\s\S]*MiqNotificationContract\.saveRegistration/);
 assert.match(androidService, /unread_count/);
 assert.match(androidService, /R\.drawable\.ic_stat_miq_notification/);
-assert.match(androidIntent, /uri\.scheme\.equals\("https", true\)/);
-assert.match(androidIntent, /uri\.host\.equals\("360miq\.com", true\)/);
-assert.match(androidIntent, /uri\.port != -1 && uri\.port != 443/);
+assert.match(androidIntent, /uri\.scheme\.equals\("https", ignoreCase = true\)/);
+assert.match(androidIntent, /uri\.host\.equals\("360miq\.com", ignoreCase = true\)/);
+assert.match(androidIntent, /uri\.port == -1 \|\| uri\.port == 443/);
 assert.match(androidCoordinator, /isTrustedPage\(webView\.url\)/);
 assert.match(androidIcon, /<vector/);
 
@@ -205,6 +225,7 @@ function response(payload, status = 200) {
 function createClientRuntime(options = {}) {
     const values = Object.assign({}, options.storage || {});
     const requests = [];
+    const pendingRegistrationResponses = [];
     const events = [];
     const badges = [{ textContent: '', hidden: true }, { textContent: '', hidden: true }];
     const trigger = {
@@ -212,15 +233,11 @@ function createClientRuntime(options = {}) {
         getAttribute(name) { return this.attributes[name] || null; },
         setAttribute(name, value) { this.attributes[name] = value; }
     };
-    const fakeScript = { addEventListener() {} };
     const documentListeners = {};
     const documentObject = {
         readyState: 'complete',
         head: { appendChild() {} },
-        querySelector(selector) {
-            if (selector.indexOf('script[data-miq-firebase-script=') === 0 && options.firebase !== false) return fakeScript;
-            return null;
-        },
+        querySelector() { return null; },
         querySelectorAll(selector) {
             if (selector === '[data-miq-account-unread-badge]') return badges;
             if (selector === '[data-miq-account-trigger]') return [trigger];
@@ -235,19 +252,40 @@ function createClientRuntime(options = {}) {
         }
     };
     let permissionCalls = 0;
-    let registerCalls = 0;
-    let getTokenCalls = 0;
-    let deleteTokenCalls = 0;
+    let serviceWorkerRegisterCalls = 0;
+    let firebaseRegisterCalls = 0;
+    let firebaseUnregisterCalls = 0;
     const nativeActions = [];
-    const messaging = {
-        getToken() { getTokenCalls += 1; return Promise.resolve(options.token || 'rotated-fcm-token'); },
-        deleteToken() { deleteTokenCalls += 1; return Promise.resolve(true); },
-        onMessage(handler) { this.messageHandler = handler; }
+    const messaging = {};
+    const firebaseApp = { name: 'miq-notifications' };
+    let registeredHandler = null;
+    let unregisteredHandler = null;
+    const browserFid = options.fid || 'firebase-installation-id-12345';
+    const firebaseAppApi = {
+        getApps() { return [firebaseApp]; },
+        initializeApp() { return firebaseApp; }
     };
-    const firebase = {
-        apps: [{}],
-        initializeApp() {},
-        messaging() { return messaging; }
+    const firebaseMessagingApi = {
+        isSupported() { return Promise.resolve(options.firebase !== false); },
+        getMessaging() { return messaging; },
+        onRegistered(instance, handler) { assert.strictEqual(instance, messaging); registeredHandler = handler; return function () {}; },
+        onUnregistered(instance, handler) { assert.strictEqual(instance, messaging); unregisteredHandler = handler; return function () {}; },
+        onMessage(instance, handler) { assert.strictEqual(instance, messaging); messaging.messageHandler = handler; return function () {}; },
+        register(instance, registerOptions) {
+            assert.strictEqual(instance, messaging);
+            firebaseRegisterCalls += 1;
+            messaging.registerOptions = registerOptions;
+            return Promise.resolve().then(function () {
+                if (registeredHandler) registeredHandler(browserFid);
+            });
+        },
+        unregister(instance) {
+            assert.strictEqual(instance, messaging);
+            firebaseUnregisterCalls += 1;
+            return Promise.resolve().then(function () {
+                if (unregisteredHandler) unregisteredHandler(browserFid);
+            });
+        }
     };
     function NotificationMock() {}
     NotificationMock.permission = options.permission || 'default';
@@ -269,7 +307,7 @@ function createClientRuntime(options = {}) {
         unreadNotifications: 0,
         notificationConfig: {
             enabled: true,
-            sdkVersion: '11.10.0',
+            sdkVersion: '12.16.0',
             firebase: { apiKey: 'public', projectId: 'project' },
             vapidKey: 'public-vapid',
             serviceWorkerUrl: 'https://360miq.com/service-worker.js'
@@ -281,14 +319,16 @@ function createClientRuntime(options = {}) {
         removeItem(key) { delete values[key]; }
     };
     const serviceWorkerApi = {
-        register(url) { registerCalls += 1; this.lastUrl = url; return Promise.resolve({ scope: url }); },
+        register(url) { serviceWorkerRegisterCalls += 1; this.lastUrl = url; return Promise.resolve({ scope: url }); },
         addEventListener() {}
     };
     const navigatorObject = { serviceWorker: serviceWorkerApi, userAgent: 'Regression Browser/1.0' };
     const windowObject = {
         __MIQ_ACCOUNT__: state,
+        __MIQ_FIREBASE_MODULE_LOADER__() {
+            return Promise.resolve({ app: firebaseAppApi, messaging: firebaseMessagingApi });
+        },
         localStorage: storage,
-        firebase,
         navigator: navigatorObject,
         Notification: NotificationMock,
         CustomEvent: AccountEvent,
@@ -299,7 +339,8 @@ function createClientRuntime(options = {}) {
             hostname: '360miq.com'
         },
         dispatchEvent(event) { events.push(event); },
-        setTimeout() {}
+        setTimeout() { return 1; },
+        clearTimeout() {}
     };
     if (options.androidBridge) {
         windowObject.MiqAndroidNotifications = {
@@ -313,7 +354,7 @@ function createClientRuntime(options = {}) {
         if (String(url).indexOf('action=account_bootstrap') !== -1) {
             return Promise.resolve(response(options.bootstrapPayload || state));
         }
-        return Promise.resolve(response({
+        const payload = {
             saved: true,
             removed: true,
             device: { id: 17 },
@@ -322,7 +363,15 @@ function createClientRuntime(options = {}) {
             web: state.notificationConfig,
             unread: 7,
             csrf_token: 'csrf-2'
-        }));
+        };
+        let requestBody = {};
+        try { requestBody = fetchOptions.body ? JSON.parse(fetchOptions.body) : {}; } catch (error) {}
+        if (options.deferDeviceRegistration && requestBody.action === 'register_notification_device') {
+            return new Promise(function (resolve) {
+                pendingRegistrationResponses.push(function () { resolve(response(payload)); });
+            });
+        }
+        return Promise.resolve(response(payload));
     };
     windowObject.fetch = fetchMock;
 
@@ -353,11 +402,16 @@ function createClientRuntime(options = {}) {
         badges,
         trigger,
         messaging,
+        firebaseMessagingApi,
         serviceWorkerApi,
         permissionCalls: () => permissionCalls,
-        registerCalls: () => registerCalls,
-        getTokenCalls: () => getTokenCalls,
-        deleteTokenCalls: () => deleteTokenCalls,
+        serviceWorkerRegisterCalls: () => serviceWorkerRegisterCalls,
+        firebaseRegisterCalls: () => firebaseRegisterCalls,
+        firebaseUnregisterCalls: () => firebaseUnregisterCalls,
+        pendingRegistrationCount: () => pendingRegistrationResponses.length,
+        releaseRegistrationResponses() {
+            pendingRegistrationResponses.splice(0).forEach(function (resolve) { resolve(); });
+        },
         nativeActions
     };
 }
@@ -463,7 +517,7 @@ async function testClientBehavior() {
 
     const optedIn = createClientRuntime({
         permission: 'granted',
-        token: 'rotated-token',
+        fid: 'rotated-firebase-installation-id',
         storage: {
             'miq-notification-web-enabled': '1',
             'miq-notification-web-user-id': '7',
@@ -473,24 +527,36 @@ async function testClientBehavior() {
     });
     await optedIn.window.MIQNotifications.startup();
     assert.strictEqual(optedIn.permissionCalls(), 0, 'An opted-in startup refresh must not reopen the permission prompt.');
-    assert.strictEqual(optedIn.registerCalls(), 1);
-    assert.strictEqual(optedIn.getTokenCalls(), 1);
+    assert.strictEqual(optedIn.serviceWorkerRegisterCalls(), 1);
+    assert.strictEqual(optedIn.firebaseRegisterCalls(), 1);
     const registerRequest = optedIn.requests.find((request) => request.options.method === 'POST');
     const registerBody = JSON.parse(registerRequest.options.body);
     assert.strictEqual(registerBody.action, 'register_notification_device');
     assert.strictEqual(registerBody.channel, 'web');
     assert.strictEqual(registerBody.installation_id, 'web-stable-installation-12345');
-    assert.strictEqual(registerBody.token, 'rotated-token');
+    assert.strictEqual(registerBody.target_type, 'fid');
+    assert.strictEqual(registerBody.target, 'rotated-firebase-installation-id');
+    assert.strictEqual(registerBody.fid, 'rotated-firebase-installation-id');
+    assert.strictEqual(registerBody.token, 'rotated-firebase-installation-id');
+    assert.strictEqual(optedIn.storage['miq-notification-web-fid'], 'rotated-firebase-installation-id');
+    assert.strictEqual(optedIn.storage['miq-notification-web-token'], undefined);
     assert.strictEqual(optedIn.storage['miq-notification-web-device-id'], '17');
 
     await optedIn.window.MIQNotifications.disableBrowser();
-    const unregisterBody = JSON.parse(optedIn.requests[optedIn.requests.length - 1].options.body);
+    const unregisterRequest = optedIn.requests.find(function (entry) {
+        if (!entry.options.body) return false;
+        const body = JSON.parse(entry.options.body);
+        return body.action === 'unregister_notification_device' && body.installation_id === 'web-stable-installation-12345';
+    });
+    const unregisterBody = JSON.parse(unregisterRequest.options.body);
     assert.strictEqual(unregisterBody.action, 'unregister_notification_device');
     assert.strictEqual(unregisterBody.channel, 'web');
     assert.strictEqual(unregisterBody.installation_id, 'web-stable-installation-12345');
-    assert.strictEqual(unregisterBody.token, 'rotated-token');
+    assert.strictEqual(unregisterBody.target_type, 'fid');
+    assert.strictEqual(unregisterBody.target, 'rotated-firebase-installation-id');
+    assert.strictEqual(unregisterBody.token, 'rotated-firebase-installation-id');
     assert.strictEqual(Object.prototype.hasOwnProperty.call(unregisterBody, 'device_id'), false);
-    assert.strictEqual(optedIn.deleteTokenCalls(), 1);
+    assert.strictEqual(optedIn.firebaseUnregisterCalls(), 1);
     assert.strictEqual(optedIn.storage['miq-notification-web-enabled'], undefined);
     assert.strictEqual(optedIn.storage['miq-notification-web-user-id'], undefined);
     assert.strictEqual(optedIn.storage['miq-notification-web-device-id'], undefined);
@@ -506,7 +572,8 @@ async function testClientBehavior() {
     });
     await otherAccount.window.MIQNotifications.startup();
     assert.strictEqual(otherAccount.permissionCalls(), 0);
-    assert.strictEqual(otherAccount.registerCalls(), 0, 'Push consent must not transfer between signed-in accounts.');
+    assert.strictEqual(otherAccount.serviceWorkerRegisterCalls(), 0, 'Push consent must not transfer between signed-in accounts.');
+    assert.strictEqual(otherAccount.firebaseRegisterCalls(), 0, 'Push consent must not transfer between signed-in accounts.');
     const retirement = JSON.parse(otherAccount.requests[0].options.body);
     assert.strictEqual(retirement.action, 'unregister_notification_device');
     assert.strictEqual(otherAccount.storage['miq-notification-web-enabled'], undefined);
@@ -515,8 +582,106 @@ async function testClientBehavior() {
     await explicit.window.MIQNotifications.startup();
     await explicit.window.MIQNotifications.enableBrowser();
     assert.strictEqual(explicit.permissionCalls(), 1, 'Only the explicit enable action may request browser permission.');
-    assert.strictEqual(explicit.registerCalls(), 1);
+    assert.strictEqual(explicit.serviceWorkerRegisterCalls(), 1);
+    assert.strictEqual(explicit.firebaseRegisterCalls(), 1);
     assert.strictEqual(explicit.storage['miq-notification-web-user-id'], '7');
+
+    const lateWeb = createClientRuntime({
+        permission: 'granted',
+        fid: 'late-browser-firebase-installation-id',
+        deferDeviceRegistration: true,
+        storage: {
+            'miq-notification-web-enabled': '1',
+            'miq-notification-web-user-id': '7',
+            'miq-notification-web-token': 'legacy-browser-token-before-migration',
+            'miq-notification-web-installation-v1': 'web-late-installation-12345'
+        }
+    });
+    const lateWebStartup = lateWeb.window.MIQNotifications.startup();
+    for (let index = 0; index < 8; index += 1) await Promise.resolve();
+    assert.strictEqual(lateWeb.pendingRegistrationCount(), 1);
+    await lateWeb.window.MIQNotifications.disableBrowser();
+    lateWeb.releaseRegistrationResponses();
+    await lateWebStartup;
+    for (let index = 0; index < 8; index += 1) await Promise.resolve();
+    assert.strictEqual(lateWeb.storage['miq-notification-web-enabled'], undefined);
+    assert.strictEqual(lateWeb.storage['miq-notification-web-fid'], undefined);
+    const lateWebCleanup = lateWeb.requests.map(function (entry) {
+        try { return JSON.parse(entry.options.body || '{}'); } catch (error) { return {}; }
+    }).find(function (body) {
+        return body.action === 'unregister_notification_device' &&
+            body.target === 'late-browser-firebase-installation-id' && body.installation_id === '';
+    });
+    assert(lateWebCleanup, 'A late browser registration must be retired by target without disabling a newer installation binding.');
+
+    const androidSuccess = createClientRuntime({ androidBridge: true });
+    await androidSuccess.window.MIQNotifications.startup();
+    const androidEnableSuccess = androidSuccess.window.MIQNotifications.enableAndroid();
+    androidSuccess.window.MIQNotifications.androidPermissionResult(true, 'android-firebase-installation-id', {
+        installation_id: 'android-stable-installation-12345',
+        target_type: 'fid',
+        label: 'Android test'
+    });
+    await androidEnableSuccess;
+    const androidRegister = JSON.parse(androidSuccess.requests.find(function (entry) {
+        return entry.options.body && entry.options.body.indexOf('register_notification_device') !== -1;
+    }).options.body);
+    assert.strictEqual(androidRegister.channel, 'android');
+    assert.strictEqual(androidRegister.target_type, 'fid');
+    assert.strictEqual(androidRegister.target, 'android-firebase-installation-id');
+    assert.strictEqual(androidRegister.fid, 'android-firebase-installation-id');
+    assert.strictEqual(androidRegister.token, 'android-firebase-installation-id');
+
+    const legacyAndroid = createClientRuntime({
+        permission: 'default',
+        storage: {
+            'miq-notification-android-enabled': '1',
+            'miq-notification-android-user-id': '7'
+        }
+    });
+    await legacyAndroid.window.MIQNotifications.startup();
+    await legacyAndroid.window.MIQNotifications.registerAndroidToken('legacy-android-registration-token', {
+        installation_id: 'legacy-android-installation-12345'
+    });
+    const legacyAndroidRegister = JSON.parse(legacyAndroid.requests.find(function (entry) {
+        return entry.options.body && entry.options.body.indexOf('register_notification_device') !== -1;
+    }).options.body);
+    assert.strictEqual(legacyAndroidRegister.target_type, 'token');
+    assert.strictEqual(legacyAndroidRegister.token, 'legacy-android-registration-token');
+    assert.strictEqual(Object.prototype.hasOwnProperty.call(legacyAndroidRegister, 'fid'), false);
+
+    await androidSuccess.window.MIQNotifications.androidRegistrationRemoved('retired-android-installation-id');
+    const androidRemoval = JSON.parse(androidSuccess.requests[androidSuccess.requests.length - 1].options.body);
+    assert.strictEqual(androidRemoval.action, 'unregister_notification_device');
+    assert.strictEqual(androidRemoval.target_type, 'fid');
+    assert.strictEqual(androidRemoval.target, 'retired-android-installation-id');
+    assert.strictEqual(androidRemoval.installation_id, '');
+
+    const lateAndroid = createClientRuntime({ androidBridge: true, deferDeviceRegistration: true });
+    await lateAndroid.window.MIQNotifications.startup();
+    const lateAndroidEnable = lateAndroid.window.MIQNotifications.enableAndroid().then(
+        function () { return null; },
+        function (error) { return error; }
+    );
+    lateAndroid.window.MIQNotifications.androidPermissionResult(true, 'late-android-firebase-installation-id', {
+        installation_id: 'android-late-installation-12345',
+        target_type: 'fid'
+    });
+    for (let index = 0; index < 6; index += 1) await Promise.resolve();
+    assert.strictEqual(lateAndroid.pendingRegistrationCount(), 1);
+    await lateAndroid.window.MIQNotifications.disableAndroid();
+    lateAndroid.releaseRegistrationResponses();
+    const lateAndroidError = await lateAndroidEnable;
+    for (let index = 0; index < 8; index += 1) await Promise.resolve();
+    assert.match(lateAndroidError.message, /cancelled/);
+    assert.strictEqual(lateAndroid.storage['miq-notification-android-enabled'], undefined);
+    const lateAndroidCleanup = lateAndroid.requests.map(function (entry) {
+        try { return JSON.parse(entry.options.body || '{}'); } catch (error) { return {}; }
+    }).find(function (body) {
+        return body.action === 'unregister_notification_device' &&
+            body.target === 'late-android-firebase-installation-id' && body.installation_id === '';
+    });
+    assert(lateAndroidCleanup, 'A late Android registration must be retired by target without disabling a newer installation binding.');
 
     const androidFailure = createClientRuntime({ androidBridge: true });
     await androidFailure.window.MIQNotifications.startup();
