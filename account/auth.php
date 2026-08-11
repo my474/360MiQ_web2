@@ -1,6 +1,213 @@
 <?php
 require_once __DIR__ . '/db.php';
 
+function miq_account_normalize_session_path($path)
+{
+    $normalized = str_replace('\\', '/', rtrim((string) $path, "\\/"));
+    if (DIRECTORY_SEPARATOR === '\\') {
+        $normalized = strtolower($normalized);
+    }
+    return $normalized;
+}
+
+function miq_account_session_path_is_within($path, $directory)
+{
+    $path = miq_account_normalize_session_path($path);
+    $directory = miq_account_normalize_session_path($directory);
+    return $path !== ''
+        && $directory !== ''
+        && ($path === $directory || strpos($path, $directory . '/') === 0);
+}
+
+function miq_account_private_session_path($config)
+{
+    $configured = trim((string) ($config['session_save_path'] ?? ''));
+    if ($configured !== '') {
+        return $configured;
+    }
+
+    // Production already keeps its database include in a private php_script
+    // directory. Reuse that private root without imposing a host-specific path
+    // on local or alternate deployments; those can set the environment value.
+    $database_include = trim((string) ($config['account_db_include'] ?? ''));
+    $private_root = $database_include === '' ? '' : dirname($database_include);
+    if ($private_root === ''
+        || strtolower(basename(str_replace('\\', '/', $private_root))) !== 'php_script'
+        || !is_dir($private_root)
+    ) {
+        return '';
+    }
+
+    return $private_root . DIRECTORY_SEPARATOR . 'account_sessions';
+}
+
+function miq_account_prepare_private_session_path($config)
+{
+    $path = miq_account_private_session_path($config);
+    if ($path === '') {
+        return '';
+    }
+    if (strpos($path, "\0") !== false || !preg_match('#^(?:[a-zA-Z]:[\\\\/]|/)#', $path)) {
+        error_log('360MiQ private session path must be an absolute filesystem path.');
+        return '';
+    }
+
+    $parent = realpath(dirname($path));
+    $leaf = basename($path);
+    if ($parent === false || $leaf === '' || $leaf === '.' || $leaf === '..') {
+        error_log('360MiQ private session path has no accessible parent directory.');
+        return '';
+    }
+
+    $candidate = $parent . DIRECTORY_SEPARATOR . $leaf;
+    $document_root_setting = trim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+    $document_root = realpath($document_root_setting === '' ? dirname(__DIR__) : $document_root_setting);
+    if ($document_root !== false && miq_account_session_path_is_within($candidate, $document_root)) {
+        error_log('360MiQ refused to store account sessions inside the public document root.');
+        return '';
+    }
+    if (is_link($candidate)) {
+        error_log('360MiQ refused to use a symbolic link for private account sessions.');
+        return '';
+    }
+    if (!is_dir($candidate) && !@mkdir($candidate, 0700) && !is_dir($candidate)) {
+        error_log('360MiQ could not create the private account session directory.');
+        return '';
+    }
+
+    $resolved = realpath($candidate);
+    if ($resolved === false
+        || is_link($candidate)
+        || ($document_root !== false && miq_account_session_path_is_within($resolved, $document_root))
+        || !is_readable($resolved)
+        || !is_writable($resolved)
+    ) {
+        error_log('360MiQ private account session directory is not safe and writable.');
+        return '';
+    }
+
+    if (DIRECTORY_SEPARATOR === '/') {
+        @chmod($resolved, 0700);
+        clearstatcache(true, $resolved);
+        $permissions = @fileperms($resolved);
+        if ($permissions === false || ($permissions & 0077) !== 0) {
+            error_log('360MiQ private account session directory must use owner-only permissions.');
+            return '';
+        }
+    }
+
+    return $resolved;
+}
+
+function miq_account_file_session_location($save_path, $session_id)
+{
+    $parts = explode(';', trim((string) $save_path));
+    $directory = trim((string) end($parts));
+    if ($directory === '') {
+        return '';
+    }
+
+    $depth = count($parts) > 1 && ctype_digit($parts[0]) ? (int) $parts[0] : 0;
+    for ($index = 0; $index < $depth; $index++) {
+        if (!isset($session_id[$index])) {
+            return '';
+        }
+        $directory .= DIRECTORY_SEPARATOR . $session_id[$index];
+    }
+    return $directory . DIRECTORY_SEPARATOR . 'sess_' . $session_id;
+}
+
+function miq_account_migrate_session_file($old_save_path, $new_save_path, $cookie_name)
+{
+    $session_id = isset($_COOKIE[$cookie_name]) ? (string) $_COOKIE[$cookie_name] : '';
+    if (!preg_match('/^[a-zA-Z0-9,-]{16,256}$/D', $session_id)) {
+        return;
+    }
+
+    $source = miq_account_file_session_location($old_save_path, $session_id);
+    $destination = $new_save_path . DIRECTORY_SEPARATOR . 'sess_' . $session_id;
+    if ($source === ''
+        || miq_account_normalize_session_path(dirname($source)) === miq_account_normalize_session_path($new_save_path)
+        || !is_file($source)
+        || is_link($source)
+        || file_exists($destination)
+    ) {
+        return;
+    }
+
+    $input = @fopen($source, 'rb');
+    if ($input === false) {
+        return;
+    }
+
+    // PHP's file handler holds an exclusive lock while another request owns
+    // the session. A shared lock prevents migrating a partially written file.
+    if (!flock($input, LOCK_SH)) {
+        fclose($input);
+        return;
+    }
+
+    try {
+        $temporary = $destination . '.migrate.' . bin2hex(random_bytes(8));
+    } catch (Throwable $error) {
+        flock($input, LOCK_UN);
+        fclose($input);
+        return;
+    }
+    $output = @fopen($temporary, 'x+b');
+    if ($output === false) {
+        flock($input, LOCK_UN);
+        fclose($input);
+        return;
+    }
+
+    $copied = stream_copy_to_stream($input, $output);
+    $flushed = fflush($output);
+    flock($input, LOCK_UN);
+    fclose($input);
+    fclose($output);
+    if ($copied === false || !$flushed) {
+        @unlink($temporary);
+        return;
+    }
+    if (DIRECTORY_SEPARATOR === '/') {
+        @chmod($temporary, 0600);
+    }
+
+    // A hard link publishes the fully copied file only if another request has
+    // not already completed the same migration. Keep rename as a same-folder
+    // fallback for hosts that disable hard links.
+    if (!@link($temporary, $destination) && !file_exists($destination)) {
+        @rename($temporary, $destination);
+    }
+    @unlink($temporary);
+}
+
+function miq_account_use_private_session_storage($config)
+{
+    if (strtolower((string) ini_get('session.save_handler')) !== 'files') {
+        return false;
+    }
+
+    $private_path = miq_account_prepare_private_session_path($config);
+    if ($private_path === '') {
+        return false;
+    }
+
+    $old_save_path = (string) ini_get('session.save_path');
+    miq_account_migrate_session_file($old_save_path, $private_path, (string) $config['cookie_name']);
+    if (ini_set('session.save_path', $private_path) === false) {
+        error_log('360MiQ could not activate private account session storage.');
+        return false;
+    }
+
+    // cPanel does not clean custom session directories. Let PHP collect only
+    // this application's files using the same lifetime as the login cookie.
+    ini_set('session.gc_probability', '1');
+    ini_set('session.gc_divisor', '100');
+    return true;
+}
+
 function miq_account_start_session()
 {
     if (session_status() === PHP_SESSION_ACTIVE) {
@@ -11,6 +218,7 @@ function miq_account_start_session()
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
     ini_set('session.gc_maxlifetime', (string) $config['session_lifetime']);
     ini_set('session.use_strict_mode', '1');
+    miq_account_use_private_session_storage($config);
     session_name($config['cookie_name']);
     session_set_cookie_params(array(
         'lifetime' => $config['session_lifetime'],

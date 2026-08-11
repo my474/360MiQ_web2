@@ -35,10 +35,13 @@ function miq_account_config()
         return $config;
     }
 
+    $account_db_include = miq_account_env('ACCOUNT_DB_INCLUDE', '/home2/aamiqcom/php_script/mysql_vars_account.php');
+
     $config = array(
         'table_prefix' => preg_replace('/[^a-zA-Z0-9_]/', '', miq_account_env('MIQ_ACCOUNT_TABLE_PREFIX', 'miq_')),
         'cookie_name' => miq_account_env('MIQ_ACCOUNT_COOKIE_NAME', 'miq_account'),
         'session_lifetime' => (int) miq_account_env('MIQ_ACCOUNT_SESSION_LIFETIME', 1209600),
+        'session_save_path' => trim(miq_account_env('MIQ_ACCOUNT_SESSION_SAVE_PATH', '')),
         'base_url' => rtrim(miq_account_env('MIQ_SITE_URL', 'https://360miq.com'), '/'),
         // OAuth client IDs are public identifiers. This Web client is also the
         // Credential Manager serverClientId, so web and Android tokens share
@@ -49,7 +52,7 @@ function miq_account_config()
         'native_google_challenge_ttl' => max(60, min(600, (int) miq_account_env('MIQ_NATIVE_GOOGLE_CHALLENGE_TTL', 300))),
         // The production account connection lives outside the public web root.
         // ACCOUNT_DB_INCLUDE can still override this path for local/staging.
-        'account_db_include' => miq_account_env('ACCOUNT_DB_INCLUDE', '/home2/aamiqcom/php_script/mysql_vars_account.php'),
+        'account_db_include' => $account_db_include,
         'db_host' => miq_account_env('ACCOUNT_DB_HOST', ''),
         'db_name' => miq_account_env('ACCOUNT_DB_NAME', ''),
         'db_user' => miq_account_env('ACCOUNT_DB_USER', ''),
