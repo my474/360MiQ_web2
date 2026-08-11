@@ -4436,6 +4436,15 @@ assert.strictEqual(hydrationChart.document.symbolInfo.name_en, 'Refreshed server
 assert.strictEqual(hydrationChart.document.updatedAt, loadedUpdatedAt);
 assert.strictEqual(hydrationChart.autosaveTimer, null);
 assert.strictEqual(hydrationWrites, 0);
+hydrationChart.markSaved();
+hydrationChart.setComparisonData('QQQ', data);
+assert.ok(hydrationChart.autosaveTimer);
+assert.strictEqual(hydrationChart.flushAutosave(), true);
+assert.strictEqual(hydrationWrites, 0);
+hydrationChart.addDrawing('text', [{ time: data[data.length - 1].time, value: data[data.length - 1].close }], { paneId: 'price', text: 'Actual change' });
+assert.ok(hydrationChart.autosaveTimer);
+assert.strictEqual(hydrationChart.flushAutosave(), true);
+assert.strictEqual(hydrationWrites, 1);
 hydrationChart.destroy();
 
 let autosaveWrites = 0;

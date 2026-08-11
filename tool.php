@@ -1358,8 +1358,8 @@ window.__TOOL_PAGE_CONFIG = {
 <script src="assets/js/pages/tool-main.js?v=20260619.2"></script>
 <script src="assets/js/pages/tool-share.js?v=20260709.2"></script>
 <script src="assets/js/price-display-page-hooks.js?v=20260624.1"></script>
-<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260812.1"></script>
-<script src="assets/js/pages/tool-stock-chart.js?v=20260812.1"></script>
+<script src="assets/js/stock-chart-engine/stock-chart-engine.js?v=20260812.2"></script>
+<script src="assets/js/pages/tool-stock-chart.js?v=20260812.2"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var note = document.getElementById('advancedChartNote');

@@ -2406,6 +2406,7 @@
     this.historyLimit = Math.max(1, toNumber(options.historyLimit, 100));
     this.historyDocument = this.serialize();
     this.historyDocumentKey = historyKey(this.historyDocument);
+    this.savedDocumentKey = historyKey(this.document);
     this.suppressHistoryRecording = false;
     this.fullBrowserMode = false;
     this.pineWindowState = {
@@ -3133,10 +3134,21 @@
     this.emitChange('restore', {});
   };
 
+  Chart.prototype.markSaved = function (doc) {
+    this.savedDocumentKey = historyKey(doc || this.document);
+    return this.savedDocumentKey;
+  };
+
   Chart.prototype.save = function () {
     var documentState = this.serialize();
+    var documentKey = historyKey(documentState);
+    if (documentKey === this.savedDocumentKey) {
+      this.events.emit('save', { saved: true, unchanged: true, document: documentState });
+      return true;
+    }
     try {
       var saved = this.storage.save(this.layoutId, documentState);
+      if (saved !== false) this.savedDocumentKey = documentKey;
       this.events.emit('save', { saved: saved, document: documentState });
       return saved;
     } catch (error) {
@@ -3491,6 +3503,7 @@
     if (!doc) return false;
     this.layoutId = layoutId || this.layoutId;
     this.restore(doc);
+    this.markSaved();
     return true;
   };
 

@@ -897,6 +897,7 @@
         if (!options.skipStarterStudies) ensureStarterStudies(stockChart, layoutExisted);
         restoreRelativeStrengthSnapshots(stockChart, carriedRelativeStrength);
         if (options.visibleRange) applyVisibleDateRange(stockChart, options.visibleRange);
+        if (currentChartAsset && stockChart.markSaved) stockChart.markSaved();
         if (stockChart.loadRequiredComparisonSymbols) {
             stockChart.loadRequiredComparisonSymbols().catch(function (error) {
                 console.warn('Unable to restore Relative Strength benchmark:', error);
