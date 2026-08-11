@@ -101,6 +101,24 @@ function miq_account_unread_notification_count($user_id)
     }
 }
 
+if (!function_exists('miq_account_notification_text_limit')) {
+    function miq_account_notification_text_limit($value, $maximum)
+    {
+        $value = trim((string) $value);
+        $maximum = max(0, (int) $maximum);
+        if (function_exists('mb_substr')) {
+            return mb_substr($value, 0, $maximum, 'UTF-8');
+        }
+        $characters = array();
+        if (preg_match_all('/./us', $value, $characters) !== false) {
+            return implode('', array_slice($characters[0], 0, $maximum));
+        }
+        $clean = function_exists('iconv') ? @iconv('UTF-8', 'UTF-8//IGNORE', $value) : false;
+        $clean = is_string($clean) ? $clean : preg_replace('/[^\x00-\x7F]/', '', $value);
+        return substr((string) $clean, 0, $maximum);
+    }
+}
+
 function miq_account_notify($user_id, $type, $title, $message, $link_url = '', $dedupe_key = '')
 {
     $user_id = (int) $user_id;
@@ -108,15 +126,15 @@ function miq_account_notify($user_id, $type, $title, $message, $link_url = '', $
         return;
     }
     $type = substr(trim((string) $type), 0, 40);
-    $title = substr(trim((string) $title), 0, 160);
-    $message = substr(trim((string) $message), 0, 500);
-    $link_url = substr(trim((string) $link_url), 0, 500);
+    $title = miq_account_notification_text_limit($title, 160);
+    $message = miq_account_notification_text_limit($message, 500);
+    $link_url = miq_account_notification_text_limit($link_url, 500);
     $dedupe_key = substr(trim((string) $dedupe_key), 0, 190);
     $notifications = miq_account_table('notifications');
     $notification_id = 0;
     if ($dedupe_key !== '') {
         miq_account_query(
-            "INSERT INTO {$notifications} (user_id, notification_type, title, message, link_url, dedupe_key, read_at, created_at) VALUES (?, ?, ?, ?, ?, ?, NULL, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), title = VALUES(title), message = VALUES(message), link_url = VALUES(link_url), read_at = NULL, created_at = UTC_TIMESTAMP()",
+            "INSERT INTO {$notifications} (user_id, notification_type, title, message, link_url, dedupe_key, read_at, created_at) VALUES (?, ?, ?, ?, ?, ?, NULL, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), notification_type = VALUES(notification_type), title = VALUES(title), message = VALUES(message), link_url = VALUES(link_url), read_at = NULL, created_at = UTC_TIMESTAMP()",
             'isssss',
             array($user_id, $type, $title, $message, $link_url, $dedupe_key)
         )->close();
@@ -130,14 +148,13 @@ function miq_account_notify($user_id, $type, $title, $message, $link_url = '', $
         $notification_id = (int) miq_account_db()->insert_id;
         $statement->close();
     }
-    if ($dedupe_key !== '' && $notification_id > 0 && function_exists('miq_account_reset_notification_deliveries')) {
-        miq_account_reset_notification_deliveries($notification_id);
-    }
-    if ($notification_id > 0 && function_exists('miq_account_dispatch_notification')) {
+    if ($notification_id > 0 && function_exists('miq_account_enqueue_notification')) {
         try {
-            miq_account_dispatch_notification($notification_id, $user_id, $type, $title, $message, $link_url);
+            // This only writes durable delivery rows. Network delivery is
+            // performed by process_notification_queue.php after commit.
+            miq_account_enqueue_notification($notification_id, $user_id, $type);
         } catch (Throwable $error) {
-            error_log('360MiQ notification delivery failure: ' . $error->getMessage());
+            error_log('360MiQ notification enqueue failure: ' . $error->getMessage());
         }
     }
 }

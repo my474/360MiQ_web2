@@ -44,6 +44,16 @@ function miq_account_delete_user_data($user_id)
         miq_account_query("UPDATE {$replies} SET parent_reply_id = NULL WHERE parent_reply_id IN (SELECT id FROM (SELECT id FROM {$replies} WHERE user_id = ? OR idea_id IN (SELECT id FROM {$ideas} WHERE user_id = ?)) owned_replies)", 'ii', array($user_id, $user_id))->close();
         miq_account_query("DELETE FROM {$replies} WHERE user_id = ? OR idea_id IN (SELECT id FROM {$ideas} WHERE user_id = ?)", 'ii', array($user_id, $user_id))->close();
     }
+    if (miq_account_table_exists('notification_deliveries') && miq_account_table_exists('notification_devices')) {
+        $deliveries = miq_account_table('notification_deliveries');
+        $devices = miq_account_table('notification_devices');
+        miq_account_query(
+            "DELETE FROM {$deliveries} WHERE user_id = ? OR device_id IN (SELECT id FROM {$devices} WHERE user_id = ?)",
+            'ii',
+            array($user_id, $user_id)
+        )->close();
+    }
+
     foreach (array(
         array('community_bookmarks', 'user_id'),
         array('community_reports', 'reporter_user_id'),
@@ -91,11 +101,6 @@ function miq_account_delete_user_data($user_id)
         'user_activity_daily', 'sso_tokens', 'email_tokens', 'password_reset_tokens', 'identities'
     ) as $logical_name) {
         miq_account_delete_for_user($logical_name, 'user_id', $user_id);
-    }
-    if (miq_account_table_exists('notification_deliveries') && miq_account_table_exists('notification_devices')) {
-        $deliveries = miq_account_table('notification_deliveries');
-        $devices = miq_account_table('notification_devices');
-        miq_account_query("DELETE FROM {$deliveries} WHERE device_id IN (SELECT id FROM {$devices} WHERE user_id = ?)", 'i', array($user_id))->close();
     }
     miq_account_delete_for_user('notification_devices', 'user_id', $user_id);
     if (miq_account_table_exists('user_admin_actions')) {

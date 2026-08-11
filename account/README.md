@@ -33,9 +33,10 @@ Public browsing does not require an account. Saving, following, voting, submitti
    - `migrations/20260726_add_user_activity_admin.sql`
    - `migrations/20260726_add_screener_presets.sql`
    - `migrations/20260726_add_productivity_features.sql`
-    - `migrations/20260726_harden_account_features.sql`
-    - `migrations/20260807_add_chat_history.sql`
-    - `migrations/20260811_add_notifications.sql`
+   - `migrations/20260726_harden_account_features.sql`
+   - `migrations/20260807_add_chat_history.sql`
+   - `migrations/20260811_add_notifications.sql`
+   - `migrations/20260812_harden_notification_delivery.sql`
 
    Apply the chart/script asset migration before deploying the matching PHP and JavaScript changes. It preserves existing chart layouts and Pine scripts while assigning stable asset keys and identifying the existing `Auto:*` chart records as per-symbol workspaces. The baseline schema and required migrations omit foreign keys so they remain portable to restricted hosting accounts. Account deletion performs explicit ordered cleanup in application code. The default table prefix is `miq_`; set `MIQ_ACCOUNT_TABLE_PREFIX` if a different prefix is required.
 
@@ -66,7 +67,21 @@ FCM_WEB_APP_ID=<firebase-web-app-id>
 FCM_WEB_VAPID_KEY=<firebase-cloud-messaging-web-push-certificate-key-pair-public-key>
 ```
 
-`FCM_SERVICE_ACCOUNT_JSON` may be used instead of the three server credential variables when the host cannot provide multiline environment values. `FCM_WEB_SDK_VERSION` defaults to `11.10.0`; `FCM_MAX_DEVICES_PER_NOTIFICATION` defaults to 10. The account settings page never asks for browser permission until the user clicks Enable browser notifications. Android clients obtain an FCM registration token natively and submit it to the authenticated `account_api.php` endpoint with `action=register_notification_device`, `channel=android`, `token`, and optional `label`/`app_version`; the same endpoint accepts `unregister_notification_device`. The Android wrapper must preserve the shared main-site session cookie or complete the normal account sign-in first.
+`FCM_SERVICE_ACCOUNT_JSON` may be used instead of the three server credential variables when the host cannot provide multiline environment values. `FCM_WEB_SDK_VERSION` defaults to `11.10.0`; `FCM_MAX_DEVICES_PER_NOTIFICATION` defaults to 10 and `FCM_MAX_DEVICES_PER_USER` defaults to 20 active devices. Device upserts are additionally limited to 300 per account per hour by `MIQ_RATE_NOTIFICATION_DEVICE_LIMIT`/`MIQ_RATE_NOTIFICATION_DEVICE_WINDOW`. The account settings page never asks for browser permission until the user clicks Enable browser notifications. Android clients obtain an FCM registration token natively and submit it to the authenticated `account_api.php` endpoint with `action=register_notification_device`, `channel=android`, `token`, `installation_id`, and optional `label`/`app_version`; the same endpoint accepts an installation-scoped `unregister_notification_device`. The Android wrapper must preserve the shared main-site session cookie or complete the normal account sign-in first.
+
+Push delivery is written to a durable database queue and sent outside the web request; notification calls made inside an existing application transaction enqueue within that transaction. Run this worker once per minute (the optional numeric argument overrides the batch size):
+
+```text
+* * * * * php /path/to/account/process_notification_queue.php 50
+```
+
+The worker uses short leases, retries transient FCM and network failures with bounded exponential backoff, honors `Retry-After`, refreshes an expired OAuth token once, and retires a device only for FCM's structured `UNREGISTERED` token error. Tune it with `FCM_WORKER_BATCH_SIZE`, `FCM_DELIVERY_MAX_ATTEMPTS`, `FCM_RETRY_BASE_SECONDS`, `FCM_RETRY_MAX_SECONDS`, and `FCM_DELIVERY_LEASE_SECONDS` when needed.
+
+Every browser/app registration includes a stable, non-secret installation ID and is bound to both the authenticated account and its current main-site session. Explicit logout or account switching disables the previous session's devices, and the worker also rejects stale, revoked, suspended, deleted, or expired-session bindings before delivery. Browser token refresh runs automatically only after that account previously opted in on that browser and permission is already granted; startup never opens a permission prompt. Legacy opt-in markers that predate account ownership are retired safely, so an affected user may need to click Enable once after this deployment (an already-granted browser permission is not prompted again).
+
+The native WebView implementation is in `android/notification-integration/README.md`. Include that module in the Android host app, keep its Firebase Google Services configuration, attach the origin-scoped bridge, and route launch intents as documented there.
+
+The WordPress blog emits only a generic guest account shell so public page caches cannot store a name, CSRF token, or unread count. Account state is hydrated from the no-store main-site bootstrap endpoint after load. Purge the WordPress/Endurance/CDN page cache once when deploying this release so pages generated by an older personalized template cannot remain cached.
 
 Activity writes are throttled to once per signed-in session every 15 minutes. Adjust that interval with `MIQ_ACTIVITY_WRITE_INTERVAL`; the minimum is 60 seconds. Chart and Pine quotas can be adjusted with `MIQ_MAX_CHART_COUNT`, `MIQ_MAX_NAMED_CHART_COUNT`, `MIQ_MAX_SCRIPT_COUNT`, `MIQ_MAX_ASSET_VERSIONS`, and `MIQ_MAX_ASSET_STORAGE_BYTES`. The combined chart/Pine current-and-version storage default is 50 MB per user. Footer chat history keeps up to 40 messages and is capped at 256 KiB of serialized UTF-8 JSON per browser and account by default; adjust the cap with `MIQ_MAX_CHAT_HISTORY_BYTES` within the built-in 32 KiB–1 MiB safety range. Messages are never partially truncated: an individually oversized message is omitted as a whole without evicting the previously stored history, while ordinary aggregate overflow removes the oldest whole messages first. Every newly stored message has a stable ID and Unix-millisecond UTC `createdAt` value. The browser displays a compact local time in each bubble and renders exact history as `Today`, `Yesterday`, a local weekday for the previous seven days, or a full local date; those dividers are not saved or synced. While the user scrolls, a matching floating date pill shows the same visible divider label and fades after scrolling stops. The first chatbox opening after each page load snaps immediately to the newest message without animation; subsequent openings restore the position captured when the chatbox closed. Chat sparkline grids, axes, and labels are normalized to the current theme on creation, restoration, and live theme changes. Messages migrated from history created before per-message timestamps are grouped under `Earlier` without a fabricated time because their original creation instants cannot be recovered.
 
@@ -119,6 +134,7 @@ The account layer stores only a SHA-256 hash of each IP/email key. Defaults are 
 - Chart/Pine writes: 600 per account per hour; explicit versions: 60 per account per hour.
 - Community pulse: 30 vote submissions or changes per account per hour.
 - Community reports: 10 report submissions per account per hour, with duplicate open reports blocked.
+- Notification-device registration/refresh: 300 updates per account per hour, with at most 20 active devices.
 
 Rate-limit failures fail closed and are logged without recording raw IP addresses or email addresses.
 

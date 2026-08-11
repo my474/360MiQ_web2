@@ -11,13 +11,13 @@ const menuScript = read('blog/wp-content/mu-plugins/360miq-theme-sync.js');
 const menuStyles = read('blog/wp-content/mu-plugins/360miq-theme-sync.css');
 const plugin = read('blog/wp-content/mu-plugins/360miq-theme-sync.php');
 
-assert.match(plugin, /Version:\s*1\.2\.0/);
+assert.match(plugin, /Version:\s*1\.4\.0/);
 assert.match(menuStyles, /#menu-primary-container\.open\s*\{[^}]*max-height:\s*calc\(100dvh - 4\.5rem\)\s*!important/s);
 assert.match(menuStyles, /#menu-primary-container\.open\s*\{[^}]*overflow-y:\s*auto/s);
 assert.match(menuStyles, /#menu-primary-container\.open\s*\{[^}]*overscroll-behavior-y:\s*contain/s);
 assert.match(menuStyles, /#menu-primary-container\.open\s*\{[^}]*touch-action:\s*pan-y pinch-zoom/s);
 assert.match(menuStyles, /\.miq360-account-menu\s*\{[^}]*display:\s*none/s);
-assert.match(menuStyles, /\.miq360-account-item\.is-open\s*>\s*\.miq360-account-menu\s*\{[^}]*display:\s*block/s);
+assert.match(menuStyles, /\.miq360-account-item\.is-authenticated\.is-open\s*>\s*\.miq360-account-menu\s*\{[^}]*display:\s*block/s);
 assert.match(menuStyles, /html\.miq360-blog-menu-ready\s+\.menu-primary-items li\.menu-item-has-children\s*>\s*ul,[\s\S]*?\{\s*display:\s*none/);
 assert.match(menuStyles, /\.menu-item-has-children\.miq360-mobile-submenu-open\s*>\s*ul,[\s\S]*?\{\s*display:\s*block/);
 assert.match(menuStyles, /@media all and \(min-width:\s*50em\)[\s\S]*\.menu-primary-items\s*>\s*li\.menu-item-has-children:hover/);
@@ -51,6 +51,7 @@ class FakeElement {
         this.hidden = false;
         this.id = options.id || '';
         this.textContent = options.textContent || '';
+        this.href = options.href || '';
         this.focused = false;
         this.classList = new FakeClassList(this, options.classes || []);
 
@@ -81,7 +82,10 @@ class FakeElement {
         return this.children.some((child) => child.contains(target));
     }
 
-    setAttribute(name, value) { this.attributes[name] = String(value); }
+    setAttribute(name, value) {
+        this.attributes[name] = String(value);
+        if (name === 'href') this.href = String(value);
+    }
     getAttribute(name) { return Object.prototype.hasOwnProperty.call(this.attributes, name) ? this.attributes[name] : null; }
     addEventListener(type, listener) {
         if (!this.listeners[type]) this.listeners[type] = [];
@@ -107,12 +111,18 @@ class FakeElement {
                 ) {
                     matches.push(child);
                 }
+                if (/^\[.+\]$/.test(selector)) {
+                    const attribute = selector.slice(1, -1);
+                    if (child.getAttribute(attribute) !== null) matches.push(child);
+                }
                 visit(child);
             });
         };
         visit(this);
         return matches;
     }
+
+    querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
 }
 
 function createRuntime(options = {}) {
@@ -151,9 +161,27 @@ function createRuntime(options = {}) {
     const market = submenuItem('Market');
     const econ = submenuItem('Econ');
     const themeToggle = new FakeElement('a', { id: 'theme-toggle' });
-    const accountItem = new FakeElement('li', { classes: ['menu-item', 'miq360-account-item', 'is-authenticated'] });
-    const accountTrigger = new FakeElement('a', { id: 'miq360-blog-account-toggle' });
+    const accountItem = new FakeElement('li', { classes: ['menu-item', 'miq360-account-item', 'is-guest'] });
+    accountItem.setAttribute('data-miq-blog-account-shell', '');
+    accountItem.setAttribute('data-login-url', 'https://360miq.com/account.php?view=login');
+    const accountTrigger = new FakeElement('a', {
+        id: 'miq360-blog-account-toggle',
+        classes: ['is-guest'],
+        href: 'https://360miq.com/account.php?view=login'
+    });
     const accountMenu = new FakeElement('div', { id: 'miq360-blog-account-menu', classes: ['miq360-account-menu'] });
+    const accountBadge = new FakeElement('span');
+    accountBadge.setAttribute('data-miq-account-unread-badge', '');
+    const accountChevron = new FakeElement('span');
+    accountChevron.setAttribute('data-miq-account-chevron', '');
+    const accountName = new FakeElement('strong');
+    accountName.setAttribute('data-miq-account-display-name', '');
+    const menuBadge = new FakeElement('span');
+    menuBadge.setAttribute('data-miq-account-unread-badge', '');
+    accountTrigger.appendChild(accountBadge);
+    accountTrigger.appendChild(accountChevron);
+    accountMenu.appendChild(accountName);
+    accountMenu.appendChild(menuBadge);
     accountItem.appendChild(accountTrigger);
     accountItem.appendChild(accountMenu);
     menuRoot.appendChild(themeToggle);
@@ -175,7 +203,10 @@ function createRuntime(options = {}) {
         readyState: 'complete',
         getElementById(id) { return byId[id] || null; },
         querySelector(selector) {
-            if (selector === '.miq360-account-item.is-authenticated') return accountItem;
+            if (selector === '[data-miq-blog-account-shell]' || selector === '.miq360-account-item') return accountItem;
+            if (selector === '.miq360-account-item.is-authenticated') {
+                return accountItem.classList.contains('is-authenticated') ? accountItem : null;
+            }
             return null;
         },
         createElement(tagName) { return new FakeElement(tagName); },
@@ -194,6 +225,11 @@ function createRuntime(options = {}) {
     };
     const windowObject = {
         innerWidth: options.mobile === false ? 1200 : 390,
+        __MIQ_ACCOUNT__: {
+            loggedIn: options.loggedIn !== false,
+            displayName: 'Test User',
+            unreadNotifications: options.unreadNotifications || 0
+        },
         matchMedia(query) { return query === '(max-width: 49.99em)' ? mobileMedia : darkMedia; },
         setTimeout(callback) { callback(); },
         addEventListener(type, listener) {
@@ -226,9 +262,13 @@ function createRuntime(options = {}) {
         accountItem,
         accountTrigger,
         accountMenu,
+        accountBadge,
+        menuBadge,
+        accountName,
         navigationToggle,
         mobileMedia,
         document: documentObject,
+        window: windowObject,
         marketToggle: market.item.children[1],
         econToggle: econ.item.children[1]
     };
@@ -304,5 +344,24 @@ assert(desktop.accountItem.classList.contains('is-open'), 'Desktop account click
 desktop.mobileMedia.setMatches(true);
 assert.strictEqual(desktop.market.submenu.hidden, true);
 assert.strictEqual(desktop.accountMenu.hidden, true);
+
+const guest = createRuntime({ mobile: true, loggedIn: false });
+assert(guest.accountItem.classList.contains('is-guest'));
+assert(!guest.accountItem.classList.contains('is-authenticated'));
+assert.strictEqual(guest.accountMenu.hidden, true);
+assert.strictEqual(guest.accountTrigger.getAttribute('aria-haspopup'), 'false');
+click(guest.accountTrigger);
+assert(!guest.accountItem.classList.contains('is-open'), 'A guest account icon must navigate to sign-in, not reveal private links.');
+guest.window.MiqBlogAccountShell.applyState({ loggedIn: true, displayName: 'Authenticated User', unreadNotifications: 123 });
+assert(guest.accountItem.classList.contains('is-authenticated'));
+assert.strictEqual(guest.accountTrigger.getAttribute('aria-haspopup'), 'true');
+assert.strictEqual(guest.accountName.textContent, 'Authenticated User');
+assert.strictEqual(guest.accountBadge.textContent, '99+');
+assert.strictEqual(guest.menuBadge.textContent, '99+');
+assert.strictEqual(guest.accountBadge.hidden, false);
+assert.strictEqual(guest.accountMenu.hidden, true, 'A hydrated mobile account menu stays closed until the user opens it.');
+click(guest.accountTrigger);
+assert(guest.accountItem.classList.contains('is-open'));
+assert.strictEqual(guest.accountMenu.hidden, false);
 
 console.log('Blog mobile menu regression checks passed.');

@@ -3,7 +3,7 @@
  * Plugin Name: 360MiQ Blog Theme Sync
  * Description: Syncs the public WordPress blog theme and shared Recent Analyses behavior.
  * Author: 360MiQ
- * Version: 1.3.0
+ * Version: 1.4.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -53,80 +53,6 @@ if ( ! function_exists( 'miq360_blog_theme_sync_assets' ) ) {
 }
 add_action( 'wp_enqueue_scripts', 'miq360_blog_theme_sync_assets', 99 );
 
-if ( ! function_exists( 'miq360_blog_theme_sync_main_site_user' ) ) {
-	function miq360_blog_theme_sync_main_site_user( $wordpress_user = null ) {
-		static $resolved = false;
-		static $user     = null;
-
-		if ( $resolved ) {
-			return $user;
-		}
-
-		$resolved          = true;
-		$account_bootstrap = dirname( __DIR__, 3 ) . '/account/bootstrap.php';
-		if ( ! is_file( $account_bootstrap ) ) {
-			return null;
-		}
-
-		require_once $account_bootstrap;
-		if ( function_exists( 'miq_account_current_user' ) ) {
-			$user = miq_account_current_user();
-		}
-		if ( $user ) {
-			return $user;
-		}
-
-		if ( ! ( $wordpress_user instanceof WP_User ) && function_exists( 'is_user_logged_in' ) && is_user_logged_in() && function_exists( 'wp_get_current_user' ) ) {
-			$wordpress_user = wp_get_current_user();
-		}
-		$linked_user_id = $wordpress_user instanceof WP_User && function_exists( 'get_user_meta' )
-			? absint( get_user_meta( $wordpress_user->ID, 'miq_main_user_id', true ) )
-			: 0;
-		if ( $linked_user_id > 0 && function_exists( 'miq_account_find_user_by_id' ) && function_exists( 'miq_account_require_active_user' ) && function_exists( 'miq_account_login_user' ) ) {
-			try {
-				$linked_user = miq_account_require_active_user( miq_account_find_user_by_id( $linked_user_id ) );
-				miq_account_login_user( $linked_user['id'], $linked_user['session_version'], false );
-				$user = $linked_user;
-			} catch ( Throwable $error ) {
-				$user = null;
-			}
-		}
-
-		return $user;
-	}
-}
-
-if ( ! function_exists( 'miq360_blog_theme_sync_hydrate_main_site_session' ) ) {
-	function miq360_blog_theme_sync_hydrate_main_site_session() {
-		if ( is_admin() ) {
-			return;
-		}
-		$wordpress_user = function_exists( 'is_user_logged_in' ) && is_user_logged_in() && function_exists( 'wp_get_current_user' )
-			? wp_get_current_user()
-			: null;
-		miq360_blog_theme_sync_main_site_user( $wordpress_user );
-	}
-}
-add_action( 'wp', 'miq360_blog_theme_sync_hydrate_main_site_session', 1 );
-
-if ( ! function_exists( 'miq360_blog_theme_sync_unread_notifications' ) ) {
-	function miq360_blog_theme_sync_unread_notifications( $main_site_user = null, $wordpress_user = null ) {
-		$user_id = is_array( $main_site_user ) ? absint( $main_site_user['id'] ?? 0 ) : 0;
-		if ( $user_id <= 0 && $wordpress_user instanceof WP_User && function_exists( 'get_user_meta' ) ) {
-			$user_id = absint( get_user_meta( $wordpress_user->ID, 'miq_main_user_id', true ) );
-		}
-		if ( $user_id <= 0 || ! function_exists( 'miq_account_unread_notification_count' ) ) {
-			return 0;
-		}
-
-		try {
-			return max( 0, (int) miq_account_unread_notification_count( $user_id ) );
-		} catch ( Throwable $error ) {
-			return 0;
-		}
-	}
-}
-
 if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 	function miq360_blog_theme_sync_menu_toggle( $items, $args ) {
 		if ( is_admin() || empty( $args->theme_location ) || 'primary' !== $args->theme_location ) {
@@ -137,67 +63,27 @@ if ( ! function_exists( 'miq360_blog_theme_sync_menu_toggle' ) ) {
 			? miq_main_site_sso_main_site_url( 'production' )
 			: 'https://360miq.com';
 		$main_site_path = trailingslashit( $main_site_url );
-		$wp_authenticated   = function_exists( 'is_user_logged_in' ) && is_user_logged_in();
-		$current_user       = $wp_authenticated && function_exists( 'wp_get_current_user' ) ? wp_get_current_user() : null;
-		$main_site_user     = miq360_blog_theme_sync_main_site_user( $current_user );
-		$is_authenticated   = $wp_authenticated || $main_site_user !== null;
-		$main_site_identity = $current_user instanceof WP_User ? $current_user : $main_site_user;
-		$needs_sso_handoff  = ! $wp_authenticated && $main_site_user !== null;
-		$account_state = $is_authenticated ? 'is-authenticated' : 'is-guest';
-		$unread_notifications = $is_authenticated
-			? miq360_blog_theme_sync_unread_notifications( $main_site_user, $current_user )
-			: 0;
-		$unread_badge = $unread_notifications > 99 ? '99+' : (string) $unread_notifications;
-		$account_aria_label = $unread_notifications > 0
-			? sprintf( 'Account menu, %d unread notifications', $unread_notifications )
-			: 'Account menu';
-		$account_url = $is_authenticated
-			? '#'
-			: $main_site_path . 'account.php?view=login&amp;return_to=' . rawurlencode( '/blog/' );
-		$account  = '<li class="menu-item miq360-account-item ' . esc_attr( $account_state ) . '">';
-		$account .= '<a href="' . esc_url( $account_url ) . '" id="miq360-blog-account-toggle" class="miq360-account-link nav-link ' . esc_attr( $account_state ) . '" data-miq-account-trigger data-account-aria-base="Account menu" aria-label="' . esc_attr( $is_authenticated ? $account_aria_label : 'Sign in' ) . '" title="' . esc_attr( $is_authenticated ? 'Account' : 'Sign in' ) . '"';
-		if ( $is_authenticated ) {
-			$account .= ' aria-haspopup="true" aria-expanded="false" aria-controls="miq360-blog-account-menu"';
-		}
-		$account .= '><span class="miq360-account-avatar-wrap"><i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i><span class="miq360-account-icon-badge" data-miq-account-unread-badge' . ( $unread_notifications < 1 ? ' hidden' : '' ) . ' aria-hidden="true">' . esc_html( $unread_badge ) . '</span>';
+		$account_url = $main_site_path . 'account.php?view=login&return_to=' . rawurlencode( '/blog/' );
+		$account  = '<li class="menu-item miq360-account-item is-guest" data-miq-blog-account-shell data-main-site-url="' . esc_url( $main_site_path ) . '" data-login-url="' . esc_url( $account_url ) . '">';
+		$account .= '<a href="' . esc_url( $account_url ) . '" id="miq360-blog-account-toggle" class="miq360-account-link nav-link is-guest" data-miq-account-trigger data-account-aria-base="Account menu" aria-label="Sign in" title="Sign in" aria-haspopup="false" aria-expanded="false" aria-controls="miq360-blog-account-menu">';
+		$account .= '<span class="miq360-account-avatar-wrap"><i class="fas fa-user-circle miq-account-avatar" aria-hidden="true"></i><span class="miq360-account-icon-badge" data-miq-account-unread-badge hidden aria-hidden="true"></span>';
 		$account .= '</span>';
-		if ( $is_authenticated ) {
-			$account .= '<span class="miq-account-chevron" aria-hidden="true"></span>';
-		}
+		$account .= '<span class="miq-account-chevron" data-miq-account-chevron hidden aria-hidden="true"></span>';
 		$account .= '</a>';
-
-		if ( $is_authenticated ) {
-			if ( is_array( $main_site_identity ) && ! empty( $main_site_identity['display_name'] ) ) {
-				$display_name = $main_site_identity['display_name'];
-			} elseif ( $main_site_identity instanceof WP_User && $main_site_identity->display_name !== '' ) {
-				$display_name = $main_site_identity->display_name;
-			} elseif ( $main_site_identity instanceof WP_User ) {
-				$display_name = $main_site_identity->user_login;
-			} else {
-				$display_name = 'Account';
-			}
-			$logout_url = function_exists( 'wp_logout_url' )
-				? wp_logout_url( $main_site_path . 'account_logout' )
-				: $main_site_path . 'account_logout';
-			$account .= '<div id="miq360-blog-account-menu" class="miq360-account-menu" role="menu" aria-labelledby="miq360-blog-account-toggle">';
-			$account .= '<div class="miq360-account-menu-header" role="presentation"><span>Signed in as</span><strong>' . esc_html( $display_name ) . '</strong></div>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace' ) . '"><i class="fas fa-layer-group fa-fw" aria-hidden="true"></i> My Workspace</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=watchlists' ) . '"><i class="fas fa-star fa-fw" aria-hidden="true"></i> Watchlists</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=charts' ) . '"><i class="fas fa-chart-line fa-fw" aria-hidden="true"></i> Saved Charts</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=scripts' ) . '"><i class="fas fa-code fa-fw" aria-hidden="true"></i> Pine Scripts</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notes' ) . '"><i class="fas fa-book-open fa-fw" aria-hidden="true"></i> Research Notes</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=alerts' ) . '"><i class="fas fa-bell fa-fw" aria-hidden="true"></i> Price Alerts</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notifications' ) . '"><i class="fas fa-inbox fa-fw" aria-hidden="true"></i> Notifications<span class="miq360-account-unread" data-miq-account-unread-badge' . ( $unread_notifications < 1 ? ' hidden' : '' ) . '>' . esc_html( $unread_badge ) . '</span>';
-			$account .= '</a>';
-			$article_editor_url = $needs_sso_handoff
-				? $main_site_path . 'account_sso.php?target=new-post'
-				: admin_url( 'post-new.php' );
-            $account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $article_editor_url ) . '"><i class="fas fa-pen-alt fa-fw" aria-hidden="true"></i> Write an Article</a>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_settings' ) . '"><i class="fas fa-cog fa-fw" aria-hidden="true"></i> Settings</a>';
-			$account .= '<div class="miq360-account-menu-divider" role="separator"></div>';
-			$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $logout_url ) . '"><i class="fas fa-sign-out-alt fa-fw" aria-hidden="true"></i> Sign out</a>';
-			$account .= '</div>';
-		}
+		$account .= '<div id="miq360-blog-account-menu" class="miq360-account-menu" role="menu" aria-labelledby="miq360-blog-account-toggle" hidden>';
+		$account .= '<div class="miq360-account-menu-header" role="presentation"><span>Signed in as</span><strong data-miq-account-display-name>Account</strong></div>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace' ) . '"><i class="fas fa-layer-group fa-fw" aria-hidden="true"></i> My Workspace</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=watchlists' ) . '"><i class="fas fa-star fa-fw" aria-hidden="true"></i> Watchlists</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=charts' ) . '"><i class="fas fa-chart-line fa-fw" aria-hidden="true"></i> Saved Charts</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=scripts' ) . '"><i class="fas fa-code fa-fw" aria-hidden="true"></i> Pine Scripts</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notes' ) . '"><i class="fas fa-book-open fa-fw" aria-hidden="true"></i> Research Notes</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=alerts' ) . '"><i class="fas fa-bell fa-fw" aria-hidden="true"></i> Price Alerts</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'workspace?tab=notifications' ) . '"><i class="fas fa-inbox fa-fw" aria-hidden="true"></i> Notifications<span class="miq360-account-unread" data-miq-account-unread-badge hidden></span></a>';
+        $account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_sso.php?target=new-post' ) . '"><i class="fas fa-pen-alt fa-fw" aria-hidden="true"></i> Write an Article</a>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_settings' ) . '"><i class="fas fa-cog fa-fw" aria-hidden="true"></i> Settings</a>';
+		$account .= '<div class="miq360-account-menu-divider" role="separator"></div>';
+		$account .= '<a class="miq360-account-menu-item" role="menuitem" href="' . esc_url( $main_site_path . 'account_logout' ) . '"><i class="fas fa-sign-out-alt fa-fw" aria-hidden="true"></i> Sign out</a>';
+		$account .= '</div>';
 
 		$account .= '</li>';
 

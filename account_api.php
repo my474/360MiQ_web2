@@ -3,7 +3,10 @@ require_once __DIR__ . '/account/bootstrap.php';
 require_once __DIR__ . '/account/community_sentiment.php';
 
 header('Content-Type: application/json; charset=UTF-8');
-header('Cache-Control: no-store');
+header('Cache-Control: private, no-store, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+header('Vary: Cookie', false);
 
 function miq_api_json($payload, $status = 200)
 {
@@ -771,7 +774,7 @@ $action = isset($_GET['action']) ? (string) $_GET['action'] : (isset($body['acti
 $request_method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $read_actions = array(
     'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'workspace',
-    'get_preferences', 'get_notification_settings', 'list_notes', 'list_alerts', 'list_screener_presets',
+    'account_bootstrap', 'get_preferences', 'get_notification_settings', 'list_notes', 'list_alerts', 'list_screener_presets',
     'list_watchlists', 'watchlist_state', 'list_charts', 'get_chart',
     'list_chart_versions', 'list_scripts', 'get_script', 'list_script_versions',
     'moderation_dashboard', 'moderation_queue', 'get_chat_history'
@@ -851,6 +854,25 @@ try {
             unset($rows[$index]['user_id']);
         }
         miq_api_json(array('replies' => $rows));
+    }
+
+    if ($action === 'account_bootstrap') {
+        $viewer = miq_account_current_user();
+        $config = miq_account_config();
+        $base_url = rtrim((string) $config['base_url'], '/');
+        $payload = array(
+            'loggedIn' => (bool) $viewer,
+            'userId' => $viewer ? (int) $viewer['id'] : null,
+            'displayName' => $viewer ? (string) $viewer['display_name'] : '',
+            'csrfToken' => $viewer ? miq_account_csrf_token() : '',
+            'apiUrl' => $base_url . '/account_api.php',
+            'workspaceUrl' => $base_url . '/workspace',
+            'assetBaseUrl' => $base_url . '/assets',
+            'chatHistoryMaxBytes' => (int) $config['max_chat_history_bytes'],
+            'unreadNotifications' => $viewer ? miq_account_unread_notification_count((int) $viewer['id']) : 0,
+            'notificationConfig' => miq_account_notification_web_config(),
+        );
+        miq_api_json($payload);
     }
 
     $user = miq_api_user();
@@ -954,14 +976,19 @@ try {
     }
 
     if ($action === 'register_notification_device') {
+        $device_limit = miq_account_config()['rate_limits']['notification_device_user'];
+        if (!miq_account_rate_limit('notification_device_user', (string) $user_id, $device_limit['limit'], $device_limit['window'])) {
+            miq_api_json(array('error' => 'Too many notification-device updates. Please wait and try again.'), 429);
+        }
         $channel = miq_account_notification_clean_channel($body['channel'] ?? '');
         $token = trim((string) ($body['token'] ?? ''));
-        if ($channel === '' || $token === '') {
+        if ($channel === '' || strlen($token) < 20 || strlen($token) > 4096) {
             miq_api_json(array('error' => 'A valid notification channel and device token are required.'), 422);
         }
         $device = miq_account_register_notification_device($user_id, $channel, $token, array(
             'label' => $body['label'] ?? '',
             'app_version' => $body['app_version'] ?? '',
+            'installation_id' => $body['installation_id'] ?? '',
         ));
         $settings = miq_account_notification_settings_payload($user_id);
         miq_api_json(array_merge(array('saved' => true, 'device' => $device, 'csrf_token' => miq_account_csrf_token()), $settings));
@@ -972,7 +999,8 @@ try {
             $user_id,
             (int) ($body['device_id'] ?? 0),
             $body['channel'] ?? '',
-            $body['token'] ?? ''
+            $body['token'] ?? '',
+            $body['installation_id'] ?? ''
         );
         $settings = miq_account_notification_settings_payload($user_id);
         miq_api_json(array_merge(array('saved' => true, 'removed' => (bool) $removed, 'csrf_token' => miq_account_csrf_token()), $settings));
@@ -2409,6 +2437,8 @@ try {
     }
 
     miq_api_json(array('error' => 'Unknown account action.'), 404);
+} catch (MiqAccountNotificationDeviceLimitException $error) {
+    miq_api_json(array('error' => $error->getMessage()), 409);
 } catch (Throwable $error) {
     error_log('360MiQ account API error: ' . $error->getMessage());
     miq_api_json(array('error' => miq_account_config()['debug'] ? $error->getMessage() : 'The account service is temporarily unavailable.'), 500);

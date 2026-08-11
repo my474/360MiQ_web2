@@ -98,6 +98,43 @@
     return null;
   }
 
+  function applyAccountState(eventOrState) {
+    var state = eventOrState && eventOrState.detail ? eventOrState.detail : (eventOrState || window.__MIQ_ACCOUNT__ || {});
+    var item = document.querySelector('[data-miq-blog-account-shell]');
+    var trigger = document.getElementById('miq360-blog-account-toggle');
+    var menu = document.getElementById('miq360-blog-account-menu');
+    if (!item || !trigger || !menu) return;
+
+    var loggedIn = !!state.loggedIn;
+    var count = Math.max(0, parseInt(state.unreadNotifications, 10) || 0);
+    var label = count > 0 ? 'Account menu, ' + count + ' unread notifications' : 'Account menu';
+    var loginUrl = item.getAttribute('data-login-url') || trigger.href;
+    item.classList.toggle('is-authenticated', loggedIn);
+    item.classList.toggle('is-guest', !loggedIn);
+    trigger.classList.toggle('is-authenticated', loggedIn);
+    trigger.classList.toggle('is-guest', !loggedIn);
+    trigger.href = loggedIn ? '#' : loginUrl;
+    trigger.title = loggedIn ? 'Account' : 'Sign in';
+    trigger.setAttribute('aria-label', loggedIn ? label : 'Sign in');
+    trigger.setAttribute('aria-haspopup', loggedIn ? 'true' : 'false');
+    trigger.setAttribute('aria-expanded', 'false');
+    item.classList.remove('is-open');
+    var mobileAccount = window.matchMedia
+      ? window.matchMedia('(max-width: 49.99em)').matches
+      : window.innerWidth < 800;
+    menu.hidden = !loggedIn || mobileAccount;
+
+    var chevron = item.querySelector('[data-miq-account-chevron]');
+    if (chevron) chevron.hidden = !loggedIn;
+    var displayName = item.querySelector('[data-miq-account-display-name]');
+    if (displayName) displayName.textContent = state.displayName || 'Account';
+
+    Array.prototype.forEach.call(item.querySelectorAll('[data-miq-account-unread-badge]'), function(badge) {
+      badge.textContent = count > 99 ? '99+' : String(count);
+      badge.hidden = !loggedIn || count < 1;
+    });
+  }
+
   function initNavigationMenus() {
     var mobileQuery = window.matchMedia
       ? window.matchMedia('(max-width: 49.99em)')
@@ -105,7 +142,7 @@
     var menuRoot = document.getElementById('menu-primary-items') || document.querySelector('.menu-unset > ul');
     var menuContainer = document.getElementById('menu-primary-container');
     var navigationToggle = document.getElementById('toggle-navigation');
-    var accountItem = document.querySelector('.miq360-account-item.is-authenticated');
+    var accountItem = document.querySelector('.miq360-account-item');
     var accountTrigger = document.getElementById('miq360-blog-account-toggle');
     var accountMenu = document.getElementById('miq360-blog-account-menu');
     var controls = [];
@@ -169,6 +206,9 @@
     }
 
     function setOpen(control, open) {
+      if (control.type === 'account' && !control.item.classList.contains('is-authenticated')) {
+        open = false;
+      }
       control.item.classList.toggle(openClass(control), open);
       control.trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
 
@@ -179,7 +219,8 @@
         );
       }
 
-      control.menu.hidden = mobileQuery.matches ? !open : false;
+      var guestAccount = control.type === 'account' && !control.item.classList.contains('is-authenticated');
+      control.menu.hidden = guestAccount || (mobileQuery.matches ? !open : false);
     }
 
     function closeControl(control) {
@@ -218,6 +259,7 @@
       (function(control) {
         control.trigger.addEventListener('click', function(e) {
           if (control.type === 'submenu' && !mobileQuery.matches) return;
+          if (control.type === 'account' && !control.item.classList.contains('is-authenticated')) return;
 
           e.preventDefault();
           e.stopPropagation();
@@ -274,6 +316,7 @@
 
   function boot() {
     applyTheme(resolveDark());
+    applyAccountState(window.__MIQ_ACCOUNT__ || {});
     initToggle();
     initNavigationMenus();
   }
@@ -284,6 +327,9 @@
     enable: function() { setTheme(true); },
     disable: function() { setTheme(false); }
   };
+  window.MiqBlogAccountShell = { applyState: applyAccountState };
+
+  window.addEventListener('miq:account-state', applyAccountState);
 
   window.addEventListener('storage', function(e) {
     if (e.key === STORE_KEY) {

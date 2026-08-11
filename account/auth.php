@@ -229,9 +229,23 @@ function miq_account_is_admin($user = null)
     return in_array(strtolower($user['email']), array_map('strtolower', $emails), true);
 }
 
+function miq_account_retire_current_notification_session()
+{
+    $notification_user_id = (int) ($_SESSION['miq_account_user_id'] ?? 0);
+    $notification_session_hash = miq_account_session_hash();
+    if ($notification_user_id > 0 && function_exists('miq_account_unregister_notification_session')) {
+        try {
+            miq_account_unregister_notification_session($notification_user_id, $notification_session_hash);
+        } catch (Throwable $error) {
+            error_log('360MiQ notification session cleanup failure: ' . $error->getMessage());
+        }
+    }
+}
+
 function miq_account_logout($destroy_session = true)
 {
     miq_account_start_session();
+    miq_account_retire_current_notification_session();
     miq_account_remove_current_session();
     unset($_SESSION['miq_account_user_id'], $_SESSION['miq_account_session_version'], $_SESSION['miq_account_last_activity_write']);
     if ($destroy_session) {
@@ -247,6 +261,7 @@ function miq_account_logout($destroy_session = true)
 function miq_account_login_user($user_id, $session_version, $record_login = true)
 {
     miq_account_start_session();
+    miq_account_retire_current_notification_session();
     miq_account_remove_current_session();
     session_regenerate_id(true);
     $_SESSION['miq_account_user_id'] = (int) $user_id;

@@ -70,6 +70,15 @@ function miq_account_config()
         'fcm_web_vapid_key' => miq_account_env('FCM_WEB_VAPID_KEY', ''),
         'fcm_web_sdk_version' => miq_account_env('FCM_WEB_SDK_VERSION', '11.10.0'),
         'fcm_max_devices_per_notification' => max(1, min(50, (int) miq_account_env('FCM_MAX_DEVICES_PER_NOTIFICATION', 10))),
+        'fcm_max_devices_per_user' => max(1, min(100, (int) miq_account_env('FCM_MAX_DEVICES_PER_USER', 20))),
+        'fcm_worker_batch_size' => max(1, min(200, (int) miq_account_env('FCM_WORKER_BATCH_SIZE', 50))),
+        'fcm_delivery_max_attempts' => max(1, min(20, (int) miq_account_env('FCM_DELIVERY_MAX_ATTEMPTS', 8))),
+        'fcm_retry_base_seconds' => max(5, min(3600, (int) miq_account_env('FCM_RETRY_BASE_SECONDS', 60))),
+        'fcm_retry_max_seconds' => max(60, min(86400, (int) miq_account_env('FCM_RETRY_MAX_SECONDS', 21600))),
+        // A cold OAuth exchange plus one authenticated retry can consume four
+        // 15-second HTTP timeouts. Keep the lease above that worst-case path
+        // so a second worker cannot reclaim and duplicate an in-flight push.
+        'fcm_delivery_lease_seconds' => max(90, min(600, (int) miq_account_env('FCM_DELIVERY_LEASE_SECONDS', 120))),
         'moderator_emails' => array_filter(array_map('trim', explode(',', miq_account_env('MIQ_MODERATOR_EMAILS', '')))),
         'admin_emails' => array_filter(array_map('trim', explode(',', miq_account_env('MIQ_ADMIN_EMAILS', '')))),
         'activity_write_interval' => max(60, (int) miq_account_env('MIQ_ACTIVITY_WRITE_INTERVAL', 900)),
@@ -92,6 +101,7 @@ function miq_account_config()
             'sso_user' => array('limit' => (int) miq_account_env('MIQ_RATE_SSO_USER_LIMIT', 60), 'window' => (int) miq_account_env('MIQ_RATE_SSO_USER_WINDOW', 3600)),
             'asset_write_user' => array('limit' => (int) miq_account_env('MIQ_RATE_ASSET_WRITE_LIMIT', 600), 'window' => (int) miq_account_env('MIQ_RATE_ASSET_WRITE_WINDOW', 3600)),
             'asset_version_user' => array('limit' => (int) miq_account_env('MIQ_RATE_ASSET_VERSION_LIMIT', 60), 'window' => (int) miq_account_env('MIQ_RATE_ASSET_VERSION_WINDOW', 3600)),
+            'notification_device_user' => array('limit' => (int) miq_account_env('MIQ_RATE_NOTIFICATION_DEVICE_LIMIT', 300), 'window' => (int) miq_account_env('MIQ_RATE_NOTIFICATION_DEVICE_WINDOW', 3600)),
         ),
         'max_api_request_bytes' => (int) miq_account_env('MIQ_MAX_API_REQUEST_BYTES', 2000000),
         // Chat history is intentionally small because it contains rendered

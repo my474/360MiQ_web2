@@ -210,9 +210,9 @@ html[data-theme="dark"] .site-header .miq360-account-link .miq-account-chevron {
   background-image: linear-gradient(to right, #20a4e6, #17e6c3);
 }
 
-.miq360-account-item:hover > .miq360-account-menu,
-.miq360-account-item:focus-within > .miq360-account-menu,
-.miq360-account-item.is-open > .miq360-account-menu {
+.miq360-account-item.is-authenticated:hover > .miq360-account-menu,
+.miq360-account-item.is-authenticated:focus-within > .miq360-account-menu,
+.miq360-account-item.is-authenticated.is-open > .miq360-account-menu {
   opacity: 1;
   transform: translateY(-12px);
   visibility: visible;
@@ -745,7 +745,7 @@ html[data-theme="dark"] .miq360-account-menu-divider {
     visibility: hidden;
   }
 
-  .miq360-account-item.is-open > .miq360-account-menu {
+  .miq360-account-item.is-authenticated.is-open > .miq360-account-menu {
     display: block;
     opacity: 1;
     transform: none;

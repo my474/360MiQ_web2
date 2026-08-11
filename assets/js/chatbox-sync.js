@@ -1188,6 +1188,16 @@
     });
   }
 
+  function waitForAccountBootstrap() {
+    if (!root || !root.__MIQ_ACCOUNT_BOOTSTRAP_PROMISE__) return Promise.resolve(config);
+    return Promise.resolve(root.__MIQ_ACCOUNT_BOOTSTRAP_PROMISE__).then(function (accountState) {
+      if (accountState && accountState !== config) Object.assign(config, accountState);
+      return config;
+    }).catch(function () {
+      return config;
+    });
+  }
+
   function installStorageGuard() {
     if (!root || !root.localStorage || !root.Storage || !root.Storage.prototype) return;
     storage = root.localStorage;
@@ -1364,7 +1374,7 @@
   }
 
   installStorageGuard();
-  readyPromise = hydrateFromAccount();
+  readyPromise = waitForAccountBootstrap().then(hydrateFromAccount);
   installMessageObserver();
   installScrollDatePill();
   installChatOpenScroll();
