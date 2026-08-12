@@ -239,6 +239,12 @@ function miq_stock_quotes($codes)
     return $rows;
 }
 
+function miq_account_format_alert_price($value)
+{
+    $formatted = number_format((float) $value, 4, '.', '');
+    return rtrim(rtrim($formatted, '0'), '.');
+}
+
 function miq_account_evaluate_price_alerts($quotes, $user_id = 0)
 {
     if (!$quotes) {
@@ -285,11 +291,13 @@ function miq_account_evaluate_price_alerts($quotes, $user_id = 0)
             if (!$did_trigger) {
                 continue;
             }
+            $formatted_price = miq_account_format_alert_price($price);
+            $formatted_target = miq_account_format_alert_price($target);
             miq_account_notify(
                 (int) $alert['user_id'],
                 'price_alert',
                 $alert['code'] . ' price alert triggered',
-                $alert['code'] . ' reached ' . number_format($price, 4) . ' (' . $alert['condition_type'] . ' ' . number_format($target, 4) . ').',
+                $alert['code'] . ' reached ' . $formatted_price . ' (' . $alert['condition_type'] . ' ' . $formatted_target . ').',
                 'stockinfo?code=' . rawurlencode($alert['code']),
                 'price-alert:' . (int) $alert['id']
             );
