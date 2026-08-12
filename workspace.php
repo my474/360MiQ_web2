@@ -23,7 +23,7 @@ if (!$user) {
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="assets/css/account.css?v=20260806.7">
-    <link rel="stylesheet" href="assets/css/workspace.css?v=20260806.3">
+    <link rel="stylesheet" href="assets/css/workspace.css?v=20260812.4">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 </head>
 <body data-community-enabled="<?php echo $community_enabled ? 'true' : 'false'; ?>">

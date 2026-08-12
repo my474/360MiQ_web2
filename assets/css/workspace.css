@@ -42,6 +42,19 @@ html[data-theme="dark"] body.miq-user-admin-body {
     border-color: var(--button-primary-border, #3b99e0);
 }
 
+.miq-workspace-tabs .miq-tab-count {
+    margin-left: .45rem;
+    background: #ffc857;
+    color: #1c2734;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .34);
+}
+
+html[data-theme="dark"] .miq-workspace-tabs .miq-tab-count {
+    background: #ffd166;
+    color: #1a1a2e;
+    box-shadow: 0 0 0 1px rgba(26, 26, 46, .76);
+}
+
 .miq-dashboard-hero {
     display: flex;
     align-items: center;
