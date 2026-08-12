@@ -241,8 +241,23 @@ function miq_stock_quotes($codes)
 
 function miq_account_format_alert_price($value)
 {
+    if (is_string($value)) {
+        $value = str_replace(',', '', $value);
+    }
     $formatted = number_format((float) $value, 4, '.', '');
     return rtrim(rtrim($formatted, '0'), '.');
+}
+
+function miq_account_format_alert_message($message)
+{
+    $pattern = '/(\breached\s+)([-+]?(?:\d[\d,]*)(?:\.\d+)?)(\s+\((?:above|below)\s+)([-+]?(?:\d[\d,]*)(?:\.\d+)?)(?=\))/i';
+    $formatted = preg_replace_callback($pattern, function ($matches) {
+        return $matches[1]
+            . miq_account_format_alert_price($matches[2])
+            . $matches[3]
+            . miq_account_format_alert_price($matches[4]);
+    }, (string) $message);
+    return $formatted === null ? (string) $message : $formatted;
 }
 
 function miq_account_evaluate_price_alerts($quotes, $user_id = 0)

@@ -717,6 +717,11 @@ function miq_api_workspace($user)
             array($user_id)
         ));
     }, array());
+    foreach ($notifications as $index => $notification) {
+        if (($notification['notification_type'] ?? '') === 'price_alert') {
+            $notifications[$index]['message'] = miq_account_format_alert_message($notification['message'] ?? '');
+        }
+    }
     $bookmarks = array();
     if (miq_community_enabled()) {
         $bookmarks = miq_api_workspace_optional(function () use ($user_id) {
