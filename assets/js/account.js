@@ -347,17 +347,16 @@
     var googleButtonClientId = '';
     var googleButtonMode = '';
 
-    function isAndroidWebView() {
+    function isOfficialAndroidApp() {
         var userAgent = String((window.navigator && window.navigator.userAgent) || '');
-        return /360MiQAndroid/i.test(userAgent)
-            || (/Android/i.test(userAgent) && (/\bwv\b/i.test(userAgent) || /Version\/4\.0/i.test(userAgent)));
+        return /(?:^|\s)360MiQAndroid\/\d+(?:\.\d+){0,3}(?:\s|$)/i.test(userAgent);
     }
 
     function configureGoogleLoginSurface() {
         var nativeLinks = document.querySelectorAll('[data-native-google-login]');
         if (!nativeLinks.length) return false;
 
-        var useNativeLogin = isAndroidWebView();
+        var useNativeLogin = isOfficialAndroidApp();
         Array.prototype.forEach.call(document.querySelectorAll('.miq-google-form'), function (form) {
             if (useNativeLogin) form.setAttribute('hidden', 'hidden');
             else form.removeAttribute('hidden');

@@ -145,7 +145,7 @@ Rate-limit failures fail closed and are logged without recording raw IP addresse
 
 ## Android WebView Google login
 
-Google Identity Services intentionally does not render its web sign-in button inside an Android WebView. The account page therefore keeps the normal Google button in desktop and mobile browsers, but replaces it with a native handoff link when the user agent contains the standard Android WebView markers (`wv` or `Version/4.0`) or the wrapper marker `360MiQAndroid`.
+Google Identity Services intentionally does not render its web sign-in button inside an Android WebView. The account page therefore keeps the normal Google button in desktop and mobile browsers, but replaces it with a native handoff link only when the user agent contains the official app's versioned wrapper marker, such as `360MiQAndroid/1.05`. Generic Android WebView markers (`wv` or `Version/4.0`) are deliberately ignored so third-party embedded browsers and older app builds cannot navigate to the app-only handoff endpoint.
 
 The Android OAuth client (`com.miq360` plus the Play App Signing SHA-1) remains configured only in Google Cloud. Do not put its client ID in the website configuration. For the explicit native button, build a `GetSignInWithGoogleOption` with the Web OAuth client ID above; this makes the resulting ID token's audience match the website's `GOOGLE_CLIENT_ID`.
 

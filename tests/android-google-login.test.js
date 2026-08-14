@@ -121,13 +121,14 @@ function createRuntime(userAgent, initialTheme) {
 
 const webViewUa = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro Build/AP1A; wv) AppleWebKit/537.36 Version/4.0 Chrome/126 Mobile Safari/537.36';
 const mobileBrowserUa = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
+const officialAppUa = webViewUa + ' 360MiQAndroid/1.05';
 
-const initialLight = createRuntime(webViewUa, 'light');
+const initialLight = createRuntime(officialAppUa, 'light');
 assert.strictEqual(initialLight.webForm.hidden, true);
 assert.strictEqual(initialLight.nativeLink.hidden, false);
 assert.strictEqual(initialLight.surface(), 'native');
 
-const initialDark = createRuntime(webViewUa, 'dark');
+const initialDark = createRuntime(officialAppUa, 'dark');
 assert.strictEqual(initialDark.webForm.hidden, true);
 assert.strictEqual(initialDark.nativeLink.hidden, false);
 assert.strictEqual(initialDark.surface(), 'native');
@@ -141,6 +142,11 @@ initialLight.dispatchTheme('light');
 assert.strictEqual(initialLight.nativeLink.hidden, false);
 assert.strictEqual(initialLight.surface(), 'native');
 
+const genericWebView = createRuntime(webViewUa, 'light');
+assert.strictEqual(genericWebView.webForm.hidden, false);
+assert.strictEqual(genericWebView.nativeLink.hidden, true);
+assert.strictEqual(genericWebView.surface(), 'web');
+
 const mobileBrowser = createRuntime(mobileBrowserUa, 'light');
 assert.strictEqual(mobileBrowser.webForm.hidden, false);
 assert.strictEqual(mobileBrowser.nativeLink.hidden, true);
@@ -150,5 +156,15 @@ const customWrapper = createRuntime(mobileBrowserUa + ' 360MiQAndroid/1.0', 'lig
 assert.strictEqual(customWrapper.webForm.hidden, true);
 assert.strictEqual(customWrapper.nativeLink.hidden, false);
 assert.strictEqual(customWrapper.surface(), 'native');
+
+const unversionedWrapper = createRuntime(mobileBrowserUa + ' 360MiQAndroid', 'light');
+assert.strictEqual(unversionedWrapper.webForm.hidden, false);
+assert.strictEqual(unversionedWrapper.nativeLink.hidden, true);
+assert.strictEqual(unversionedWrapper.surface(), 'web');
+
+const lookalikeWrapper = createRuntime(mobileBrowserUa + ' Not360MiQAndroid/1.05', 'light');
+assert.strictEqual(lookalikeWrapper.webForm.hidden, false);
+assert.strictEqual(lookalikeWrapper.nativeLink.hidden, true);
+assert.strictEqual(lookalikeWrapper.surface(), 'web');
 
 console.log('Android Google login handoff regression checks passed.');
