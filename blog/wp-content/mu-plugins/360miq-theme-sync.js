@@ -3,6 +3,8 @@
 
   var STORE_KEY = '360miq-dark-mode';
   var htmlEl = document.documentElement;
+  var accountState = null;
+  var userChangedTheme = false;
 
   function getSaved() {
     try {
@@ -21,6 +23,48 @@
     if (saved === 'true') return true;
     if (saved === 'false') return false;
     return prefersDark();
+  }
+
+  function saveTheme(dark) {
+    try {
+      localStorage.setItem(STORE_KEY, dark ? 'true' : 'false');
+    } catch (e) {}
+  }
+
+  function accountStateFrom(eventOrState) {
+    return eventOrState && eventOrState.detail
+      ? eventOrState.detail
+      : (eventOrState || window.__MIQ_ACCOUNT__ || {});
+  }
+
+  function persistThemePreference(dark) {
+    var state = accountState || window.__MIQ_ACCOUNT__;
+    if (!state || !state.loggedIn || !state.apiUrl || !state.csrfToken || typeof window.fetch !== 'function') return;
+
+    var preferences = {};
+    if (state.preferences && typeof state.preferences === 'object') {
+      Object.keys(state.preferences).forEach(function(key) {
+        preferences[key] = state.preferences[key];
+      });
+    }
+    preferences.action = 'save_preferences';
+    preferences.csrf_token = state.csrfToken;
+    preferences.theme_mode = dark ? 'dark' : 'light';
+
+    window.fetch(state.apiUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(preferences)
+    }).then(function(response) {
+      if (!response.ok) throw new Error('Theme preference sync failed.');
+      return response.json();
+    }).then(function(payload) {
+      if (payload && payload.preferences) state.preferences = payload.preferences;
+    }).catch(function() {});
   }
 
   function isDark() {
@@ -61,11 +105,10 @@
   }
 
   function setTheme(dark) {
-    try {
-      localStorage.setItem(STORE_KEY, dark ? 'true' : 'false');
-    } catch (e) {}
-
+    userChangedTheme = true;
+    saveTheme(dark);
     applyTheme(dark);
+    persistThemePreference(dark);
   }
 
   function toggleTheme() {
@@ -314,9 +357,28 @@
     applyViewport();
   }
 
+  function handleAccountState(eventOrState) {
+    var state = accountStateFrom(eventOrState);
+    accountState = state;
+    applyAccountState(state);
+
+    if (!state.loggedIn) return;
+
+    var preference = state.preferences && state.preferences.theme_mode;
+    if (!userChangedTheme && (preference === 'dark' || preference === 'light')) {
+      var dark = preference === 'dark';
+      saveTheme(dark);
+      applyTheme(dark);
+    } else if (!userChangedTheme && preference === 'system') {
+      applyTheme(prefersDark());
+    } else if (userChangedTheme) {
+      persistThemePreference(isDark());
+    }
+  }
+
   function boot() {
     applyTheme(resolveDark());
-    applyAccountState(window.__MIQ_ACCOUNT__ || {});
+    handleAccountState(window.__MIQ_ACCOUNT__ || {});
     initToggle();
     initNavigationMenus();
   }
@@ -327,9 +389,9 @@
     enable: function() { setTheme(true); },
     disable: function() { setTheme(false); }
   };
-  window.MiqBlogAccountShell = { applyState: applyAccountState };
+  window.MiqBlogAccountShell = { applyState: handleAccountState };
 
-  window.addEventListener('miq:account-state', applyAccountState);
+  window.addEventListener('miq:account-state', handleAccountState);
 
   window.addEventListener('storage', function(e) {
     if (e.key === STORE_KEY) {

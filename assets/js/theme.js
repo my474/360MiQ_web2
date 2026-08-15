@@ -18,6 +18,17 @@
     return localStorage.getItem(STORE_KEY);
   }
 
+  function prefersDark() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
+  function resolveDark(saved) {
+    if (saved === undefined) saved = getSaved();
+    if (saved === 'true') return true;
+    if (saved === 'false') return false;
+    return prefersDark();
+  }
+
   /* ---- apply / toggle ---- */
 
   function applyTheme(dark) {
@@ -88,6 +99,14 @@
     enable: function() { setTheme(true); },
     disable: function() { setTheme(false); }
   };
+
+  /* Keep an already-open main-site page in sync with the blog (and other tabs). */
+  if (window.addEventListener) {
+    window.addEventListener('storage', function(event) {
+      if (!event || event.key !== STORE_KEY) return;
+      applyTheme(resolveDark(event.newValue));
+    });
+  }
 
   /* ---- boot ---- */
 

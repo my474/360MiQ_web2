@@ -874,6 +874,7 @@ try {
             'workspaceUrl' => $base_url . '/workspace',
             'assetBaseUrl' => $base_url . '/assets',
             'chatHistoryMaxBytes' => (int) $config['max_chat_history_bytes'],
+            'preferences' => $viewer ? miq_account_user_preferences((int) $viewer['id']) : miq_account_preference_defaults(),
             'unreadNotifications' => $viewer ? miq_account_unread_notification_count((int) $viewer['id']) : 0,
             'notificationConfig' => miq_account_notification_web_config(),
         );
