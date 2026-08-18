@@ -190,7 +190,6 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
             .itemsLayout('vertical');
 
     // sets settings for labels
-    var brightTileTextColor = '#444444';
     chart.labels()
             .useHtml(true)
             .fontColor(isDark ? '#cccccc' : '#ffffff')
@@ -200,17 +199,14 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                 if (!drilled_down && total_cap > 0 && this.size / total_cap < 0.005 && this.getData('product').length > 4)
                     fontsize_code = 10;
 
-                // Keep bright red labels at the default color; darken only bright green labels.
-                var isBrightGreenTile = this.value >= 4;
-                var brightTileColor = isBrightGreenTile ? ';color:' + brightTileTextColor : '';
-                var color_code = brightTileColor;
-                var color_percent = brightTileColor;
+                var color_code = "";
+                var color_percent = "";
                 // yellow label for highlighted stocks
                 for (var i = 0; i < highlightstock.length; i++)
                 {
                     if (this.getData('product') == highlightstock[i])
                     {
-                        color_percent = isBrightGreenTile ? brightTileColor : ";color:yellow";
+                        color_percent = ";color:yellow";
                         color_code = color_percent + ";font-weight:bold";
                     }
                 }
