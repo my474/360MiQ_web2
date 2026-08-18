@@ -200,8 +200,8 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                 if (!drilled_down && total_cap > 0 && this.size / total_cap < 0.005 && this.getData('product').length > 4)
                     fontsize_code = 10;
 
-                // Use dark text on the bright red/green scale bands for contrast.
-                var isBrightTile = this.value < -4 || this.value > 4;
+                // Match AnyChart's inclusive bright red/green scale bands.
+                var isBrightTile = this.value <= -4 || this.value >= 4;
                 var brightTileColor = isBrightTile ? ';color:' + brightTileTextColor : '';
                 var color_code = brightTileColor;
                 var color_percent = brightTileColor;
