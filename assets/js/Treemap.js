@@ -200,9 +200,9 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                 if (!drilled_down && total_cap > 0 && this.size / total_cap < 0.005 && this.getData('product').length > 4)
                     fontsize_code = 10;
 
-                // Match AnyChart's inclusive bright red/green scale bands.
-                var isBrightTile = this.value <= -4 || this.value >= 4;
-                var brightTileColor = isBrightTile ? ';color:' + brightTileTextColor : '';
+                // Keep bright red labels at the default color; darken only bright green labels.
+                var isBrightGreenTile = this.value >= 4;
+                var brightTileColor = isBrightGreenTile ? ';color:' + brightTileTextColor : '';
                 var color_code = brightTileColor;
                 var color_percent = brightTileColor;
                 // yellow label for highlighted stocks
@@ -210,7 +210,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
                 {
                     if (this.getData('product') == highlightstock[i])
                     {
-                        color_percent = isBrightTile ? brightTileColor : ";color:yellow";
+                        color_percent = isBrightGreenTile ? brightTileColor : ";color:yellow";
                         color_code = color_percent + ";font-weight:bold";
                     }
                 }
