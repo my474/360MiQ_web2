@@ -192,7 +192,7 @@ function treemap(data_orig, container, toShowPrice, d1_d5_d20, sectorDict, isMob
     // sets settings for labels
     chart.labels()
             .useHtml(true)
-            .fontColor(isDark ? '#cccccc' : '#ffffff')
+            .fontColor('#ffffff')
             //.fontSize(12)
             .format(function () {
                 var fontsize_code = 12;
