@@ -13,8 +13,10 @@ assert.match(accountScript, /function saveSearch\(code, metadata, options\)/);
 assert.match(accountScript, /options\.preserveTimestamp && metadata\.searched_at/);
 assert.match(accountScript, /Object\.assign\(\{\}, item, \{ preserve_searched_at: true \}\)/);
 assert.match(accountScript, /if \(!item \|\| !hasSearchTimestamp\(item\.searched_at\)\) return;/);
-assert.match(accountScript, /saveSearch\(item\.code, item, \{ preserveTimestamp: true \}\)/);
+assert.match(accountScript, /function localSearchSyncSignature\(items\)/);
+assert.match(accountScript, /jsonRequest\('merge_searches', \{ searches: items \}\)/);
 assert.match(accountApi, /preserve_searched_at/);
+assert.match(accountApi, /if \(\$action === 'merge_searches'\)/);
 assert.match(accountApi, /ON DUPLICATE KEY UPDATE exchange = VALUES\(exchange\), display_name = VALUES\(display_name\)/);
 
 console.log('Recent-search timestamp synchronization regression checks passed.');

@@ -18,11 +18,12 @@ const headerIndex = workspacePage.indexOf("include __DIR__ . '/header.php'");
 
 assert.ok(jqueryIndex >= 0 && jqueryIndex < utilsIndex, 'workspace must load jQuery before Utils.js');
 assert.ok(utilsIndex < jqueryUiIndex && jqueryUiIndex < headerIndex, 'workspace dependencies must load before header.php');
-assert.match(header, /assets\/js\/account\.js\?v=20260819\.3/);
+assert.match(header, /assets\/js\/account\.js\?v=20260820\.1/);
 assert.match(workspacePage, /assets\/js\/workspace\.js\?v=20260819\.2/);
 assert.match(workspaceScript, /request\('workspace', \{ defer_quotes: '1' \}, 'GET'\)/);
 assert.match(workspaceScript, /request\('workspace_quotes', \{\}, 'GET'\)/);
 assert.match(accountApi, /'workspace_quotes'/);
+assert.match(accountApi, /array\('workspace', 'workspace_quotes', 'save_search', 'merge_searches'\)/);
 assert.match(accountApi, /session_write_close\(\)/);
 assert.match(accountApi, /miq_api_workspace\(\$user, !\$defer_quotes\)/);
 assert.match(accountApi, /miq_api_workspace_quote_payload\(\$user_id, \$lists, \$alerts\)/);

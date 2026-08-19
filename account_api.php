@@ -902,7 +902,8 @@ try {
     // The workspace quote lookup can be slow when the market-data database is
     // unavailable. Do not let that optional work hold the PHP session lock and
     // block a full-page refresh in the same browser.
-    if (($action === 'workspace' || $action === 'workspace_quotes') && session_status() === PHP_SESSION_ACTIVE) {
+    $session_independent_actions = array('workspace', 'workspace_quotes', 'save_search', 'merge_searches');
+    if (in_array($action, $session_independent_actions, true) && session_status() === PHP_SESSION_ACTIVE) {
         session_write_close();
     }
 
@@ -960,6 +961,35 @@ try {
             miq_account_query("DELETE FROM {$table} WHERE user_id = ?", 'i', array($user_id))->close();
         }
         miq_api_json(array('cleared' => true));
+    }
+
+    if ($action === 'merge_searches') {
+        $raw_searches = isset($body['searches']) && is_array($body['searches'])
+            ? array_slice($body['searches'], 0, 20)
+            : array();
+        $searches = miq_account_table('recent_searches');
+        $seen_codes = array();
+        $merged_count = 0;
+        foreach ($raw_searches as $item) {
+            if (!is_array($item)) continue;
+            $code = miq_api_clean_code($item['code'] ?? '');
+            if ($code === '' || isset($seen_codes[$code])) continue;
+            $searched_at = miq_api_client_datetime($item['searched_at'] ?? '');
+            if (!$searched_at || strtotime($searched_at) > time() + 60) continue;
+            $seen_codes[$code] = true;
+            $exchange = miq_api_clean_text($item['exchange'] ?? '', 32);
+            $display_name = miq_api_clean_text($item['display_name'] ?? '', 160);
+            miq_account_query(
+                "INSERT INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE exchange = VALUES(exchange), display_name = VALUES(display_name)",
+                'issss',
+                array($user_id, $code, $exchange, $display_name, $searched_at)
+            )->close();
+            $merged_count += 1;
+        }
+        if ($merged_count > 0) {
+            miq_account_query("DELETE FROM {$searches} WHERE user_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC, id DESC LIMIT 50) recent_ids)", 'ii', array($user_id, $user_id))->close();
+        }
+        miq_api_json(array('saved' => true, 'merged' => $merged_count));
     }
 
     if ($action === 'save_search') {

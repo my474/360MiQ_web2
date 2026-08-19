@@ -3,6 +3,7 @@
 
     var state = window.__MIQ_ACCOUNT__ || { loggedIn: false };
     var localSearchKey = '360miq-account-recent-searches';
+    var localSearchSyncKey = '360miq-account-recent-searches-sync-v2';
     var pendingPulseVoteKey = '360miq-pending-community-vote';
     var pendingPulseVoteMaxAge = 24 * 60 * 60 * 1000;
     var sentimentTrendRequests = {};
@@ -249,6 +250,16 @@
         return !isNaN(timestamp) && timestamp <= Date.now() + 60000;
     }
 
+    function localSearchSyncSignature(items) {
+        return items.map(function (item) {
+            return [item.code, item.exchange || '', item.display_name || '', item.searched_at].join('|');
+        }).join('||');
+    }
+
+    function localSearchSyncStorageKey() {
+        return localSearchSyncKey + ':' + String(state.userId || 'account');
+    }
+
     function rememberLocalSearch(item) {
         var next = [item].concat(localSearches().filter(function (entry) {
             return String(entry.code).toUpperCase() !== String(item.code).toUpperCase();
@@ -337,10 +348,21 @@
 
     function mergeLocalSearches() {
         if (!state.loggedIn) return;
-        localSearches().slice(0, 20).forEach(function (item) {
+        var items = localSearches().slice(0, 20).filter(function (item) {
             if (!item || !hasSearchTimestamp(item.searched_at)) return;
-            saveSearch(item.code, item, { preserveTimestamp: true });
+            return !!String(item.code || '').trim();
         });
+        if (!items.length) return;
+
+        var signature = localSearchSyncSignature(items);
+        var syncKey = localSearchSyncStorageKey();
+        try {
+            if (window.localStorage.getItem(syncKey) === signature) return;
+        } catch (error) { /* storage is optional */ }
+
+        jsonRequest('merge_searches', { searches: items }).then(function () {
+            try { window.localStorage.setItem(syncKey, signature); } catch (error) { /* storage is optional */ }
+        }).catch(function () { /* Local history remains available when sync is unavailable. */ });
     }
 
     function handleGoogleCredential(response) {
