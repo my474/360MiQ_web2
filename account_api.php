@@ -635,21 +635,8 @@ function miq_api_annotate_public_ideas($rows, $viewer_user_id)
     return $rows;
 }
 
-function miq_api_workspace($user)
+function miq_api_workspace_quote_payload($user_id, $lists, $alerts)
 {
-    $user_id = (int) $user['id'];
-    $charts = miq_account_table('saved_charts');
-    $scripts = miq_account_table('pine_scripts');
-    $searches = miq_account_table('recent_searches');
-    $screener_presets = miq_account_table('screener_presets');
-    $idea_rows = array();
-    $idea_count = 0;
-    if (miq_community_enabled()) {
-        $ideas = miq_account_table('community_ideas');
-        $idea_rows = miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, status, visibility, updated_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id)));
-        $idea_count = miq_api_count_rows($ideas, $user_id);
-    }
-    $lists = miq_api_watchlists($user_id);
     $watchlist_codes = array();
     $watchlist_code_set = array();
     foreach ($lists as $list) {
@@ -662,14 +649,6 @@ function miq_api_workspace($user)
             $watchlist_code_set[$code] = true;
         }
     }
-    $alerts = miq_api_workspace_optional(function () use ($user_id) {
-        $table = miq_account_table('price_alerts');
-        return miq_account_fetch_all(miq_account_query(
-            "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$table} WHERE user_id = ? ORDER BY FIELD(status, 'triggered', 'active', 'disabled'), updated_at DESC LIMIT 100",
-            'i',
-            array($user_id)
-        ));
-    }, array());
     $quote_codes = $watchlist_codes;
     foreach ($alerts as $alert) {
         if ($alert['status'] === 'active') {
@@ -700,6 +679,41 @@ function miq_api_workspace($user)
     } catch (Throwable $error) {
         error_log('360MiQ workspace quote failure: ' . $error->getMessage());
     }
+
+    return array(
+        'watchlist_quotes' => $watchlist_quotes,
+        'alerts' => $alerts,
+        'quotes_loaded' => true,
+    );
+}
+
+function miq_api_workspace($user, $include_quotes = true)
+{
+    $user_id = (int) $user['id'];
+    $charts = miq_account_table('saved_charts');
+    $scripts = miq_account_table('pine_scripts');
+    $searches = miq_account_table('recent_searches');
+    $screener_presets = miq_account_table('screener_presets');
+    $idea_rows = array();
+    $idea_count = 0;
+    if (miq_community_enabled()) {
+        $ideas = miq_account_table('community_ideas');
+        $idea_rows = miq_account_fetch_all(miq_account_query("SELECT id, code, title, direction, timeframe, status, visibility, updated_at FROM {$ideas} WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30", 'i', array($user_id)));
+        $idea_count = miq_api_count_rows($ideas, $user_id);
+    }
+    $lists = miq_api_watchlists($user_id);
+    $alerts = miq_api_workspace_optional(function () use ($user_id) {
+        $table = miq_account_table('price_alerts');
+        return miq_account_fetch_all(miq_account_query(
+            "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$table} WHERE user_id = ? ORDER BY FIELD(status, 'triggered', 'active', 'disabled'), updated_at DESC LIMIT 100",
+            'i',
+            array($user_id)
+        ));
+    }, array());
+    $quote_payload = $include_quotes
+        ? miq_api_workspace_quote_payload($user_id, $lists, $alerts)
+        : array('watchlist_quotes' => array(), 'alerts' => $alerts, 'quotes_loaded' => false);
+    $alerts = $quote_payload['alerts'];
     $notes = miq_api_workspace_optional(function () use ($user_id, $charts, $scripts) {
         $table = miq_account_table('research_notes');
         return miq_account_fetch_all(miq_account_query(
@@ -751,7 +765,8 @@ function miq_api_workspace($user)
         'screener_presets' => miq_account_fetch_all(miq_account_query("SELECT client_key, name, is_default, revision, updated_at FROM {$screener_presets} WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC LIMIT 50", 'i', array($user_id))),
         'ideas' => $idea_rows,
         'watchlists' => $lists,
-        'watchlist_quotes' => $watchlist_quotes,
+        'watchlist_quotes' => $quote_payload['watchlist_quotes'],
+        'quotes_loaded' => $quote_payload['quotes_loaded'],
         'notes' => $notes,
         'alerts' => $alerts,
         'preferences' => miq_account_user_preferences($user_id),
@@ -778,7 +793,7 @@ $body = miq_api_body();
 $action = isset($_GET['action']) ? (string) $_GET['action'] : (isset($body['action']) ? (string) $body['action'] : '');
 $request_method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $read_actions = array(
-    'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'workspace',
+    'pulse', 'pulse_trend', 'public_ideas', 'list_idea_replies', 'workspace', 'workspace_quotes',
     'account_bootstrap', 'get_preferences', 'get_notification_settings', 'list_notes', 'list_alerts', 'list_screener_presets',
     'list_watchlists', 'watchlist_state', 'list_charts', 'get_chart',
     'list_chart_versions', 'list_scripts', 'get_script', 'list_script_versions',
@@ -884,6 +899,13 @@ try {
     $user = miq_api_user();
     $user_id = (int) $user['id'];
 
+    // The workspace quote lookup can be slow when the market-data database is
+    // unavailable. Do not let that optional work hold the PHP session lock and
+    // block a full-page refresh in the same browser.
+    if (($action === 'workspace' || $action === 'workspace_quotes') && session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+
     if ($action === 'get_chat_history') {
         $history = null;
         $updated_at = null;
@@ -976,7 +998,19 @@ try {
     }
 
     if ($action === 'workspace') {
-        miq_api_json(array('workspace' => miq_api_workspace($user)));
+        $defer_quotes = filter_var($_GET['defer_quotes'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        miq_api_json(array('workspace' => miq_api_workspace($user, !$defer_quotes)));
+    }
+
+    if ($action === 'workspace_quotes') {
+        $lists = miq_api_watchlists($user_id);
+        $alerts_table = miq_account_table('price_alerts');
+        $alerts = miq_account_fetch_all(miq_account_query(
+            "SELECT id, code, condition_type, target_price, status, last_price, triggered_at, created_at, updated_at FROM {$alerts_table} WHERE user_id = ? ORDER BY FIELD(status, 'triggered', 'active', 'disabled'), updated_at DESC LIMIT 100",
+            'i',
+            array($user_id)
+        ));
+        miq_api_json(array('workspace_quotes' => miq_api_workspace_quote_payload($user_id, $lists, $alerts)));
     }
 
     if ($action === 'get_preferences') {

@@ -25,6 +25,8 @@ if (!$user) {
     <link rel="stylesheet" href="assets/css/account.css?v=20260806.7">
     <link rel="stylesheet" href="assets/css/workspace.css?v=20260812.4">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="assets/js/Utils.js?v=20260819.1"></script>
+    <script src="assets/js/jquery-ui.min.js?v=20260819.1"></script>
 </head>
 <body data-community-enabled="<?php echo $community_enabled ? 'true' : 'false'; ?>">
 <?php $page = 'workspace'; include __DIR__ . '/header.php'; ?>

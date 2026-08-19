@@ -10,6 +10,7 @@
     var chartsState = { items: [], page: 0, total: 0, search: '', kind: '', loading: false };
     var scriptsState = { items: [], page: 0, total: 0, search: '', status: '', loading: false };
     var editingNoteId = 0;
+    var workspaceQuotesRequest = null;
 
     function escapeHtml(value) {
         return String(value == null ? '' : value).replace(/[&<>'"]/g, function (character) {
@@ -217,6 +218,9 @@
     }
 
     function renderWatchlistMovers() {
+        if (workspace && workspace.quotes_loaded === false) {
+            return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Watchlists</span><h2>Watchlist movers</h2></div><a href="workspace?tab=watchlists">Manage</a></div><div class="miq-dashboard-mini-empty">Loading market data…</div></section>';
+        }
         var quotes = workspaceItems('watchlist_quotes').slice().sort(function (left, right) {
             return Math.abs(Number(right.change_pct || 0)) - Math.abs(Number(left.change_pct || 0));
         }).slice(0, 8);
@@ -232,6 +236,9 @@
     }
 
     function renderTriggeredAlerts() {
+        if (workspace && workspace.quotes_loaded === false) {
+            return '<section class="miq-workspace-panel miq-dashboard-compact"><div class="miq-dashboard-panel-heading"><div><span>Monitoring</span><h2>Triggered alerts</h2></div><a href="workspace?tab=alerts">View all</a></div><div class="miq-dashboard-mini-empty">Loading alert status…</div></section>';
+        }
         var alerts = workspaceItems('alerts').filter(function (alert) { return alert.status === 'triggered'; }).slice(0, 5);
         var body = alerts.length ? '<div class="miq-dashboard-compact-list">' + alerts.map(function (alert) {
             return '<a href="stockinfo?code=' + encodeURIComponent(alert.code) + '"><strong>' + escapeHtml(alert.code) +
@@ -518,13 +525,36 @@
 
     function refreshWorkspaceAndTab(message) {
         if (message) showStatus(message, 'success');
-        return window.MIQAccount.request('workspace', {}, 'GET').then(function (body) {
+        return window.MIQAccount.request('workspace', { defer_quotes: '1' }, 'GET').then(function (body) {
             workspace = body.workspace;
+            loadWorkspaceQuotes();
             if (activeTab === 'charts') return loadCharts(true);
             if (activeTab === 'scripts') return loadScripts(true);
             render(activeTab);
             return null;
         });
+    }
+
+    function loadWorkspaceQuotes() {
+        if (!workspace || workspaceQuotesRequest) return workspaceQuotesRequest;
+        workspaceQuotesRequest = window.MIQAccount.request('workspace_quotes', {}, 'GET').then(function (body) {
+            var quotePayload = body.workspace_quotes || {};
+            workspace.watchlist_quotes = Array.isArray(quotePayload.watchlist_quotes) ? quotePayload.watchlist_quotes : [];
+            workspace.alerts = Array.isArray(quotePayload.alerts) ? quotePayload.alerts : workspace.alerts;
+            workspace.quotes_loaded = true;
+            if (activeTab === 'overview' || activeTab === 'alerts') render(activeTab);
+            return quotePayload;
+        }).catch(function () {
+            if (workspace) {
+                workspace.quotes_loaded = true;
+                if (activeTab === 'overview' || activeTab === 'alerts') render(activeTab);
+            }
+            return null;
+        }).then(function (result) {
+            workspaceQuotesRequest = null;
+            return result;
+        });
+        return workspaceQuotesRequest;
     }
 
     function closestAsset(target, selector) {
@@ -791,8 +821,9 @@
 
     function load() {
         if (!window.MIQAccount) return;
-        window.MIQAccount.request('workspace', {}, 'GET').then(function (body) {
+        window.MIQAccount.request('workspace', { defer_quotes: '1' }, 'GET').then(function (body) {
             workspace = body.workspace;
+            loadWorkspaceQuotes();
             if (activeTab === 'charts') return loadCharts(true);
             if (activeTab === 'scripts') return loadScripts(true);
             render(activeTab);
