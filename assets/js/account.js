@@ -243,6 +243,12 @@
         }
     }
 
+    function hasSearchTimestamp(value) {
+        if (!value) return false;
+        var timestamp = Date.parse(String(value));
+        return !isNaN(timestamp) && timestamp <= Date.now() + 60000;
+    }
+
     function rememberLocalSearch(item) {
         var next = [item].concat(localSearches().filter(function (entry) {
             return String(entry.code).toUpperCase() !== String(item.code).toUpperCase();
@@ -332,6 +338,7 @@
     function mergeLocalSearches() {
         if (!state.loggedIn) return;
         localSearches().slice(0, 20).forEach(function (item) {
+            if (!item || !hasSearchTimestamp(item.searched_at)) return;
             saveSearch(item.code, item, { preserveTimestamp: true });
         });
     }

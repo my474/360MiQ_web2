@@ -977,10 +977,10 @@ try {
         }
 
         if ($preserve_searched_at && $preserved_searched_at) {
-            // Local history is replayed on page load. Keep its original time,
-            // while retaining the newest timestamp if another device is ahead.
+            // Local history is replayed on page load. It may fill a missing
+            // row, but it must never change the server's existing event time.
             miq_account_query(
-                "INSERT INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE exchange = VALUES(exchange), display_name = VALUES(display_name), searched_at = IF(searched_at >= VALUES(searched_at), searched_at, VALUES(searched_at))",
+                "INSERT INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE exchange = VALUES(exchange), display_name = VALUES(display_name)",
                 'issss',
                 array($user_id, $code, $exchange, $display_name, $preserved_searched_at)
             )->close();
