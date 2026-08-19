@@ -946,14 +946,31 @@ try {
         $searches = miq_account_table('recent_searches');
         $exchange = miq_api_clean_text($body['exchange'] ?? '', 32);
         $display_name = miq_api_clean_text($body['display_name'] ?? '', 160);
+        $preserve_searched_at = !empty($body['preserve_searched_at']);
+        $preserved_searched_at = $preserve_searched_at
+            ? miq_api_client_datetime($body['searched_at'] ?? '')
+            : null;
+        if ($preserved_searched_at && strtotime($preserved_searched_at) > time() + 60) {
+            $preserved_searched_at = null;
+        }
 
-        // Replace the touched symbol so the auto-increment id provides a
-        // stable tie-breaker when several searches share the same second.
-        miq_account_query(
-            "REPLACE INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())",
-            'isss',
-            array($user_id, $code, $exchange, $display_name)
-        )->close();
+        if ($preserve_searched_at && $preserved_searched_at) {
+            // Local history is replayed on page load. Keep its original time,
+            // while retaining the newest timestamp if another device is ahead.
+            miq_account_query(
+                "INSERT INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE exchange = VALUES(exchange), display_name = VALUES(display_name), searched_at = IF(searched_at >= VALUES(searched_at), searched_at, VALUES(searched_at))",
+                'issss',
+                array($user_id, $code, $exchange, $display_name, $preserved_searched_at)
+            )->close();
+        } else {
+            // Replace the touched symbol so the auto-increment id provides a
+            // stable tie-breaker when several searches share the same second.
+            miq_account_query(
+                "REPLACE INTO {$searches} (user_id, code, exchange, display_name, searched_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())",
+                'isss',
+                array($user_id, $code, $exchange, $display_name)
+            )->close();
+        }
         miq_account_query("DELETE FROM {$searches} WHERE user_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM {$searches} WHERE user_id = ? ORDER BY searched_at DESC, id DESC LIMIT 50) recent_ids)", 'ii', array($user_id, $user_id))->close();
         miq_api_json(array('saved' => true));
     }

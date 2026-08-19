@@ -250,18 +250,25 @@
         try { window.localStorage.setItem(localSearchKey, JSON.stringify(next)); } catch (error) { /* storage is optional */ }
     }
 
-    function saveSearch(code, metadata) {
+    function saveSearch(code, metadata, options) {
         code = String(code || '').trim().toUpperCase();
         if (!code) return Promise.resolve(null);
+        metadata = metadata || {};
+        options = options || {};
         var item = {
             code: code,
-            exchange: metadata && (metadata.exchange || metadata.exchange_from_TXT) || '',
-            display_name: metadata && (metadata.name_en || metadata.name || metadata.name_tc) || '',
-            searched_at: new Date().toISOString()
+            exchange: metadata.exchange || metadata.exchange_from_TXT || '',
+            display_name: metadata.name_en || metadata.name || metadata.name_tc || '',
+            searched_at: options.preserveTimestamp && metadata.searched_at
+                ? metadata.searched_at
+                : new Date().toISOString()
         };
         rememberLocalSearch(item);
         if (!state.loggedIn) return Promise.resolve(item);
-        return jsonRequest('save_search', item).catch(function () { return item; });
+        var payload = options.preserveTimestamp
+            ? Object.assign({}, item, { preserve_searched_at: true })
+            : item;
+        return jsonRequest('save_search', payload).catch(function () { return item; });
     }
 
     function saveChartLayout(code, layout, nameOrOptions) {
@@ -324,7 +331,9 @@
 
     function mergeLocalSearches() {
         if (!state.loggedIn) return;
-        localSearches().slice(0, 20).forEach(function (item) { saveSearch(item.code, item); });
+        localSearches().slice(0, 20).forEach(function (item) {
+            saveSearch(item.code, item, { preserveTimestamp: true });
+        });
     }
 
     function handleGoogleCredential(response) {
