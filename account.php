@@ -227,6 +227,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
     $native_google_state = miq_account_issue_native_google_challenge($return_to);
     $native_google_url = 'account_android_google.php?state=' . rawurlencode($native_google_state);
 }
+$csrf_token = miq_account_csrf_token();
 ?>
 <!DOCTYPE html>
 <html>
@@ -267,7 +268,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
 
         <?php if ($view === 'register'): ?>
             <form method="post" class="miq-account-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="register">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="display_name">Public display name</label>
@@ -296,7 +297,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
             <?php if ($google_client_id !== ''): ?>
                 <div class="miq-account-divider"><span>or</span></div>
                 <form method="post" id="google-login-form" class="miq-google-form">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="google">
                     <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="credential" id="google-credential">
@@ -307,7 +308,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
             <p class="miq-account-switch">Already have an account? <a href="<?php echo htmlspecialchars('account.php?view=login&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Sign in</a></p>
         <?php elseif ($view === 'reset'): ?>
             <form method="post" class="miq-account-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="reset_password">
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['reset'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
@@ -320,7 +321,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
             </form>
         <?php elseif ($view === 'resend'): ?>
             <form method="post" class="miq-account-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="resend_verification">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="verification_email">Email</label>
@@ -330,7 +331,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
             <p class="miq-account-switch"><a href="<?php echo htmlspecialchars('account.php?view=login&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Back to sign in</a></p>
         <?php else: ?>
             <form method="post" class="miq-account-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="login">
                 <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                 <label for="login_email">Email</label>
@@ -345,7 +346,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
             <div class="miq-account-divider"><span>or</span></div>
             <?php if ($google_client_id !== ''): ?>
                 <form method="post" id="google-login-form" class="miq-google-form">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="google">
                     <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="credential" id="google-credential">
@@ -359,7 +360,7 @@ if ($google_client_id !== '' && in_array($view, array('login', 'register', 'forg
             <p class="miq-account-switch"><a href="<?php echo htmlspecialchars('account.php?view=resend&return_to=' . rawurlencode($return_to), ENT_QUOTES, 'UTF-8'); ?>">Resend verification email</a></p>
             <?php if ($view === 'forgot'): ?>
                 <form method="post" class="miq-account-form miq-reset-inline">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(miq_account_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="action" value="request_reset">
                     <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to, ENT_QUOTES, 'UTF-8'); ?>">
                     <label for="forgot_email">Reset email</label>

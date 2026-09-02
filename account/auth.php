@@ -1,6 +1,235 @@
 <?php
 require_once __DIR__ . '/db.php';
 
+function miq_account_session_cookie_name()
+{
+    return (string) miq_account_config()['cookie_name'];
+}
+
+function miq_account_request_is_secure()
+{
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
+}
+
+function miq_account_state_cookie_name($kind)
+{
+    return miq_account_session_cookie_name() . '_' . (string) $kind;
+}
+
+function miq_account_set_state_cookie($name, $value, $expires)
+{
+    return setcookie((string) $name, (string) $value, array(
+        'expires' => (int) $expires,
+        'path' => '/',
+        'secure' => miq_account_request_is_secure(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ));
+}
+
+function miq_account_clear_state_cookie($name)
+{
+    miq_account_set_state_cookie($name, '', time() - 42000);
+    unset($_COOKIE[$name]);
+}
+
+function miq_account_state_secret_file($config)
+{
+    $session_path = miq_account_private_session_path($config);
+    if ($session_path === '') {
+        return '';
+    }
+
+    $parent = realpath(dirname($session_path));
+    if ($parent === false || is_link($parent) || !is_readable($parent) || !is_writable($parent)) {
+        return '';
+    }
+
+    $document_root_setting = trim((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+    $document_root = realpath($document_root_setting === '' ? dirname(__DIR__) : $document_root_setting);
+    if ($document_root !== false && miq_account_session_path_is_within($parent, $document_root)) {
+        return '';
+    }
+
+    return $parent . DIRECTORY_SEPARATOR . '.miq_account_state_secret';
+}
+
+function miq_account_state_secret()
+{
+    static $secret = null;
+    if ($secret !== null) {
+        return $secret;
+    }
+
+    $config = miq_account_config();
+    $configured = trim((string) ($config['state_secret'] ?? ''));
+    if ($configured !== '') {
+        if (strlen($configured) < 32) {
+            error_log('360MiQ account state secret must contain at least 32 characters.');
+        } else {
+            $secret = $configured;
+            return $secret;
+        }
+    }
+
+    $secret_file = miq_account_state_secret_file($config);
+    if ($secret_file === '' || is_link($secret_file)) {
+        $secret = '';
+        return $secret;
+    }
+
+    $existing = @file_get_contents($secret_file);
+    if (is_string($existing) && strlen($existing) >= 32) {
+        if (DIRECTORY_SEPARATOR === '/') {
+            @chmod($secret_file, 0600);
+        }
+        $secret = substr($existing, 0, 64);
+        return $secret;
+    }
+
+    try {
+        $generated = random_bytes(32);
+        $temporary = $secret_file . '.tmp.' . bin2hex(random_bytes(8));
+    } catch (Throwable $error) {
+        $secret = '';
+        return $secret;
+    }
+
+    $output = @fopen($temporary, 'x+b');
+    if ($output !== false) {
+        $written = fwrite($output, $generated);
+        $flushed = fflush($output);
+        fclose($output);
+        if ($written === strlen($generated) && $flushed) {
+            if (DIRECTORY_SEPARATOR === '/') {
+                @chmod($temporary, 0600);
+            }
+            // Publish without replacing a secret another first request may
+            // have created concurrently. This keeps already-issued tokens
+            // valid during the initial deployment race.
+            if (!@link($temporary, $secret_file) && !file_exists($secret_file)) {
+                @rename($temporary, $secret_file);
+            }
+        }
+        @unlink($temporary);
+    }
+
+    $existing = @file_get_contents($secret_file);
+    if (is_string($existing) && strlen($existing) >= 32) {
+        if (DIRECTORY_SEPARATOR === '/') {
+            @chmod($secret_file, 0600);
+        }
+        $secret = substr($existing, 0, 64);
+        return $secret;
+    }
+
+    $secret = '';
+    return $secret;
+}
+
+function miq_account_base64url_encode($value)
+{
+    return rtrim(strtr(base64_encode((string) $value), '+/', '-_'), '=');
+}
+
+function miq_account_base64url_decode($value)
+{
+    $value = (string) $value;
+    if ($value === '' || strlen($value) > 8192 || !preg_match('/^[A-Za-z0-9_-]+$/D', $value)) {
+        return false;
+    }
+
+    $padding = strlen($value) % 4;
+    if ($padding > 0) {
+        $value .= str_repeat('=', 4 - $padding);
+    }
+    return base64_decode(strtr($value, '-_', '+/'), true);
+}
+
+function miq_account_signed_state($purpose, $claims, $lifetime)
+{
+    $secret = miq_account_state_secret();
+    if ($secret === '') {
+        return '';
+    }
+
+    $payload = array(
+        'version' => 1,
+        'purpose' => (string) $purpose,
+        'expires_at' => time() + max(1, (int) $lifetime),
+        'nonce' => bin2hex(random_bytes(32)),
+    );
+    foreach ((array) $claims as $key => $value) {
+        $key = (string) $key;
+        if (in_array($key, array('version', 'purpose', 'expires_at', 'nonce'), true)) {
+            continue;
+        }
+        $payload[$key] = $value;
+    }
+
+    $encoded = miq_account_base64url_encode(json_encode($payload, JSON_UNESCAPED_SLASHES));
+    if ($encoded === '') {
+        return '';
+    }
+    return $encoded . '.' . hash_hmac('sha256', $encoded, $secret);
+}
+
+function miq_account_verify_signed_state($token, $purpose)
+{
+    $token = trim((string) $token);
+    if ($token === '' || strlen($token) > 8192) {
+        return null;
+    }
+
+    $parts = explode('.', $token);
+    if (count($parts) !== 2 || !preg_match('/^[a-f0-9]{64}$/D', $parts[1])) {
+        return null;
+    }
+    $secret = miq_account_state_secret();
+    if ($secret === '' || !hash_equals(hash_hmac('sha256', $parts[0], $secret), $parts[1])) {
+        return null;
+    }
+
+    $decoded = miq_account_base64url_decode($parts[0]);
+    $payload = $decoded === false ? null : json_decode($decoded, true);
+    if (!is_array($payload)
+        || (int) ($payload['version'] ?? 0) !== 1
+        || (string) ($payload['purpose'] ?? '') !== (string) $purpose
+        || (int) ($payload['expires_at'] ?? 0) < time()
+        || !preg_match('/^[a-f0-9]{64}$/D', (string) ($payload['nonce'] ?? ''))
+    ) {
+        return null;
+    }
+
+    return $payload;
+}
+
+function miq_account_stateless_csrf_token($create = true)
+{
+    $cookie_name = miq_account_state_cookie_name('csrf');
+    $existing = isset($_COOKIE[$cookie_name]) ? (string) $_COOKIE[$cookie_name] : '';
+    if ($existing !== '' && miq_account_verify_signed_state($existing, 'csrf') !== null) {
+        return $existing;
+    }
+    if (!$create) {
+        return '';
+    }
+
+    $token = miq_account_signed_state('csrf', array(), (int) miq_account_config()['session_lifetime']);
+    if ($token !== '') {
+        miq_account_set_state_cookie($cookie_name, $token, time() + (int) miq_account_config()['session_lifetime']);
+        $_COOKIE[$cookie_name] = $token;
+    }
+    return $token;
+}
+
+function miq_account_has_session_cookie()
+{
+    $name = miq_account_session_cookie_name();
+    return isset($_COOKIE[$name]) && (string) $_COOKIE[$name] !== '';
+}
+
 function miq_account_normalize_session_path($path)
 {
     $normalized = str_replace('\\', '/', rtrim((string) $path, "\\/"));
@@ -208,17 +437,40 @@ function miq_account_use_private_session_storage($config)
     return true;
 }
 
-function miq_account_start_session()
+function miq_account_start_session($allow_new = false)
 {
     if (session_status() === PHP_SESSION_ACTIVE) {
-        return;
+        return true;
     }
 
     $config = miq_account_config();
-    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
+    $secure = miq_account_request_is_secure();
+
+    // Do not let arbitrary cookies force PHP to create a new file-backed
+    // session. Only an explicit state-changing flow (login) may create a new
+    // session. Validate the cookie before doing any migration work.
+    $session_id = '';
+    if (!$allow_new) {
+        if (!miq_account_has_session_cookie()) {
+            return false;
+        }
+        $session_id = (string) $_COOKIE[miq_account_session_cookie_name()];
+        if (!preg_match('/^[a-zA-Z0-9,-]{16,256}$/D', $session_id)) {
+            return false;
+        }
+    }
+
     ini_set('session.gc_maxlifetime', (string) $config['session_lifetime']);
     ini_set('session.use_strict_mode', '1');
     miq_account_use_private_session_storage($config);
+
+    if (!$allow_new && strtolower((string) ini_get('session.save_handler')) === 'files') {
+        $session_file = miq_account_file_session_location((string) ini_get('session.save_path'), $session_id);
+        if ($session_file === '' || !is_file($session_file) || is_link($session_file)) {
+            return false;
+        }
+    }
+
     session_name($config['cookie_name']);
     session_set_cookie_params(array(
         'lifetime' => $config['session_lifetime'],
@@ -227,20 +479,51 @@ function miq_account_start_session()
         'httponly' => true,
         'samesite' => 'Lax'
     ));
-    session_start();
+    return session_start();
 }
 
 function miq_account_bootstrap()
 {
-    miq_account_start_session();
+    if (!miq_account_start_session()) {
+        return false;
+    }
     if (!isset($_SESSION['miq_account_session_version'])) {
         $_SESSION['miq_account_session_version'] = 1;
     }
+    return true;
+}
+
+function miq_account_stateless_flash_payload($token)
+{
+    $payload = miq_account_verify_signed_state($token, 'flash');
+    if (!is_array($payload)) {
+        return null;
+    }
+
+    $type = (string) ($payload['type'] ?? '');
+    $message = (string) ($payload['message'] ?? '');
+    if (!in_array($type, array('danger', 'success', 'warning', 'info'), true) || $message === '') {
+        return null;
+    }
+    return array('type' => $type, 'message' => substr($message, 0, 2000));
+}
+
+function miq_account_take_stateless_flash()
+{
+    $cookie_name = miq_account_state_cookie_name('flash');
+    $token = isset($_COOKIE[$cookie_name]) ? (string) $_COOKIE[$cookie_name] : '';
+    if ($token === '') {
+        return null;
+    }
+    miq_account_clear_state_cookie($cookie_name);
+    return miq_account_stateless_flash_payload($token);
 }
 
 function miq_account_session_hash()
 {
-    miq_account_start_session();
+    if (!miq_account_start_session()) {
+        return '';
+    }
     $session_id = session_id();
     return $session_id === '' ? '' : hash('sha256', $session_id);
 }
@@ -262,7 +545,9 @@ function miq_account_remove_current_session()
 
 function miq_account_record_activity($user_id, $force = false, $login = false)
 {
-    miq_account_start_session();
+    if (!miq_account_start_session()) {
+        return;
+    }
     $user_id = (int) $user_id;
     $interval = (int) miq_account_config()['activity_write_interval'];
     $last_write = isset($_SESSION['miq_account_last_activity_write']) ? (int) $_SESSION['miq_account_last_activity_write'] : 0;
@@ -373,7 +658,9 @@ function miq_account_current_user()
         $loaded = true;
         return null;
     }
-    miq_account_bootstrap();
+    if (!miq_account_bootstrap()) {
+        return null;
+    }
     if ($loaded) {
         return $user;
     }
@@ -452,7 +739,12 @@ function miq_account_retire_current_notification_session()
 
 function miq_account_logout($destroy_session = true)
 {
-    miq_account_start_session();
+    if (!miq_account_start_session()) {
+        miq_account_clear_state_cookie(miq_account_state_cookie_name('csrf'));
+        miq_account_clear_state_cookie(miq_account_state_cookie_name('flash'));
+        miq_account_clear_state_cookie(miq_account_state_cookie_name('google'));
+        return;
+    }
     miq_account_retire_current_notification_session();
     miq_account_remove_current_session();
     unset($_SESSION['miq_account_user_id'], $_SESSION['miq_account_session_version'], $_SESSION['miq_account_last_activity_write']);
@@ -464,17 +756,25 @@ function miq_account_logout($destroy_session = true)
         }
         session_destroy();
     }
+    miq_account_clear_state_cookie(miq_account_state_cookie_name('csrf'));
+    miq_account_clear_state_cookie(miq_account_state_cookie_name('flash'));
+    miq_account_clear_state_cookie(miq_account_state_cookie_name('google'));
 }
 
 function miq_account_login_user($user_id, $session_version, $record_login = true)
 {
-    miq_account_start_session();
+    if (!miq_account_start_session(true)) {
+        throw new RuntimeException('Unable to start the account session.');
+    }
     miq_account_retire_current_notification_session();
     miq_account_remove_current_session();
     session_regenerate_id(true);
     $_SESSION['miq_account_user_id'] = (int) $user_id;
     $_SESSION['miq_account_session_version'] = (int) $session_version;
     unset($_SESSION['miq_account_last_activity_write']);
+    miq_account_clear_state_cookie(miq_account_state_cookie_name('csrf'));
+    miq_account_clear_state_cookie(miq_account_state_cookie_name('flash'));
+    miq_account_clear_state_cookie(miq_account_state_cookie_name('google'));
     miq_account_record_activity((int) $user_id, true, (bool) $record_login);
 }
 
@@ -685,32 +985,98 @@ function miq_account_resolve_display_name($name, $email, $allow_suggested_suffix
 
 function miq_account_csrf_token()
 {
-    miq_account_start_session();
-    if (empty($_SESSION['miq_account_csrf'])) {
-        $_SESSION['miq_account_csrf'] = bin2hex(random_bytes(32));
+    if (session_status() !== PHP_SESSION_ACTIVE && miq_account_has_session_cookie()) {
+        miq_account_start_session();
     }
-    return $_SESSION['miq_account_csrf'];
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        if (empty($_SESSION['miq_account_csrf'])) {
+            $_SESSION['miq_account_csrf'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['miq_account_csrf'];
+    }
+
+    $token = miq_account_stateless_csrf_token(true);
+    if ($token !== '') {
+        return $token;
+    }
+
+    // Fail closed if the private signing secret is unavailable. Creating a
+    // fallback anonymous session here would recreate the file explosion this
+    // token is intended to prevent.
+    return '';
 }
 
 function miq_account_check_csrf($token)
 {
-    return is_string($token) && hash_equals(miq_account_csrf_token(), $token);
+    if (!is_string($token)) {
+        return false;
+    }
+    if (session_status() !== PHP_SESSION_ACTIVE && miq_account_has_session_cookie()) {
+        return hash_equals(miq_account_csrf_token(), $token);
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return hash_equals(miq_account_csrf_token(), $token);
+    }
+
+    $expected = miq_account_stateless_csrf_token(false);
+    return $expected !== '' && hash_equals($expected, $token);
 }
 
 function miq_account_issue_native_google_challenge($return_to = 'workspace')
 {
-    miq_account_start_session();
+    if (session_status() !== PHP_SESSION_ACTIVE && miq_account_has_session_cookie()) {
+        miq_account_start_session();
+    }
+
     $nonce = bin2hex(random_bytes(32));
-    $_SESSION['miq_native_google_challenge'] = array(
-        'nonce_hash' => hash('sha256', $nonce),
-        'return_to' => miq_account_safe_return_to($return_to, 'workspace'),
-        'expires_at' => time() + (int) miq_account_config()['native_google_challenge_ttl'],
-    );
-    return $nonce;
+    $safe_return_to = miq_account_safe_return_to($return_to, 'workspace');
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $_SESSION['miq_native_google_challenge'] = array(
+            'nonce_hash' => hash('sha256', $nonce),
+            'return_to' => $safe_return_to,
+            'expires_at' => time() + (int) miq_account_config()['native_google_challenge_ttl'],
+        );
+        return $nonce;
+    }
+
+    $lifetime = (int) miq_account_config()['native_google_challenge_ttl'];
+    $state = miq_account_signed_state('native_google', array('return_to' => $safe_return_to), $lifetime);
+    if ($state !== '') {
+        $cookie_name = miq_account_state_cookie_name('google');
+        miq_account_set_state_cookie($cookie_name, $state, time() + $lifetime);
+        $_COOKIE[$cookie_name] = $state;
+        return $state;
+    }
+
+    // Fail closed if the private signing secret is unavailable. Creating a
+    // fallback anonymous session here would recreate the file explosion this
+    // challenge is intended to prevent.
+    return '';
 }
 
 function miq_account_consume_native_google_challenge($nonce)
 {
+    $state = trim((string) $nonce);
+    $signed_claims = miq_account_verify_signed_state($state, 'native_google');
+    if (is_array($signed_claims)) {
+        $cookie_name = miq_account_state_cookie_name('google');
+        $cookie_value = isset($_COOKIE[$cookie_name]) ? (string) $_COOKIE[$cookie_name] : '';
+        if ($cookie_value === '' || !hash_equals($cookie_value, $state)) {
+            throw new RuntimeException('The Android Google sign-in request expired. Reload the account page and try again.');
+        }
+        // The cookie makes this signed challenge one-time without a server
+        // row. Clear it before verifying the Google credential, just like the
+        // old session-backed challenge was consumed before verification.
+        miq_account_clear_state_cookie($cookie_name);
+        return array(
+            'nonce' => (string) $signed_claims['nonce'],
+            'return_to' => miq_account_safe_return_to($signed_claims['return_to'] ?? 'workspace', 'workspace'),
+        );
+    }
+
+    if (!miq_account_has_session_cookie()) {
+        throw new RuntimeException('The Android Google sign-in request expired. Reload the account page and try again.');
+    }
     miq_account_start_session();
     $challenge = isset($_SESSION['miq_native_google_challenge'])
         ? $_SESSION['miq_native_google_challenge']
@@ -774,16 +1140,43 @@ function miq_account_validate_password($password)
 
 function miq_account_flash($type, $message)
 {
-    miq_account_start_session();
-    $_SESSION['miq_account_flash'] = array('type' => $type, 'message' => $message);
+    if (session_status() !== PHP_SESSION_ACTIVE && miq_account_has_session_cookie()) {
+        miq_account_start_session();
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $_SESSION['miq_account_flash'] = array('type' => $type, 'message' => $message);
+        return;
+    }
+
+    $type = in_array($type, array('danger', 'success', 'warning', 'info'), true) ? $type : 'info';
+    $message = substr(trim((string) $message), 0, 2000);
+    $token = miq_account_signed_state('flash', array('type' => $type, 'message' => $message), 600);
+    if ($token !== '') {
+        $cookie_name = miq_account_state_cookie_name('flash');
+        miq_account_set_state_cookie($cookie_name, $token, time() + 600);
+        $_COOKIE[$cookie_name] = $token;
+        return;
+    }
+
+    // Do not create an anonymous PHP session when signed state is unavailable;
+    // the caller can still complete the request, but the transient message is
+    // intentionally dropped rather than recreating thousands of session files.
 }
 
 function miq_account_take_flash()
 {
-    miq_account_start_session();
-    $flash = isset($_SESSION['miq_account_flash']) ? $_SESSION['miq_account_flash'] : null;
-    unset($_SESSION['miq_account_flash']);
-    return $flash;
+    if (session_status() !== PHP_SESSION_ACTIVE && miq_account_has_session_cookie()) {
+        miq_account_start_session();
+    }
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $flash = isset($_SESSION['miq_account_flash']) ? $_SESSION['miq_account_flash'] : null;
+        unset($_SESSION['miq_account_flash']);
+        if ($flash !== null) {
+            return $flash;
+        }
+    }
+
+    return miq_account_take_stateless_flash();
 }
 
 function miq_account_hash_token($token)

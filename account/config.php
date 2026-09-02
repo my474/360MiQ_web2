@@ -42,6 +42,7 @@ function miq_account_config()
         'cookie_name' => miq_account_env('MIQ_ACCOUNT_COOKIE_NAME', 'miq_account'),
         'session_lifetime' => (int) miq_account_env('MIQ_ACCOUNT_SESSION_LIFETIME', 1209600),
         'session_save_path' => trim(miq_account_env('MIQ_ACCOUNT_SESSION_SAVE_PATH', '')),
+        'state_secret' => trim(miq_account_env('MIQ_ACCOUNT_STATE_SECRET', '')),
         'base_url' => rtrim(miq_account_env('MIQ_SITE_URL', 'https://360miq.com'), '/'),
         // OAuth client IDs are public identifiers. This Web client is also the
         // Credential Manager serverClientId, so web and Android tokens share
