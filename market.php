@@ -2242,6 +2242,7 @@ window.__MARKET_PAGE_CONFIG = {
 };
 </script>
 <script src="assets/js/pages/market-main.js?v=20260623.10"></script>
+<script src="assets/js/pages/market-featured-posts.js?v=20260930.1"></script>
 <script>
 function YearlyTrendToggle(isPercent, id, Series_Name = "") {
     if (Series_Name == "")
