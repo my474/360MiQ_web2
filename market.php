@@ -2241,8 +2241,7 @@ window.__MARKET_PAGE_CONFIG = {
     "indexname": <?php echo json_encode($indexname, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 };
 </script>
-<script src="assets/js/pages/market-main.js?v=20260623.10"></script>
-<script src="assets/js/pages/market-featured-posts.js?v=20260930.1"></script>
+<script src="assets/js/pages/market-main.js?v=20260930.2"></script>
 <script>
 function YearlyTrendToggle(isPercent, id, Series_Name = "") {
     if (Series_Name == "")
