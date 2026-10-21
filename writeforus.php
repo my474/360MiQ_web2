@@ -205,6 +205,9 @@ include "./header.php";
     <li><strong>Author Links</strong>: You are welcome to include one link in your article back to your website and/or social media profiles. Additional links may be included in your author bio.</li>
   </ul>
   <br>
+  <h4>Ownership and Publication Rights</h4>
+  <p>You retain ownership and copyright in your contributions. By submitting an article, you grant 360MiQ a nonexclusive license to publish it on our website and promote it through our channels. You remain free to publish your work elsewhere.</p>
+  <br>
   <h4>How to Submit</h4>
   <ol>
       <li><a href="<?php echo htmlspecialchars($write_for_us_register_url, ENT_QUOTES, 'UTF-8'); ?>">Create or connect a free 360MiQ account</a>, or <a href="<?php echo htmlspecialchars($write_for_us_login_url, ENT_QUOTES, 'UTF-8'); ?>">sign in if you already have one</a>. Google sign-in is supported.</li>
